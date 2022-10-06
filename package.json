@@ -6,8 +6,6 @@
     "build": "rimraf ./build && tsc",
     "start:dev": "nodemon",
     "start": "npm run build && node build/index.js",
-    "lint": "eslint . --ext .ts",
-    "prettier-format": "prettier --config .prettierrc 'packages/**/*.ts' --write",
     "test": "jest",
     "test:dev": "jest --watchAll"
   },
