@@ -3,18 +3,32 @@
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
   "version": "0.0.1",
   "scripts": {
-    "build": "rimraf ./build && tsc",
+    "build": "rimraf ./build && tsc src/index.ts",
     "start:dev": "nodemon",
     "start": "npm run build && node build/index.js",
     "test": "jest",
-    "test:dev": "jest --watchAll"
+    "test:dev": "jest --watchAll",
+    "eject": "react-scripts eject"
   },
   "keywords": [],
   "author": "@ajna-finance",
   "license": "MIT",
+  "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
+    "@metamask/providers": "^10.0.0",
+    "isomorphic-fetch": "^3.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "web3": "^1.8.0",
+    "web3-core": "^1.8.0"
+  },
   "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.36",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.6.1",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "eslint": "^8.20.0",
