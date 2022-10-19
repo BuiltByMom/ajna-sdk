@@ -1,9 +1,11 @@
 {
-  "root": true,
+  "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist/",
     "target": "es6",
-    "module": "esnext",
+    "lib": ["es6", "dom", "dom.iterable"],
+    "module": "commonjs",
+    "outDir": "./dist",
+    "baseUrl": "src",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
@@ -17,19 +19,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "esModuleInterop": true,
-    "allowJs": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "src/**/*.spec.ts"]
 }

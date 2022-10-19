@@ -1,4 +1,8 @@
-import WalletProvider from './contexts/wallet';
-import useWallet from './hooks/use-wallet';
+import erc20PoolJsonAbiJson from './abis/ERC20Pool.json';
+import metaMaskPkg from './connectors/meta-mask';
 
-export { WalletProvider, useWallet };
+export const erc20PoolJsonAbi = erc20PoolJsonAbiJson;
+
+export const metaMask = metaMaskPkg;
+
+export const metaMaskEnable = metaMaskPkg?.enable;
