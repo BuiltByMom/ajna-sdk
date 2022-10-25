@@ -16,5 +16,4 @@ export type ContractType = Contract & {
   ) => void;
   decimals: (cb: (_error: any, decimals: number) => void) => void;
   tokenURI: (tokenId: string) => void;
-  lowerTickerToTokenId: (tokenId: string) => void;
 };

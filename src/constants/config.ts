@@ -1,3 +1,4 @@
-export const INFURA_KEY = process.env.REACT_APP_INFURA_KEY;
+export const CONTRACT_ERC20_POOL = process.env.REACT_APP_CONTRACT_ERC20_POOL;
 
-export const CONTRACT = process.env.REACT_APP_CONTRACT;
+export const CONTRACT_ERC20_POOL_FACTORY =
+  process.env.REACT_APP_CONTRACT_ERC20_POOL_FACTORY;
