@@ -6,6 +6,10 @@ export * from './constants/config';
 
 export * from './constants/interfaces';
 
+export * from './utils/get-pool-contract';
+
+export * from './utils/get-pool-factory-contract';
+
 export const erc20PoolJsonAbi = erc20PoolJsonAbiJson;
 
 export const erc20PoolFactoryJsonAbi = erc20PoolFactoryJsonAbiJson;
