@@ -1,6 +1,6 @@
 import metaMaskPkg, {
   metaMaskEnable as metaMaskPkgEnable
-} from 'connectors/meta-mask';
+} from './connectors/meta-mask';
 
 export * from './constants/config';
 export * from './constants/interfaces';
