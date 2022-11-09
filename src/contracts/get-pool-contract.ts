@@ -1,7 +1,6 @@
-import erc20PoolAbi from '../abis/ERC20Pool.json';
-import { CONTRACT_ERC20_POOL } from '../constants/config';
+import ERC20PoolFactory from '../abis/ERC20PoolFactory.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getPoolContract = (web3: any) => {
-  return new web3.eth.Contract(erc20PoolAbi, CONTRACT_ERC20_POOL);
+export const getPoolContract = (web3: any, contractAddress: string) => {
+  return new web3.eth.Contract(ERC20PoolFactory, contractAddress);
 };

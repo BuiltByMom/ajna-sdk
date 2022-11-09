@@ -1,11 +1,11 @@
-export const INFURA_KEY = process.env.REACT_APP_INFURA_KEY;
+import dotenv from 'dotenv';
 
-export const CONTRACT_ERC20_POOL = process.env.REACT_APP_CONTRACT_ERC20_POOL;
+dotenv.config();
+
+export const INFURA_KEY = process.env.INFURA_KEY;
 
 export const CONTRACT_ERC20_POOL_FACTORY =
-  process.env.REACT_APP_CONTRACT_ERC20_POOL_FACTORY;
-
-export const CONTRACT_ERC721_POOL = process.env.REACT_APP_CONTRACT_ERC721_POOL;
+  process.env.AJNA_CONTRACT_ERC20_POOL_FACTORY;
 
 export const CONTRACT_ERC721_POOL_FACTORY =
-  process.env.REACT_APP_CONTRACT_ERC721_POOL_FACTORY;
+  process.env.AJNA_CONTRACT_ERC721_POOL_FACTORY;
