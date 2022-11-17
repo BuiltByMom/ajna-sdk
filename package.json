@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "start:dev": "nodemon",
+    "start": "nodemon",
     "test": "jest",
     "test:dev": "jest --watchAll"
   },
