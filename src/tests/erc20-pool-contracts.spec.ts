@@ -1,30 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+/* eslint-disable no-console */
 import Web3 from 'web3';
+import dotenv from 'dotenv';
 import { Contract } from 'web3-eth-contract';
-import { getPoolFactoryContract } from '../contracts/get-pool-factory-contract';
+import {
+  deployPool,
+  deployedPools
+} from '../contracts/get-pool-factory-contract';
 import { getPoolContract } from '../contracts/get-pool-contract';
 import { getGenericContract } from '../contracts/get-generic-contract';
-import dotenv from 'dotenv';
+import toWei from '../utils/to-wei';
+import addWeb3Account from '../utils/add-web3-account';
+import config from '../constants/config';
 
 dotenv.config();
-
-const config = {
-  ETH_RPC_URL: process.env.AJNA_ETH_RPC_URL,
-  COLLATERAL_ADDRESS: process.env.AJNA_COLLATERAL_ADDRESS,
-  QUOTE_ADDRESS: process.env.AJNA_QUOTE_ADDRESS,
-  LENDER: process.env.AJNA_LENDER_ADDRESS,
-  LENDER_KEY: process.env.AJNA_LENDER_PRIVATE_KEY,
-  BORROWER: process.env.AJNA_BORROWER_ADDRESS,
-  BORROWER_KEY: process.env.AJNA_BORROWER_PRIVATE_KEY
-};
 
 jest.setTimeout(120000);
 
 describe('Ajna SDK tests:', () => {
-  // let accounts: string[];
-  let web3: any;
-  let signerLender: any;
-  let signerBorrower: any;
+  let web3: Web3;
   let poolAddress: string;
   let contractQuote: Contract;
   let contractCollateral: Contract;
@@ -38,26 +31,20 @@ describe('Ajna SDK tests:', () => {
     return await contractQuote.methods.balanceOf(config.BORROWER).call();
   };
 
+  // TODO
   // const getQuoteBalance = async () => {
   //   return await contractQuote.methods.balanceOf(config.LENDER).call();
   // };
 
   beforeAll(async () => {
     try {
-      web3 = new Web3(config['ETH_RPC_URL'] || '');
+      web3 = new Web3(config.ETH_RPC_URL || '');
 
       // Creating a signing account from a private key LENDER
-      signerLender = web3.eth.accounts.privateKeyToAccount(config.LENDER_KEY);
-      web3.eth.accounts.wallet.add(signerLender);
+      addWeb3Account(web3, config.LENDER_KEY);
 
       // Creating a signing account from a private key BORROWER
-      signerBorrower = web3.eth.accounts.privateKeyToAccount(
-        config.BORROWER_KEY
-      );
-      web3.eth.accounts.wallet.add(signerBorrower);
-
-      // accounts = await web3.eth.getAccounts();
-      // console.log(accounts);
+      addWeb3Account(web3, config.BORROWER_KEY);
     } catch (err) {
       console.log(err);
 
@@ -67,44 +54,28 @@ describe('Ajna SDK tests:', () => {
   });
 
   it('should deploy a new pool', async () => {
-    // Create initial contract instance
-    const contractInstance: Contract = getPoolFactoryContract(web3);
+    const interestRate = '0.05';
 
-    const interestRate = web3.utils.toWei('0.05', 'ether');
-    const nonSubsetHashParam = web3.utils
-      .keccak256('ERC20_NON_SUBSET_HASH')
-      .toString();
-
-    const tx = contractInstance.methods.deployPool(
+    await deployPool(
+      web3,
       config.COLLATERAL_ADDRESS,
       config.QUOTE_ADDRESS,
+      config.LENDER,
       interestRate
     );
 
-    await tx.send({
-      from: signerLender.address,
-      gas: await tx.estimateGas()
-    });
-    // .once('transactionHash', () => {
-    //   console.log(`Mining transaction ...`);
-    // });
-
-    poolAddress = await contractInstance.methods
-      .deployedPools(
-        nonSubsetHashParam,
-        config.COLLATERAL_ADDRESS,
-        config.QUOTE_ADDRESS
-      )
-      .call();
-
-    // console.info('poolAddress', poolAddress);
+    poolAddress = await deployedPools(
+      web3,
+      config.COLLATERAL_ADDRESS,
+      config.QUOTE_ADDRESS
+    );
 
     expect(poolAddress).not.toBe('');
   });
 
   describe('should USE the pool deployed', () => {
     it('should use pledgeCollateral succesfully', async () => {
-      const allowance = web3.utils.toWei(String(100000000), 'ether');
+      const allowance = toWei('100000000');
       contractCollateral = getGenericContract(
         web3,
         config.COLLATERAL_ADDRESS || ''
@@ -120,7 +91,7 @@ describe('Ajna SDK tests:', () => {
       //   console.log(`Mining approve transaction ...`);
       // });
 
-      const collateralToPledge = web3.utils.toWei(String(100), 'ether');
+      const collateralToPledge = toWei(100);
 
       const receipt = await contractPool.methods
         .pledgeCollateral(config.BORROWER, collateralToPledge)
@@ -138,9 +109,9 @@ describe('Ajna SDK tests:', () => {
     });
 
     it('should use addQuoteToken succesfully', async () => {
-      const quoteAmount = web3.utils.toWei(String(10), 'ether');
+      const quoteAmount = toWei(10);
       const bucketIndex = 2000; // index 2000 = price
-      const allowance = web3.utils.toWei(String(100000000), 'ether');
+      const allowance = toWei(100000000);
       contractQuote = getGenericContract(web3, config.QUOTE_ADDRESS || '');
 
       // First approve
@@ -167,7 +138,7 @@ describe('Ajna SDK tests:', () => {
     });
 
     it('should use borrow quote tokens succesfully', async () => {
-      const amountToBorrow = web3.utils.toWei(String(10), 'ether');
+      const amountToBorrow = toWei(10);
       const currentQuotaBalance = await getBorrowerQuoteBalance();
 
       await contractPool.methods.borrow(amountToBorrow, 5000).send({
@@ -188,8 +159,8 @@ describe('Ajna SDK tests:', () => {
     });
 
     it('should use repay loan with debt succesfully', async () => {
-      const allowance = web3.utils.toWei(String(100000000), 'ether');
-      const amountToRepay = web3.utils.toWei(String(10), 'ether');
+      const allowance = toWei(100000000);
+      const amountToRepay = toWei(10);
 
       await contractQuote.methods.approve(poolAddress, allowance).send({
         from: config.BORROWER,
@@ -208,8 +179,8 @@ describe('Ajna SDK tests:', () => {
     });
 
     it('should use pullCollateral succesfully', async () => {
-      const allowance = web3.utils.toWei(String(100000000), 'ether');
-      const collateralToPledge = web3.utils.toWei(String(10), 'ether');
+      const allowance = toWei(100000000);
+      const collateralToPledge = toWei(10);
       const previousCollateralQuotaBalance =
         await getBorrowerCollateralBalance();
 
@@ -234,8 +205,8 @@ describe('Ajna SDK tests:', () => {
     });
 
     it('should use removeQuoteToken succesfully', async () => {
-      const allowance = web3.utils.toWei(String(100000), 'ether');
-      const quoteAmount = web3.utils.toWei(String(10), 'ether');
+      const allowance = toWei(100000);
+      const quoteAmount = toWei(10);
       const bucketIndex = 2000;
 
       // First approve
