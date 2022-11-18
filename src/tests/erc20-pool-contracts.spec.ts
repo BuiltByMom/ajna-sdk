@@ -1,13 +1,25 @@
 /* eslint-disable no-console */
 import Web3 from 'web3';
 import dotenv from 'dotenv';
-import { Contract } from 'web3-eth-contract';
+// import { Contract } from 'web3-eth-contract';
 import {
   deployPool,
   deployedPools
 } from '../contracts/get-pool-factory-contract';
-import { getPoolContract } from '../contracts/get-pool-contract';
-import { getGenericContract } from '../contracts/get-generic-contract';
+import {
+  addQuoteToken,
+  borrow,
+  pledgeCollateral,
+  pullCollateral,
+  removeQuoteToken,
+  repay
+} from '../contracts/get-pool-contract';
+import {
+  collateralApprove,
+  quoteApprove,
+  getBorrowerQuoteBalance,
+  getBorrowerCollateralBalance
+} from '../contracts/get-generic-contract';
 import toWei from '../utils/to-wei';
 import addWeb3Account from '../utils/add-web3-account';
 import config from '../constants/config';
@@ -19,22 +31,6 @@ jest.setTimeout(120000);
 describe('Ajna SDK tests:', () => {
   let web3: Web3;
   let poolAddress: string;
-  let contractQuote: Contract;
-  let contractCollateral: Contract;
-  let contractPool: Contract;
-
-  const getBorrowerCollateralBalance = async () => {
-    return await contractCollateral.methods.balanceOf(config.BORROWER).call();
-  };
-
-  const getBorrowerQuoteBalance = async () => {
-    return await contractQuote.methods.balanceOf(config.BORROWER).call();
-  };
-
-  // TODO
-  // const getQuoteBalance = async () => {
-  //   return await contractQuote.methods.balanceOf(config.LENDER).call();
-  // };
 
   beforeAll(async () => {
     try {
@@ -75,159 +71,175 @@ describe('Ajna SDK tests:', () => {
 
   describe('should USE the pool deployed', () => {
     it('should use pledgeCollateral succesfully', async () => {
-      const allowance = toWei('100000000');
-      contractCollateral = getGenericContract(
+      const allowance = '100000000';
+      const collateralToPledge = '100';
+
+      await collateralApprove({
         web3,
-        config.COLLATERAL_ADDRESS || ''
-      );
-      contractPool = getPoolContract(web3, poolAddress);
-
-      // First approve
-      await contractCollateral.methods.approve(poolAddress, allowance).send({
-        from: config.BORROWER,
-        gas: 2000000
+        poolAddress,
+        allowance,
+        collateralAddress: config.COLLATERAL_ADDRESS || '',
+        from: config.BORROWER
       });
-      // .once('transactionHash', () => {
-      //   console.log(`Mining approve transaction ...`);
-      // });
 
-      const collateralToPledge = toWei(100);
+      const receipt = await pledgeCollateral({
+        web3,
+        poolAddress,
+        to: config.BORROWER,
+        collateralToPledge,
+        from: config.BORROWER
+      });
 
-      const receipt = await contractPool.methods
-        .pledgeCollateral(config.BORROWER, collateralToPledge)
-        .send({
-          from: config.BORROWER,
-          gas: 2000000
-        });
-      // .once('transactionHash', () => {
-      //   console.log(
-      //     `Lender pledged ${collateralToPledge} collateral in the pool`
-      //   );
-      // });
-
+      // Lender pledged ${collateralToPledge} collateral in the pool
       expect(receipt.transactionHash).not.toBe('');
     });
 
     it('should use addQuoteToken succesfully', async () => {
-      const quoteAmount = toWei(10);
-      const bucketIndex = 2000; // index 2000 = price
-      const allowance = toWei(100000000);
-      contractQuote = getGenericContract(web3, config.QUOTE_ADDRESS || '');
+      const quoteAmount = 10;
+      const bucketIndex = 2000;
+      const allowance = 100000000;
 
-      // First approve
-      await contractQuote.methods.approve(poolAddress, allowance).send({
-        from: config.LENDER,
-        gas: 2000000
+      await quoteApprove({
+        web3,
+        poolAddress,
+        allowance,
+        quoteAddress: config.QUOTE_ADDRESS,
+        from: config.LENDER
       });
 
-      const receipt = await contractPool.methods
-        .addQuoteToken(quoteAmount, bucketIndex)
-        .send({
-          from: config.LENDER,
-          gas: 2000000
-        });
-      // .once('transactionHash', () => {
-      //   console.log(`Lender added ${quoteAmount} quote token to the pool`);
-      // });
-
-      // const updatedQuotaBalance = await getBorrowerQuoteBalance();
-
-      // expect(updatedQuotaBalance).toBe(quoteAmount);
+      const receipt = await addQuoteToken({
+        web3,
+        poolAddress,
+        amount: quoteAmount,
+        bucketIndex,
+        from: config.LENDER
+      });
 
       expect(receipt.transactionHash).not.toBe('');
     });
 
     it('should use borrow quote tokens succesfully', async () => {
-      const amountToBorrow = toWei(10);
-      const currentQuotaBalance = await getBorrowerQuoteBalance();
-
-      await contractPool.methods.borrow(amountToBorrow, 5000).send({
-        from: config.BORROWER,
-        gas: 2000000
+      const bucketIndex = 5000;
+      const amountToBorrow = 10;
+      const currentQuotaBalance = await getBorrowerQuoteBalance({
+        web3,
+        quoteAddress: config.QUOTE_ADDRESS,
+        tokenAddress: config.BORROWER
       });
-      // .once('transactionHash', () => {
-      //   console.log(
-      //     `Borrower borrowed ${amountToBorrow} quote tokens from the pool`
-      //   );
-      // });
 
-      const updatedQuotaBalance = await getBorrowerQuoteBalance();
+      await borrow({
+        web3,
+        poolAddress,
+        amount: amountToBorrow,
+        bucketIndex,
+        from: config.BORROWER
+      });
+
+      const updatedQuotaBalance = await getBorrowerQuoteBalance({
+        web3,
+        quoteAddress: config.QUOTE_ADDRESS,
+        tokenAddress: config.BORROWER
+      });
 
       expect(Number(updatedQuotaBalance)).toBe(
-        Number(currentQuotaBalance) + Number(amountToBorrow)
+        Number(currentQuotaBalance) + Number(toWei(amountToBorrow))
       );
     });
 
     it('should use repay loan with debt succesfully', async () => {
-      const allowance = toWei(100000000);
-      const amountToRepay = toWei(10);
+      const allowance = 100000000;
+      const amountToRepay = 10;
 
-      await contractQuote.methods.approve(poolAddress, allowance).send({
-        from: config.BORROWER,
-        gas: 200000
+      await quoteApprove({
+        web3,
+        poolAddress,
+        allowance,
+        quoteAddress: config.QUOTE_ADDRESS,
+        from: config.BORROWER
       });
 
       // repay loan with debt
-      const receipt = await contractPool.methods
-        .repay(config.BORROWER, amountToRepay)
-        .send({
-          from: config.BORROWER,
-          gas: 2000000
-        });
+      const receipt = await repay({
+        web3,
+        poolAddress,
+        amount: amountToRepay,
+        from: config.BORROWER
+      });
 
       expect(receipt.transactionHash).not.toBe('');
     });
 
     it('should use pullCollateral succesfully', async () => {
-      const allowance = toWei(100000000);
-      const collateralToPledge = toWei(10);
-      const previousCollateralQuotaBalance =
-        await getBorrowerCollateralBalance();
+      const allowance = 100000000;
+      const collateralToPledge = 10;
+      const previousCollateralQuotaBalance = await getBorrowerCollateralBalance(
+        {
+          web3,
+          collateralAddress: config.QUOTE_ADDRESS,
+          tokenAddress: config.BORROWER
+        }
+      );
 
-      await contractQuote.methods.approve(poolAddress, allowance).send({
-        from: config.BORROWER,
-        gas: 200000
+      await quoteApprove({
+        web3,
+        poolAddress,
+        allowance,
+        quoteAddress: config.QUOTE_ADDRESS,
+        from: config.BORROWER
       });
 
       // repay loan with debt
-      await contractPool.methods.pullCollateral(collateralToPledge).send({
-        from: config.BORROWER,
-        gas: 2000000
+      await pullCollateral({
+        web3,
+        poolAddress,
+        collateralToPledge,
+        from: config.BORROWER
       });
 
-      // console.log(await getBorrowerQuoteBalance());
-      // console.log(await getQuoteBalance());
-      // console.log(await getBorrowerCollateralBalance());
-
-      expect(Number(await getBorrowerCollateralBalance())).toBe(
+      expect(
+        Number(
+          await getBorrowerCollateralBalance({
+            web3,
+            collateralAddress: config.QUOTE_ADDRESS,
+            tokenAddress: config.BORROWER
+          })
+        )
+      ).toBe(
         Number(previousCollateralQuotaBalance) + Number(collateralToPledge)
       );
     });
 
     it('should use removeQuoteToken succesfully', async () => {
-      const allowance = toWei(100000);
-      const quoteAmount = toWei(10);
+      const allowance = 100000;
+      const quoteAmount = 10;
       const bucketIndex = 2000;
 
       // First approve
-      await contractQuote.methods.approve(poolAddress, allowance).send({
-        from: config.LENDER,
-        gas: 2000000
+      await quoteApprove({
+        web3,
+        poolAddress,
+        allowance,
+        quoteAddress: config.QUOTE_ADDRESS,
+        from: config.LENDER
       });
 
       // add quote token
-      await contractPool.methods.addQuoteToken(quoteAmount, bucketIndex).send({
-        from: config.LENDER,
-        gas: 2000000
+      await addQuoteToken({
+        web3,
+        poolAddress,
+        amount: quoteAmount,
+        bucketIndex,
+        from: config.LENDER
       });
 
       // remove quote token
-      const receipt = await contractPool.methods
-        .removeQuoteToken(quoteAmount, bucketIndex)
-        .send({
-          from: config.LENDER,
-          gas: 2000000
-        });
+      const receipt = await removeQuoteToken({
+        web3,
+        poolAddress,
+        amount: quoteAmount,
+        bucketIndex,
+        from: config.LENDER
+      });
 
       expect(receipt.transactionHash).not.toBe('');
     });
