@@ -50,12 +50,14 @@ export const getBorrowerCollateralBalance = async (
   const { web3, collateralAddress, tokenAddress } = params;
   const contractCollateral = getGenericContract(web3, collateralAddress);
 
-  return await contractCollateral.methods.balanceOf(tokenAddress).call();
+  return Number(
+    await contractCollateral.methods.balanceOf(tokenAddress).call()
+  );
 };
 
 export const getQuoteBalance = async (params: QuoteBalanceParams) => {
   const { web3, quoteAddress, tokenAddress } = params;
   const contractQuote = getGenericContract(web3, quoteAddress);
 
-  return await contractQuote.methods.balanceOf(tokenAddress).call();
+  return Number(await contractQuote.methods.balanceOf(tokenAddress).call());
 };

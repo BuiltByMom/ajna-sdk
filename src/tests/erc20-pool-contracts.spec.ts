@@ -197,16 +197,12 @@ describe('Ajna SDK tests:', () => {
       });
 
       expect(
-        Number(
-          await getBorrowerCollateralBalance({
-            web3,
-            collateralAddress: config.QUOTE_ADDRESS,
-            tokenAddress: config.BORROWER
-          })
-        )
-      ).toBe(
-        Number(previousCollateralQuotaBalance) + Number(collateralToPledge)
-      );
+        await getBorrowerCollateralBalance({
+          web3,
+          collateralAddress: config.QUOTE_ADDRESS,
+          tokenAddress: config.BORROWER
+        })
+      ).toBe(previousCollateralQuotaBalance + collateralToPledge);
     });
 
     it('should use removeQuoteToken succesfully', async () => {
