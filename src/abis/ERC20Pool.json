@@ -26,6 +26,11 @@
   },
   {
     "inputs": [],
+    "name": "AuctionPriceGteQArbPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "BorrowerOk",
     "type": "error"
   },
@@ -234,9 +239,15 @@
       },
       {
         "indexed": false,
-        "internalType": "int256",
+        "internalType": "uint256",
         "name": "bondChange",
-        "type": "int256"
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isReward",
+        "type": "bool"
       }
     ],
     "name": "ArbTake",
@@ -729,13 +740,8 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "borrower_",
+        "name": "borrowerAddress_",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount_",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -1392,30 +1398,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "index_",
-        "type": "uint256"
-      }
-    ],
-    "name": "removeAllQuoteToken",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "quoteTokenAmountRemoved_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "redeemedLenderLPs_",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "collateralAmountToRemove_",
         "type": "uint256"
       },
@@ -1440,7 +1422,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "quoteTokenAmountToRemove_",
+        "name": "maxAmount_",
         "type": "uint256"
       },
       {
@@ -1453,7 +1435,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "bucketLPs_",
+        "name": "removedAmount_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "redeemedLPs_",
         "type": "uint256"
       }
     ],
@@ -1512,12 +1499,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "borrower_",
+        "name": "borrowerAddress_",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "maxCollateral_",
+        "name": "collateral_",
         "type": "uint256"
       },
       {
