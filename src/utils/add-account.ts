@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-const addWeb3Account = (web3: Web3, key: string) => {
+const addAccount = (web3: Web3, key: string) => {
   const signer = web3.eth.accounts.privateKeyToAccount(key);
 
   web3.eth.accounts.wallet.add(signer);
@@ -8,4 +8,4 @@ const addWeb3Account = (web3: Web3, key: string) => {
   return signer;
 };
 
-export default addWeb3Account;
+export default addAccount;

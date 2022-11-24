@@ -146,6 +146,11 @@
   },
   {
     "inputs": [],
+    "name": "RemoveDepositLockedByAuctionDebt",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "TakeNotPastCooldown",
     "type": "error"
   },
@@ -653,19 +658,6 @@
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "accruedDebt",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "accruedDebt_",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -912,11 +904,21 @@
   },
   {
     "inputs": [],
-    "name": "debt",
+    "name": "debtInfo",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "borrowerDebt_",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1060,6 +1062,11 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "collateralScale_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "rate_",
         "type": "uint256"
       }
@@ -1178,35 +1185,6 @@
       {
         "internalType": "uint256",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "deposit_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "lpTokens_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index_",
-        "type": "uint256"
-      }
-    ],
-    "name": "lpsToQuoteTokens",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "quoteTokenAmount_",
         "type": "uint256"
       }
     ],

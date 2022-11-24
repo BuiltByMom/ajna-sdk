@@ -12,6 +12,8 @@ export * from './contracts/get-nft-contract';
 export * from './contracts/get-nft-pool-contract';
 export * from './contracts/get-nft-pool-factory-contract';
 
+export { AjnaSDK } from './classes/ajna';
+
 export const connectors = {
   metaMask: metaMaskPkg,
   metaMaskEnable: metaMaskPkgEnable

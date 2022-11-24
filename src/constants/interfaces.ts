@@ -19,27 +19,49 @@ export type ContractType = Contract & {
   tokenURI: (tokenId: string) => void;
 };
 
-type BaseParams = {
+export type Erc20Address = string;
+
+export type CollateralAddress = Erc20Address;
+
+export type QuoteAddress = Erc20Address;
+
+type BaseParamsWithWeb3 = {
   web3: Web3;
-  poolAddress: string;
-  from: string;
+  poolAddress: Erc20Address;
+  from: Erc20Address;
+};
+
+type BaseParams = {
+  from: Erc20Address;
+};
+
+type BaseParamsWithContract = {
+  contractPool: Contract;
+  from: Erc20Address;
+};
+
+export type GenericApproveParamsRaw = BaseParamsWithWeb3 & {
+  allowance: string | number;
+  tokenAddress: CollateralAddress | QuoteAddress;
 };
 
 export type GenericApproveParams = BaseParams & {
   allowance: string | number;
 };
 
-export type CollateralApproveParams = GenericApproveParams & {
-  collateralAddress: string;
-};
-
-export type QuoteApproveParams = GenericApproveParams & {
-  quoteAddress: string;
+export type PledgeCollateralParamsRaw = BaseParamsWithContract & {
+  to: Erc20Address;
+  collateralToPledge: string | number;
 };
 
 export type PledgeCollateralParams = BaseParams & {
-  to: string;
-  collateralToPledge: string;
+  to: Erc20Address;
+  collateralToPledge: string | number;
+};
+
+export type BorrowParamsRaw = BaseParamsWithContract & {
+  amount: string | number;
+  bucketIndex: number;
 };
 
 export type BorrowParams = BaseParams & {
@@ -47,22 +69,55 @@ export type BorrowParams = BaseParams & {
   bucketIndex: number;
 };
 
-export type QuoteBalanceParams = {
+export type AddQuoteTokenParams = BorrowParams;
+
+export type AddQuoteTokenParamsRaw = BorrowParamsRaw;
+
+export type RemoveQuoteTokenParams = BorrowParams;
+
+export type QuoteBalanceParamsRaw = {
   web3: Web3;
-  quoteAddress: string;
-  tokenAddress: string;
+  quoteAddress: Erc20Address;
+  tokenAddress: Erc20Address;
 };
 
-export type CollateralBalanceParams = {
+export type CollateralBalanceParamsRaw = {
   web3: Web3;
-  collateralAddress: string;
-  tokenAddress: string;
+  collateralAddress: Erc20Address;
+  tokenAddress: Erc20Address;
+};
+
+export type RepayParamsRaw = BaseParamsWithContract & {
+  amount: string | number;
 };
 
 export type RepayParams = BaseParams & {
   amount: string | number;
 };
 
+export type PullCollateralParamsRaw = BaseParamsWithContract & {
+  collateralToPledge: string | number;
+};
+
 export type PullCollateralParams = BaseParams & {
+  collateralToPledge: string | number;
+};
+
+export interface FactoryDeployPoolParams {
+  collateralAddress: Erc20Address;
+  quoteAddress: Erc20Address;
+  userAddress: Erc20Address;
+  interestRate: string;
+}
+
+export type PoolDrawDebtParams = BaseParams & {
+  amount: string | number;
+  bucketIndex: number;
+  collateralToPledge: string | number;
+  to: Erc20Address;
+};
+
+export type PoolRepayDebtParams = BaseParams & {
+  amount: string | number;
   collateralToPledge: string | number;
 };
