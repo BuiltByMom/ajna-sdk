@@ -1,23 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
+import { BigNumberish, Contract, Signer, providers } from 'ethers';
 
-export type ContractType = Contract & {
-  methods?: Record<
-    string,
-    (
-      q?: string | unknown | null,
-      w?: string | unknown | null,
-      e?: string | unknown | null
-    ) => any
-  >;
-  balanceOf: (
-    walletAddress: string,
-    cb: (_error: any, balance: string) => void
-  ) => void;
-  decimals: (cb: (_error: any, decimals: number) => void) => void;
-  tokenURI: (tokenId: string) => void;
-};
+export type SignerOrProvider = Signer | providers.Provider;
+
+export type Provider = providers.Provider;
 
 export type Erc20Address = string;
 
@@ -25,99 +10,97 @@ export type CollateralAddress = Erc20Address;
 
 export type QuoteAddress = Erc20Address;
 
-type BaseParamsWithWeb3 = {
-  web3: Web3;
-  poolAddress: Erc20Address;
-  from: Erc20Address;
-};
-
 type BaseParams = {
-  from: Erc20Address;
+  signer: Signer;
 };
 
-type BaseParamsWithContract = {
+type BaseParamsWithPool = {
   contractPool: Contract;
-  from: Erc20Address;
 };
 
-export type GenericApproveParamsRaw = BaseParamsWithWeb3 & {
-  allowance: string | number;
+export type GenericApproveParamsContract = {
+  provider: SignerOrProvider;
+  poolAddress: Erc20Address;
+  allowance: BigNumberish;
   tokenAddress: CollateralAddress | QuoteAddress;
 };
 
 export type GenericApproveParams = BaseParams & {
-  allowance: string | number;
+  allowance: BigNumberish;
 };
 
-export type PledgeCollateralParamsRaw = BaseParamsWithContract & {
+export type PledgeCollateralParamsContract = BaseParamsWithPool & {
   to: Erc20Address;
-  collateralToPledge: string | number;
+  collateralToPledge: BigNumberish;
 };
 
 export type PledgeCollateralParams = BaseParams & {
   to: Erc20Address;
-  collateralToPledge: string | number;
+  collateralToPledge: BigNumberish;
 };
 
-export type BorrowParamsRaw = BaseParamsWithContract & {
-  amount: string | number;
+export type BorrowParamsContract = BaseParamsWithPool & {
+  amount: BigNumberish;
   bucketIndex: number;
 };
 
 export type BorrowParams = BaseParams & {
-  amount: string | number;
+  amount: BigNumberish;
   bucketIndex: number;
 };
 
-export type AddQuoteTokenParams = BorrowParams;
+export type AddQuoteTokenParams = BaseParams & {
+  amount: BigNumberish;
+  bucketIndex: number;
+};
 
-export type AddQuoteTokenParamsRaw = BorrowParamsRaw;
+export type AddQuoteTokenParamsContract = BorrowParamsContract;
 
 export type RemoveQuoteTokenParams = BorrowParams;
 
-export type QuoteBalanceParamsRaw = {
-  web3: Web3;
+export type QuoteBalanceParamsContract = {
+  provider: SignerOrProvider;
   quoteAddress: Erc20Address;
   tokenAddress: Erc20Address;
 };
 
-export type CollateralBalanceParamsRaw = {
-  web3: Web3;
+export type CollateralBalanceParamsContract = {
+  provider: SignerOrProvider;
   collateralAddress: Erc20Address;
   tokenAddress: Erc20Address;
 };
 
-export type RepayParamsRaw = BaseParamsWithContract & {
-  amount: string | number;
+export type RepayParamsContract = BaseParamsWithPool & {
+  from: Erc20Address;
+  amount: BigNumberish;
 };
 
 export type RepayParams = BaseParams & {
-  amount: string | number;
+  amount: BigNumberish;
 };
 
-export type PullCollateralParamsRaw = BaseParamsWithContract & {
-  collateralToPledge: string | number;
+export type PullCollateralParamsContract = BaseParamsWithPool & {
+  collateralToPledge: BigNumberish;
 };
 
 export type PullCollateralParams = BaseParams & {
-  collateralToPledge: string | number;
+  collateralToPledge: BigNumberish;
 };
 
-export interface FactoryDeployPoolParams {
+export type FactoryDeployPoolParams = BaseParams & {
   collateralAddress: Erc20Address;
   quoteAddress: Erc20Address;
-  userAddress: Erc20Address;
   interestRate: string;
-}
+};
 
 export type PoolDrawDebtParams = BaseParams & {
-  amount: string | number;
+  amount: BigNumberish;
   bucketIndex: number;
-  collateralToPledge: string | number;
+  collateralToPledge: BigNumberish;
   to: Erc20Address;
 };
 
 export type PoolRepayDebtParams = BaseParams & {
-  amount: string | number;
-  collateralToPledge: string | number;
+  amount: BigNumberish;
+  collateralToPledge: BigNumberish;
 };

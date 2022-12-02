@@ -1,11 +1,7 @@
-import Web3 from 'web3';
+import { Wallet, providers } from 'ethers';
 
-const addAccount = (web3: Web3, key: string) => {
-  const signer = web3.eth.accounts.privateKeyToAccount(key);
-
-  web3.eth.accounts.wallet.add(signer);
-
-  return signer;
+const addAccount = (key: string, provider: providers.Provider) => {
+  return new Wallet(key, provider);
 };
 
 export default addAccount;

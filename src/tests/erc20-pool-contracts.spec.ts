@@ -1,43 +1,32 @@
 /* eslint-disable no-console */
-import Web3 from 'web3';
-import dotenv from 'dotenv';
-import toWei from '../utils/to-wei';
-import { TEST_CONFIG as config } from '../constants/config';
 import { AjnaSDK } from '../classes/ajna';
 import { Pool } from '../classes/pool';
-import addAccount from '../utils/add-account';
+import { TEST_CONFIG as config } from '../constants/config';
 import {
-  getBorrowerQuoteBalance,
-  getBorrowerCollateralBalance
+  getBorrowerCollateralBalance,
+  getBorrowerQuoteBalance
 } from '../contracts/get-generic-contract';
+import addAccount from '../utils/add-account';
+import toWei from '../utils/to-wei';
+import dotenv from 'dotenv';
+import { providers } from 'ethers';
 
 dotenv.config();
 
 jest.setTimeout(120000);
 
 describe('Ajna SDK Erc20 Pool tests', () => {
-  const ajna = new AjnaSDK(new Web3(config.ETH_RPC_URL || ''));
+  const provider = new providers.JsonRpcProvider();
+  const ajna = new AjnaSDK(provider);
+  const signerLender = addAccount(config.LENDER_KEY, provider);
+  const signerBorrower = addAccount(config.BORROWER_KEY, provider);
   let pool: Pool = {} as Pool;
-
-  beforeAll(async () => {
-    try {
-      // Creating a signing account from a private key LENDER
-      addAccount(ajna.web3, config.LENDER_KEY);
-
-      // Creating a signing account from a private key BORROWER
-      addAccount(ajna.web3, config.BORROWER_KEY);
-    } catch (err) {
-      console.log(err);
-
-      throw err;
-    }
-  });
 
   it('should confirm AjnaSDK pool succesfully', async () => {
     pool = await ajna.factory.deployPool({
+      signer: signerLender,
       collateralAddress: config.COLLATERAL_ADDRESS,
       quoteAddress: config.QUOTE_ADDRESS,
-      userAddress: config.LENDER,
       interestRate: '0.05'
     });
 
@@ -49,14 +38,14 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralToPledge = 100;
 
     await pool.collateralApprove({
-      allowance,
-      from: config.BORROWER
+      signer: signerBorrower,
+      allowance
     });
 
     const receipt = await pool.pledgeCollateral({
+      signer: signerBorrower,
       to: config.BORROWER,
-      collateralToPledge,
-      from: config.BORROWER
+      collateralToPledge
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -68,14 +57,14 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const allowance = 100000000;
 
     await pool.quoteApprove({
-      allowance,
-      from: config.LENDER
+      signer: signerLender,
+      allowance
     });
 
     const receipt = await pool.addQuoteToken({
+      signer: signerLender,
       amount: quoteAmount,
-      bucketIndex,
-      from: config.LENDER
+      bucketIndex
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -85,19 +74,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndex = 5000;
     const amountToBorrow = 10;
     const currentQuotaBalance = await getBorrowerQuoteBalance({
-      web3: ajna.web3,
+      provider: ajna.provider,
       quoteAddress: config.QUOTE_ADDRESS,
       tokenAddress: config.BORROWER
     });
 
     await pool.borrow({
+      signer: signerBorrower,
       amount: amountToBorrow,
-      bucketIndex,
-      from: config.BORROWER
+      bucketIndex
     });
 
     const updatedQuotaBalance = await getBorrowerQuoteBalance({
-      web3: ajna.web3,
+      provider: ajna.provider,
       quoteAddress: config.QUOTE_ADDRESS,
       tokenAddress: config.BORROWER
     });
@@ -112,13 +101,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const amountToRepay = 10;
 
     await pool.quoteApprove({
-      allowance,
-      from: config.BORROWER
+      signer: signerBorrower,
+      allowance
     });
 
     const receipt = await pool.repay({
-      amount: amountToRepay,
-      from: config.BORROWER
+      signer: signerBorrower,
+      amount: amountToRepay
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -128,24 +117,24 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const allowance = 100000000;
     const collateralToPledge = 10;
     const previousCollateralQuotaBalance = await getBorrowerCollateralBalance({
-      web3: ajna.web3,
+      provider: ajna.provider,
       collateralAddress: config.QUOTE_ADDRESS,
       tokenAddress: config.BORROWER
     });
 
     await pool.quoteApprove({
-      allowance,
-      from: config.BORROWER
+      signer: signerBorrower,
+      allowance
     });
 
     await pool.pullCollateral({
-      collateralToPledge,
-      from: config.BORROWER
+      signer: signerBorrower,
+      collateralToPledge
     });
 
     expect(
       await getBorrowerCollateralBalance({
-        web3: ajna.web3,
+        provider: ajna.provider,
         collateralAddress: config.QUOTE_ADDRESS,
         tokenAddress: config.BORROWER
       })
@@ -158,20 +147,20 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndex = 2000;
 
     await pool.quoteApprove({
-      allowance,
-      from: config.LENDER
+      signer: signerLender,
+      allowance
     });
 
     await pool.addQuoteToken({
+      signer: signerLender,
       amount: quoteAmount,
-      bucketIndex,
-      from: config.LENDER
+      bucketIndex
     });
 
     const receipt = await pool.removeQuoteToken({
+      signer: signerLender,
       amount: quoteAmount,
-      bucketIndex,
-      from: config.LENDER
+      bucketIndex
     });
 
     expect(receipt.transactionHash).not.toBe('');

@@ -1,31 +1,29 @@
-import Web3 from 'web3';
+import {
+  Erc20Address,
+  FactoryDeployPoolParams,
+  SignerOrProvider
+} from '../constants/interfaces';
 import {
   deployPool,
   deployedPools
 } from '../contracts/get-pool-factory-contract';
-import { Erc20Address, FactoryDeployPoolParams } from 'constants/interfaces';
 import { FungiblePool } from './fungible-pool';
+import { utils } from 'ethers';
 
 class Factory {
-  web3: Web3;
+  provider: SignerOrProvider;
 
-  constructor(web3: Web3) {
-    this.web3 = web3;
+  constructor(provider: SignerOrProvider) {
+    this.provider = provider;
   }
 
   deployPool = async ({
+    signer,
     collateralAddress,
     quoteAddress,
-    userAddress,
     interestRate
   }: FactoryDeployPoolParams) => {
-    await deployPool(
-      this.web3,
-      collateralAddress,
-      quoteAddress,
-      userAddress,
-      interestRate
-    );
+    await deployPool(signer, collateralAddress, quoteAddress, interestRate);
 
     return await this.getPool(collateralAddress, quoteAddress);
   };
@@ -40,7 +38,7 @@ class Factory {
     );
 
     const newPool = new FungiblePool(
-      this.web3,
+      this.provider,
       poolAddress,
       collateralAddress,
       quoteAddress
@@ -53,7 +51,16 @@ class Factory {
     collateralAddress: Erc20Address,
     quoteAddress: Erc20Address
   ) => {
-    return await deployedPools(this.web3, collateralAddress, quoteAddress);
+    const nonSubsetHash = utils.keccak256(
+      utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH')
+    );
+
+    return await deployedPools(
+      this.provider,
+      collateralAddress,
+      quoteAddress,
+      nonSubsetHash
+    );
   };
 }
 

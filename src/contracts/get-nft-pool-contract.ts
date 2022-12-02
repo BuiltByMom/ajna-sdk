@@ -1,7 +1,10 @@
-import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
 import ERC721PoolFactory from '../abis/ERC721PoolFactory.json';
+import { SignerOrProvider } from '../constants/interfaces';
+import { ethers } from 'ethers';
 
-export const getNftPoolContract = (web3: Web3, poolAddress: string) => {
-  return new web3.eth.Contract(ERC721PoolFactory as AbiItem[], poolAddress);
+export const getNftPoolContract = (
+  contractAddress: string,
+  provider: SignerOrProvider
+) => {
+  return new ethers.Contract(contractAddress, ERC721PoolFactory, provider);
 };

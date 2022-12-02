@@ -1,40 +1,39 @@
+// import {
+//   // PoolDrawDebtParams,
+//   PoolRepayDebtParams
+// } from '../constants/interfaces';
 import { Pool } from './pool';
-import {
-  PoolDrawDebtParams,
-  PoolRepayDebtParams
-} from '../constants/interfaces';
 
 class FungiblePool extends Pool {
   // constructor() { }
 
-  drawDebt = async ({
-    to,
-    collateralToPledge,
-    from,
-    amount,
-    bucketIndex
-  }: PoolDrawDebtParams) => {
-    await this.pledgeCollateral({
-      to,
-      collateralToPledge,
-      from
-    });
+  // drawDebt = async ({
+  //   to,
+  //   collateralToPledge,
+  //   from,
+  //   amount,
+  //   bucketIndex
+  // }: PoolDrawDebtParams) => {
+  //   await this.pledgeCollateral({
+  //     to,
+  //     collateralToPledge
+  //   });
 
-    await this.borrow({ amount, bucketIndex, from });
-  };
+  //   await this.borrow({ amount, bucketIndex, from });
+  // };
 
-  repayDebt = async ({
-    collateralToPledge,
-    amount,
-    from
-  }: PoolRepayDebtParams) => {
-    await this.repay({
-      amount,
-      from
-    });
+  // repayDebt = async ({
+  //   collateralToPledge,
+  //   amount,
+  //   from
+  // }: PoolRepayDebtParams) => {
+  //   await this.repay({
+  //     amount,
+  //     from
+  //   });
 
-    await this.pullCollateral({ collateralToPledge, from });
-  };
+  //   await this.pullCollateral({ collateralToPledge, from });
+  // };
 
   getLoan = async () => {
     return null;

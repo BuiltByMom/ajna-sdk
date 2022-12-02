@@ -1,49 +1,53 @@
-import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
-import { Contract } from 'web3-eth-contract';
-import toWei from '../utils/to-wei';
-import nonSubsetHash from '../utils/non-subset-hash';
 import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
+import { Erc20Address, SignerOrProvider } from '../constants/interfaces';
+import checksumAddress from '../utils/checksum-address';
+import toWei from '../utils/to-wei';
+import { Contract, Signer, ethers } from 'ethers';
 
-export const getPoolFactoryContract = (web3: Web3) => {
-  return new web3.eth.Contract(
-    erc20PoolFactoryAbi as AbiItem[],
-    CONTRACT_ERC20_POOL_FACTORY
+export const getPoolFactoryContract = (provider: SignerOrProvider) => {
+  return new ethers.Contract(
+    checksumAddress(CONTRACT_ERC20_POOL_FACTORY),
+    erc20PoolFactoryAbi,
+    provider
   );
 };
 
 export const deployPool = async (
-  web3: Web3,
+  signer: Signer,
   collateralAddress: string,
   quoteAddress: string,
-  from: string,
-  interestRate: string | number
+  interestRate: string
 ) => {
-  const contractInstance: Contract = getPoolFactoryContract(web3);
+  const contractInstance: Contract = getPoolFactoryContract(signer);
   const interestRateParam = toWei(interestRate);
 
-  const poolCreationTx = contractInstance.methods.deployPool(
+  const overrides = {
+    from: await signer.getAddress(),
+    gasLimit: 1000000
+  };
+
+  const tx = await contractInstance.deployPool(
     collateralAddress,
     quoteAddress,
-    interestRateParam
+    interestRateParam,
+    overrides
   );
 
-  return await poolCreationTx.send({
-    from,
-    gas: await poolCreationTx.estimateGas()
-  });
+  return await tx.wait();
 };
 
 export const deployedPools = async (
-  web3: Web3,
-  collateralAddress: string,
-  quoteAddress: string
+  provider: SignerOrProvider,
+  collateralAddress: Erc20Address,
+  quoteAddress: Erc20Address,
+  nonSubsetHash: string
 ) => {
-  const contractInstance: Contract = getPoolFactoryContract(web3);
-  const nonSubsetHashParam = nonSubsetHash();
+  const contractInstance: Contract = getPoolFactoryContract(provider);
 
-  return await contractInstance.methods
-    .deployedPools(nonSubsetHashParam, collateralAddress, quoteAddress)
-    .call();
+  return await contractInstance.deployedPools(
+    nonSubsetHash,
+    collateralAddress,
+    quoteAddress
+  );
 };

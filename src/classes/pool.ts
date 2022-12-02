@@ -1,129 +1,134 @@
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
 import {
-  getPoolContract,
+  AddQuoteTokenParams,
+  BorrowParams,
+  GenericApproveParams,
+  PledgeCollateralParams,
+  PullCollateralParams,
+  RemoveQuoteTokenParams,
+  RepayParams,
+  SignerOrProvider
+} from '../constants/interfaces';
+import {
   addQuoteToken,
+  approve,
   borrow,
-  repay,
+  getPoolContract,
   pledgeCollateral,
   pullCollateral,
   removeQuoteToken,
-  approve
+  repay
 } from '../contracts/get-pool-contract';
-import {
-  AddQuoteTokenParams,
-  PledgeCollateralParams,
-  BorrowParams,
-  RepayParams,
-  PullCollateralParams,
-  GenericApproveParams,
-  RemoveQuoteTokenParams
-} from '../constants/interfaces';
+import { Contract } from 'ethers';
 
 class Pool {
-  web3: Web3;
+  provider: SignerOrProvider;
+  contract: Contract;
   poolAddress: string;
   quoteAddress: string;
   collateralAddress: string;
-  contract: Contract;
 
   constructor(
-    web3: Web3,
+    provider: SignerOrProvider,
     poolAddress: string,
     collateralAddress: string,
     quoteAddress: string
   ) {
-    this.web3 = web3;
+    this.provider = provider;
     this.poolAddress = poolAddress;
-    this.contract = getPoolContract(this.web3, poolAddress);
+    this.contract = getPoolContract(poolAddress, this.provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
   }
 
-  collateralApprove = async ({ allowance, from }: GenericApproveParams) => {
+  collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
     return await approve({
-      web3: this.web3,
+      provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.collateralAddress,
-      allowance,
-      from
+      allowance
     });
   };
 
-  quoteApprove = async ({ allowance, from }: GenericApproveParams) => {
+  quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
     return await approve({
-      web3: this.web3,
+      provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.quoteAddress,
-      allowance,
-      from
+      allowance
     });
   };
 
   pledgeCollateral = async ({
+    signer,
     to,
-    collateralToPledge,
-    from
+    collateralToPledge
   }: PledgeCollateralParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await pledgeCollateral({
-      contractPool: this.contract,
+      contractPool: contractPoolWithSigner,
       to,
-      collateralToPledge,
-      from
+      collateralToPledge
     });
   };
 
   addQuoteToken = async ({
+    signer,
     amount,
-    bucketIndex,
-    from
+    bucketIndex
   }: AddQuoteTokenParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await addQuoteToken({
-      contractPool: this.contract,
+      contractPool: contractPoolWithSigner,
       amount,
-      bucketIndex,
-      from
+      bucketIndex
     });
   };
 
-  borrow = async ({ amount, bucketIndex, from }: BorrowParams) => {
+  borrow = async ({ signer, amount, bucketIndex }: BorrowParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await borrow({
-      contractPool: this.contract,
+      contractPool: contractPoolWithSigner,
       amount,
-      bucketIndex,
-      from
+      bucketIndex
     });
   };
 
-  repay = async ({ amount, from }: RepayParams) => {
+  repay = async ({ signer, amount }: RepayParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await repay({
-      contractPool: this.contract,
+      contractPool: contractPoolWithSigner,
       amount,
-      from
+      from: await signer.getAddress()
     });
   };
 
   pullCollateral = async ({
-    collateralToPledge,
-    from
+    signer,
+    collateralToPledge
   }: PullCollateralParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await pullCollateral({
-      contractPool: this.contract,
-      collateralToPledge,
-      from
+      contractPool: contractPoolWithSigner,
+      collateralToPledge
     });
   };
 
   removeQuoteToken = async ({
+    signer,
     amount,
-    bucketIndex,
-    from
+    bucketIndex
   }: RemoveQuoteTokenParams) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
     return await removeQuoteToken({
-      contractPool: this.contract,
+      contractPool: contractPoolWithSigner,
       amount,
-      bucketIndex,
-      from
+      bucketIndex
     });
   };
 

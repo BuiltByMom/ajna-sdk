@@ -1,107 +1,99 @@
-import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
+import ERC20Pool from '../abis/ERC20Pool.json';
 import {
-  BorrowParamsRaw,
-  PledgeCollateralParamsRaw,
-  PullCollateralParamsRaw,
-  RepayParamsRaw,
-  GenericApproveParamsRaw,
-  AddQuoteTokenParamsRaw,
-  Erc20Address
+  AddQuoteTokenParamsContract,
+  BorrowParamsContract,
+  Erc20Address,
+  GenericApproveParamsContract,
+  PledgeCollateralParamsContract,
+  PullCollateralParamsContract,
+  RepayParamsContract,
+  SignerOrProvider
 } from '../constants/interfaces';
 import toWei from '../utils/to-wei';
-import ERC20Pool from '../abis/ERC20Pool.json';
 import { getGenericContract } from './get-generic-contract';
+import { ethers } from 'ethers';
 
-export const getPoolContract = (web3: Web3, poolAddress: Erc20Address) => {
-  return new web3.eth.Contract(ERC20Pool as AbiItem[], poolAddress);
+export const getPoolContract = (
+  poolAddress: Erc20Address,
+  provider: SignerOrProvider
+) => {
+  return new ethers.Contract(poolAddress, ERC20Pool, provider);
 };
 
 export const pledgeCollateral = async ({
   contractPool,
   to,
-  collateralToPledge,
-  from
-}: PledgeCollateralParamsRaw) => {
-  return await contractPool.methods
-    .pledgeCollateral(to, toWei(collateralToPledge))
-    .send({
-      from,
-      gas: 200000
-    });
+  collateralToPledge
+}: PledgeCollateralParamsContract) => {
+  const tx = await contractPool.pledgeCollateral(
+    to,
+    toWei(collateralToPledge),
+    {
+      gasLimit: 1000000
+    }
+  );
+
+  return tx.wait();
 };
 
 export const borrow = async ({
   contractPool,
   amount,
-  bucketIndex,
-  from
-}: BorrowParamsRaw) => {
-  return await contractPool.methods.borrow(toWei(amount), bucketIndex).send({
-    from,
-    gas: 2000000
+  bucketIndex
+}: BorrowParamsContract) => {
+  return await contractPool.borrow(toWei(amount), bucketIndex, {
+    gasLimit: 1000000
   });
 };
 
 export const addQuoteToken = async ({
   contractPool,
   amount,
-  bucketIndex,
-  from
-}: AddQuoteTokenParamsRaw) => {
-  return await contractPool.methods
-    .addQuoteToken(toWei(amount), bucketIndex)
-    .send({
-      from: from,
-      gas: 2000000
-    });
+  bucketIndex
+}: AddQuoteTokenParamsContract) => {
+  return await contractPool.addQuoteToken(toWei(amount), bucketIndex, {
+    gasLimit: 1000000
+  });
 };
 
-export const repay = async ({ contractPool, amount, from }: RepayParamsRaw) => {
-  return await contractPool.methods.repay(from, toWei(amount)).send({
-    from: from,
-    gas: 2000000
+export const repay = async ({
+  from,
+  contractPool,
+  amount
+}: RepayParamsContract) => {
+  return await contractPool.repay(from, toWei(amount), {
+    gasLimit: 1000000
   });
 };
 
 export const pullCollateral = async ({
   contractPool,
-  collateralToPledge,
-  from
-}: PullCollateralParamsRaw) => {
-  return await contractPool.methods
-    .pullCollateral(toWei(collateralToPledge))
-    .send({
-      from,
-      gas: 2000000
-    });
+  collateralToPledge
+}: PullCollateralParamsContract) => {
+  return await contractPool.pullCollateral(toWei(collateralToPledge), {
+    gasLimit: 1000000
+  });
 };
 
 export const removeQuoteToken = async ({
   contractPool,
   amount,
-  bucketIndex,
-  from
-}: BorrowParamsRaw) => {
-  return await contractPool.methods
-    .removeQuoteToken(toWei(amount), bucketIndex)
-    .send({
-      from: from,
-      gas: 2000000
-    });
+  bucketIndex
+}: BorrowParamsContract) => {
+  return await contractPool.removeQuoteToken(toWei(amount), bucketIndex, {
+    gasLimit: 1000000
+  });
 };
 
 export const approve = async ({
-  web3,
+  provider,
   poolAddress,
   allowance,
-  tokenAddress,
-  from
-}: GenericApproveParamsRaw) => {
-  const contract = getGenericContract(web3, tokenAddress);
+  tokenAddress
+}: GenericApproveParamsContract) => {
+  const contract = getGenericContract(tokenAddress, provider);
 
-  return await contract.methods.approve(poolAddress, toWei(allowance)).send({
-    from,
-    gas: 2000000
+  return await contract.approve(poolAddress, toWei(allowance), {
+    gasLimit: 1000000
   });
 };

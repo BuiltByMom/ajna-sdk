@@ -1,7 +1,7 @@
-import web3 from 'web3';
+import { BigNumberish, ethers } from 'ethers';
 
-const toWei = (value: number | string) => {
-  return web3.utils.toWei(String(value), 'ether');
+const toWei = (value: BigNumberish) => {
+  return ethers.utils.parseUnits(String(value), 'ether');
 };
 
 export default toWei;
