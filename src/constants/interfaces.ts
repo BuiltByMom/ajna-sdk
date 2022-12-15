@@ -26,37 +26,65 @@ export type GenericApproveParamsContract = {
 };
 
 export type GenericApproveParams = BaseParams & {
-  allowance: BigNumberish;
+  allowance: number;
 };
 
-export type PledgeCollateralParamsContract = BaseParamsWithPool & {
-  to: Erc20Address;
+export type DrawDebtParamsContract = BaseParamsWithPool & {
+  borrowerAddress: Erc20Address;
+  amountToBorrow: BigNumberish;
+  collateralToPledge: BigNumberish;
+  limitIndex: number;
+};
+
+export type DrawDebtParams = BaseParams & {
+  borrowerAddress: Erc20Address;
+  amountToBorrow: BigNumberish;
+  limitIndex: number;
   collateralToPledge: BigNumberish;
 };
 
-export type PledgeCollateralParams = BaseParams & {
-  to: Erc20Address;
-  collateralToPledge: BigNumberish;
+export type RepayDebtParamsContract = BaseParamsWithPool & {
+  borrowerAddress: Erc20Address;
+  collateralAmountToPull: BigNumberish;
+  maxQuoteTokenAmountToRepay: BigNumberish;
 };
 
-export type BorrowParamsContract = BaseParamsWithPool & {
-  amount: BigNumberish;
-  bucketIndex: number;
+export type RepayDebtParams = BaseParams & {
+  collateralAmountToPull: number;
+  maxQuoteTokenAmountToRepay: number;
 };
 
-export type BorrowParams = BaseParams & {
+export type AddQuoteTokenParamsContract = BaseParamsWithPool & {
   amount: BigNumberish;
   bucketIndex: number;
 };
 
 export type AddQuoteTokenParams = BaseParams & {
-  amount: BigNumberish;
+  amount: number;
   bucketIndex: number;
 };
 
-export type AddQuoteTokenParamsContract = BorrowParamsContract;
+export type RemoveQuoteTokenParamsContract = BaseParamsWithPool & {
+  maxAmount: BigNumberish;
+  bucketIndex: number;
+};
 
-export type RemoveQuoteTokenParams = BorrowParams;
+export type RemoveQuoteTokenParams = BaseParams & {
+  maxAmount: number;
+  bucketIndex: number;
+};
+
+export type MoveQuoteTokenParamsContract = BaseParamsWithPool & {
+  maxAmountToMove: BigNumberish;
+  fromIndex: number;
+  toIndex: number;
+};
+
+export type MoveQuoteTokenParams = BaseParams & {
+  maxAmountToMove: number;
+  fromIndex: number;
+  toIndex: number;
+};
 
 export type QuoteBalanceParamsContract = {
   provider: SignerOrProvider;
@@ -79,13 +107,13 @@ export type RepayParams = BaseParams & {
   amount: BigNumberish;
 };
 
-export type PullCollateralParamsContract = BaseParamsWithPool & {
-  collateralToPledge: BigNumberish;
-};
+// export type PullCollateralParamsContract = BaseParamsWithPool & {
+//   collateralAmountToPull: BigNumberish;
+// };
 
-export type PullCollateralParams = BaseParams & {
-  collateralToPledge: BigNumberish;
-};
+// export type PullCollateralParams = BaseParams & {
+//   collateralAmountToPull: BigNumberish;
+// };
 
 export type FactoryDeployPoolParams = BaseParams & {
   collateralAddress: Erc20Address;
@@ -93,14 +121,24 @@ export type FactoryDeployPoolParams = BaseParams & {
   interestRate: string;
 };
 
-export type PoolDrawDebtParams = BaseParams & {
-  amount: BigNumberish;
-  bucketIndex: number;
-  collateralToPledge: BigNumberish;
-  to: Erc20Address;
+export type BorrowerInfoParamsContract = BaseParamsWithPool & {
+  poolAddress: Erc20Address;
+  borrowerAddress: Erc20Address;
 };
 
-export type PoolRepayDebtParams = BaseParams & {
-  amount: BigNumberish;
-  collateralToPledge: BigNumberish;
+export type PoolPricesInfoParamsContract = BaseParamsWithPool & {
+  poolAddress: Erc20Address;
+};
+
+export type PoolPriceToIndexParamsContract = BaseParamsWithPool & {
+  price: BigNumberish;
+};
+
+export type PoolBucketInfoParamsContract = BaseParamsWithPool & {
+  poolAddress: Erc20Address;
+  index: number;
+};
+
+export type PoolIndexToPriceParamsContract = BaseParamsWithPool & {
+  index: number;
 };

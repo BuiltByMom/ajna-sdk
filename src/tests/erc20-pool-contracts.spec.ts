@@ -1,26 +1,20 @@
-/* eslint-disable no-console */
 import { AjnaSDK } from '../classes/ajna';
-import { Pool } from '../classes/pool';
+import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
-import {
-  getBorrowerCollateralBalance,
-  getBorrowerQuoteBalance
-} from '../contracts/get-generic-contract';
 import addAccount from '../utils/add-account';
-import toWei from '../utils/to-wei';
 import dotenv from 'dotenv';
 import { providers } from 'ethers';
 
 dotenv.config();
 
-jest.setTimeout(120000);
+jest.setTimeout(1200000);
 
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider();
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccount(config.LENDER_KEY, provider);
   const signerBorrower = addAccount(config.BORROWER_KEY, provider);
-  let pool: Pool = {} as Pool;
+  let pool: FungiblePool = {} as FungiblePool;
 
   it('should confirm AjnaSDK pool succesfully', async () => {
     pool = await ajna.factory.deployPool({
@@ -33,26 +27,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(pool.poolAddress).not.toBe('');
   });
 
-  it('should use pledgeCollateral succesfully', async () => {
-    const allowance = 1000000000;
-    const collateralToPledge = 100;
-
-    await pool.collateralApprove({
-      signer: signerBorrower,
-      allowance
-    });
-
-    const receipt = await pool.pledgeCollateral({
-      signer: signerBorrower,
-      to: config.BORROWER,
-      collateralToPledge
-    });
-
-    expect(receipt.transactionHash).not.toBe('');
-  });
-
-  it('should use addQuoteToken succesfully', async () => {
-    const quoteAmount = 10;
+  it('should use addLiquidity succesfully', async () => {
+    const quoteAmount = 100;
     const bucketIndex = 2000;
     const allowance = 100000000;
 
@@ -61,7 +37,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance
     });
 
-    const receipt = await pool.addQuoteToken({
+    const receipt = await pool.addLiquidity({
       signer: signerLender,
       amount: quoteAmount,
       bucketIndex
@@ -70,78 +46,48 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should use borrow quote tokens succesfully', async () => {
-    const bucketIndex = 5000;
-    const amountToBorrow = 10;
-    const currentQuotaBalance = await getBorrowerQuoteBalance({
-      provider: ajna.provider,
-      quoteAddress: config.QUOTE_ADDRESS,
-      tokenAddress: config.BORROWER
-    });
+  it('should use drawDebt succesfully', async () => {
+    const allowance = 100000;
+    const amountToBorrow = 1;
+    const collateralToPledge = 3;
+    const limitIndex = 2000;
 
-    await pool.borrow({
-      signer: signerBorrower,
-      amount: amountToBorrow,
-      bucketIndex
-    });
-
-    const updatedQuotaBalance = await getBorrowerQuoteBalance({
-      provider: ajna.provider,
-      quoteAddress: config.QUOTE_ADDRESS,
-      tokenAddress: config.BORROWER
-    });
-
-    expect(Number(updatedQuotaBalance)).toBe(
-      Number(currentQuotaBalance) + Number(toWei(amountToBorrow))
-    );
-  });
-
-  it('should use repay loan with debt succesfully', async () => {
-    const allowance = 100000000;
-    const amountToRepay = 10;
-
-    await pool.quoteApprove({
+    await pool.collateralApprove({
       signer: signerBorrower,
       allowance
     });
 
-    const receipt = await pool.repay({
+    const receipt = await pool.drawDebt({
       signer: signerBorrower,
-      amount: amountToRepay
+      borrowerAddress: config.BORROWER,
+      amountToBorrow,
+      collateralToPledge,
+      limitIndex
     });
 
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should use pullCollateral succesfully', async () => {
+  it('should use repayDebt succesfully', async () => {
     const allowance = 100000000;
-    const collateralToPledge = 10;
-    const previousCollateralQuotaBalance = await getBorrowerCollateralBalance({
-      provider: ajna.provider,
-      collateralAddress: config.QUOTE_ADDRESS,
-      tokenAddress: config.BORROWER
-    });
+    const collateralAmountToPull = 1;
+    const maxQuoteTokenAmountToRepay = 1;
 
     await pool.quoteApprove({
       signer: signerBorrower,
       allowance
     });
 
-    await pool.pullCollateral({
+    const receipt = await pool.repayDebt({
       signer: signerBorrower,
-      collateralToPledge
+      collateralAmountToPull,
+      maxQuoteTokenAmountToRepay
     });
 
-    expect(
-      await getBorrowerCollateralBalance({
-        provider: ajna.provider,
-        collateralAddress: config.QUOTE_ADDRESS,
-        tokenAddress: config.BORROWER
-      })
-    ).toBe(previousCollateralQuotaBalance + collateralToPledge);
+    expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should use removeQuoteToken succesfully', async () => {
+  it('should use removeLiquidity succesfully', async () => {
     const allowance = 100000;
     const quoteAmount = 10;
     const bucketIndex = 2000;
@@ -151,18 +97,51 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance
     });
 
-    await pool.addQuoteToken({
+    const receipt = await pool.removeLiquidity({
       signer: signerLender,
-      amount: quoteAmount,
-      bucketIndex
-    });
-
-    const receipt = await pool.removeQuoteToken({
-      signer: signerLender,
-      amount: quoteAmount,
+      maxAmount: quoteAmount,
       bucketIndex
     });
 
     expect(receipt.transactionHash).not.toBe('');
+  });
+
+  it('should use moveLiquidity succesfully', async () => {
+    const allowance = 100000;
+    const maxAmountToMove = 10;
+    const bucketIndexFrom = 2000;
+    const bucketIndexTo = 2001;
+
+    await pool.quoteApprove({
+      signer: signerLender,
+      allowance
+    });
+
+    const receipt = await pool.moveLiquidity({
+      signer: signerLender,
+      maxAmountToMove,
+      fromIndex: bucketIndexFrom,
+      toIndex: bucketIndexTo
+    });
+
+    expect(receipt.transactionHash).not.toBe('');
+  });
+
+  it('should use getLoan succesfully', async () => {
+    const loan = await pool.getLoan(await signerBorrower.getAddress());
+
+    expect(loan.toString()).not.toBe('');
+  });
+
+  it('should use getPrices succesfully', async () => {
+    const prices = await pool.getPrices();
+
+    expect(prices).not.toBe('');
+  });
+
+  it('should use getStats succesfully', async () => {
+    const stats = await pool.getStats();
+
+    expect(stats).not.toBe('');
   });
 });

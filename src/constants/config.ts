@@ -8,6 +8,8 @@ export const CONTRACT_ERC20_POOL_FACTORY =
 export const CONTRACT_ERC721_POOL_FACTORY =
   process.env.AJNA_CONTRACT_ERC721_POOL_FACTORY || '';
 
+export const POOL_UTILS = process.env.AJNA_POOL_UTILS || '';
+
 export const TEST_CONFIG = {
   ETH_RPC_URL: process.env.AJNA_ETH_RPC_URL || '',
   COLLATERAL_ADDRESS: process.env.AJNA_COLLATERAL_ADDRESS || '',

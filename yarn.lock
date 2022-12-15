@@ -3441,6 +3441,11 @@ touch@^3.1.0:
   dependencies:
     nopt "~1.0.10"
 
+ts-error@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npmjs.org/ts-error/-/ts-error-1.0.6.tgz#277496f2a28de6c184cfce8dfd5cdd03a4e6b0fc"
+  integrity sha512-tLJxacIQUM82IR7JO1UUkKlYuUTmoY9HBJAmNWFzheSlDS5SPMcNIepejHJa4BpPQLAcbRhRf3GDJzyj6rbKvA==
+
 ts-jest@^28.0.7:
   version "28.0.8"
   resolved "https://registry.npmjs.org/ts-jest/-/ts-jest-28.0.8.tgz#cd204b8e7a2f78da32cf6c95c9a6165c5b99cc73"

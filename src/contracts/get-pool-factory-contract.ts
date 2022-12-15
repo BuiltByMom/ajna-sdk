@@ -22,16 +22,14 @@ export const deployPool = async (
   const contractInstance: Contract = getPoolFactoryContract(signer);
   const interestRateParam = toWei(interestRate);
 
-  const overrides = {
-    from: await signer.getAddress(),
-    gasLimit: 1000000
-  };
-
   const tx = await contractInstance.deployPool(
     collateralAddress,
     quoteAddress,
     interestRateParam,
-    overrides
+    {
+      from: await signer.getAddress(),
+      gasLimit: 1000000
+    }
   );
 
   return await tx.wait();

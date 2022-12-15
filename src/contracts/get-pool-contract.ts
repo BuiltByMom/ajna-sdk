@@ -1,15 +1,14 @@
 import ERC20Pool from '../abis/ERC20Pool.json';
 import {
   AddQuoteTokenParamsContract,
-  BorrowParamsContract,
+  DrawDebtParamsContract,
   Erc20Address,
   GenericApproveParamsContract,
-  PledgeCollateralParamsContract,
-  PullCollateralParamsContract,
-  RepayParamsContract,
+  MoveQuoteTokenParamsContract,
+  RemoveQuoteTokenParamsContract,
+  RepayDebtParamsContract,
   SignerOrProvider
 } from '../constants/interfaces';
-import toWei from '../utils/to-wei';
 import { getGenericContract } from './get-generic-contract';
 import { ethers } from 'ethers';
 
@@ -20,14 +19,18 @@ export const getPoolContract = (
   return new ethers.Contract(poolAddress, ERC20Pool, provider);
 };
 
-export const pledgeCollateral = async ({
+export const drawDebt = async ({
   contractPool,
-  to,
+  borrowerAddress,
+  amountToBorrow,
+  limitIndex,
   collateralToPledge
-}: PledgeCollateralParamsContract) => {
-  const tx = await contractPool.pledgeCollateral(
-    to,
-    toWei(collateralToPledge),
+}: DrawDebtParamsContract) => {
+  const tx = await contractPool.drawDebt(
+    borrowerAddress,
+    amountToBorrow,
+    limitIndex,
+    collateralToPledge,
     {
       gasLimit: 1000000
     }
@@ -36,14 +39,20 @@ export const pledgeCollateral = async ({
   return tx.wait();
 };
 
-export const borrow = async ({
+export const repayDebt = async ({
   contractPool,
-  amount,
-  bucketIndex
-}: BorrowParamsContract) => {
-  return await contractPool.borrow(toWei(amount), bucketIndex, {
-    gasLimit: 1000000
-  });
+  borrowerAddress,
+  collateralAmountToPull,
+  maxQuoteTokenAmountToRepay
+}: RepayDebtParamsContract) => {
+  return await contractPool.repayDebt(
+    borrowerAddress,
+    collateralAmountToPull,
+    maxQuoteTokenAmountToRepay,
+    {
+      gasLimit: 1000000
+    }
+  );
 };
 
 export const addQuoteToken = async ({
@@ -51,36 +60,33 @@ export const addQuoteToken = async ({
   amount,
   bucketIndex
 }: AddQuoteTokenParamsContract) => {
-  return await contractPool.addQuoteToken(toWei(amount), bucketIndex, {
+  return await contractPool.addQuoteToken(amount, bucketIndex, {
     gasLimit: 1000000
   });
 };
 
-export const repay = async ({
-  from,
+export const moveQuoteToken = async ({
   contractPool,
-  amount
-}: RepayParamsContract) => {
-  return await contractPool.repay(from, toWei(amount), {
-    gasLimit: 1000000
-  });
-};
-
-export const pullCollateral = async ({
-  contractPool,
-  collateralToPledge
-}: PullCollateralParamsContract) => {
-  return await contractPool.pullCollateral(toWei(collateralToPledge), {
-    gasLimit: 1000000
-  });
+  maxAmountToMove,
+  fromIndex,
+  toIndex
+}: MoveQuoteTokenParamsContract) => {
+  return await contractPool.moveQuoteToken(
+    maxAmountToMove,
+    fromIndex,
+    toIndex,
+    {
+      gasLimit: 1000000
+    }
+  );
 };
 
 export const removeQuoteToken = async ({
   contractPool,
-  amount,
+  maxAmount,
   bucketIndex
-}: BorrowParamsContract) => {
-  return await contractPool.removeQuoteToken(toWei(amount), bucketIndex, {
+}: RemoveQuoteTokenParamsContract) => {
+  return await contractPool.removeQuoteToken(maxAmount, bucketIndex, {
     gasLimit: 1000000
   });
 };
@@ -93,7 +99,7 @@ export const approve = async ({
 }: GenericApproveParamsContract) => {
   const contract = getGenericContract(tokenAddress, provider);
 
-  return await contract.approve(poolAddress, toWei(allowance), {
+  return await contract.approve(poolAddress, allowance, {
     gasLimit: 1000000
   });
 };

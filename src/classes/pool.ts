@@ -1,23 +1,20 @@
 import {
   AddQuoteTokenParams,
-  BorrowParams,
   GenericApproveParams,
-  PledgeCollateralParams,
-  PullCollateralParams,
+  MoveQuoteTokenParams,
+  Provider,
   RemoveQuoteTokenParams,
-  RepayParams,
   SignerOrProvider
 } from '../constants/interfaces';
 import {
   addQuoteToken,
   approve,
-  borrow,
   getPoolContract,
-  pledgeCollateral,
-  pullCollateral,
-  removeQuoteToken,
-  repay
+  moveQuoteToken,
+  removeQuoteToken
 } from '../contracts/get-pool-contract';
+import toWei from '../utils/to-wei';
+import { PoolUtils } from './pool-utils';
 import { Contract } from 'ethers';
 
 class Pool {
@@ -26,6 +23,7 @@ class Pool {
   poolAddress: string;
   quoteAddress: string;
   collateralAddress: string;
+  utils: PoolUtils;
 
   constructor(
     provider: SignerOrProvider,
@@ -36,6 +34,7 @@ class Pool {
     this.provider = provider;
     this.poolAddress = poolAddress;
     this.contract = getPoolContract(poolAddress, this.provider);
+    this.utils = new PoolUtils(this.provider as Provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
   }
@@ -45,7 +44,7 @@ class Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.collateralAddress,
-      allowance
+      allowance: toWei(allowance)
     });
   };
 
@@ -54,21 +53,7 @@ class Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.quoteAddress,
-      allowance
-    });
-  };
-
-  pledgeCollateral = async ({
-    signer,
-    to,
-    collateralToPledge
-  }: PledgeCollateralParams) => {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await pledgeCollateral({
-      contractPool: contractPoolWithSigner,
-      to,
-      collateralToPledge
+      allowance: toWei(allowance)
     });
   };
 
@@ -81,75 +66,105 @@ class Pool {
 
     return await addQuoteToken({
       contractPool: contractPoolWithSigner,
-      amount,
+      amount: toWei(amount),
       bucketIndex
     });
   };
 
-  borrow = async ({ signer, amount, bucketIndex }: BorrowParams) => {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await borrow({
-      contractPool: contractPoolWithSigner,
-      amount,
-      bucketIndex
-    });
-  };
-
-  repay = async ({ signer, amount }: RepayParams) => {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await repay({
-      contractPool: contractPoolWithSigner,
-      amount,
-      from: await signer.getAddress()
-    });
-  };
-
-  pullCollateral = async ({
+  moveQuoteToken = async ({
     signer,
-    collateralToPledge
-  }: PullCollateralParams) => {
+    maxAmountToMove,
+    fromIndex,
+    toIndex
+  }: MoveQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await pullCollateral({
+    return await moveQuoteToken({
       contractPool: contractPoolWithSigner,
-      collateralToPledge
+      maxAmountToMove: toWei(maxAmountToMove),
+      fromIndex,
+      toIndex
     });
   };
 
   removeQuoteToken = async ({
     signer,
-    amount,
+    maxAmount,
     bucketIndex
   }: RemoveQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeQuoteToken({
       contractPool: contractPoolWithSigner,
+      maxAmount: toWei(maxAmount),
+      bucketIndex
+    });
+  };
+
+  addLiquidity = async ({
+    signer,
+    amount,
+    bucketIndex
+  }: AddQuoteTokenParams) => {
+    return await this.addQuoteToken({
+      signer,
       amount,
       bucketIndex
     });
   };
 
-  addLiquidity = async () => {
-    return null;
+  removeLiquidity = async ({
+    signer,
+    maxAmount,
+    bucketIndex
+  }: RemoveQuoteTokenParams) => {
+    return await this.removeQuoteToken({
+      signer,
+      maxAmount,
+      bucketIndex
+    });
   };
 
-  removeLiquidity = async () => {
-    return null;
-  };
-
-  moveLiquidity = async () => {
-    return null;
+  moveLiquidity = async ({
+    signer,
+    maxAmountToMove,
+    fromIndex,
+    toIndex
+  }: MoveQuoteTokenParams) => {
+    return await this.moveQuoteToken({
+      signer,
+      maxAmountToMove,
+      fromIndex,
+      toIndex
+    });
   };
 
   getPrices = async () => {
-    return null;
+    const [hpb, , htp, , lup] = await this.utils.poolPricesInfo(
+      this.poolAddress
+    );
+
+    return {
+      hpb,
+      htp,
+      lup
+    };
   };
 
   getStats = async () => {
-    return null;
+    const [poolSize, loansCount] = await this.utils.poolLoansInfo(
+      this.poolAddress
+    );
+    const [minDebtAmount, collateralization, actualUtilization] =
+      await this.utils.poolUtilizationInfo(this.poolAddress);
+
+    return {
+      poolSize,
+      loansCount,
+      minDebtAmount,
+      collateralization,
+      actualUtilization
+    };
   };
 }
 
