@@ -4,6 +4,7 @@ import {
   bucketInfo,
   getPoolInfoUtilsContract,
   indexToPrice,
+  lpsToQuoteTokens,
   poolLoansInfo,
   poolPricesInfo,
   poolUtilizationInfo,
@@ -15,9 +16,11 @@ import { Contract } from 'ethers';
 class PoolUtils {
   provider: SignerOrProvider;
   contract: Contract;
+  poolAddress: string;
 
-  constructor(provider: SignerOrProvider) {
+  constructor(provider: SignerOrProvider, poolAddress: Erc20Address) {
     this.provider = provider;
+    this.poolAddress = poolAddress;
     this.contract = getPoolInfoUtilsContract(this.provider);
   }
 
@@ -35,15 +38,14 @@ class PoolUtils {
    *   t0Np_: BigNumber
    *  ]
    */
-  borrowerInfo = async (
-    borrowerAddress: Erc20Address,
-    poolAddress: Erc20Address
-  ) => {
-    return await borrowerInfo({
+  borrowerInfo = async (borrowerAddress: Erc20Address) => {
+    const [debt, collateral, t0Np] = await borrowerInfo({
       contractPool: this.contract,
-      poolAddress,
+      poolAddress: this.poolAddress,
       borrowerAddress
     });
+
+    return { debt, collateral, t0Np };
   };
 
   /**
@@ -58,11 +60,20 @@ class PoolUtils {
    *   lupIndex_: BigNumber
    *  ]
    */
-  poolPricesInfo = async (poolAddress: Erc20Address) => {
-    return await poolPricesInfo({
+  poolPricesInfo = async () => {
+    const [hpb, hpbIndex, htp, htpIndex, lup, lupIndex] = await poolPricesInfo({
       contractPool: this.contract,
-      poolAddress: poolAddress
+      poolAddress: this.poolAddress
     });
+
+    return {
+      hpb,
+      hpbIndex,
+      htp,
+      htpIndex,
+      lup,
+      lupIndex
+    };
   };
 
   /**
@@ -78,12 +89,22 @@ class PoolUtils {
    *   exchangeRate_: BigNumber
    * ]
    */
-  bucketInfo = async (poolAddress: Erc20Address, index: number) => {
-    return await bucketInfo({
-      contractPool: this.contract,
-      poolAddress,
-      index
-    });
+  bucketInfo = async (index: number) => {
+    const [price, quoteTokens, collateral, bucketLPs, scale, exchangeRate] =
+      await bucketInfo({
+        contractPool: this.contract,
+        poolAddress: this.poolAddress,
+        index
+      });
+
+    return {
+      price,
+      quoteTokens,
+      collateral,
+      bucketLPs,
+      scale,
+      exchangeRate
+    };
   };
 
   /**
@@ -95,11 +116,25 @@ class PoolUtils {
    *  @return pendingInflator_       Pending inflator in pool.
    *  @return pendingInterestFactor_ Factor used to scale the inflator.
    */
-  poolLoansInfo = async (poolAddress: Erc20Address) => {
-    return await poolLoansInfo({
+  poolLoansInfo = async () => {
+    const [
+      poolSize,
+      loansCount,
+      maxBorrower,
+      pendingInflator,
+      pendingInterestFactor
+    ] = await poolLoansInfo({
       contractPool: this.contract,
-      poolAddress
+      poolAddress: this.poolAddress
     });
+
+    return {
+      poolSize,
+      loansCount,
+      maxBorrower,
+      pendingInflator,
+      pendingInterestFactor
+    };
   };
 
   /**
@@ -110,10 +145,37 @@ class PoolUtils {
    *  @return poolActualUtilization_ The current pool actual utilization, in WAD units.
    *  @return poolTargetUtilization_ The current pool Target utilization, in WAD units.
    */
-  poolUtilizationInfo = async (poolAddress: Erc20Address) => {
-    return await poolUtilizationInfo({
+  poolUtilizationInfo = async () => {
+    const [
+      minDebtAmount,
+      collateralization,
+      actualUtilization,
+      targetUtilization
+    ] = await poolUtilizationInfo({
       contractPool: this.contract,
-      poolAddress
+      poolAddress: this.poolAddress
+    });
+
+    return {
+      minDebtAmount,
+      collateralization,
+      actualUtilization,
+      targetUtilization
+    };
+  };
+
+  /**
+   *  @notice Calculate the amount of quote tokens in bucket for a given amount of LP Tokens.
+   *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
+   *  @param  index_       The price bucket index for which the value should be calculated.
+   *  @return quoteAmount_ The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
+   */
+  lpsToQuoteTokens = async (lpTokens: number, index: number) => {
+    return await lpsToQuoteTokens({
+      contractPool: this.contract,
+      poolAddress: this.poolAddress,
+      lpTokens,
+      index
     });
   };
 

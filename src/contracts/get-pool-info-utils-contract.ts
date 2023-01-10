@@ -4,14 +4,20 @@ import {
   BorrowerInfoParamsContract,
   PoolBucketInfoParamsContract,
   PoolIndexToPriceParamsContract,
+  PoolLpsToQuoteTokensParamsContract,
   PoolPriceToIndexParamsContract,
   PoolPricesInfoParamsContract,
   SignerOrProvider
 } from '../constants/interfaces';
+import { Contract as ContractMulti } from 'ethcall';
 import { ethers } from 'ethers';
 
 export const getPoolInfoUtilsContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(POOL_UTILS, PoolInfoUtilsAbi, provider);
+};
+
+export const getPoolInfoUtilsContractMulti = () => {
+  return new ContractMulti(POOL_UTILS, PoolInfoUtilsAbi);
 };
 
 export const borrowerInfo = async ({
@@ -49,6 +55,15 @@ export const bucketInfo = async ({
   index
 }: PoolBucketInfoParamsContract) => {
   return await contractPool.bucketInfo(poolAddress, index);
+};
+
+export const lpsToQuoteTokens = async ({
+  contractPool,
+  poolAddress,
+  lpTokens,
+  index
+}: PoolLpsToQuoteTokensParamsContract) => {
+  return await contractPool.lpsToQuoteTokens(poolAddress, lpTokens, index);
 };
 
 export const priceToIndex = async ({

@@ -28,7 +28,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use addLiquidity succesfully', async () => {
-    const quoteAmount = 100;
+    const quoteAmount = 10;
     const bucketIndex = 2000;
     const allowance = 100000000;
 
@@ -89,7 +89,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
   it('should use removeLiquidity succesfully', async () => {
     const allowance = 100000;
-    const quoteAmount = 10;
+    const quoteAmount = 1;
     const bucketIndex = 2000;
 
     await pool.quoteApprove({
@@ -108,7 +108,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
   it('should use moveLiquidity succesfully', async () => {
     const allowance = 100000;
-    const maxAmountToMove = 10;
+    const maxAmountToMove = 5;
     const bucketIndexFrom = 2000;
     const bucketIndexTo = 2001;
 
@@ -130,7 +130,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   it('should use getLoan succesfully', async () => {
     const loan = await pool.getLoan(await signerBorrower.getAddress());
 
-    expect(loan.toString()).not.toBe('');
+    expect(loan.collateralization.toString()).not.toBe('');
   });
 
   it('should use getPrices succesfully', async () => {
@@ -143,5 +143,76 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const stats = await pool.getStats();
 
     expect(stats).not.toBe('');
+  });
+
+  it('should use getIndexesPriceByRange onChain succesfully with SHORT min/max range', async () => {
+    const quoteAmount = 0.5;
+    const bucketIndex = 1234;
+    const allowance = 100000000;
+
+    await pool.quoteApprove({
+      signer: signerLender,
+      allowance
+    });
+
+    await pool.addQuoteToken({
+      signer: signerLender,
+      amount: quoteAmount,
+      bucketIndex
+    });
+
+    const buckets = await pool.getIndexesPriceByRange(0.01, 0.1);
+
+    expect(buckets.length).not.toBe(0);
+  });
+
+  it('should use getIndexesPriceByRange onChain succesfully with MEDIUM min/max range', async () => {
+    const buckets = await pool.getIndexesPriceByRange(0.01, 1);
+
+    expect(buckets.length).not.toBe(0);
+  });
+
+  it('should use getIndexesPriceByRange onChain succesfully with LONG min/max range', async () => {
+    const buckets = await pool.getIndexesPriceByRange(0.01, 3);
+
+    expect(buckets.length).not.toBe(0);
+  });
+
+  it('should use getBucketByIndex succesfully', async () => {
+    const bucket = await pool.getBucketByIndex(1234);
+
+    expect(bucket).not.toBe('');
+  });
+
+  it('should use getBucketByPrice succesfully', async () => {
+    const bucket = await pool.getBucketByPrice(0.1);
+
+    expect(bucket).not.toBe('');
+  });
+
+  it('should use lpsToQuoteTokens succesfully', async () => {
+    const bucket = await pool.utils.lpsToQuoteTokens(10, 2000);
+
+    expect(bucket).not.toBe('');
+  });
+
+  it('should use getPosition succesfully', async () => {
+    const position = await pool.getPosition({
+      signer: signerLender,
+      withdrawalAmount: 0.1,
+      bucketIndex: 1234
+    });
+
+    expect(position).not.toBe('');
+  });
+
+  it('should use estimateLoan succesfully', async () => {
+    const estimateLoan = await pool.estimateLoan({
+      signer: signerLender,
+      debtAmount: 1,
+      collateralAmount: 5
+    });
+
+    expect(estimateLoan).not.toBe('');
   });
 });

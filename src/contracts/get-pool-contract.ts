@@ -1,16 +1,20 @@
 import ERC20Pool from '../abis/ERC20Pool.json';
 import {
   AddQuoteTokenParamsContract,
+  DebtInfoParamsContract,
+  DepositIndexParamsContract,
   DrawDebtParamsContract,
   Erc20Address,
   GenericApproveParamsContract,
+  LenderInfoParamsContract,
+  LoansInfoParamsContract,
   MoveQuoteTokenParamsContract,
   RemoveQuoteTokenParamsContract,
   RepayDebtParamsContract,
   SignerOrProvider
 } from '../constants/interfaces';
 import { getGenericContract } from './get-generic-contract';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 export const getPoolContract = (
   poolAddress: Erc20Address,
@@ -89,6 +93,31 @@ export const removeQuoteToken = async ({
   return await contractPool.removeQuoteToken(maxAmount, bucketIndex, {
     gasLimit: 1000000
   });
+};
+
+export const lenderInfo = async ({
+  contractPool,
+  lenderAddress,
+  index
+}: LenderInfoParamsContract): Promise<[BigNumber, BigNumber]> => {
+  return await contractPool.lenderInfo(index, lenderAddress);
+};
+
+export const debtInfo = async ({ contractPool }: DebtInfoParamsContract) => {
+  return await contractPool.debtInfo();
+};
+
+export const loansInfo = async ({
+  contractPool
+}: LoansInfoParamsContract): Promise<[Erc20Address, BigNumber, BigNumber]> => {
+  return await contractPool.loansInfo();
+};
+
+export const depositIndex = async ({
+  contractPool,
+  debtAmount
+}: DepositIndexParamsContract) => {
+  return await contractPool.depositIndex(debtAmount);
 };
 
 export const approve = async ({
