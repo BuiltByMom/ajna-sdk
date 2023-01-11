@@ -1,8 +1,7 @@
 import {
   DrawDebtParams,
   Erc20Address,
-  EstimateLoanParams,
-  RepayDebtParams
+  RepayDebtParams,
 } from '../constants/interfaces';
 import { drawDebt, repayDebt } from '../contracts/get-pool-contract';
 // import priceToIndex from '../utils/price-to-index';
@@ -21,14 +20,14 @@ class FungiblePool extends Pool {
     borrowerAddress,
     amountToBorrow,
     limitIndex,
-    collateralToPledge
+    collateralToPledge,
   }: DrawDebtParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const estimateLoan = await this.estimateLoan({
       signer,
       debtAmount: amountToBorrow,
-      collateralAmount: collateralToPledge
+      collateralAmount: collateralToPledge,
     });
 
     if (!estimateLoan.canBorrow) {
@@ -40,14 +39,14 @@ class FungiblePool extends Pool {
       borrowerAddress,
       amountToBorrow: toWei(amountToBorrow),
       limitIndex,
-      collateralToPledge: toWei(collateralToPledge)
+      collateralToPledge: toWei(collateralToPledge),
     });
   };
 
   repayDebt = async ({
     signer,
     collateralAmountToPull,
-    maxQuoteTokenAmountToRepay
+    maxQuoteTokenAmountToRepay,
   }: RepayDebtParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -55,7 +54,7 @@ class FungiblePool extends Pool {
       contractPool: contractPoolWithSigner,
       borrowerAddress: await signer.getAddress(),
       collateralAmountToPull: toWei(collateralAmountToPull),
-      maxQuoteTokenAmountToRepay: toWei(maxQuoteTokenAmountToRepay)
+      maxQuoteTokenAmountToRepay: toWei(maxQuoteTokenAmountToRepay),
     });
   };
 
@@ -70,7 +69,7 @@ class FungiblePool extends Pool {
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
       poolPricesInfoCall,
-      borrowerInfoCall
+      borrowerInfoCall,
     ]);
 
     const [, , , , lup] = response[0];
@@ -80,7 +79,7 @@ class FungiblePool extends Pool {
       collateralization: collateral.mul(lup).div(debt),
       debt,
       collateral,
-      thresholdPrice: debt.div(collateral)
+      thresholdPrice: debt.div(collateral),
     };
   };
 
@@ -89,7 +88,7 @@ class FungiblePool extends Pool {
     const maxIndexCall = this.contractUtilsMulti.priceToIndex(toWei(maxPrice));
     const response: BigNumber[][] = await this.ethcallProvider.all([
       minIndexCall,
-      maxIndexCall
+      maxIndexCall,
     ]);
 
     const minIndex = response[0];
@@ -117,7 +116,7 @@ class FungiblePool extends Pool {
 
       buckets[swiftIndex] = {
         index: swiftIndex,
-        price
+        price,
       };
 
       index = swiftIndex;
@@ -130,7 +129,7 @@ class FungiblePool extends Pool {
 
   getBucketByIndex = async (bucketIndex: number) => {
     let info = {
-      index: bucketIndex
+      index: bucketIndex,
     } as GetBucketByIndexObject;
 
     try {
@@ -173,7 +172,7 @@ class FungiblePool extends Pool {
   estimateLoan = async ({
     signer,
     debtAmount,
-    collateralAmount
+    collateralAmount,
   }: EstimateLoanParams) => {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(
       this.poolAddress
@@ -185,19 +184,19 @@ class FungiblePool extends Pool {
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
       poolPricesInfoCall,
-      borrowerInfoCall
+      borrowerInfoCall,
     ]);
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
 
     const { poolDebt } = await this.debtInfo({
-      signer
+      signer,
     });
 
     const lupIndex = await this.depositIndex({
       signer,
-      debtAmount: poolDebt.add(toWei(debtAmount))
+      debtAmount: poolDebt.add(toWei(debtAmount)),
     });
 
     const thresholdPrice = debt
@@ -207,7 +206,7 @@ class FungiblePool extends Pool {
     return {
       lupIndex: lupIndex.toNumber(),
       thresholdPrice,
-      canBorrow: thresholdPrice.lt(lup)
+      canBorrow: thresholdPrice.lt(lup),
     };
   };
 }

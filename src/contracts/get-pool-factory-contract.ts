@@ -28,7 +28,7 @@ export const deployPool = async (
     interestRateParam,
     {
       from: await signer.getAddress(),
-      gasLimit: 1000000
+      gasLimit: 1000000,
     }
   );
 

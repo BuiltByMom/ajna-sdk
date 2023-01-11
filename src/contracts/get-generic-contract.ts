@@ -2,7 +2,7 @@ import erc20Abi from '../abis/ERC20.json';
 import {
   CollateralBalanceParamsContract,
   QuoteBalanceParamsContract,
-  SignerOrProvider
+  SignerOrProvider,
 } from '../constants/interfaces';
 import { ethers } from 'ethers';
 

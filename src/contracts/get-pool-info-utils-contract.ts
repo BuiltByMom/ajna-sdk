@@ -7,7 +7,7 @@ import {
   PoolLpsToQuoteTokensParamsContract,
   PoolPriceToIndexParamsContract,
   PoolPricesInfoParamsContract,
-  SignerOrProvider
+  SignerOrProvider,
 } from '../constants/interfaces';
 import { Contract as ContractMulti } from 'ethcall';
 import { ethers } from 'ethers';
@@ -23,28 +23,28 @@ export const getPoolInfoUtilsContractMulti = () => {
 export const borrowerInfo = async ({
   contractPool,
   poolAddress,
-  borrowerAddress
+  borrowerAddress,
 }: BorrowerInfoParamsContract) => {
   return await contractPool.borrowerInfo(poolAddress, borrowerAddress);
 };
 
 export const poolPricesInfo = async ({
   contractPool,
-  poolAddress
+  poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolPricesInfo(poolAddress);
 };
 
 export const poolLoansInfo = async ({
   contractPool,
-  poolAddress
+  poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolLoansInfo(poolAddress);
 };
 
 export const poolUtilizationInfo = async ({
   contractPool,
-  poolAddress
+  poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolUtilizationInfo(poolAddress);
 };
@@ -52,7 +52,7 @@ export const poolUtilizationInfo = async ({
 export const bucketInfo = async ({
   contractPool,
   poolAddress,
-  index
+  index,
 }: PoolBucketInfoParamsContract) => {
   return await contractPool.bucketInfo(poolAddress, index);
 };
@@ -61,21 +61,21 @@ export const lpsToQuoteTokens = async ({
   contractPool,
   poolAddress,
   lpTokens,
-  index
+  index,
 }: PoolLpsToQuoteTokensParamsContract) => {
   return await contractPool.lpsToQuoteTokens(poolAddress, lpTokens, index);
 };
 
 export const priceToIndex = async ({
   contractPool,
-  price
+  price,
 }: PoolPriceToIndexParamsContract) => {
   return await contractPool.priceToIndex(price);
 };
 
 export const indexToPrice = async ({
   contractPool,
-  index
+  index,
 }: PoolIndexToPriceParamsContract) => {
   return await contractPool.indexToPrice(index);
 };

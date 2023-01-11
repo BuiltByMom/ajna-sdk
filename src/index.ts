@@ -1,5 +1,5 @@
 import metaMaskPkg, {
-  metaMaskEnable as metaMaskPkgEnable
+  metaMaskEnable as metaMaskPkgEnable,
 } from './connectors/meta-mask';
 
 export * from './constants/config';
@@ -16,5 +16,5 @@ export { AjnaSDK } from './classes/ajna';
 
 export const connectors = {
   metaMask: metaMaskPkg,
-  metaMaskEnable: metaMaskPkgEnable
+  metaMaskEnable: metaMaskPkgEnable,
 };

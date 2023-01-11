@@ -8,7 +8,7 @@ import {
   poolLoansInfo,
   poolPricesInfo,
   poolUtilizationInfo,
-  priceToIndex
+  priceToIndex,
 } from '../contracts/get-pool-info-utils-contract';
 import toWei from '../utils/to-wei';
 import { Contract } from 'ethers';
@@ -42,7 +42,7 @@ class PoolUtils {
     const [debt, collateral, t0Np] = await borrowerInfo({
       contractPool: this.contract,
       poolAddress: this.poolAddress,
-      borrowerAddress
+      borrowerAddress,
     });
 
     return { debt, collateral, t0Np };
@@ -63,7 +63,7 @@ class PoolUtils {
   poolPricesInfo = async () => {
     const [hpb, hpbIndex, htp, htpIndex, lup, lupIndex] = await poolPricesInfo({
       contractPool: this.contract,
-      poolAddress: this.poolAddress
+      poolAddress: this.poolAddress,
     });
 
     return {
@@ -72,7 +72,7 @@ class PoolUtils {
       htp,
       htpIndex,
       lup,
-      lupIndex
+      lupIndex,
     };
   };
 
@@ -94,7 +94,7 @@ class PoolUtils {
       await bucketInfo({
         contractPool: this.contract,
         poolAddress: this.poolAddress,
-        index
+        index,
       });
 
     return {
@@ -103,7 +103,7 @@ class PoolUtils {
       collateral,
       bucketLPs,
       scale,
-      exchangeRate
+      exchangeRate,
     };
   };
 
@@ -122,10 +122,10 @@ class PoolUtils {
       loansCount,
       maxBorrower,
       pendingInflator,
-      pendingInterestFactor
+      pendingInterestFactor,
     ] = await poolLoansInfo({
       contractPool: this.contract,
-      poolAddress: this.poolAddress
+      poolAddress: this.poolAddress,
     });
 
     return {
@@ -133,7 +133,7 @@ class PoolUtils {
       loansCount,
       maxBorrower,
       pendingInflator,
-      pendingInterestFactor
+      pendingInterestFactor,
     };
   };
 
@@ -150,17 +150,17 @@ class PoolUtils {
       minDebtAmount,
       collateralization,
       actualUtilization,
-      targetUtilization
+      targetUtilization,
     ] = await poolUtilizationInfo({
       contractPool: this.contract,
-      poolAddress: this.poolAddress
+      poolAddress: this.poolAddress,
     });
 
     return {
       minDebtAmount,
       collateralization,
       actualUtilization,
-      targetUtilization
+      targetUtilization,
     };
   };
 
@@ -175,21 +175,21 @@ class PoolUtils {
       contractPool: this.contract,
       poolAddress: this.poolAddress,
       lpTokens,
-      index
+      index,
     });
   };
 
   priceToIndex = async (price: number) => {
     return await priceToIndex({
       contractPool: this.contract,
-      price: toWei(price)
+      price: toWei(price),
     });
   };
 
   indexToPrice = async (index: number) => {
     return await indexToPrice({
       contractPool: this.contract,
-      index
+      index,
     });
   };
 }

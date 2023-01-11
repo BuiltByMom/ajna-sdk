@@ -35,7 +35,7 @@ function handleAccountsChanged(accounts: string | any[]) {
 export const metaMaskEnable = async () => {
   try {
     const response = await (window as any).ethereum.request({
-      method: 'eth_requestAccounts'
+      method: 'eth_requestAccounts',
     });
 
     handleAccountsChanged(response);

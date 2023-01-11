@@ -11,7 +11,7 @@ import {
   MoveQuoteTokenParamsContract,
   RemoveQuoteTokenParamsContract,
   RepayDebtParamsContract,
-  SignerOrProvider
+  SignerOrProvider,
 } from '../constants/interfaces';
 import { getGenericContract } from './get-generic-contract';
 import { BigNumber, ethers } from 'ethers';
@@ -28,7 +28,7 @@ export const drawDebt = async ({
   borrowerAddress,
   amountToBorrow,
   limitIndex,
-  collateralToPledge
+  collateralToPledge,
 }: DrawDebtParamsContract) => {
   const tx = await contractPool.drawDebt(
     borrowerAddress,
@@ -36,7 +36,7 @@ export const drawDebt = async ({
     limitIndex,
     collateralToPledge,
     {
-      gasLimit: 1000000
+      gasLimit: 1000000,
     }
   );
 
@@ -47,14 +47,14 @@ export const repayDebt = async ({
   contractPool,
   borrowerAddress,
   collateralAmountToPull,
-  maxQuoteTokenAmountToRepay
+  maxQuoteTokenAmountToRepay,
 }: RepayDebtParamsContract) => {
   return await contractPool.repayDebt(
     borrowerAddress,
     collateralAmountToPull,
     maxQuoteTokenAmountToRepay,
     {
-      gasLimit: 1000000
+      gasLimit: 1000000,
     }
   );
 };
@@ -62,10 +62,10 @@ export const repayDebt = async ({
 export const addQuoteToken = async ({
   contractPool,
   amount,
-  bucketIndex
+  bucketIndex,
 }: AddQuoteTokenParamsContract) => {
   return await contractPool.addQuoteToken(amount, bucketIndex, {
-    gasLimit: 1000000
+    gasLimit: 1000000,
   });
 };
 
@@ -73,14 +73,14 @@ export const moveQuoteToken = async ({
   contractPool,
   maxAmountToMove,
   fromIndex,
-  toIndex
+  toIndex,
 }: MoveQuoteTokenParamsContract) => {
   return await contractPool.moveQuoteToken(
     maxAmountToMove,
     fromIndex,
     toIndex,
     {
-      gasLimit: 1000000
+      gasLimit: 1000000,
     }
   );
 };
@@ -88,17 +88,17 @@ export const moveQuoteToken = async ({
 export const removeQuoteToken = async ({
   contractPool,
   maxAmount,
-  bucketIndex
+  bucketIndex,
 }: RemoveQuoteTokenParamsContract) => {
   return await contractPool.removeQuoteToken(maxAmount, bucketIndex, {
-    gasLimit: 1000000
+    gasLimit: 1000000,
   });
 };
 
 export const lenderInfo = async ({
   contractPool,
   lenderAddress,
-  index
+  index,
 }: LenderInfoParamsContract): Promise<[BigNumber, BigNumber]> => {
   return await contractPool.lenderInfo(index, lenderAddress);
 };
@@ -108,14 +108,14 @@ export const debtInfo = async ({ contractPool }: DebtInfoParamsContract) => {
 };
 
 export const loansInfo = async ({
-  contractPool
+  contractPool,
 }: LoansInfoParamsContract): Promise<[Erc20Address, BigNumber, BigNumber]> => {
   return await contractPool.loansInfo();
 };
 
 export const depositIndex = async ({
   contractPool,
-  debtAmount
+  debtAmount,
 }: DepositIndexParamsContract) => {
   return await contractPool.depositIndex(debtAmount);
 };
@@ -124,11 +124,11 @@ export const approve = async ({
   provider,
   poolAddress,
   allowance,
-  tokenAddress
+  tokenAddress,
 }: GenericApproveParamsContract) => {
   const contract = getGenericContract(tokenAddress, provider);
 
   return await contract.approve(poolAddress, allowance, {
-    gasLimit: 1000000
+    gasLimit: 1000000,
   });
 };

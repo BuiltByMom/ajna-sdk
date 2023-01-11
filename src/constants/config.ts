@@ -17,5 +17,5 @@ export const TEST_CONFIG = {
   LENDER: process.env.AJNA_LENDER_ADDRESS || '',
   LENDER_KEY: process.env.AJNA_LENDER_PRIVATE_KEY || '',
   BORROWER: process.env.AJNA_BORROWER_ADDRESS || '',
-  BORROWER_KEY: process.env.AJNA_BORROWER_PRIVATE_KEY || ''
+  BORROWER_KEY: process.env.AJNA_BORROWER_PRIVATE_KEY || '',
 };

@@ -1,11 +1,11 @@
 import {
   Erc20Address,
   FactoryDeployPoolParams,
-  SignerOrProvider
+  SignerOrProvider,
 } from '../constants/interfaces';
 import {
   deployPool,
-  deployedPools
+  deployedPools,
 } from '../contracts/get-pool-factory-contract';
 import { FungiblePool } from './fungible-pool';
 import { utils } from 'ethers';
@@ -21,7 +21,7 @@ class Factory {
     signer,
     collateralAddress,
     quoteAddress,
-    interestRate
+    interestRate,
   }: FactoryDeployPoolParams) => {
     await deployPool(signer, collateralAddress, quoteAddress, interestRate);
 

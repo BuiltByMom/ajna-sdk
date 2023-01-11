@@ -21,7 +21,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerLender,
       collateralAddress: config.COLLATERAL_ADDRESS,
       quoteAddress: config.QUOTE_ADDRESS,
-      interestRate: '0.05'
+      interestRate: '0.05',
     });
 
     expect(pool.poolAddress).not.toBe('');
@@ -34,13 +34,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance
+      allowance,
     });
 
     const receipt = await pool.addLiquidity({
       signer: signerLender,
       amount: quoteAmount,
-      bucketIndex
+      bucketIndex,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -54,7 +54,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.collateralApprove({
       signer: signerBorrower,
-      allowance
+      allowance,
     });
 
     const receipt = await pool.drawDebt({
@@ -62,7 +62,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       borrowerAddress: config.BORROWER,
       amountToBorrow,
       collateralToPledge,
-      limitIndex
+      limitIndex,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -75,13 +75,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerBorrower,
-      allowance
+      allowance,
     });
 
     const receipt = await pool.repayDebt({
       signer: signerBorrower,
       collateralAmountToPull,
-      maxQuoteTokenAmountToRepay
+      maxQuoteTokenAmountToRepay,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -94,13 +94,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance
+      allowance,
     });
 
     const receipt = await pool.removeLiquidity({
       signer: signerLender,
       maxAmount: quoteAmount,
-      bucketIndex
+      bucketIndex,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -114,14 +114,14 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance
+      allowance,
     });
 
     const receipt = await pool.moveLiquidity({
       signer: signerLender,
       maxAmountToMove,
       fromIndex: bucketIndexFrom,
-      toIndex: bucketIndexTo
+      toIndex: bucketIndexTo,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -152,13 +152,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance
+      allowance,
     });
 
     await pool.addQuoteToken({
       signer: signerLender,
       amount: quoteAmount,
-      bucketIndex
+      bucketIndex,
     });
 
     const buckets = await pool.getIndexesPriceByRange(0.01, 0.1);
@@ -200,7 +200,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const position = await pool.getPosition({
       signer: signerLender,
       withdrawalAmount: 0.1,
-      bucketIndex: 1234
+      bucketIndex: 1234,
     });
 
     expect(position).not.toBe('');
@@ -210,7 +210,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const estimateLoan = await pool.estimateLoan({
       signer: signerLender,
       debtAmount: 1,
-      collateralAmount: 5
+      collateralAmount: 5,
     });
 
     expect(estimateLoan).not.toBe('');
