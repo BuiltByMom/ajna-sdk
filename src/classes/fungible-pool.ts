@@ -1,6 +1,7 @@
 import {
   DrawDebtParams,
   Erc20Address,
+  EstimateLoanParams,
   RepayDebtParams,
 } from '../constants/interfaces';
 import { drawDebt, repayDebt } from '../contracts/get-pool-contract';
@@ -74,12 +75,16 @@ class FungiblePool extends Pool {
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
+    const collateralization = debt.gt(0)
+      ? collateral.mul(lup).div(debt)
+      : BigNumber.from(1);
+    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return {
-      collateralization: collateral.mul(lup).div(debt),
+      collateralization: collateralization,
       debt,
       collateral,
-      thresholdPrice: debt.div(collateral),
+      thresholdPrice: tp,
     };
   };
 

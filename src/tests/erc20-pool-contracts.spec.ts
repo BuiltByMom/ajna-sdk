@@ -1,20 +1,33 @@
 import { AjnaSDK } from '../classes/ajna';
 import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
+import { getGenericContract } from '../contracts/get-generic-contract';
 import addAccount from '../utils/add-account';
+import toWei from '../utils/to-wei';
 import dotenv from 'dotenv';
-import { providers } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 
 dotenv.config();
 
 jest.setTimeout(1200000);
 
 describe('Ajna SDK Erc20 Pool tests', () => {
-  const provider = new providers.JsonRpcProvider();
+  const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccount(config.LENDER_KEY, provider);
   const signerBorrower = addAccount(config.BORROWER_KEY, provider);
   let pool: FungiblePool = {} as FungiblePool;
+
+  beforeAll(async () => {
+    // mint tokens to actors
+    const signerDeployer = addAccount(config.DEPLOYER_KEY, provider);
+    const TWETH = getGenericContract(config.COLLATERAL_ADDRESS, provider);
+    const receipt = await TWETH.connect(signerDeployer).transfer(
+      signerBorrower.address,
+      toWei(BigNumber.from('10'))
+    );
+    expect(receipt.transactionHash).not.toBe('');
+  });
 
   it('should confirm AjnaSDK pool succesfully', async () => {
     pool = await ajna.factory.deployPool({
@@ -61,8 +74,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerBorrower,
       borrowerAddress: config.BORROWER,
       amountToBorrow,
-      collateralToPledge,
       limitIndex,
+      collateralToPledge,
     });
 
     expect(receipt.transactionHash).not.toBe('');

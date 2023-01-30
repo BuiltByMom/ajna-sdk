@@ -6,4 +6,6 @@ module.exports = {
   testRegex: './src/.*\\.(test|spec)?\\.(ts)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   roots: ['<rootDir>/src'],
+  globalSetup: './testnetSetup.ts',
+  globalTeardown: './testnetTeardown.ts',
 };
