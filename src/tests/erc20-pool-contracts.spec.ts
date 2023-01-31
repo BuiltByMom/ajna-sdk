@@ -1,7 +1,7 @@
 import { AjnaSDK } from '../classes/ajna';
 import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
-import { getGenericContract } from '../contracts/get-generic-contract';
+import { getErc20Contract } from '../contracts/erc20';
 import addAccount from '../utils/add-account';
 import toWei from '../utils/to-wei';
 import dotenv from 'dotenv';
@@ -21,7 +21,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   beforeAll(async () => {
     // mint tokens to actors
     const signerDeployer = addAccount(config.DEPLOYER_KEY, provider);
-    const TWETH = getGenericContract(config.COLLATERAL_ADDRESS, provider);
+    const TWETH = getErc20Contract(config.COLLATERAL_ADDRESS, provider);
     const receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
       toWei(BigNumber.from('10'))

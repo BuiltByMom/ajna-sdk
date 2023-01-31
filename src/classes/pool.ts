@@ -16,13 +16,13 @@ import {
   approve,
   debtInfo,
   depositIndex,
-  getPoolContract,
+  getErc20PoolContract,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
-} from '../contracts/get-pool-contract';
-import { getPoolInfoUtilsContractMulti } from '../contracts/get-pool-info-utils-contract';
+} from '../contracts/erc20-pool';
+import { getPoolInfoUtilsContractMulti } from '../contracts/pool-info-utils';
 import toWei from '../utils/to-wei';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
@@ -46,7 +46,7 @@ class Pool {
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
-    this.contract = getPoolContract(poolAddress, this.provider);
+    this.contract = getErc20PoolContract(poolAddress, this.provider);
     this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
     this.utils = new PoolUtils(this.provider as Provider, poolAddress);
     this.quoteAddress = quoteAddress;

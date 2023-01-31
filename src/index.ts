@@ -1,20 +1,11 @@
-import metaMaskPkg, {
-  metaMaskEnable as metaMaskPkgEnable,
-} from './connectors/meta-mask';
-
 export * from './constants/config';
 export * from './constants/interfaces';
 
-export * from './contracts/get-generic-contract';
-export * from './contracts/get-pool-contract';
-export * from './contracts/get-pool-factory-contract';
-export * from './contracts/get-nft-contract';
-export * from './contracts/get-nft-pool-contract';
-export * from './contracts/get-nft-pool-factory-contract';
+export * from './contracts/erc20';
+export * from './contracts/erc20-pool';
+export * from './contracts/erc20-pool-factory';
+export * from './contracts/erc721';
+export * from './contracts/erc721-pool';
+export * from './contracts/erc721-pool-factory';
 
 export { AjnaSDK } from './classes/ajna';
-
-export const connectors = {
-  metaMask: metaMaskPkg,
-  metaMaskEnable: metaMaskPkgEnable,
-};

@@ -1,4 +1,4 @@
-import { Erc20Address, SignerOrProvider } from '../constants/interfaces';
+import { Address, SignerOrProvider } from '../constants/interfaces';
 import {
   borrowerInfo,
   bucketInfo,
@@ -9,7 +9,7 @@ import {
   poolPricesInfo,
   poolUtilizationInfo,
   priceToIndex,
-} from '../contracts/get-pool-info-utils-contract';
+} from '../contracts/pool-info-utils';
 import toWei from '../utils/to-wei';
 import { Contract } from 'ethers';
 
@@ -18,7 +18,7 @@ class PoolUtils {
   contract: Contract;
   poolAddress: string;
 
-  constructor(provider: SignerOrProvider, poolAddress: Erc20Address) {
+  constructor(provider: SignerOrProvider, poolAddress: Address) {
     this.provider = provider;
     this.poolAddress = poolAddress;
     this.contract = getPoolInfoUtilsContract(this.provider);
@@ -38,7 +38,7 @@ class PoolUtils {
    *   t0Np_: BigNumber
    *  ]
    */
-  borrowerInfo = async (borrowerAddress: Erc20Address) => {
+  borrowerInfo = async (borrowerAddress: Address) => {
     const [debt, collateral, t0Np] = await borrowerInfo({
       contractPool: this.contract,
       poolAddress: this.poolAddress,
@@ -78,7 +78,7 @@ class PoolUtils {
 
   /**
    * bucketInfo
-   * @param poolAddress ERC20Address
+   * @param poolAddress Address
    * @param index number
    * @returns [
    *   price_: BigNumber

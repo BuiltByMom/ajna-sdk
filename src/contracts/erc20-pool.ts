@@ -1,10 +1,10 @@
 import ERC20Pool from '../abis/ERC20Pool.json';
 import {
   AddQuoteTokenParamsContract,
+  Address,
   DebtInfoParamsContract,
   DepositIndexParamsContract,
   DrawDebtParamsContract,
-  Erc20Address,
   GenericApproveParamsContract,
   LenderInfoParamsContract,
   LoansInfoParamsContract,
@@ -13,11 +13,11 @@ import {
   RepayDebtParamsContract,
   SignerOrProvider,
 } from '../constants/interfaces';
-import { getGenericContract } from './get-generic-contract';
+import { getErc20Contract } from './erc20';
 import { BigNumber, ethers } from 'ethers';
 
-export const getPoolContract = (
-  poolAddress: Erc20Address,
+export const getErc20PoolContract = (
+  poolAddress: Address,
   provider: SignerOrProvider
 ) => {
   return new ethers.Contract(poolAddress, ERC20Pool, provider);
@@ -109,7 +109,7 @@ export const debtInfo = async ({ contractPool }: DebtInfoParamsContract) => {
 
 export const loansInfo = async ({
   contractPool,
-}: LoansInfoParamsContract): Promise<[Erc20Address, BigNumber, BigNumber]> => {
+}: LoansInfoParamsContract): Promise<[Address, BigNumber, BigNumber]> => {
   return await contractPool.loansInfo();
 };
 
@@ -126,7 +126,7 @@ export const approve = async ({
   allowance,
   tokenAddress,
 }: GenericApproveParamsContract) => {
-  const contract = getGenericContract(tokenAddress, provider);
+  const contract = getErc20Contract(tokenAddress, provider);
 
   return await contract.approve(poolAddress, allowance, {
     gasLimit: 1000000,

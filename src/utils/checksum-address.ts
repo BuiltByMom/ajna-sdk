@@ -1,7 +1,7 @@
-import { Erc20Address } from 'constants/interfaces';
+import { Address } from 'constants/interfaces';
 import { ethers } from 'ethers';
 
-const checksumAddress = (address: Erc20Address) => {
+const checksumAddress = (address: Address) => {
   return ethers.utils.getAddress(address);
 };
 

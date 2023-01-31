@@ -4,11 +4,11 @@ export type SignerOrProvider = Signer | providers.Provider;
 
 export type Provider = providers.Provider;
 
-export type Erc20Address = string;
+export type Address = string;
 
-export type CollateralAddress = Erc20Address;
+export type CollateralAddress = Address;
 
-export type QuoteAddress = Erc20Address;
+export type QuoteAddress = Address;
 
 type BaseParams = {
   signer: Signer;
@@ -20,7 +20,7 @@ type BaseParamsWithPool = {
 
 export type GenericApproveParamsContract = {
   provider: SignerOrProvider;
-  poolAddress: Erc20Address;
+  poolAddress: Address;
   allowance: BigNumberish;
   tokenAddress: CollateralAddress | QuoteAddress;
 };
@@ -30,21 +30,21 @@ export type GenericApproveParams = BaseParams & {
 };
 
 export type DrawDebtParamsContract = BaseParamsWithPool & {
-  borrowerAddress: Erc20Address;
+  borrowerAddress: Address;
   amountToBorrow: BigNumberish;
   collateralToPledge: BigNumberish;
   limitIndex: number;
 };
 
 export type DrawDebtParams = BaseParams & {
-  borrowerAddress: Erc20Address;
+  borrowerAddress: Address;
   amountToBorrow: number;
   limitIndex: number;
   collateralToPledge: number;
 };
 
 export type RepayDebtParamsContract = BaseParamsWithPool & {
-  borrowerAddress: Erc20Address;
+  borrowerAddress: Address;
   collateralAmountToPull: BigNumberish;
   maxQuoteTokenAmountToRepay: BigNumberish;
 };
@@ -71,7 +71,7 @@ export type RemoveQuoteTokenParamsContract = BaseParamsWithPool & {
 
 export type LenderInfoParamsContract = BaseParamsWithPool & {
   index: number;
-  lenderAddress: Erc20Address;
+  lenderAddress: Address;
 };
 
 export type DebtInfoParamsContract = BaseParamsWithPool;
@@ -101,7 +101,7 @@ export type MoveQuoteTokenParams = BaseParams & {
 
 export type LenderInfoParams = BaseParams & {
   index: number;
-  lenderAddress: Erc20Address;
+  lenderAddress: Address;
 };
 export type DebtInfoParams = BaseParams;
 
@@ -118,18 +118,18 @@ export type GetPositionParams = BaseParams & {
 
 export type QuoteBalanceParamsContract = {
   provider: SignerOrProvider;
-  quoteAddress: Erc20Address;
-  tokenAddress: Erc20Address;
+  quoteAddress: Address;
+  holderAddress: Address;
 };
 
 export type CollateralBalanceParamsContract = {
   provider: SignerOrProvider;
-  collateralAddress: Erc20Address;
-  tokenAddress: Erc20Address;
+  collateralAddress: Address;
+  holderAddress: Address;
 };
 
 export type RepayParamsContract = BaseParamsWithPool & {
-  from: Erc20Address;
+  from: Address;
   amount: BigNumberish;
 };
 
@@ -146,18 +146,18 @@ export type RepayParams = BaseParams & {
 // };
 
 export type FactoryDeployPoolParams = BaseParams & {
-  collateralAddress: Erc20Address;
-  quoteAddress: Erc20Address;
+  collateralAddress: Address;
+  quoteAddress: Address;
   interestRate: string;
 };
 
 export type BorrowerInfoParamsContract = BaseParamsWithPool & {
-  poolAddress: Erc20Address;
-  borrowerAddress: Erc20Address;
+  poolAddress: Address;
+  borrowerAddress: Address;
 };
 
 export type PoolPricesInfoParamsContract = BaseParamsWithPool & {
-  poolAddress: Erc20Address;
+  poolAddress: Address;
 };
 
 export type PoolPriceToIndexParamsContract = BaseParamsWithPool & {
@@ -165,12 +165,12 @@ export type PoolPriceToIndexParamsContract = BaseParamsWithPool & {
 };
 
 export type PoolBucketInfoParamsContract = BaseParamsWithPool & {
-  poolAddress: Erc20Address;
+  poolAddress: Address;
   index: number;
 };
 
 export type PoolLpsToQuoteTokensParamsContract = BaseParamsWithPool & {
-  poolAddress: Erc20Address;
+  poolAddress: Address;
   lpTokens: number;
   index: number;
 };

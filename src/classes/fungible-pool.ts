@@ -1,10 +1,10 @@
 import {
+  Address,
   DrawDebtParams,
-  Erc20Address,
   EstimateLoanParams,
   RepayDebtParams,
 } from '../constants/interfaces';
-import { drawDebt, repayDebt } from '../contracts/get-pool-contract';
+import { drawDebt, repayDebt } from '../contracts/erc20-pool';
 // import priceToIndex from '../utils/price-to-index';
 import toWei from '../utils/to-wei';
 import { Pool } from './pool';
@@ -59,7 +59,7 @@ class FungiblePool extends Pool {
     });
   };
 
-  getLoan = async (borrowerAddress: Erc20Address) => {
+  getLoan = async (borrowerAddress: Address) => {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(
       this.poolAddress
     );

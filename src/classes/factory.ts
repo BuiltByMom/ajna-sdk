@@ -1,12 +1,9 @@
 import {
-  Erc20Address,
+  Address,
   FactoryDeployPoolParams,
   SignerOrProvider,
 } from '../constants/interfaces';
-import {
-  deployPool,
-  deployedPools,
-} from '../contracts/get-pool-factory-contract';
+import { deployPool, deployedPools } from '../contracts/erc20-pool-factory';
 import { FungiblePool } from './fungible-pool';
 import { utils } from 'ethers';
 
@@ -28,10 +25,7 @@ class Factory {
     return await this.getPool(collateralAddress, quoteAddress);
   };
 
-  getPool = async (
-    collateralAddress: Erc20Address,
-    quoteAddress: Erc20Address
-  ) => {
+  getPool = async (collateralAddress: Address, quoteAddress: Address) => {
     const poolAddress = await this.getPoolAddress(
       collateralAddress,
       quoteAddress
@@ -48,8 +42,8 @@ class Factory {
   };
 
   getPoolAddress = async (
-    collateralAddress: Erc20Address,
-    quoteAddress: Erc20Address
+    collateralAddress: Address,
+    quoteAddress: Address
   ) => {
     const nonSubsetHash = utils.keccak256(
       utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH')
