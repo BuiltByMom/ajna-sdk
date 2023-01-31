@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "@ajna-finance",
-  "license": "AGPL-3.0-or-later",
+  "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
