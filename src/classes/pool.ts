@@ -23,7 +23,7 @@ import {
   removeQuoteToken,
 } from '../contracts/erc20-pool';
 import { getPoolInfoUtilsContractMulti } from '../contracts/pool-info-utils';
-import toWei from '../utils/to-wei';
+import { toWad } from '../utils/numeric';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { Contract } from 'ethers';
@@ -71,7 +71,7 @@ class Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.collateralAddress,
-      allowance: toWei(allowance),
+      allowance: toWad(allowance),
     });
   };
 
@@ -80,7 +80,7 @@ class Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.quoteAddress,
-      allowance: toWei(allowance),
+      allowance: toWad(allowance),
     });
   };
 
@@ -93,7 +93,7 @@ class Pool {
 
     return await addQuoteToken({
       contractPool: contractPoolWithSigner,
-      amount: toWei(amount),
+      amount: toWad(amount),
       bucketIndex,
     });
   };
@@ -108,7 +108,7 @@ class Pool {
 
     return await moveQuoteToken({
       contractPool: contractPoolWithSigner,
-      maxAmountToMove: toWei(maxAmountToMove),
+      maxAmountToMove: toWad(maxAmountToMove),
       fromIndex,
       toIndex,
     });
@@ -123,7 +123,7 @@ class Pool {
 
     return await removeQuoteToken({
       contractPool: contractPoolWithSigner,
-      maxAmount: toWei(maxAmount),
+      maxAmount: toWad(maxAmount),
       bucketIndex,
     });
   };
@@ -249,7 +249,7 @@ class Pool {
   }: GetPositionParams) => {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
-    const withdrawalAmountBN = toWei(withdrawalAmount);
+    const withdrawalAmountBN = toWad(withdrawalAmount);
     const pastOneDayTimestamp = Date.now() / 1000 - 24 * 3600;
     const { htpIndex } = await this.utils.poolPricesInfo();
 
@@ -294,7 +294,7 @@ class Pool {
     return await depositIndex({
       contractPool: contractPoolWithSigner,
       debtAmount:
-        typeof debtAmount === 'number' ? toWei(debtAmount) : debtAmount,
+        typeof debtAmount === 'number' ? toWad(debtAmount) : debtAmount,
     });
   };
 }

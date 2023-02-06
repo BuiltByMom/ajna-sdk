@@ -3,7 +3,7 @@ import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import addAccount from '../utils/add-account';
-import toWei from '../utils/to-wei';
+import { toWad } from '../utils/numeric';
 import dotenv from 'dotenv';
 import { BigNumber, providers } from 'ethers';
 
@@ -24,7 +24,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const TWETH = getErc20Contract(config.COLLATERAL_ADDRESS, provider);
     const receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
-      toWei(BigNumber.from('10'))
+      toWad(BigNumber.from('10'))
     );
     expect(receipt.transactionHash).not.toBe('');
   });

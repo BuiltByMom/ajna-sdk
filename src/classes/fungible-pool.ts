@@ -6,7 +6,7 @@ import {
 } from '../constants/interfaces';
 import { drawDebt, repayDebt } from '../contracts/erc20-pool';
 // import priceToIndex from '../utils/price-to-index';
-import toWei from '../utils/to-wei';
+import { toWad } from '../utils/numeric';
 import { Pool } from './pool';
 import { BigNumber } from 'ethers';
 
@@ -38,9 +38,9 @@ class FungiblePool extends Pool {
     return await drawDebt({
       contractPool: contractPoolWithSigner,
       borrowerAddress,
-      amountToBorrow: toWei(amountToBorrow),
+      amountToBorrow: toWad(amountToBorrow),
       limitIndex,
-      collateralToPledge: toWei(collateralToPledge),
+      collateralToPledge: toWad(collateralToPledge),
     });
   };
 
@@ -54,8 +54,8 @@ class FungiblePool extends Pool {
     return await repayDebt({
       contractPool: contractPoolWithSigner,
       borrowerAddress: await signer.getAddress(),
-      collateralAmountToPull: toWei(collateralAmountToPull),
-      maxQuoteTokenAmountToRepay: toWei(maxQuoteTokenAmountToRepay),
+      collateralAmountToPull: toWad(collateralAmountToPull),
+      maxQuoteTokenAmountToRepay: toWad(maxQuoteTokenAmountToRepay),
     });
   };
 
@@ -89,8 +89,8 @@ class FungiblePool extends Pool {
   };
 
   getIndexesPriceByRange = async (minPrice: number, maxPrice: number) => {
-    const minIndexCall = this.contractUtilsMulti.priceToIndex(toWei(minPrice));
-    const maxIndexCall = this.contractUtilsMulti.priceToIndex(toWei(maxPrice));
+    const minIndexCall = this.contractUtilsMulti.priceToIndex(toWad(minPrice));
+    const maxIndexCall = this.contractUtilsMulti.priceToIndex(toWad(maxPrice));
     const response: BigNumber[][] = await this.ethcallProvider.all([
       minIndexCall,
       maxIndexCall,
@@ -201,11 +201,11 @@ class FungiblePool extends Pool {
 
     const lupIndex = await this.depositIndex({
       signer,
-      debtAmount: poolDebt.add(toWei(debtAmount)),
+      debtAmount: poolDebt.add(toWad(debtAmount)),
     });
 
     const thresholdPrice = debt
-      .add(toWei(debtAmount))
+      .add(toWad(debtAmount))
       .div(collateral.add(collateralAmount));
 
     return {

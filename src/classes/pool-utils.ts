@@ -10,8 +10,8 @@ import {
   poolUtilizationInfo,
   priceToIndex,
 } from '../contracts/pool-info-utils';
-import toWei from '../utils/to-wei';
-import { Contract } from 'ethers';
+import { toWad } from '../utils/numeric';
+import { BigNumberish, Contract } from 'ethers';
 
 class PoolUtils {
   provider: SignerOrProvider;
@@ -179,10 +179,10 @@ class PoolUtils {
     });
   };
 
-  priceToIndex = async (price: number) => {
+  priceToIndex = async (price: BigNumberish) => {
     return await priceToIndex({
       contractPool: this.contract,
-      price: toWei(price),
+      price: toWad(price),
     });
   };
 

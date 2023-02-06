@@ -20,7 +20,8 @@
     "@metamask/detect-provider": "^2.0.0",
     "@metamask/providers": "^10.0.0",
     "ethcall": "^4.8.13",
-    "ethers": "^5.7.2"
+    "ethers": "^5.7.2",
+    "mathjs": "^11.5.1"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
