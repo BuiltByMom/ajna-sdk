@@ -1,7 +1,7 @@
 import { BigNumberish, ethers } from 'ethers';
 
 // converts from WAD precision to human-readable string
-export const fromWad = (value: number | string) => {
+export const fromWad = (value: BigNumberish) => {
   return ethers.utils.formatEther(String(value));
 };
 
@@ -10,4 +10,7 @@ export const toWad = (value: BigNumberish) => {
   return ethers.utils.parseUnits(String(value), 'ether');
 };
 
-// TODO: implement fromRay and toRay
+// converts from human-readable value to RAY precision
+export const toRay = (value: BigNumberish) => {
+  return ethers.utils.parseUnits(String(value), 27);
+};

@@ -3,7 +3,7 @@ import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
 import { Address, SignerOrProvider } from '../constants/interfaces';
 import checksumAddress from '../utils/checksum-address';
 import { toWad } from '../utils/numeric';
-import { Contract, Signer, ethers } from 'ethers';
+import { BigNumberish, Contract, Signer, ethers } from 'ethers';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(
@@ -15,9 +15,9 @@ export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
 
 export const deployPool = async (
   signer: Signer,
-  collateralAddress: string,
-  quoteAddress: string,
-  interestRate: string
+  collateralAddress: Address,
+  quoteAddress: Address,
+  interestRate: BigNumberish
 ) => {
   const contractInstance: Contract = getErc20PoolFactoryContract(signer);
   const interestRateParam = toWad(interestRate);

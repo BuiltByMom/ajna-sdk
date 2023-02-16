@@ -5,15 +5,11 @@ import {
   RepayDebtParams,
 } from '../constants/interfaces';
 import { drawDebt, repayDebt } from '../contracts/erc20-pool';
-// import priceToIndex from '../utils/price-to-index';
 import { toWad } from '../utils/numeric';
+import { priceToIndex } from '../utils/pricing';
+import { Bucket } from './bucket';
 import { Pool } from './pool';
 import { BigNumber } from 'ethers';
-
-type GetBucketByIndexObject = {
-  index?: number;
-  price: BigNumber;
-};
 
 class FungiblePool extends Pool {
   drawDebt = async ({
@@ -36,7 +32,7 @@ class FungiblePool extends Pool {
     }
 
     return await drawDebt({
-      contractPool: contractPoolWithSigner,
+      contract: contractPoolWithSigner,
       borrowerAddress,
       amountToBorrow: toWad(amountToBorrow),
       limitIndex,
@@ -52,7 +48,7 @@ class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await repayDebt({
-      contractPool: contractPoolWithSigner,
+      contract: contractPoolWithSigner,
       borrowerAddress: await signer.getAddress(),
       collateralAmountToPull: toWad(collateralAmountToPull),
       maxQuoteTokenAmountToRepay: toWad(maxQuoteTokenAmountToRepay),
@@ -133,45 +129,26 @@ class FungiblePool extends Pool {
   };
 
   getBucketByIndex = async (bucketIndex: number) => {
-    let info = {
-      index: bucketIndex,
-    } as GetBucketByIndexObject;
+    const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
 
     try {
-      info = await this.utils.bucketInfo(bucketIndex);
-
-      if (!info) {
-        throw new Error('ERR_BUCKET_INDEX_NOT_FOUND');
-      }
-
-      info.price = await this.utils.indexToPrice(bucketIndex);
+      await bucket.initialize();
     } catch (error: unknown) {
+      // TODO: can we just rethrow error here instead of wrapping?
       if ((error as string).search('network') !== -1) {
         throw new Error('ERR_NETWORK');
       }
     }
 
-    return info;
+    return bucket;
   };
 
-  getBucketByPrice = async (price: number) => {
-    let info = {} as GetBucketByIndexObject;
-
-    try {
-      info.index = await this.utils.priceToIndex(price);
-
-      if (info.index) {
-        info = await this.utils.bucketInfo(info.index);
-      } else {
-        return new Error('ERR_BUCKET_INDEX_NOT_FOUND');
-      }
-    } catch (error: unknown) {
-      if ((error as string).search('network') !== -1) {
-        throw new Error('ERR_NETWORK');
-      }
-    }
-
-    return info;
+  getBucketByPrice = async (price: BigNumber) => {
+    const bucketIndex = priceToIndex(price);
+    // priceToIndex should throw upon invalid price
+    const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
+    await bucket.initialize();
+    return bucket;
   };
 
   estimateLoan = async ({

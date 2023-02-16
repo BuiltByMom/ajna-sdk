@@ -12,7 +12,7 @@ dotenv.config();
 
 describe('Utility tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
-  const utils = new PoolUtils(provider, '0x0');
+  const utils = new PoolUtils(provider);
 
   it('should convert to and from WAD precision', async () => {
     const price = '112.20070213';

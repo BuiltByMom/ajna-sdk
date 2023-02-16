@@ -24,13 +24,13 @@ export const getErc20PoolContract = (
 };
 
 export const drawDebt = async ({
-  contractPool,
+  contract,
   borrowerAddress,
   amountToBorrow,
   limitIndex,
   collateralToPledge,
 }: DrawDebtParamsContract) => {
-  const tx = await contractPool.drawDebt(
+  const tx = await contract.drawDebt(
     borrowerAddress,
     amountToBorrow,
     limitIndex,
@@ -44,12 +44,12 @@ export const drawDebt = async ({
 };
 
 export const repayDebt = async ({
-  contractPool,
+  contract,
   borrowerAddress,
   collateralAmountToPull,
   maxQuoteTokenAmountToRepay,
 }: RepayDebtParamsContract) => {
-  return await contractPool.repayDebt(
+  return await contract.repayDebt(
     borrowerAddress,
     collateralAmountToPull,
     maxQuoteTokenAmountToRepay,
@@ -60,64 +60,59 @@ export const repayDebt = async ({
 };
 
 export const addQuoteToken = async ({
-  contractPool,
+  contract,
   amount,
   bucketIndex,
 }: AddQuoteTokenParamsContract) => {
-  return await contractPool.addQuoteToken(amount, bucketIndex, {
+  return await contract.addQuoteToken(amount, bucketIndex, {
     gasLimit: 1000000,
   });
 };
 
 export const moveQuoteToken = async ({
-  contractPool,
+  contract,
   maxAmountToMove,
   fromIndex,
   toIndex,
 }: MoveQuoteTokenParamsContract) => {
-  return await contractPool.moveQuoteToken(
-    maxAmountToMove,
-    fromIndex,
-    toIndex,
-    {
-      gasLimit: 1000000,
-    }
-  );
+  return await contract.moveQuoteToken(maxAmountToMove, fromIndex, toIndex, {
+    gasLimit: 1000000,
+  });
 };
 
 export const removeQuoteToken = async ({
-  contractPool,
+  contract,
   maxAmount,
   bucketIndex,
 }: RemoveQuoteTokenParamsContract) => {
-  return await contractPool.removeQuoteToken(maxAmount, bucketIndex, {
+  return await contract.removeQuoteToken(maxAmount, bucketIndex, {
     gasLimit: 1000000,
   });
 };
 
 export const lenderInfo = async ({
-  contractPool,
+  contract,
   lenderAddress,
   index,
 }: LenderInfoParamsContract): Promise<[BigNumber, BigNumber]> => {
-  return await contractPool.lenderInfo(index, lenderAddress);
+  return await contract.lenderInfo(index, lenderAddress);
 };
 
-export const debtInfo = async ({ contractPool }: DebtInfoParamsContract) => {
-  return await contractPool.debtInfo();
+export const debtInfo = async ({ contract }: DebtInfoParamsContract) => {
+  return await contract.debtInfo();
 };
 
 export const loansInfo = async ({
-  contractPool,
+  contract,
 }: LoansInfoParamsContract): Promise<[Address, BigNumber, BigNumber]> => {
-  return await contractPool.loansInfo();
+  return await contract.loansInfo();
 };
 
 export const depositIndex = async ({
-  contractPool,
+  contract,
   debtAmount,
 }: DepositIndexParamsContract) => {
-  return await contractPool.depositIndex(debtAmount);
+  return await contract.depositIndex(debtAmount);
 };
 
 export const approve = async ({

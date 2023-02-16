@@ -1,13 +1,14 @@
 import { Provider } from '../constants/interfaces';
-import { Factory } from './factory';
+import { FungiblePoolFactory } from './factory';
 
 class AjnaSDK {
   provider: Provider;
-  factory: Factory;
+  // TODO: SDK should offer both factories, with addresses loaded from configuration, not as args.
+  factory: FungiblePoolFactory;
 
   constructor(provider: Provider) {
     this.provider = provider;
-    this.factory = new Factory(provider);
+    this.factory = new FungiblePoolFactory(provider);
   }
 }
 

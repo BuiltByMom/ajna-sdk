@@ -1,9 +1,10 @@
 import { AjnaSDK } from '../classes/ajna';
+import { Bucket } from '../classes/bucket';
 import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import addAccount from '../utils/add-account';
-import { toWad } from '../utils/numeric';
+import { toRay, toWad } from '../utils/numeric';
 import dotenv from 'dotenv';
 import { BigNumber, providers } from 'ethers';
 
@@ -192,21 +193,35 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use getBucketByIndex succesfully', async () => {
-    const bucket = await pool.getBucketByIndex(1234);
+    const bucket: Bucket = await pool.getBucketByIndex(1234);
 
     expect(bucket).not.toBe('');
+    expect(bucket.index).toEqual(1234);
+    expect(bucket.price).toEqual(toWad('2134186.913321104827263532'));
+    expect(bucket.deposit?.gte(toWad('0.5'))).toBeTruthy();
+    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
+    expect(bucket.exchangeRate).toEqual(toRay('1'));
   });
 
   it('should use getBucketByPrice succesfully', async () => {
-    const bucket = await pool.getBucketByPrice(0.1);
+    const bucket: Bucket = await pool.getBucketByPrice(toWad('0.1'));
 
     expect(bucket).not.toBe('');
+    expect(bucket.index).toEqual(4618);
+    expect(bucket.price).toEqual(toWad('0.099834229041488465'));
+    expect(bucket.deposit).toEqual(toWad('0'));
+    expect(bucket.bucketLPs).toEqual(toWad('0'));
+    expect(bucket.exchangeRate).toEqual(toRay('1'));
   });
 
   it('should use lpsToQuoteTokens succesfully', async () => {
-    const bucket = await pool.utils.lpsToQuoteTokens(10, 2000);
+    const bucket = await pool.getBucketByIndex(2000);
 
     expect(bucket).not.toBe('');
+    expect(bucket.exchangeRate?.gte(toRay('1'))).toBeTruthy();
+    expect(bucket.exchangeRate?.lt(toRay('1.1'))).toBeTruthy();
+    const deposit = await bucket.lpsToQuoteTokens(toRay('10'));
+    expect(deposit.gt(toWad('4'))).toBeTruthy();
   });
 
   it('should use getPosition succesfully', async () => {

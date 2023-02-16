@@ -7,7 +7,10 @@ import { deployPool, deployedPools } from '../contracts/erc20-pool-factory';
 import { FungiblePool } from './fungible-pool';
 import { utils } from 'ethers';
 
-class Factory {
+/**
+ * Factory used to find or create pools with ERC20 collateral.
+ */
+class FungiblePoolFactory {
   provider: SignerOrProvider;
 
   constructor(provider: SignerOrProvider) {
@@ -58,4 +61,4 @@ class Factory {
   };
 }
 
-export { Factory };
+export { FungiblePoolFactory };

@@ -8,6 +8,14 @@ A typescript SDK that can be used to create Dapps and keepers in Ajna ecosystem.
 - `yarn install` installs dependencies.
 - `yarn build` builds the app at `build`, cleaning the folder first.
 
+## Design
+
+### Exception handling
+
+To improve responsiveness, the SDK may raise an exception locally if it knows the transaction will not succeed with the current state. The SDK does not attempt to handle or wrap connectivity errors. As such, the consumer should assume all onchain calls could throw an exception.
+
+// TODO: Make a list of generally expected exception classes (ours and Ethers.js).
+
 ## Unit testing
 
 Copy `.env.example` to `.env` to run tests against a dockerized Ajna testnet.

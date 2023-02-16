@@ -21,7 +21,7 @@ export const getPoolInfoUtilsContractMulti = () => {
 };
 
 export const borrowerInfo = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
   borrowerAddress,
 }: BorrowerInfoParamsContract) => {
@@ -29,28 +29,28 @@ export const borrowerInfo = async ({
 };
 
 export const poolPricesInfo = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolPricesInfo(poolAddress);
 };
 
 export const poolLoansInfo = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolLoansInfo(poolAddress);
 };
 
 export const poolUtilizationInfo = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
 }: PoolPricesInfoParamsContract) => {
   return await contractPool.poolUtilizationInfo(poolAddress);
 };
 
 export const bucketInfo = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
   index,
 }: PoolBucketInfoParamsContract) => {
@@ -58,7 +58,7 @@ export const bucketInfo = async ({
 };
 
 export const lpsToQuoteTokens = async ({
-  contractPool,
+  contract: contractPool,
   poolAddress,
   lpTokens,
   index,
@@ -67,14 +67,14 @@ export const lpsToQuoteTokens = async ({
 };
 
 export const priceToIndex = async ({
-  contractPool,
+  contract: contractPool,
   price,
 }: PoolPriceToIndexParamsContract) => {
   return await contractPool.priceToIndex(price);
 };
 
 export const indexToPrice = async ({
-  contractPool,
+  contract: contractPool,
   index,
 }: PoolIndexToPriceParamsContract) => {
   return await contractPool.indexToPrice(index);

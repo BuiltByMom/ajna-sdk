@@ -1,3 +1,4 @@
+import { SdkError } from '../classes/types';
 import prices from '../constants/prices.json';
 import { BigNumber } from 'ethers';
 import { log2, bignumber as mbn } from 'mathjs';
@@ -21,7 +22,7 @@ const PRICE_STEP = mbn('1.005');
 export const indexToPrice = (index: number) => {
   const bucketIndex = MAX_BUCKET_INDEX - index;
   if (bucketIndex < MIN_BUCKET_INDEX || bucketIndex > MAX_BUCKET_INDEX) {
-    throw new Error('ERR_BUCKET_INDEX_OUT_OF_BOUNDS');
+    throw new SdkError('ERR_BUCKET_INDEX_OUT_OF_BOUNDS');
   }
 
   return BigNumber.from(prices[index]);
@@ -39,7 +40,7 @@ export const priceToIndex = (price: BigNumber) => {
   const mbnPrice = mbn(price.toString()).div(1e18);
 
   if (mbnPrice.lt(MIN_PRICE) || mbnPrice.gt(MAX_PRICE)) {
-    throw new Error('ERR_BUCKET_PRICE_OUT_OF_BOUNDS');
+    throw new SdkError('ERR_BUCKET_PRICE_OUT_OF_BOUNDS');
   }
 
   const index = log2(mbnPrice).div(log2(PRICE_STEP)).toNumber();
