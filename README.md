@@ -27,5 +27,14 @@ Copy `.env.example` to `.env` to run tests against a dockerized Ajna testnet.
 To pass parameters to `jest`, run using `npx`. For example, to run a single test and print console output:
 
 ```
-npx jest -t 'should confirm AjnaSDK pool succesfully' --silent=false
+npx jest --silent=false -t 'should confirm AjnaSDK pool succesfully'
 ```
+
+## Maintenance
+
+This package offers a facility to translate ABIs as compiled to a format consumable by Ethers.js. To use:
+
+- Set `AJNA_ABIS` environment var to the location where your compiler has generated the JSON ABI files. This assumes all ABIs reside in a single directory.
+- Run `yarn update-abis` to overwrite current ABIs in `src/abis`.
+
+This facility was tested against `brownie` compilation output.

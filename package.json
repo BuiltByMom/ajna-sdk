@@ -6,7 +6,8 @@
     "build": "rimraf ./dist && tsc",
     "start": "nodemon",
     "test": "jest",
-    "test:dev": "jest --watchAll"
+    "test:dev": "jest --watchAll",
+    "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'"
   },
   "keywords": [],
   "author": "@ajna-finance",
