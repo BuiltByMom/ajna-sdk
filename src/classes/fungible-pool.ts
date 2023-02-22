@@ -2,9 +2,17 @@ import {
   Address,
   DrawDebtParams,
   EstimateLoanParams,
+  GenericApproveParams,
+  MAX_FENWICK_INDEX,
   RepayDebtParams,
+  SignerOrProvider,
 } from '../constants/interfaces';
-import { drawDebt, repayDebt } from '../contracts/erc20-pool';
+import {
+  approve,
+  drawDebt,
+  getErc20PoolContract,
+  repayDebt,
+} from '../contracts/erc20-pool';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
@@ -12,9 +20,35 @@ import { Pool } from './pool';
 import { BigNumber } from 'ethers';
 
 class FungiblePool extends Pool {
+  constructor(
+    provider: SignerOrProvider,
+    poolAddress: string,
+    collateralAddress: string,
+    quoteAddress: string
+  ) {
+    super(
+      provider,
+      poolAddress,
+      collateralAddress,
+      quoteAddress,
+      getErc20PoolContract(poolAddress, provider)
+    );
+    this.initialize().then((response) => {
+      this.ethcallProvider = response;
+    });
+  }
+
+  collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
+    return await approve({
+      provider: signer,
+      poolAddress: this.poolAddress,
+      tokenAddress: this.collateralAddress,
+      allowance: toWad(allowance),
+    });
+  };
+
   drawDebt = async ({
     signer,
-    borrowerAddress,
     amountToBorrow,
     limitIndex,
     collateralToPledge,
@@ -33,25 +67,29 @@ class FungiblePool extends Pool {
 
     return await drawDebt({
       contract: contractPoolWithSigner,
-      borrowerAddress,
+      borrowerAddress: await signer.getAddress(),
       amountToBorrow: toWad(amountToBorrow),
-      limitIndex,
+      limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
       collateralToPledge: toWad(collateralToPledge),
     });
   };
 
   repayDebt = async ({
     signer,
-    collateralAmountToPull,
     maxQuoteTokenAmountToRepay,
+    collateralAmountToPull,
+    limitIndex,
   }: RepayDebtParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
+    const sender = await signer.getAddress();
     return await repayDebt({
       contract: contractPoolWithSigner,
-      borrowerAddress: await signer.getAddress(),
-      collateralAmountToPull: toWad(collateralAmountToPull),
+      borrowerAddress: sender,
       maxQuoteTokenAmountToRepay: toWad(maxQuoteTokenAmountToRepay),
+      collateralAmountToPull: toWad(collateralAmountToPull),
+      collateralReceiver: sender,
+      limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
     });
   };
 

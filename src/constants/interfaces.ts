@@ -32,39 +32,62 @@ export type GenericApproveParams = BaseParams & {
 export type DrawDebtParamsContract = BaseParamsWithContract & {
   borrowerAddress: Address;
   amountToBorrow: BigNumberish;
-  collateralToPledge: BigNumberish;
   limitIndex: number;
+  collateralToPledge: BigNumberish;
 };
 
 export type DrawDebtParams = BaseParams & {
-  borrowerAddress: Address;
   amountToBorrow: BigNumberish;
-  limitIndex: number;
+  limitIndex: number | null;
   collateralToPledge: BigNumberish;
 };
 
 export type RepayDebtParamsContract = BaseParamsWithContract & {
   borrowerAddress: Address;
-  collateralAmountToPull: BigNumberish;
   maxQuoteTokenAmountToRepay: BigNumberish;
+  collateralAmountToPull: BigNumberish;
+  collateralReceiver: Address;
+  limitIndex: number;
 };
 
 export type RepayDebtParams = BaseParams & {
-  collateralAmountToPull: BigNumberish;
   maxQuoteTokenAmountToRepay: BigNumberish;
+  collateralAmountToPull: BigNumberish;
+  limitIndex: number | null;
 };
 
 export type AddQuoteTokenParamsContract = BaseParamsWithContract & {
   amount: BigNumberish;
   bucketIndex: number;
+  expiry: number;
 };
 
 export type AddQuoteTokenParams = BaseParams & {
   amount: BigNumberish;
   bucketIndex: number;
+  ttlSeconds: number | null;
+};
+
+export type MoveQuoteTokenParamsContract = BaseParamsWithContract & {
+  maxAmountToMove: BigNumberish;
+  fromIndex: number;
+  toIndex: number;
+  expiry: number;
+};
+
+export type MoveQuoteTokenParams = BaseParams & {
+  maxAmountToMove: BigNumberish;
+  fromIndex: number;
+  toIndex: number;
+  ttlSeconds: number | null;
 };
 
 export type RemoveQuoteTokenParamsContract = BaseParamsWithContract & {
+  maxAmount: BigNumberish;
+  bucketIndex: number;
+};
+
+export type RemoveQuoteTokenParams = BaseParams & {
   maxAmount: BigNumberish;
   bucketIndex: number;
 };
@@ -80,23 +103,6 @@ export type LoansInfoParamsContract = BaseParamsWithContract;
 
 export type DepositIndexParamsContract = BaseParamsWithContract & {
   debtAmount: BigNumberish;
-};
-
-export type RemoveQuoteTokenParams = BaseParams & {
-  maxAmount: BigNumberish;
-  bucketIndex: number;
-};
-
-export type MoveQuoteTokenParamsContract = BaseParamsWithContract & {
-  maxAmountToMove: BigNumberish;
-  fromIndex: number;
-  toIndex: number;
-};
-
-export type MoveQuoteTokenParams = BaseParams & {
-  maxAmountToMove: BigNumberish;
-  fromIndex: number;
-  toIndex: number;
 };
 
 export type LenderInfoParams = BaseParams & {
@@ -183,3 +189,5 @@ export type EstimateLoanParams = BaseParams & {
   debtAmount: BigNumberish;
   collateralAmount: BigNumberish;
 };
+
+export const MAX_FENWICK_INDEX = 7388;

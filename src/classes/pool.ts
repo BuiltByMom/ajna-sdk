@@ -11,23 +11,23 @@ import {
   RemoveQuoteTokenParams,
   SignerOrProvider,
 } from '../constants/interfaces';
+import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
-  approve,
   debtInfo,
   depositIndex,
-  getErc20PoolContract,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
-} from '../contracts/erc20-pool';
+} from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { toWad } from '../utils/numeric';
+import { getExpiry } from '../utils/time';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { Contract } from 'ethers';
@@ -35,7 +35,7 @@ import { Contract } from 'ethers';
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
  */
-class Pool {
+abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
   contractUtils: Contract;
@@ -50,21 +50,18 @@ class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     collateralAddress: string,
-    quoteAddress: string
+    quoteAddress: string,
+    contract: Contract
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
-    this.contract = getErc20PoolContract(poolAddress, this.provider);
     this.contractUtils = getPoolInfoUtilsContract(provider);
     this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
-    this.utils = new PoolUtils(this.provider as Provider);
+    this.utils = new PoolUtils(provider as Provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
     this.ethcallProvider = {} as ProviderMulti;
-
-    this.initialize().then((response) => {
-      this.ethcallProvider = response;
-    });
+    this.contract = contract;
   }
 
   initialize = async () => {
@@ -73,15 +70,6 @@ class Pool {
     await ethcallProvider.init(this.provider as Provider);
 
     return ethcallProvider;
-  };
-
-  collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve({
-      provider: signer,
-      poolAddress: this.poolAddress,
-      tokenAddress: this.collateralAddress,
-      allowance: toWad(allowance),
-    });
   };
 
   quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
@@ -97,6 +85,7 @@ class Pool {
     signer,
     amount,
     bucketIndex,
+    ttlSeconds,
   }: AddQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -104,6 +93,7 @@ class Pool {
       contract: contractPoolWithSigner,
       amount: toWad(amount),
       bucketIndex,
+      expiry: await getExpiry(this.provider, ttlSeconds),
     });
   };
 
@@ -112,6 +102,7 @@ class Pool {
     maxAmountToMove,
     fromIndex,
     toIndex,
+    ttlSeconds,
   }: MoveQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -120,6 +111,7 @@ class Pool {
       maxAmountToMove: toWad(maxAmountToMove),
       fromIndex,
       toIndex,
+      expiry: await getExpiry(this.provider, ttlSeconds),
     });
   };
 
@@ -134,44 +126,6 @@ class Pool {
       contract: contractPoolWithSigner,
       maxAmount: toWad(maxAmount),
       bucketIndex,
-    });
-  };
-
-  addLiquidity = async ({
-    signer,
-    amount,
-    bucketIndex,
-  }: AddQuoteTokenParams) => {
-    return await this.addQuoteToken({
-      signer,
-      amount,
-      bucketIndex,
-    });
-  };
-
-  removeLiquidity = async ({
-    signer,
-    maxAmount,
-    bucketIndex,
-  }: RemoveQuoteTokenParams) => {
-    return await this.removeQuoteToken({
-      signer,
-      maxAmount,
-      bucketIndex,
-    });
-  };
-
-  moveLiquidity = async ({
-    signer,
-    maxAmountToMove,
-    fromIndex,
-    toIndex,
-  }: MoveQuoteTokenParams) => {
-    return await this.moveQuoteToken({
-      signer,
-      maxAmountToMove,
-      fromIndex,
-      toIndex,
     });
   };
 

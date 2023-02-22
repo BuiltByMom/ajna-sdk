@@ -9,8 +9,3 @@ export const fromWad = (value: BigNumberish) => {
 export const toWad = (value: BigNumberish) => {
   return ethers.utils.parseUnits(String(value), 'ether');
 };
-
-// converts from human-readable value to RAY precision
-export const toRay = (value: BigNumberish) => {
-  return ethers.utils.parseUnits(String(value), 27);
-};

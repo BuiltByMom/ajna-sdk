@@ -4,7 +4,7 @@ import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import addAccount from '../utils/add-account';
-import { toRay, toWad } from '../utils/numeric';
+import { toWad } from '../utils/numeric';
 import dotenv from 'dotenv';
 import { BigNumber, providers } from 'ethers';
 
@@ -41,7 +41,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(pool.poolAddress).not.toBe('');
   });
 
-  it('should use addLiquidity succesfully', async () => {
+  it('should use addQuoteToken succesfully', async () => {
     const quoteAmount = 10;
     const bucketIndex = 2000;
     const allowance = 100000000;
@@ -51,10 +51,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance,
     });
 
-    const receipt = await pool.addLiquidity({
+    const receipt = await pool.addQuoteToken({
       signer: signerLender,
       amount: quoteAmount,
       bucketIndex,
+      ttlSeconds: null,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -73,7 +74,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     const receipt = await pool.drawDebt({
       signer: signerBorrower,
-      borrowerAddress: config.BORROWER,
       amountToBorrow,
       limitIndex,
       collateralToPledge,
@@ -94,14 +94,15 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     const receipt = await pool.repayDebt({
       signer: signerBorrower,
-      collateralAmountToPull,
       maxQuoteTokenAmountToRepay,
+      collateralAmountToPull,
+      limitIndex: null,
     });
 
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should use removeLiquidity succesfully', async () => {
+  it('should use removeQuoteToken succesfully', async () => {
     const allowance = 100000;
     const quoteAmount = 1;
     const bucketIndex = 2000;
@@ -111,7 +112,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance,
     });
 
-    const receipt = await pool.removeLiquidity({
+    const receipt = await pool.removeQuoteToken({
       signer: signerLender,
       maxAmount: quoteAmount,
       bucketIndex,
@@ -120,7 +121,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should use moveLiquidity succesfully', async () => {
+  it('should use moveQuoteToken succesfully', async () => {
     const allowance = 100000;
     const maxAmountToMove = 5;
     const bucketIndexFrom = 2000;
@@ -131,11 +132,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance,
     });
 
-    const receipt = await pool.moveLiquidity({
+    const receipt = await pool.moveQuoteToken({
       signer: signerLender,
       maxAmountToMove,
       fromIndex: bucketIndexFrom,
       toIndex: bucketIndexTo,
+      ttlSeconds: null,
     });
 
     expect(receipt.transactionHash).not.toBe('');
@@ -173,6 +175,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerLender,
       amount: quoteAmount,
       bucketIndex,
+      ttlSeconds: null,
     });
 
     const buckets = await pool.getIndexesPriceByRange(0.01, 0.1);
@@ -198,9 +201,10 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket).not.toBe('');
     expect(bucket.index).toEqual(1234);
     expect(bucket.price).toEqual(toWad('2134186.913321104827263532'));
+    console.info('bucket.deposit ', bucket.deposit);
     expect(bucket.deposit?.gte(toWad('0.5'))).toBeTruthy();
     expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
-    expect(bucket.exchangeRate).toEqual(toRay('1'));
+    expect(bucket.exchangeRate).toEqual(toWad('1'));
   });
 
   it('should use getBucketByPrice succesfully', async () => {
@@ -211,16 +215,16 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket.price).toEqual(toWad('0.099834229041488465'));
     expect(bucket.deposit).toEqual(toWad('0'));
     expect(bucket.bucketLPs).toEqual(toWad('0'));
-    expect(bucket.exchangeRate).toEqual(toRay('1'));
+    expect(bucket.exchangeRate).toEqual(toWad('1'));
   });
 
   it('should use lpsToQuoteTokens succesfully', async () => {
     const bucket = await pool.getBucketByIndex(2000);
 
     expect(bucket).not.toBe('');
-    expect(bucket.exchangeRate?.gte(toRay('1'))).toBeTruthy();
-    expect(bucket.exchangeRate?.lt(toRay('1.1'))).toBeTruthy();
-    const deposit = await bucket.lpsToQuoteTokens(toRay('10'));
+    expect(bucket.exchangeRate?.gte(toWad('1'))).toBeTruthy();
+    expect(bucket.exchangeRate?.lt(toWad('1.1'))).toBeTruthy();
+    const deposit = await bucket.lpsToQuoteTokens(toWad('10'));
     expect(deposit.gt(toWad('4'))).toBeTruthy();
   });
 
