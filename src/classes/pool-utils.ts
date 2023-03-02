@@ -4,8 +4,7 @@ import {
   indexToPrice,
   priceToIndex,
 } from '../contracts/pool-info-utils';
-import { toWad } from '../utils/numeric';
-import { BigNumberish, Contract } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 
 /**
  * Utilities which can be applied to any pool.
@@ -23,10 +22,10 @@ class PoolUtils {
     this.contract = getPoolInfoUtilsContract(signer);
   };
 
-  priceToIndex = async (price: BigNumberish) => {
+  priceToIndex = async (price: BigNumber) => {
     return await priceToIndex({
       contract: this.contract,
-      price: toWad(price),
+      price,
     });
   };
 

@@ -56,10 +56,18 @@ describe('Utility tests', () => {
   });
 
   it('should convert from price to index using contract call', async () => {
-    expect(await utils.priceToIndex('2000')).toEqual(BigNumber.from(2632));
-    expect(await utils.priceToIndex('100.0')).toEqual(BigNumber.from(3232));
-    expect(await utils.priceToIndex('1.0')).toEqual(BigNumber.from(4156));
-    expect(await utils.priceToIndex('0.00682')).toEqual(BigNumber.from(5156));
+    expect(await utils.priceToIndex(toWad('2000'))).toEqual(
+      BigNumber.from(2632)
+    );
+    expect(await utils.priceToIndex(toWad('100.0'))).toEqual(
+      BigNumber.from(3232)
+    );
+    expect(await utils.priceToIndex(toWad('1.0'))).toEqual(
+      BigNumber.from(4156)
+    );
+    expect(await utils.priceToIndex(toWad('0.00682'))).toEqual(
+      BigNumber.from(5156)
+    );
   });
 
   it('should convert from price to index using local implementation', async () => {
@@ -76,8 +84,12 @@ describe('Utility tests', () => {
       indexToPriceLocal(9999);
     }).toThrow('ERR_BUCKET_INDEX_OUT_OF_BOUNDS');
 
-    await expect(utils.priceToIndex('1222333444')).rejects.toThrow('reverted');
-    await expect(utils.priceToIndex('0.00000005')).rejects.toThrow('reverted');
+    await expect(utils.priceToIndex(toWad('1222333444'))).rejects.toThrow(
+      'reverted'
+    );
+    await expect(utils.priceToIndex(toWad('0.00000005'))).rejects.toThrow(
+      'reverted'
+    );
 
     expect(() => {
       priceToIndexLocal(toWad('1222333444'));

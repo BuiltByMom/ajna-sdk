@@ -3,8 +3,10 @@ import prices from '../constants/prices.json';
 import { BigNumber } from 'ethers';
 import { log2, bignumber as mbn } from 'mathjs';
 
+// Not exported because these are implementation details of the pricing calculation
 const MIN_BUCKET_INDEX = -3232;
 const MAX_BUCKET_INDEX = 4156;
+// Not exported because they use different BigNumber implementation than ethers.js
 const MIN_PRICE = mbn('99836282890e-18');
 const MAX_PRICE = mbn('1004968987.606512354182109771');
 const PRICE_STEP = mbn('1.005');
@@ -53,7 +55,7 @@ export const priceToIndex = (price: BigNumber) => {
   }
 };
 
-// This can be used to rebuild the price list below, used by indexToPrice
+// This can be used to rebuild constants/prices.json, used by indexToPrice
 // jest.setTimeout(360 * 1000);
 // const createPriceList = async () => {
 //   let str = '';

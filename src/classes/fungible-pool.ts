@@ -13,7 +13,6 @@ import {
   getErc20PoolContract,
   repayDebt,
 } from '../contracts/erc20-pool';
-import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
@@ -33,9 +32,7 @@ class FungiblePool extends Pool {
       quoteAddress,
       getErc20PoolContract(poolAddress, provider)
     );
-    this.initialize().then((response) => {
-      this.ethcallProvider = response;
-    });
+    this.initialize();
   }
 
   collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
@@ -43,7 +40,7 @@ class FungiblePool extends Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.collateralAddress,
-      allowance: toWad(allowance),
+      allowance: allowance,
     });
   };
 
@@ -68,9 +65,9 @@ class FungiblePool extends Pool {
     return await drawDebt({
       contract: contractPoolWithSigner,
       borrowerAddress: await signer.getAddress(),
-      amountToBorrow: toWad(amountToBorrow),
+      amountToBorrow: amountToBorrow,
       limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
-      collateralToPledge: toWad(collateralToPledge),
+      collateralToPledge: collateralToPledge,
     });
   };
 
@@ -86,8 +83,8 @@ class FungiblePool extends Pool {
     return await repayDebt({
       contract: contractPoolWithSigner,
       borrowerAddress: sender,
-      maxQuoteTokenAmountToRepay: toWad(maxQuoteTokenAmountToRepay),
-      collateralAmountToPull: toWad(collateralAmountToPull),
+      maxQuoteTokenAmountToRepay: maxQuoteTokenAmountToRepay,
+      collateralAmountToPull: collateralAmountToPull,
       collateralReceiver: sender,
       limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
     });
@@ -120,50 +117,6 @@ class FungiblePool extends Pool {
       collateral,
       thresholdPrice: tp,
     };
-  };
-
-  getIndexesPriceByRange = async (minPrice: number, maxPrice: number) => {
-    const minIndexCall = this.contractUtilsMulti.priceToIndex(toWad(minPrice));
-    const maxIndexCall = this.contractUtilsMulti.priceToIndex(toWad(maxPrice));
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      minIndexCall,
-      maxIndexCall,
-    ]);
-
-    const minIndex = response[0];
-    const maxIndex = response[1];
-
-    const indexToPriceCalls = [];
-
-    for (
-      let index = Number(maxIndex.toString());
-      index <= Number(minIndex.toString());
-      index++
-    ) {
-      indexToPriceCalls.push(this.contractUtilsMulti.indexToPrice(index));
-    }
-
-    const responseCalls: BigNumber[] = await this.ethcallProvider.all(
-      indexToPriceCalls
-    );
-
-    const buckets: { index: number; price: BigNumber }[] = [];
-    let index = Number(maxIndex.toString());
-
-    responseCalls.forEach((price, ix) => {
-      const swiftIndex = index + ix;
-
-      buckets[swiftIndex] = {
-        index: swiftIndex,
-        price,
-      };
-
-      index = swiftIndex;
-    });
-
-    return buckets.filter((element) => {
-      return element !== null;
-    });
   };
 
   getBucketByIndex = async (bucketIndex: number) => {
@@ -216,11 +169,11 @@ class FungiblePool extends Pool {
 
     const lupIndex = await this.depositIndex({
       signer,
-      debtAmount: poolDebt.add(toWad(debtAmount)),
+      debtAmount: poolDebt.add(debtAmount),
     });
 
     const thresholdPrice = debt
-      .add(toWad(debtAmount))
+      .add(debtAmount)
       .div(collateral.add(collateralAmount));
 
     return {

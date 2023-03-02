@@ -3,6 +3,7 @@ import {
   DebtInfoParams,
   DepositIndexParams,
   GenericApproveParams,
+  GetIndexesPriceByRangeParams,
   GetPositionParams,
   LenderInfoParams,
   LoansInfoParams,
@@ -26,11 +27,10 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { Contract } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
@@ -65,11 +65,8 @@ abstract class Pool {
   }
 
   initialize = async () => {
-    const ethcallProvider = new ProviderMulti();
-
-    await ethcallProvider.init(this.provider as Provider);
-
-    return ethcallProvider;
+    this.ethcallProvider = new ProviderMulti();
+    await this.ethcallProvider.init(this.provider as Provider);
   };
 
   quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
@@ -77,7 +74,7 @@ abstract class Pool {
       provider: signer,
       poolAddress: this.poolAddress,
       tokenAddress: this.quoteAddress,
-      allowance: toWad(allowance),
+      allowance: allowance,
     });
   };
 
@@ -91,7 +88,7 @@ abstract class Pool {
 
     return await addQuoteToken({
       contract: contractPoolWithSigner,
-      amount: toWad(amount),
+      amount: amount,
       bucketIndex,
       expiry: await getExpiry(this.provider, ttlSeconds),
     });
@@ -108,7 +105,7 @@ abstract class Pool {
 
     return await moveQuoteToken({
       contract: contractPoolWithSigner,
-      maxAmountToMove: toWad(maxAmountToMove),
+      maxAmountToMove: maxAmountToMove,
       fromIndex,
       toIndex,
       expiry: await getExpiry(this.provider, ttlSeconds),
@@ -124,7 +121,7 @@ abstract class Pool {
 
     return await removeQuoteToken({
       contract: contractPoolWithSigner,
-      maxAmount: toWad(maxAmount),
+      maxAmount: maxAmount,
       bucketIndex,
     });
   };
@@ -215,12 +212,12 @@ abstract class Pool {
 
   getPosition = async ({
     signer,
-    withdrawalAmount,
     bucketIndex,
+    proposedWithdrawal,
   }: GetPositionParams) => {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
-    const withdrawalAmountBN = toWad(withdrawalAmount);
+    const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
     const pastOneDayTimestamp = Date.now() / 1000 - 24 * 3600;
     const [, , , htpIndex, ,] = await poolPricesInfo({
       contract: this.contractUtils,
@@ -267,8 +264,54 @@ abstract class Pool {
 
     return await depositIndex({
       contract: contractPoolWithSigner,
-      debtAmount:
-        typeof debtAmount === 'number' ? toWad(debtAmount) : debtAmount,
+      debtAmount: debtAmount,
+    });
+  };
+
+  getIndexesPriceByRange = async ({
+    minPrice,
+    maxPrice,
+  }: GetIndexesPriceByRangeParams) => {
+    const minIndexCall = this.contractUtilsMulti.priceToIndex(minPrice);
+    const maxIndexCall = this.contractUtilsMulti.priceToIndex(maxPrice);
+    const response: BigNumber[][] = await this.ethcallProvider.all([
+      minIndexCall,
+      maxIndexCall,
+    ]);
+
+    const minIndex = response[0];
+    const maxIndex = response[1];
+
+    const indexToPriceCalls = [];
+
+    for (
+      let index = Number(maxIndex.toString());
+      index <= Number(minIndex.toString());
+      index++
+    ) {
+      indexToPriceCalls.push(this.contractUtilsMulti.indexToPrice(index));
+    }
+
+    const responseCalls: BigNumber[] = await this.ethcallProvider.all(
+      indexToPriceCalls
+    );
+
+    const buckets: { index: number; price: BigNumber }[] = [];
+    let index = Number(maxIndex.toString());
+
+    responseCalls.forEach((price, ix) => {
+      const swiftIndex = index + ix;
+
+      buckets[swiftIndex] = {
+        index: swiftIndex,
+        price,
+      };
+
+      index = swiftIndex;
+    });
+
+    return buckets.filter((element) => {
+      return element !== null;
     });
   };
 }

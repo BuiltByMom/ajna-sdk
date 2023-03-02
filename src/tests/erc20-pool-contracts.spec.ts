@@ -3,8 +3,9 @@ import { Bucket } from '../classes/bucket';
 import { FungiblePool } from '../classes/fungible-pool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
-import addAccount from '../utils/add-account';
+import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
+import './test-utils.ts';
 import dotenv from 'dotenv';
 import { BigNumber, providers } from 'ethers';
 
@@ -15,13 +16,13 @@ jest.setTimeout(1200000);
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  const signerLender = addAccount(config.LENDER_KEY, provider);
-  const signerBorrower = addAccount(config.BORROWER_KEY, provider);
+  const signerLender = addAccountFromKey(config.LENDER_KEY, provider);
+  const signerBorrower = addAccountFromKey(config.BORROWER_KEY, provider);
   let pool: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
     // mint tokens to actors
-    const signerDeployer = addAccount(config.DEPLOYER_KEY, provider);
+    const signerDeployer = addAccountFromKey(config.DEPLOYER_KEY, provider);
     const TWETH = getErc20Contract(config.COLLATERAL_ADDRESS, provider);
     const receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
@@ -35,7 +36,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerLender,
       collateralAddress: config.COLLATERAL_ADDRESS,
       quoteAddress: config.QUOTE_ADDRESS,
-      interestRate: '0.05',
+      interestRate: toWad('0.05'),
     });
 
     expect(pool.poolAddress).not.toBe('');
@@ -48,12 +49,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance,
+      allowance: toWad(allowance),
     });
 
     const receipt = await pool.addQuoteToken({
       signer: signerLender,
-      amount: quoteAmount,
+      amount: toWad(quoteAmount),
       bucketIndex,
       ttlSeconds: null,
     });
@@ -62,14 +63,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use drawDebt succesfully', async () => {
-    const allowance = 100000;
-    const amountToBorrow = 1;
-    const collateralToPledge = 3;
+    const amountToBorrow = toWad(1.0);
     const limitIndex = 2000;
+    const collateralToPledge = toWad(3.0);
 
     await pool.collateralApprove({
       signer: signerBorrower,
-      allowance,
+      allowance: collateralToPledge,
     });
 
     const receipt = await pool.drawDebt({
@@ -82,14 +82,54 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
+  // it('should raise expected exception upon ajna revert', async () => {
+  //   try {
+  //     // try to draw debt with insufficient collateral;
+  //     // pool should revert with LimitIndexExceeded
+  //     await pool.drawDebt({
+  //       signer: signerBorrower,
+  //       amountToBorrow: 1,
+  //       limitIndex: 0,
+  //       collateralToPledge: 3,
+  //     });
+  //     fail('previous call should have raised exception');
+  //   } catch (error: any) {
+  //     console.info(error);
+  //     // console.info('error.receipt: ', error.receipt);
+
+  //     // This won't work in TypeScript
+  //     // const revertData = error.data;
+  //     // const decodedError = pool.contract.interface.parseError(revertData);
+  //     // console.info('decodedError: ', decodedError);
+  //   }
+  //   fail('just testing');
+  // });
+
+  // it('should raise expected exception upon external revert', async () => {
+  //   try {
+  //     // try to pledge more collateral than the borrower has;
+  //     // token should revert with transfer error
+  //     await pool.drawDebt({
+  //       signer: signerBorrower,
+  //       amountToBorrow: toWad(0),
+  //       limitIndex: null,
+  //       collateralToPledge: toWad(BigNumber.from('11')),
+  //     });
+  //     fail('previous call should have raised exception');
+  //   } catch (error) {
+  //     // console.info(typeof error);      // returns "object"; not helpful
+  //     // console.info(error.constructor); // doesn't work
+  //     // console.info(error);
+  //   }
+  // });
+
   it('should use repayDebt succesfully', async () => {
-    const allowance = 100000000;
-    const collateralAmountToPull = 1;
-    const maxQuoteTokenAmountToRepay = 1;
+    const collateralAmountToPull = toWad(1);
+    const maxQuoteTokenAmountToRepay = toWad(1);
 
     await pool.quoteApprove({
       signer: signerBorrower,
-      allowance,
+      allowance: maxQuoteTokenAmountToRepay,
     });
 
     const receipt = await pool.repayDebt({
@@ -103,14 +143,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use removeQuoteToken succesfully', async () => {
-    const allowance = 100000;
-    const quoteAmount = 1;
+    const quoteAmount = toWad(1);
     const bucketIndex = 2000;
-
-    await pool.quoteApprove({
-      signer: signerLender,
-      allowance,
-    });
 
     const receipt = await pool.removeQuoteToken({
       signer: signerLender,
@@ -122,15 +156,9 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use moveQuoteToken succesfully', async () => {
-    const allowance = 100000;
-    const maxAmountToMove = 5;
+    const maxAmountToMove = toWad(5);
     const bucketIndexFrom = 2000;
     const bucketIndexTo = 2001;
-
-    await pool.quoteApprove({
-      signer: signerLender,
-      allowance,
-    });
 
     const receipt = await pool.moveQuoteToken({
       signer: signerLender,
@@ -162,13 +190,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use getIndexesPriceByRange onChain succesfully with SHORT min/max range', async () => {
-    const quoteAmount = 0.5;
+    const quoteAmount = toWad(0.5);
     const bucketIndex = 1234;
-    const allowance = 100000000;
 
     await pool.quoteApprove({
       signer: signerLender,
-      allowance,
+      allowance: quoteAmount,
     });
 
     await pool.addQuoteToken({
@@ -178,19 +205,28 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       ttlSeconds: null,
     });
 
-    const buckets = await pool.getIndexesPriceByRange(0.01, 0.1);
+    const buckets = await pool.getIndexesPriceByRange({
+      minPrice: toWad(0.01),
+      maxPrice: toWad(0.1),
+    });
 
     expect(buckets.length).not.toBe(0);
   });
 
   it('should use getIndexesPriceByRange onChain succesfully with MEDIUM min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange(0.01, 1);
+    const buckets = await pool.getIndexesPriceByRange({
+      minPrice: toWad(0.01),
+      maxPrice: toWad(1),
+    });
 
     expect(buckets.length).not.toBe(0);
   });
 
   it('should use getIndexesPriceByRange onChain succesfully with LONG min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange(0.01, 3);
+    const buckets = await pool.getIndexesPriceByRange({
+      minPrice: toWad(0.01),
+      maxPrice: toWad(3),
+    });
 
     expect(buckets.length).not.toBe(0);
   });
@@ -201,7 +237,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket).not.toBe('');
     expect(bucket.index).toEqual(1234);
     expect(bucket.price).toEqual(toWad('2134186.913321104827263532'));
-    console.info('bucket.deposit ', bucket.deposit);
     expect(bucket.deposit?.gte(toWad('0.5'))).toBeTruthy();
     expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
     expect(bucket.exchangeRate).toEqual(toWad('1'));
@@ -231,8 +266,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   it('should use getPosition succesfully', async () => {
     const position = await pool.getPosition({
       signer: signerLender,
-      withdrawalAmount: 0.1,
       bucketIndex: 1234,
+      proposedWithdrawal: toWad(0.1),
     });
 
     expect(position).not.toBe('');
@@ -241,8 +276,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   it('should use estimateLoan succesfully', async () => {
     const estimateLoan = await pool.estimateLoan({
       signer: signerLender,
-      debtAmount: 1,
-      collateralAmount: 5,
+      debtAmount: toWad(1),
+      collateralAmount: toWad(5),
     });
 
     expect(estimateLoan).not.toBe('');
