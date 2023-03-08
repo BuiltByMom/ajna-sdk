@@ -2,54 +2,19 @@
   {
     "type": "constructor",
     "payable": false,
-    "inputs": [
-      {
-        "type": "address",
-        "name": "ajna_"
-      }
-    ]
+    "inputs": [{ "type": "address", "name": "ajna_" }]
   },
-  {
-    "type": "error",
-    "name": "CreateFail",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "DeployWithZeroAddress",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "NFTNotSupported",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "PoolAlreadyExists",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "PoolInterestRateInvalid",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "TokenIdSubsetInvalid",
-    "inputs": []
-  },
+  { "type": "error", "name": "CreateFail", "inputs": [] },
+  { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
+  { "type": "error", "name": "NFTNotSupported", "inputs": [] },
+  { "type": "error", "name": "PoolAlreadyExists", "inputs": [] },
+  { "type": "error", "name": "PoolInterestRateInvalid", "inputs": [] },
+  { "type": "error", "name": "TokenIdSubsetInvalid", "inputs": [] },
   {
     "type": "event",
     "anonymous": false,
     "name": "PoolCreated",
-    "inputs": [
-      {
-        "type": "address",
-        "name": "pool_",
-        "indexed": false
-      }
-    ]
+    "inputs": [{ "type": "address", "name": "pool_", "indexed": false }]
   },
   {
     "type": "function",
@@ -58,11 +23,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "bytes32"
-      }
-    ]
+    "outputs": [{ "type": "bytes32" }]
   },
   {
     "type": "function",
@@ -71,11 +32,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "uint256"
-      }
-    ]
+    "outputs": [{ "type": "uint256" }]
   },
   {
     "type": "function",
@@ -84,11 +41,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "uint256"
-      }
-    ]
+    "outputs": [{ "type": "uint256" }]
   },
   {
     "type": "function",
@@ -97,11 +50,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "address"
-      }
-    ]
+    "outputs": [{ "type": "address" }]
   },
   {
     "type": "function",
@@ -109,29 +58,12 @@
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "address",
-        "name": "collateral_"
-      },
-      {
-        "type": "address",
-        "name": "quote_"
-      },
-      {
-        "type": "uint256[]",
-        "name": "tokenIds_"
-      },
-      {
-        "type": "uint256",
-        "name": "interestRate_"
-      }
+      { "type": "address", "name": "collateral_" },
+      { "type": "address", "name": "quote_" },
+      { "type": "uint256[]", "name": "tokenIds_" },
+      { "type": "uint256", "name": "interestRate_" }
     ],
-    "outputs": [
-      {
-        "type": "address",
-        "name": "pool_"
-      }
-    ]
+    "outputs": [{ "type": "address", "name": "pool_" }]
   },
   {
     "type": "function",
@@ -140,21 +72,11 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [
-      {
-        "type": "bytes32"
-      },
-      {
-        "type": "address"
-      },
-      {
-        "type": "address"
-      }
+      { "type": "bytes32" },
+      { "type": "address" },
+      { "type": "address" }
     ],
-    "outputs": [
-      {
-        "type": "address"
-      }
-    ]
+    "outputs": [{ "type": "address" }]
   },
   {
     "type": "function",
@@ -162,16 +84,8 @@
     "constant": true,
     "stateMutability": "view",
     "payable": false,
-    "inputs": [
-      {
-        "type": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "address"
-      }
-    ]
+    "inputs": [{ "type": "uint256" }],
+    "outputs": [{ "type": "address" }]
   },
   {
     "type": "function",
@@ -180,11 +94,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "address[]"
-      }
-    ]
+    "outputs": [{ "type": "address[]" }]
   },
   {
     "type": "function",
@@ -192,17 +102,8 @@
     "constant": true,
     "stateMutability": "pure",
     "payable": false,
-    "inputs": [
-      {
-        "type": "uint256[]",
-        "name": "tokenIds_"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "bytes32"
-      }
-    ]
+    "inputs": [{ "type": "uint256[]", "name": "tokenIds_" }],
+    "outputs": [{ "type": "bytes32" }]
   },
   {
     "type": "function",
@@ -211,11 +112,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "uint256"
-      }
-    ]
+    "outputs": [{ "type": "uint256" }]
   },
   {
     "type": "function",
@@ -224,10 +121,6 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      {
-        "type": "address"
-      }
-    ]
+    "outputs": [{ "type": "address" }]
   }
 ]

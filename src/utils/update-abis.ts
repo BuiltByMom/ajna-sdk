@@ -19,7 +19,7 @@ export const updateAbis = function () {
       // and pass only the desired ABI content
       const iface = new Interface(parsed.abi);
       // perform the translation
-      const formattedAbi = iface.format(FormatTypes.full).toString();
+      const formattedAbi = iface.format(FormatTypes.json).toString();
       const translatedAbi = JSON.stringify(JSON.parse(formattedAbi));
       // write the translated ABI to disk
       fs.writeFileSync(
