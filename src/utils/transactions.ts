@@ -9,7 +9,7 @@ export async function submitVerifiedTransactionWithGasEstimate(
   args: Array<any>,
   overrides?: TransactionParams
 ): Promise<any> {
-  const estimatedGas = await estimageGas(contract, methodName, args, overrides);
+  const estimatedGas = await estimateGas(contract, methodName, args, overrides);
 
   const overridesWithGasLimit = {
     ...overrides,
@@ -24,7 +24,7 @@ export async function submitVerifiedTransactionWithGasEstimate(
   );
 }
 
-export async function estimageGas(
+export async function estimateGas(
   contract: Contract,
   methodName: string,
   args: Array<any>,
