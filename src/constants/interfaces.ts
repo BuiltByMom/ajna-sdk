@@ -1,4 +1,6 @@
-import { BigNumber, Contract, Signer, providers } from 'ethers';
+import { BigNumber, Contract, Signer as EthersSigner, providers } from 'ethers';
+
+export type Signer = EthersSigner;
 
 export type SignerOrProvider = Signer | providers.Provider;
 
@@ -199,6 +201,15 @@ export type RepayParamsContract = BaseParamsWithContract & {
   from: Address;
   amount: BigNumber;
 };
+
+export interface TransactionParams {
+  to?: string;
+  from?: string;
+  value?: string;
+  gasLimit?: number;
+  gasPrice?: string;
+  nonce?: string;
+}
 
 /************** Constants **************/
 

@@ -1,8 +1,9 @@
+import { BigNumber, Contract, ethers, Signer } from 'ethers';
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
 import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
 import { Address, SignerOrProvider } from '../constants/interfaces';
 import checksumAddress from '../utils/checksum-address';
-import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { submitVerifiedTransactionWithGasEstimate } from '../utils/transactions';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(
@@ -19,19 +20,15 @@ export const deployPool = async (
   interestRate: BigNumber
 ) => {
   const contractInstance: Contract = getErc20PoolFactoryContract(signer);
-  const interestRateParam = interestRate;
 
-  const tx = await contractInstance.deployPool(
-    collateralAddress,
-    quoteAddress,
-    interestRateParam,
+  return submitVerifiedTransactionWithGasEstimate(
+    contractInstance,
+    'deployPool',
+    [collateralAddress, quoteAddress, interestRate],
     {
       from: await signer.getAddress(),
-      gasLimit: 1000000,
     }
   );
-
-  return await tx.wait();
 };
 
 export const deployedPools = async (
