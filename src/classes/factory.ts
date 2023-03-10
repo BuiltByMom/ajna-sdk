@@ -20,9 +20,12 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
   async deployPool(params: FactoryDeployPoolParams) {
     const { signer, collateralAddress, quoteAddress, interestRate } = params;
 
-    await deployPool(signer, collateralAddress, quoteAddress, interestRate);
-
-    return await this.getPool(collateralAddress, quoteAddress);
+    return await deployPool(
+      signer,
+      collateralAddress,
+      quoteAddress,
+      interestRate
+    );
   }
 
   async getPool(collateralAddress: Address, quoteAddress: Address) {

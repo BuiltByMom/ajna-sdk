@@ -1,60 +1,58 @@
-import { BigNumber, Contract } from 'ethers';
+import {
+  BaseContract,
+  BigNumber,
+  Contract,
+  PopulatedTransaction,
+} from 'ethers';
 import { SdkError } from '../classes/types';
-import { GAS_MULTIPLIER, GAS_LIMIT_MAX } from '../constants/defaults';
-import { TransactionParams } from '../constants/interfaces';
+import { GAS_LIMIT_MAX, GAS_MULTIPLIER } from '../constants/defaults';
+import { TransactionParams, WrappedTransaction } from '../constants/interfaces';
 
-export async function submitVerifiedTransactionWithGasEstimate(
+export async function createTransaction(
   contract: Contract,
   methodName: string,
   args: Array<any>,
   overrides?: TransactionParams
-): Promise<any> {
-  const estimatedGas = await estimateGas(contract, methodName, args, overrides);
+): Promise<WrappedTransaction> {
+  const tx = await contract.populateTransaction[methodName](...args, overrides);
 
-  const overridesWithGasLimit = {
-    ...overrides,
-    gasLimit: estimatedGas ? +estimatedGas.mul(GAS_MULTIPLIER) : GAS_LIMIT_MAX,
-  };
-
-  return submitVerifiedTransaction(
-    contract,
-    methodName,
-    args,
-    overridesWithGasLimit
-  );
+  return new WrappedTransactionClass(tx, contract);
 }
 
-export async function estimateGas(
-  contract: Contract,
-  methodName: string,
-  args: Array<any>,
-  overrides?: TransactionParams
-): Promise<BigNumber | undefined> {
-  try {
-    return await contract.estimateGas[methodName].apply(contract, [
-      ...args,
-      overrides,
-    ]);
-  } catch {
-    // continue regardless of error
+class WrappedTransactionClass implements WrappedTransaction {
+  readonly _transaction: PopulatedTransaction;
+  readonly _contract: BaseContract;
+
+  constructor(transaction: PopulatedTransaction, contract: BaseContract) {
+    this._transaction = transaction;
+    this._contract = contract;
   }
 
-  return undefined;
-}
-
-export async function submitVerifiedTransaction(
-  contract: Contract,
-  methodName: string,
-  args: Array<any>,
-  overrides?: TransactionParams
-): Promise<any> {
-  try {
-    await contract.callStatic[methodName].apply(contract, [...args, overrides]);
-  } catch (e) {
-    throw new SdkError(e?.toString());
+  async submit() {
+    return await this._contract.signer.sendTransaction(this._transaction);
   }
 
-  const tx = await contract[methodName].apply(contract, [...args, overrides]);
+  async verifyAndSubmit() {
+    let estimatedGas: BigNumber | undefined;
 
-  return await tx.wait();
+    try {
+      estimatedGas = await this._contract.provider.estimateGas(
+        this._transaction
+      );
+    } catch (e: any) {
+      throw new SdkError(e?.toString());
+    }
+
+    this._transaction.gasLimit = estimatedGas
+      ? estimatedGas.mul(GAS_MULTIPLIER)
+      : BigNumber.from(GAS_LIMIT_MAX);
+
+    try {
+      await this._contract.provider.call(this._transaction);
+    } catch (e: any) {
+      throw new SdkError(e?.toString());
+    }
+
+    return await this._contract.signer.sendTransaction(this._transaction);
+  }
 }

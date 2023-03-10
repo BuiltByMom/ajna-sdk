@@ -3,13 +3,14 @@ import {
   Address,
   FactoryDeployPoolParams,
   SignerOrProvider,
-} from 'constants/interfaces';
+  WrappedTransaction,
+} from '../constants/interfaces';
 
 export interface IERC20PoolFactory {
   /**
    * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
    */
-  deployPool(params: FactoryDeployPoolParams): Promise<FungiblePool>;
+  deployPool(params: FactoryDeployPoolParams): Promise<WrappedTransaction>;
   /**
    * Returns pool instance for the given collateral and quote tokens addresses.
    */

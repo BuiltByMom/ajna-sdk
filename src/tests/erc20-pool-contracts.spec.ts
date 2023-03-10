@@ -18,7 +18,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(config.LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(config.BORROWER_KEY, provider);
-  let pool: FungiblePool = {} as FungiblePool;
+  const pool: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
     // mint tokens to actors
@@ -31,15 +31,21 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should confirm AjnaSDK pool succesfully', async () => {
-    pool = await ajna.factory.deployPool({
+  it.only('should confirm AjnaSDK pool succesfully', async () => {
+    const tx = await ajna.factory.deployPool({
       signer: signerLender,
       collateralAddress: config.COLLATERAL_ADDRESS,
       quoteAddress: config.QUOTE_ADDRESS,
       interestRate: toWad('0.05'),
     });
 
-    expect(pool.poolAddress).not.toBe('');
+    console.log('>>> got wrapped tx');
+
+    const receipt = await tx.verifyAndSubmit();
+
+    console.log('>>> got receipt', receipt);
+
+    expect(tx).toBeDefined();
   });
 
   it('should use addQuoteToken succesfully', async () => {

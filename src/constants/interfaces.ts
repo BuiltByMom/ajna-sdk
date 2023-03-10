@@ -211,6 +211,11 @@ export interface TransactionParams {
   nonce?: string;
 }
 
+export interface WrappedTransaction {
+  submit(): Promise<any>;
+  verifyAndSubmit(): Promise<any>;
+}
+
 /************** Constants **************/
 
 export const MAX_FENWICK_INDEX = 7388;
