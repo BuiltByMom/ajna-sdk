@@ -1,18 +1,12 @@
-import {
-  BaseContract,
-  BigNumber,
-  Contract,
-  PopulatedTransaction,
-} from 'ethers';
-import { SdkError } from '../classes/types';
-import { GAS_LIMIT_MAX, GAS_MULTIPLIER } from '../constants/defaults';
-import { TransactionParams, WrappedTransaction } from '../constants/interfaces';
+import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
+import { GAS_MULTIPLIER } from '../constants';
+import { TransactionOverrides, WrappedTransaction } from '../types';
 
 export async function createTransaction(
   contract: Contract,
   methodName: string,
   args: Array<any>,
-  overrides?: TransactionParams
+  overrides?: TransactionOverrides
 ): Promise<WrappedTransaction> {
   const tx = await contract.populateTransaction[methodName](...args, overrides);
 
@@ -33,26 +27,16 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   async verifyAndSubmit() {
-    let estimatedGas: BigNumber | undefined;
+    const estimatedGas = await this._contract.provider.estimateGas(
+      this._transaction
+    );
 
-    try {
-      estimatedGas = await this._contract.provider.estimateGas(
-        this._transaction
-      );
-    } catch (e: any) {
-      throw new SdkError(e?.toString());
-    }
+    const txWithAdjustedGas = {
+      ...this._transaction,
+      gasLimit: estimatedGas.mul(GAS_MULTIPLIER),
+    };
 
-    this._transaction.gasLimit = estimatedGas
-      ? estimatedGas.mul(GAS_MULTIPLIER)
-      : BigNumber.from(GAS_LIMIT_MAX);
-
-    try {
-      await this._contract.provider.call(this._transaction);
-    } catch (e: any) {
-      throw new SdkError(e?.toString());
-    }
-
-    return await this._contract.signer.sendTransaction(this._transaction);
+    await this._contract.provider.call(txWithAdjustedGas);
+    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
   }
 }

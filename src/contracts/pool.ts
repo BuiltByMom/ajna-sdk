@@ -7,7 +7,7 @@ import {
   LoansInfoParamsContract,
   MoveQuoteTokenParamsContract,
   RemoveQuoteTokenParamsContract,
-} from '../constants/interfaces';
+} from '../types';
 import { BigNumber } from 'ethers';
 
 export const addQuoteToken = async ({

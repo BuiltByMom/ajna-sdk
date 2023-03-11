@@ -5,7 +5,7 @@ import {
   GenericApproveParamsContract,
   RepayDebtParamsContract,
   SignerOrProvider,
-} from '../constants/interfaces';
+} from '../types';
 import { getErc20Contract } from './erc20';
 import { ethers } from 'ethers';
 

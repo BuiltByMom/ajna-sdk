@@ -4,7 +4,7 @@ import {
   FactoryDeployPoolParams,
   SignerOrProvider,
   WrappedTransaction,
-} from '../constants/interfaces';
+} from '../types/core';
 
 export interface IERC20PoolFactory {
   /**

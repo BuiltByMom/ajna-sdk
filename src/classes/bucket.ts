@@ -1,4 +1,4 @@
-import { Address, SignerOrProvider } from '../constants/interfaces';
+import { Address, SignerOrProvider } from '../types';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,

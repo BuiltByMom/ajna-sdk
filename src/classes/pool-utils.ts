@@ -1,4 +1,4 @@
-import { SignerOrProvider } from '../constants/interfaces';
+import { SignerOrProvider } from '../types';
 import {
   getPoolInfoUtilsContract,
   indexToPrice,

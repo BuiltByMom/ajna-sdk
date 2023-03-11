@@ -1,5 +1,5 @@
 import erc721Abi from '../abis/ERC721.json';
-import { SignerOrProvider } from '../constants/interfaces';
+import { SignerOrProvider } from '../types';
 import { ethers } from 'ethers';
 
 export const getNftContract = (

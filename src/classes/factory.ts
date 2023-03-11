@@ -3,9 +3,9 @@ import {
   Address,
   FactoryDeployPoolParams,
   SignerOrProvider,
-} from '../constants/interfaces';
+  IERC20PoolFactory,
+} from '../types';
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
-import { IERC20PoolFactory } from '../interfaces';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './fungible-pool';
 

@@ -1,7 +1,7 @@
 import { BigNumber, Contract, ethers, Signer } from 'ethers';
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
 import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
-import { Address, SignerOrProvider } from '../constants/interfaces';
+import { Address, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 

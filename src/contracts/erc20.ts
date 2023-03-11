@@ -3,7 +3,7 @@ import {
   CollateralBalanceParamsContract,
   QuoteBalanceParamsContract,
   SignerOrProvider,
-} from '../constants/interfaces';
+} from '../types';
 import { ethers } from 'ethers';
 
 export const getErc20Contract = (

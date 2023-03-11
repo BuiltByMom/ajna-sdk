@@ -202,7 +202,7 @@ export type RepayParamsContract = BaseParamsWithContract & {
   amount: BigNumber;
 };
 
-export interface TransactionParams {
+export interface TransactionOverrides {
   to?: string;
   from?: string;
   value?: string;
@@ -212,10 +212,52 @@ export interface TransactionParams {
 }
 
 export interface WrappedTransaction {
-  submit(): Promise<any>;
-  verifyAndSubmit(): Promise<any>;
+  submit(): Promise<TransactionResponse>;
+  verifyAndSubmit(): Promise<TransactionResponse>;
 }
 
-/************** Constants **************/
+/************** Ethers.js interfaces **************/
 
-export const MAX_FENWICK_INDEX = 7388;
+export interface TransactionResponse {
+  hash: string;
+  confirmations: number;
+  raw?: string;
+  from: string;
+  wait: (confirmations?: number) => Promise<TransactionReceipt>;
+  // Only if a transaction has been mined
+  blockNumber?: number;
+  blockHash?: string;
+  timestamp?: number;
+}
+
+export interface TransactionReceipt {
+  to: string;
+  from: string;
+  contractAddress: string;
+  transactionIndex: number;
+  root?: string;
+  gasUsed: BigNumber;
+  logsBloom: string;
+  blockHash: string;
+  transactionHash: string;
+  logs: Array<Log>;
+  blockNumber: number;
+  confirmations: number;
+  cumulativeGasUsed: BigNumber;
+  effectiveGasPrice: BigNumber;
+  byzantium: boolean;
+  type: number;
+  status?: number;
+}
+
+export interface Log {
+  blockNumber: number;
+  blockHash: string;
+  transactionIndex: number;
+  removed: boolean;
+  address: string;
+  data: string;
+  topics: Array<string>;
+  transactionHash: string;
+  logIndex: number;
+}

@@ -8,7 +8,7 @@ import {
   PoolPriceToIndexParamsContract,
   PoolPricesInfoParamsContract,
   SignerOrProvider,
-} from '../constants/interfaces';
+} from '../types';
 import { Contract as ContractMulti } from 'ethcall';
 import { ethers } from 'ethers';
 

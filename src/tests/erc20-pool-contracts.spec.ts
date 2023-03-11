@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+import { BigNumber, providers } from 'ethers';
 import { AjnaSDK } from '../classes/ajna';
 import { Bucket } from '../classes/bucket';
 import { FungiblePool } from '../classes/fungible-pool';
@@ -6,8 +8,6 @@ import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import './test-utils.ts';
-import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
 
 dotenv.config();
 
@@ -39,13 +39,29 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       interestRate: toWad('0.05'),
     });
 
-    console.log('>>> got wrapped tx');
+    const response = await tx.verifyAndSubmit();
+    await response.wait();
 
-    const receipt = await tx.verifyAndSubmit();
+    const pool = await ajna.factory.getPool(
+      config.COLLATERAL_ADDRESS,
+      config.QUOTE_ADDRESS
+    );
 
-    console.log('>>> got receipt', receipt);
+    expect(pool).toBeDefined();
+    expect(pool.poolAddress).not.toBe('');
+    expect(pool.collateralAddress).toBe(config.COLLATERAL_ADDRESS);
+    expect(pool.quoteAddress).toBe(config.QUOTE_ADDRESS);
+  });
 
-    expect(tx).toBeDefined();
+  it('should not allow to create existing pool', async () => {
+    const tx = await ajna.factory.deployPool({
+      signer: signerLender,
+      collateralAddress: config.COLLATERAL_ADDRESS,
+      quoteAddress: config.QUOTE_ADDRESS,
+      interestRate: toWad('0.05'),
+    });
+
+    expect(async () => await tx.submit()).toThrow();
   });
 
   it('should use addQuoteToken succesfully', async () => {

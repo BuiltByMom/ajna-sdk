@@ -1,5 +1,4 @@
-import { SignerOrProvider } from '../constants/interfaces';
-import { IBaseContract } from '../interfaces';
+import { IBaseContract, SignerOrProvider } from '../types';
 
 export class ContractBase implements IBaseContract {
   private provider: SignerOrProvider;

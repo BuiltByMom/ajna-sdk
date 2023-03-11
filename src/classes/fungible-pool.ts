@@ -1,22 +1,22 @@
-import {
-  Address,
-  DrawDebtParams,
-  EstimateLoanParams,
-  GenericApproveParams,
-  MAX_FENWICK_INDEX,
-  RepayDebtParams,
-  SignerOrProvider,
-} from '../constants/interfaces';
+import { BigNumber } from 'ethers';
+import { MAX_FENWICK_INDEX } from '../constants';
 import {
   approve,
   drawDebt,
   getErc20PoolContract,
   repayDebt,
 } from '../contracts/erc20-pool';
+import {
+  Address,
+  DrawDebtParams,
+  EstimateLoanParams,
+  GenericApproveParams,
+  RepayDebtParams,
+  SignerOrProvider,
+} from '../types';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
-import { BigNumber } from 'ethers';
 
 class FungiblePool extends Pool {
   constructor(

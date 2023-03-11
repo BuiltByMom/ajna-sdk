@@ -11,7 +11,7 @@ import {
   Provider,
   RemoveQuoteTokenParams,
   SignerOrProvider,
-} from '../constants/interfaces';
+} from '../types';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
