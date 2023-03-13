@@ -18,7 +18,7 @@ describe('Transaction utils tests', () => {
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(config.LENDER_KEY, provider);
 
-  it.only('should confirm AjnaSDK pool succesfully', async () => {
+  it('should return wrapped transaction object', async () => {
     const tx = await ajna.factory.deployPool({
       signer: signerLender,
       collateralAddress: USDC_ADDRESS,
@@ -32,12 +32,9 @@ describe('Transaction utils tests', () => {
     expect(response.hash).not.toBe('');
     expect(response.from).toBe(signerLender.address);
 
-    const blockNumber = await provider.getBlockNumber();
-    const recipe = await response.wait();
+    const receipt = await response.wait();
 
-    expect(recipe).toBeDefined();
-    expect(recipe.confirmations).toBeGreaterThan(0);
-    expect(response.blockNumber).not.toBe('');
-    expect(response.blockNumber).not.toBe(blockNumber + 1);
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
   });
 });
