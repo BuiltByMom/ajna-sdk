@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` to run tests against a dockerized Ajna testnet.
 
 To pass parameters to `jest`, run using `npx`. For example, to run a single test and print console output:
 
-```
+```shell
 npx jest --silent=false -t 'should confirm AjnaSDK pool succesfully'
 ```
 
