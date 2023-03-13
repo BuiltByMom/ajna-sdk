@@ -21,7 +21,7 @@ export const deployPool = async (
 ) => {
   const contractInstance: Contract = getErc20PoolFactoryContract(signer);
 
-  return createTransaction(
+  return await createTransaction(
     contractInstance,
     'deployPool',
     [collateralAddress, quoteAddress, interestRate],

@@ -61,7 +61,10 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       interestRate: toWad('0.05'),
     });
 
-    expect(async () => await tx.submit()).toThrow();
+    await expect(async () => {
+      const response = await tx.submit();
+      response.wait();
+    }).rejects.toThrow();
   });
 
   it('should use addQuoteToken succesfully', async () => {
