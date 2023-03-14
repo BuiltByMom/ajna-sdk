@@ -36,12 +36,12 @@ class FungiblePool extends Pool {
   }
 
   collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve({
-      provider: signer,
-      poolAddress: this.poolAddress,
-      tokenAddress: this.collateralAddress,
-      allowance: allowance,
-    });
+    return await approve(
+      signer,
+      this.poolAddress,
+      this.collateralAddress,
+      allowance
+    );
   };
 
   drawDebt = async ({

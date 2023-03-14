@@ -31,7 +31,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should confirm AjnaSDK pool succesfully', async () => {
+  it.only('should confirm AjnaSDK pool succesfully', async () => {
     const tx = await ajna.factory.deployPool({
       signer: signerLender,
       collateralAddress: config.COLLATERAL_ADDRESS,
@@ -67,24 +67,32 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     }).rejects.toThrow();
   });
 
-  it('should use addQuoteToken succesfully', async () => {
+  it.only('should use addQuoteToken succesfully', async () => {
     const quoteAmount = 10;
     const bucketIndex = 2000;
     const allowance = 100000000;
 
-    await pool.quoteApprove({
+    let tx = await pool.quoteApprove({
       signer: signerLender,
       allowance: toWad(allowance),
     });
+    let response = await tx.verifyAndSubmit();
+    await response.wait();
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
 
-    const receipt = await pool.addQuoteToken({
+    tx = await pool.addQuoteToken({
       signer: signerLender,
       amount: toWad(quoteAmount),
       bucketIndex,
       ttlSeconds: null,
     });
-
-    expect(receipt.transactionHash).not.toBe('');
+    response = await tx.verifyAndSubmit();
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+    const receipt = await response.wait();
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
   });
 
   it('should use drawDebt succesfully', async () => {

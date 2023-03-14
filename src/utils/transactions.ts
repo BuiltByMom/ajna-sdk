@@ -32,13 +32,8 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   async verifyAndSubmit() {
-    const txWithMaxGas = this.getTxWithNewGasLimit(
-      this._transaction,
-      GAS_LIMIT_MAX
-    );
-
     const estimatedGas = await this._contract.provider.estimateGas(
-      txWithMaxGas
+      this._transaction
     );
 
     const txWithAdjustedGas = this.getTxWithNewGasLimit(

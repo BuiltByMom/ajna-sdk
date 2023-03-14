@@ -70,12 +70,12 @@ abstract class Pool {
   };
 
   quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve({
-      provider: signer,
-      poolAddress: this.poolAddress,
-      tokenAddress: this.quoteAddress,
-      allowance: allowance,
-    });
+    return await approve(
+      signer,
+      this.poolAddress,
+      this.quoteAddress,
+      allowance
+    );
   };
 
   addQuoteToken = async ({
@@ -86,12 +86,12 @@ abstract class Pool {
   }: AddQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await addQuoteToken({
-      contract: contractPoolWithSigner,
-      amount: amount,
+    return await addQuoteToken(
+      contractPoolWithSigner,
+      amount,
       bucketIndex,
-      expiry: await getExpiry(this.provider, ttlSeconds),
-    });
+      await getExpiry(this.provider, ttlSeconds)
+    );
   };
 
   moveQuoteToken = async ({
