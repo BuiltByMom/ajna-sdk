@@ -40,7 +40,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it.only('should confirm AjnaSDK pool succesfully', async () => {
+  it('should confirm AjnaSDK pool succesfully', async () => {
     const tx = await ajna.factory.deployPool({
       signer: signerLender,
       collateralAddress: COLLATERAL_ADDRESS,
@@ -73,7 +73,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     }).rejects.toThrow();
   });
 
-  it.only('should use addQuoteToken succesfully', async () => {
+  it('should use addQuoteToken succesfully', async () => {
     const quoteAmount = 10;
     const bucketIndex = 2000;
     const allowance = 100000000;
@@ -84,6 +84,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     });
     let response = await tx.verifyAndSubmit();
     await response.wait();
+
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
@@ -106,10 +107,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
-    await pool.collateralApprove({
+    const tx = await pool.collateralApprove({
       signer: signerBorrower,
       allowance: collateralToPledge,
     });
+
+    const response = await tx.verifyAndSubmit();
+    await response.wait();
 
     const receipt = await pool.drawDebt({
       signer: signerBorrower,
@@ -166,10 +170,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
 
-    await pool.quoteApprove({
+    const tx = await pool.quoteApprove({
       signer: signerBorrower,
       allowance: maxQuoteTokenAmountToRepay,
     });
+    const response = await tx.verifyAndSubmit();
+    await response.wait();
 
     const receipt = await pool.repayDebt({
       signer: signerBorrower,
@@ -232,17 +238,21 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const quoteAmount = toWad(0.5);
     const bucketIndex = 1234;
 
-    await pool.quoteApprove({
+    let tx = await pool.quoteApprove({
       signer: signerLender,
       allowance: quoteAmount,
     });
+    let response = await tx.verifyAndSubmit();
+    await response.wait();
 
-    await pool.addQuoteToken({
+    tx = await pool.addQuoteToken({
       signer: signerLender,
       amount: quoteAmount,
       bucketIndex,
       ttlSeconds: null,
     });
+    response = await tx.verifyAndSubmit();
+    await response.wait();
 
     const buckets = await pool.getIndexesPriceByRange({
       minPrice: toWad(0.01),

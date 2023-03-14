@@ -1,5 +1,5 @@
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
-import { GAS_LIMIT_MAX, GAS_MULTIPLIER } from '../constants';
+import { GAS_MULTIPLIER } from '../constants';
 import { TransactionOverrides, WrappedTransaction } from '../types';
 
 export async function createTransaction(
@@ -23,12 +23,11 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   async submit() {
-    const txWithMaxGas = this.getTxWithNewGasLimit(
-      this._transaction,
-      GAS_LIMIT_MAX
-    );
+    return await this._contract.signer.sendTransaction(this._transaction);
+  }
 
-    return await this._contract.signer.sendTransaction(txWithMaxGas);
+  async verify() {
+    return await this._contract.provider.call(this._transaction);
   }
 
   async verifyAndSubmit() {
@@ -36,22 +35,11 @@ class WrappedTransactionClass implements WrappedTransaction {
       this._transaction
     );
 
-    const txWithAdjustedGas = this.getTxWithNewGasLimit(
-      this._transaction,
-      +estimatedGas.mul(GAS_MULTIPLIER)
-    );
-
-    await this._contract.provider.call(txWithAdjustedGas);
-    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
-  }
-
-  private getTxWithNewGasLimit(
-    transaction: PopulatedTransaction,
-    gasLimit: number
-  ) {
-    return {
-      ...transaction,
-      gasLimit,
+    const txWithAdjustedGas = {
+      ...this._transaction,
+      gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
     };
+
+    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
   }
 }
