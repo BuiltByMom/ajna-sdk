@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/ajna';
 import { Bucket } from '../classes/bucket';
 import { FungiblePool } from '../classes/fungible-pool';
@@ -48,13 +48,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       interestRate: toWad('0.05'),
     });
 
-    const response = await tx.verifyAndSubmit();
-    await response.wait();
+    await tx.verifyAndSubmit();
 
     pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
 
     expect(pool).toBeDefined();
-    expect(pool.poolAddress).not.toBe('');
+    expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
     expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
   });
@@ -68,8 +67,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     });
 
     await expect(async () => {
-      const response = await tx.submit();
-      await response.wait();
+      await tx.verify();
     }).rejects.toThrow();
   });
 
@@ -82,7 +80,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerLender,
       allowance: toWad(allowance),
     });
-    let response = await tx.verifyAndSubmit();
+    let response = await tx.verifyAndSubmitResponse();
     await response.wait();
 
     expect(response).toBeDefined();
@@ -94,10 +92,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       bucketIndex,
       ttlSeconds: null,
     });
-    response = await tx.verifyAndSubmit();
+    response = await tx.verifyAndSubmitResponse();
+
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
+
     const receipt = await response.wait();
+
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
   });
@@ -112,8 +113,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       allowance: collateralToPledge,
     });
 
-    const response = await tx.verifyAndSubmit();
-    await response.wait();
+    await tx.verifyAndSubmit();
 
     const receipt = await pool.drawDebt({
       signer: signerBorrower,
@@ -174,8 +174,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerBorrower,
       allowance: maxQuoteTokenAmountToRepay,
     });
-    const response = await tx.verifyAndSubmit();
-    await response.wait();
+    await tx.verifyAndSubmit();
 
     const receipt = await pool.repayDebt({
       signer: signerBorrower,
@@ -242,8 +241,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signer: signerLender,
       allowance: quoteAmount,
     });
-    let response = await tx.verifyAndSubmit();
-    await response.wait();
+    await tx.verifyAndSubmit();
 
     tx = await pool.addQuoteToken({
       signer: signerLender,
@@ -251,8 +249,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       bucketIndex,
       ttlSeconds: null,
     });
-    response = await tx.verifyAndSubmit();
-    await response.wait();
+    await tx.verifyAndSubmit();
 
     const buckets = await pool.getIndexesPriceByRange({
       minPrice: toWad(0.01),

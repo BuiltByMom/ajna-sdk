@@ -212,8 +212,11 @@ export interface TransactionOverrides {
 }
 
 export interface WrappedTransaction {
-  submit(): Promise<TransactionResponse>;
-  verifyAndSubmit(): Promise<TransactionResponse>;
+  verify(): Promise<string>;
+  submit(confirmations?: number): Promise<TransactionReceipt>;
+  submitResponse(): Promise<TransactionResponse>;
+  verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
+  verifyAndSubmitResponse(): Promise<TransactionResponse>;
 }
 
 /************** Ethers.js interfaces **************/

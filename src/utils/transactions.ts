@@ -22,15 +22,20 @@ class WrappedTransactionClass implements WrappedTransaction {
     this._contract = contract;
   }
 
-  async submit() {
-    return await this._contract.signer.sendTransaction(this._transaction);
-  }
-
   async verify() {
     return await this._contract.provider.call(this._transaction);
   }
 
-  async verifyAndSubmit() {
+  async submitResponse() {
+    return await this._contract.signer.sendTransaction(this._transaction);
+  }
+
+  async submit(confirmations?: number) {
+    const response = await this.submitResponse();
+    return await response.wait(confirmations);
+  }
+
+  async verifyAndSubmitResponse() {
     const estimatedGas = await this._contract.provider.estimateGas(
       this._transaction
     );
@@ -41,5 +46,10 @@ class WrappedTransactionClass implements WrappedTransaction {
     };
 
     return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+  }
+
+  async verifyAndSubmit(confirmations?: number) {
+    const response = await this.verifyAndSubmitResponse();
+    return await response.wait(confirmations);
   }
 }
