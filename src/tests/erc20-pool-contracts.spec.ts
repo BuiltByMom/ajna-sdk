@@ -69,7 +69,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await expect(async () => {
       const response = await tx.submit();
-      response.wait();
+      await response.wait();
     }).rejects.toThrow();
   });
 
