@@ -28,36 +28,20 @@ class WrappedTransactionClass implements WrappedTransaction {
       GAS_LIMIT_MAX
     );
 
-    txWithMaxGas.nonce = await this._contract.signer.getTransactionCount(
-      'pending'
-    );
-    console.info(txWithMaxGas);
-
     return await this._contract.signer.sendTransaction(txWithMaxGas);
   }
 
   async verifyAndSubmit() {
-    const txWithMaxGas = this.getTxWithNewGasLimit(
-      this._transaction,
-      GAS_LIMIT_MAX
-    );
-
     const estimatedGas = await this._contract.provider.estimateGas(
-      txWithMaxGas
+      this._transaction
     );
-    txWithMaxGas.nonce = await this._contract.signer.getTransactionCount(
-      'pending'
-    );
-    console.info(txWithMaxGas);
 
     const txWithAdjustedGas = this.getTxWithNewGasLimit(
       this._transaction,
       +estimatedGas.mul(GAS_MULTIPLIER)
     );
 
-    console.info(txWithAdjustedGas);
-
-    // await this._contract.provider.call(txWithAdjustedGas);
+    await this._contract.provider.call(txWithAdjustedGas);
     return await this._contract.signer.sendTransaction(txWithAdjustedGas);
   }
 

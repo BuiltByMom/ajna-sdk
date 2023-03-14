@@ -39,7 +39,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       interestRate: toWad('0.05'),
     });
 
-    const response = await tx.submit();
+    const response = await tx.verifyAndSubmit();
     await response.wait();
 
     pool = await ajna.factory.getPool(
@@ -72,16 +72,15 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndex = 2000;
     const allowance = 100000000;
 
-    console.info('approving quote token');
     let tx = await pool.quoteApprove({
       signer: signerLender,
       allowance: toWad(allowance),
     });
-    let response = await tx.submit();
+    let response = await tx.verifyAndSubmit();
     await response.wait();
-    // TODO: verify success
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
 
-    console.info('adding quote token');
     tx = await pool.addQuoteToken({
       signer: signerLender,
       amount: toWad(quoteAmount),
@@ -89,9 +88,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       ttlSeconds: null,
     });
     response = await tx.verifyAndSubmit();
-    await response.wait();
-    // TODO: verify deposit
-    // expect(response.transactionHash).not.toBe('');
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+    const receipt = await response.wait();
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
   });
 
   it('should use drawDebt succesfully', async () => {
