@@ -64,12 +64,5 @@ export const approve = async (
 ) => {
   const contract = getErc20Contract(tokenAddress, signer);
 
-  return await createTransaction(
-    contract,
-    'approve',
-    [poolAddress, allowance],
-    {
-      from: await signer.getAddress(),
-    }
-  );
+  return await createTransaction(contract, 'approve', [poolAddress, allowance]);
 };

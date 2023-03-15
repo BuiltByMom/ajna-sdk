@@ -8,8 +8,9 @@ export async function createTransaction(
   args: Array<any>,
   overrides?: TransactionOverrides
 ): Promise<WrappedTransaction> {
-  const tx = await contract.populateTransaction[methodName](...args, overrides);
-
+  const tx = await contract.populateTransaction[methodName](
+    ...(overrides ? [...args, overrides] : [...args])
+  );
   return new WrappedTransactionClass(tx, contract);
 }
 
