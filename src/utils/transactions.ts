@@ -1,3 +1,5 @@
+import { ContractError } from '../classes/types';
+import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
 import { TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
@@ -37,14 +39,17 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   async verifyAndSubmitResponse() {
-    const estimatedGas = await this._contract.provider.estimateGas(this._transaction);
-
-    const txWithAdjustedGas = {
-      ...this._transaction,
-      gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
-    };
-
-    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+    try {
+      const estimatedGas = await this._contract.provider.estimateGas(this._transaction);
+      const txWithAdjustedGas = {
+        ...this._transaction,
+        gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
+      };
+      return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+    } catch (error: unknown) {
+      // TODO: only trap contract errors; rethrow other stuff
+      throw new ContractError(this._contract, error);
+    }
   }
 
   async verifyAndSubmit(confirmations?: number) {
