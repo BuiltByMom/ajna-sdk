@@ -46,9 +46,17 @@ class WrappedTransactionClass implements WrappedTransaction {
         gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
       };
       return await this._contract.signer.sendTransaction(txWithAdjustedGas);
-    } catch (error: unknown) {
-      // TODO: only trap contract errors; rethrow other stuff
-      throw new ContractError(this._contract, error);
+    } catch (error: unknown!) {
+      if (
+        'error' in error && // estimateGas error
+        'error' in error.error && // response error
+        'code' in error.error.error && // execution revert error
+        error.error.error.code == 3 // indicates execution reverted
+      ) {
+        throw new ContractError(this._contract, error);
+      } else {
+        throw error;
+      }
     }
   }
 

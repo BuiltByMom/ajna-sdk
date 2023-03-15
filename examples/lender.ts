@@ -5,6 +5,7 @@ import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { constants, providers } from 'ethers';
+import { Address, WrappedTransaction } from '../src/types';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -66,7 +67,7 @@ const removeLiquidity = async (amount: string, price: string) => {
     maxAmount: toWad(amount),
     bucketIndex: priceToIndex(toWad(price)),
   });
-  console.log(tx);
+  await tx.verifyAndSubmit();
 };
 
 export const run = async () => {
