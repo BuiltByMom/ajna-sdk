@@ -1,9 +1,9 @@
-import { Address, SignerOrProvider } from '../types';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
   lpsToQuoteTokens,
 } from '../contracts/pool-info-utils';
+import { Address, SignerOrProvider } from '../types';
 import { BigNumber, Contract } from 'ethers';
 
 /**

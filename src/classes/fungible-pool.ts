@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import { MAX_FENWICK_INDEX } from '../constants';
 import {
   approve,
@@ -17,6 +16,7 @@ import {
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
+import { BigNumber } from 'ethers';
 
 class FungiblePool extends Pool {
   constructor(

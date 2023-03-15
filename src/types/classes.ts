@@ -1,10 +1,10 @@
-import { FungiblePool } from 'classes/fungible-pool';
 import {
   Address,
   FactoryDeployPoolParams,
   SignerOrProvider,
   WrappedTransaction,
 } from '../types/core';
+import { FungiblePool } from 'classes/fungible-pool';
 
 export interface IERC20PoolFactory {
   /**

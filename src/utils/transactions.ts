@@ -1,6 +1,6 @@
-import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
 import { TransactionOverrides, WrappedTransaction } from '../types';
+import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 
 export async function createTransaction(
   contract: Contract,
