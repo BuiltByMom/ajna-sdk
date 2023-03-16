@@ -16,6 +16,11 @@ export class ContractError extends Error {
       customErrorNames.map(name => [keccak256(toUtf8Bytes(name)).substring(0, 10), name])
     );
 
-    super(errorsByHash[errorData]);
+    if (errorData in errorsByHash) {
+      super(errorsByHash[errorData]);
+    } else {
+      // unexpected
+      super(errorData);
+    }
   }
 }
