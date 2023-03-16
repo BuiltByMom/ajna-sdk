@@ -1,4 +1,5 @@
 import { MAX_FENWICK_INDEX } from '../constants';
+import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
 import {
   Address,
   DrawDebtParams,
@@ -7,7 +8,6 @@ import {
   RepayDebtParams,
   SignerOrProvider,
 } from '../types';
-import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
