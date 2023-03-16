@@ -15,10 +15,7 @@ export class ContractError extends Error {
 
     // index the contract's errors by the first 8 bytes of their hash
     const errorsByHash = Object.fromEntries(
-      customErrorNames.map((name) => [
-        keccak256(toUtf8Bytes(name)).substring(0, 10),
-        name,
-      ])
+      customErrorNames.map(name => [keccak256(toUtf8Bytes(name)).substring(0, 10), name])
     );
 
     super(errorsByHash[errorData]);
