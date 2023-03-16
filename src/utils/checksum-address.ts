@@ -1,5 +1,5 @@
-import { ethers } from 'ethers';
 import { Address } from '../types';
+import { ethers } from 'ethers';
 
 const checksumAddress = (address: Address) => {
   return ethers.utils.getAddress(address);
