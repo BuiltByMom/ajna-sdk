@@ -7,9 +7,7 @@ import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 export class SdkError extends Error {}
 
 export class ContractError extends Error {
-  constructor(contract: Contract, error: any) {
-    // get the error data
-    const errorData = error.error.error.data;
+  constructor(contract: Contract, errorData: string) {
     // retrieve the list of custom errors available to the contract
     const customErrorNames = Object.keys(contract.interface.errors);
 

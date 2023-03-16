@@ -122,47 +122,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  // it('should raise expected exception upon ajna revert', async () => {
-  //   try {
-  //     // try to draw debt with insufficient collateral;
-  //     // pool should revert with LimitIndexExceeded
-  //     await pool.drawDebt({
-  //       signer: signerBorrower,
-  //       amountToBorrow: 1,
-  //       limitIndex: 0,
-  //       collateralToPledge: 3,
-  //     });
-  //     fail('previous call should have raised exception');
-  //   } catch (error: any) {
-  //     console.info(error);
-  //     // console.info('error.receipt: ', error.receipt);
-
-  //     // This won't work in TypeScript
-  //     // const revertData = error.data;
-  //     // const decodedError = pool.contract.interface.parseError(revertData);
-  //     // console.info('decodedError: ', decodedError);
-  //   }
-  //   fail('just testing');
-  // });
-
-  // it('should raise expected exception upon external revert', async () => {
-  //   try {
-  //     // try to pledge more collateral than the borrower has;
-  //     // token should revert with transfer error
-  //     await pool.drawDebt({
-  //       signer: signerBorrower,
-  //       amountToBorrow: toWad(0),
-  //       limitIndex: null,
-  //       collateralToPledge: toWad(BigNumber.from('11')),
-  //     });
-  //     fail('previous call should have raised exception');
-  //   } catch (error) {
-  //     // console.info(typeof error);      // returns "object"; not helpful
-  //     // console.info(error.constructor); // doesn't work
-  //     // console.info(error);
-  //   }
-  // });
-
   it('should use repayDebt succesfully', async () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
@@ -195,6 +154,18 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     const receipt = await tx.verifyAndSubmit();
     expect(receipt.transactionHash).not.toBe('');
+  });
+
+  it('should raise appropriate error if removeQuoteToken fails', async () => {
+    // attempt to remove liquidity from a bucket in which lender has no LP
+    const tx = await pool.removeQuoteToken({
+      signer: signerLender,
+      maxAmount: toWad('22.153'),
+      bucketIndex: 4444,
+    });
+
+    expect.assertions(1);
+    return tx.verifyAndSubmit().catch(e => expect(e.message).toContain('NoClaim'));
   });
 
   it('should use moveQuoteToken succesfully', async () => {
