@@ -20,7 +20,7 @@ export class ContractError extends Error {
       super(errorsByHash[errorData]);
     } else {
       // unexpected
-      super(errorData);
+      super('Custom error not found for hash ' + errorData);
     }
   }
 }
