@@ -68,11 +68,7 @@
     "constant": true,
     "stateMutability": "view",
     "payable": false,
-    "inputs": [
-      { "type": "bytes32" },
-      { "type": "address" },
-      { "type": "address" }
-    ],
+    "inputs": [{ "type": "bytes32" }, { "type": "address" }, { "type": "address" }],
     "outputs": [{ "type": "address" }]
   },
   {

@@ -39,12 +39,11 @@ class Bucket {
    * @notice Load bucket state from PoolInfoUtils contract
    */
   initialize = async () => {
-    const [bucketPrice, deposit, collateral, bucketLPs, , exchangeRate] =
-      await bucketInfo({
-        contract: this.contractUtils,
-        poolAddress: this.poolAddress,
-        index: this.index,
-      });
+    const [bucketPrice, deposit, collateral, bucketLPs, , exchangeRate] = await bucketInfo({
+      contract: this.contractUtils,
+      poolAddress: this.poolAddress,
+      index: this.index,
+    });
     this.price = bucketPrice;
     this.deposit = deposit;
     this.collateral = collateral;

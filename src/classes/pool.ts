@@ -78,12 +78,7 @@ abstract class Pool {
     );
   };
 
-  addQuoteToken = async ({
-    signer,
-    amount,
-    bucketIndex,
-    ttlSeconds,
-  }: AddQuoteTokenParams) => {
+  addQuoteToken = async ({ signer, amount, bucketIndex, ttlSeconds }: AddQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addQuoteToken(
@@ -112,11 +107,7 @@ abstract class Pool {
     });
   };
 
-  removeQuoteToken = async ({
-    signer,
-    maxAmount,
-    bucketIndex,
-  }: RemoveQuoteTokenParams) => {
+  removeQuoteToken = async ({ signer, maxAmount, bucketIndex }: RemoveQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeQuoteToken({
@@ -181,24 +172,15 @@ abstract class Pool {
   };
 
   getStats = async () => {
-    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(
-      this.poolAddress
-    );
-    const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(
-      this.poolAddress
-    );
+    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
+    const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
     const data: string[] = await this.ethcallProvider.all([
       poolLoansInfoCall,
       poolUtilizationInfoCall,
     ]);
 
     const [poolSize, loansCount] = data[0];
-    const [
-      minDebtAmount,
-      collateralization,
-      actualUtilization,
-      targetUtilization,
-    ] = data[1];
+    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
 
     return {
       poolSize,
@@ -210,11 +192,7 @@ abstract class Pool {
     };
   };
 
-  getPosition = async ({
-    signer,
-    bucketIndex,
-    proposedWithdrawal,
-  }: GetPositionParams) => {
+  getPosition = async ({ signer, bucketIndex, proposedWithdrawal }: GetPositionParams) => {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
@@ -268,33 +246,21 @@ abstract class Pool {
     });
   };
 
-  getIndexesPriceByRange = async ({
-    minPrice,
-    maxPrice,
-  }: GetIndexesPriceByRangeParams) => {
+  getIndexesPriceByRange = async ({ minPrice, maxPrice }: GetIndexesPriceByRangeParams) => {
     const minIndexCall = this.contractUtilsMulti.priceToIndex(minPrice);
     const maxIndexCall = this.contractUtilsMulti.priceToIndex(maxPrice);
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      minIndexCall,
-      maxIndexCall,
-    ]);
+    const response: BigNumber[][] = await this.ethcallProvider.all([minIndexCall, maxIndexCall]);
 
     const minIndex = response[0];
     const maxIndex = response[1];
 
     const indexToPriceCalls = [];
 
-    for (
-      let index = Number(maxIndex.toString());
-      index <= Number(minIndex.toString());
-      index++
-    ) {
+    for (let index = Number(maxIndex.toString()); index <= Number(minIndex.toString()); index++) {
       indexToPriceCalls.push(this.contractUtilsMulti.indexToPrice(index));
     }
 
-    const responseCalls: BigNumber[] = await this.ethcallProvider.all(
-      indexToPriceCalls
-    );
+    const responseCalls: BigNumber[] = await this.ethcallProvider.all(indexToPriceCalls);
 
     const buckets: { index: number; price: BigNumber }[] = [];
     let index = Number(maxIndex.toString());
@@ -310,7 +276,7 @@ abstract class Pool {
       index = swiftIndex;
     });
 
-    return buckets.filter((element) => {
+    return buckets.filter(element => {
       return element !== null;
     });
   };

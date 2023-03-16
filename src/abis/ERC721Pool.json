@@ -404,11 +404,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [{ "type": "address", "name": "borrower_" }],
-    "outputs": [
-      { "type": "uint256" },
-      { "type": "uint256" },
-      { "type": "uint256" }
-    ]
+    "outputs": [{ "type": "uint256" }, { "type": "uint256" }, { "type": "uint256" }]
   },
   {
     "type": "function",
@@ -471,11 +467,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [{ "type": "uint256", "name": "burnEventEpoch_" }],
-    "outputs": [
-      { "type": "uint256" },
-      { "type": "uint256" },
-      { "type": "uint256" }
-    ]
+    "outputs": [{ "type": "uint256" }, { "type": "uint256" }, { "type": "uint256" }]
   },
   {
     "type": "function",
@@ -502,11 +494,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      { "type": "uint256" },
-      { "type": "uint256" },
-      { "type": "uint256" }
-    ]
+    "outputs": [{ "type": "uint256" }, { "type": "uint256" }, { "type": "uint256" }]
   },
   {
     "type": "function",
@@ -708,11 +696,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [],
-    "outputs": [
-      { "type": "address" },
-      { "type": "uint256" },
-      { "type": "uint256" }
-    ]
+    "outputs": [{ "type": "address" }, { "type": "uint256" }, { "type": "uint256" }]
   },
   {
     "type": "function",

@@ -4,9 +4,5 @@ import { SignerOrProvider } from '../types';
 import { ethers } from 'ethers';
 
 export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(
-    CONTRACT_ERC721_POOL_FACTORY,
-    erc721PoolFactoryAbi,
-    provider
-  );
+  return new ethers.Contract(CONTRACT_ERC721_POOL_FACTORY, erc721PoolFactoryAbi, provider);
 };
