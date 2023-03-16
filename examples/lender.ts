@@ -5,7 +5,6 @@ import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { constants, providers } from 'ethers';
-import { Address, WrappedTransaction } from '../src/types';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -75,9 +74,10 @@ export const run = async () => {
   // create existing pool to test exception handling
   // pool = await deployPool(wethAddress, daiAddress);
   console.log(await pool.getStats());
+  return;
   // add 1000 DAI pricing ETH at 2007.0213
-  // await addLiquidity('1000', '2007.0213');
-  // await removeLiquidity('10.1', '103.04');
+  await addLiquidity('1000', '2007.0213');
+  await removeLiquidity('10.1', '103.04');
 };
 
 run();
