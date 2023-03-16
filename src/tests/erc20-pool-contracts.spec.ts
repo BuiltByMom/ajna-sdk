@@ -187,12 +187,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const quoteAmount = toWad(1);
     const bucketIndex = 2000;
 
-    const receipt = await pool.removeQuoteToken({
+    const tx = await pool.removeQuoteToken({
       signer: signerLender,
       maxAmount: quoteAmount,
       bucketIndex,
     });
 
+    const receipt = await tx.verifyAndSubmit();
     expect(receipt.transactionHash).not.toBe('');
   });
 
@@ -201,7 +202,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndexFrom = 2000;
     const bucketIndexTo = 2001;
 
-    const receipt = await pool.moveQuoteToken({
+    const tx = await pool.moveQuoteToken({
       signer: signerLender,
       maxAmountToMove,
       fromIndex: bucketIndexFrom,
@@ -209,6 +210,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       ttlSeconds: null,
     });
 
+    const receipt = await tx.verifyAndSubmit();
     expect(receipt.transactionHash).not.toBe('');
   });
 

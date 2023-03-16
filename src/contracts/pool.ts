@@ -26,9 +26,12 @@ export const moveQuoteToken = async ({
   toIndex,
   expiry,
 }: MoveQuoteTokenParamsContract) => {
-  return await contract.moveQuoteToken(maxAmountToMove, fromIndex, toIndex, expiry, {
-    gasLimit: 1000000,
-  });
+  return await createTransaction(contract, 'moveQuoteToken', [
+    maxAmountToMove,
+    fromIndex,
+    toIndex,
+    expiry,
+  ]);
 };
 
 export const removeQuoteToken = async ({
@@ -36,9 +39,7 @@ export const removeQuoteToken = async ({
   maxAmount,
   bucketIndex,
 }: RemoveQuoteTokenParamsContract) => {
-  return await contract.removeQuoteToken(maxAmount, bucketIndex, {
-    gasLimit: 1000000,
-  });
+  return await createTransaction(contract, 'removeQuoteToken', [maxAmount, bucketIndex]);
 };
 
 export const lenderInfo = async ({
