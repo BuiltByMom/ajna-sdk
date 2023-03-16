@@ -16,11 +16,7 @@ export const addQuoteToken = async (
   bucketIndex: number,
   expiry: number
 ) => {
-  return await createTransaction(contract, 'addQuoteToken', [
-    amount,
-    bucketIndex,
-    expiry,
-  ]);
+  return await createTransaction(contract, 'addQuoteToken', [amount, bucketIndex, expiry]);
 };
 
 export const moveQuoteToken = async ({

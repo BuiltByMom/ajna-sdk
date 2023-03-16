@@ -14,17 +14,11 @@ export interface IERC20PoolFactory {
   /**
    * Returns pool instance for the given collateral and quote tokens addresses.
    */
-  getPool(
-    collateralAddress: Address,
-    quoteAddress: Address
-  ): Promise<FungiblePool>;
+  getPool(collateralAddress: Address, quoteAddress: Address): Promise<FungiblePool>;
   /**
    * Returns pool address for the given collateral and quote tokens addresses.
    */
-  getPoolAddress(
-    collateralAddress: Address,
-    quoteAddress: Address
-  ): Promise<Address>;
+  getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address>;
 }
 
 export interface IBaseContract {

@@ -70,12 +70,7 @@ abstract class Pool {
   };
 
   quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve(
-      signer,
-      this.poolAddress,
-      this.quoteAddress,
-      allowance
-    );
+    return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   };
 
   addQuoteToken = async ({ signer, amount, bucketIndex, ttlSeconds }: AddQuoteTokenParams) => {

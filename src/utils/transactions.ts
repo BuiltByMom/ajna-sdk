@@ -37,9 +37,7 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   async verifyAndSubmitResponse() {
-    const estimatedGas = await this._contract.provider.estimateGas(
-      this._transaction
-    );
+    const estimatedGas = await this._contract.provider.estimateGas(this._transaction);
 
     const txWithAdjustedGas = {
       ...this._transaction,
