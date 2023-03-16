@@ -1,10 +1,10 @@
-import dotenv from 'dotenv';
-import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/ajna';
 import { TEST_CONFIG as config } from '../constants/config';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import './test-utils.ts';
+import dotenv from 'dotenv';
+import { constants, providers } from 'ethers';
 
 dotenv.config();
 

@@ -1,17 +1,3 @@
-import {
-  AddQuoteTokenParams,
-  DebtInfoParams,
-  DepositIndexParams,
-  GenericApproveParams,
-  GetIndexesPriceByRangeParams,
-  GetPositionParams,
-  LenderInfoParams,
-  LoansInfoParams,
-  MoveQuoteTokenParams,
-  Provider,
-  RemoveQuoteTokenParams,
-  SignerOrProvider,
-} from '../types';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -27,6 +13,20 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
+import {
+  AddQuoteTokenParams,
+  DebtInfoParams,
+  DepositIndexParams,
+  GenericApproveParams,
+  GetIndexesPriceByRangeParams,
+  GetPositionParams,
+  LenderInfoParams,
+  LoansInfoParams,
+  MoveQuoteTokenParams,
+  Provider,
+  RemoveQuoteTokenParams,
+  SignerOrProvider,
+} from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';

@@ -1,6 +1,6 @@
-import { Signer } from 'ethers';
 import { SdkError } from '../classes/types';
 import { Provider, SignerOrProvider } from '../types';
+import { Signer } from 'ethers';
 
 // calculates expiration time based on current block timestamp
 export const getExpiry = async (

@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/ajna';
 import { Bucket } from '../classes/bucket';
 import { FungiblePool } from '../classes/fungible-pool';
@@ -8,6 +6,8 @@ import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import './test-utils.ts';
+import dotenv from 'dotenv';
+import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
 

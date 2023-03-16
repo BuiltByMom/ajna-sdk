@@ -7,8 +7,8 @@ import {
   MoveQuoteTokenParamsContract,
   RemoveQuoteTokenParamsContract,
 } from '../types';
-import { BigNumber, Contract } from 'ethers';
 import { createTransaction } from '../utils/transactions';
+import { BigNumber, Contract } from 'ethers';
 
 export const addQuoteToken = async (
   contract: Contract,

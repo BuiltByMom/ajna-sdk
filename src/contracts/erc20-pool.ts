@@ -5,9 +5,9 @@ import {
   RepayDebtParamsContract,
   SignerOrProvider,
 } from '../types';
-import { getErc20Contract } from './erc20';
-import { BigNumber, ethers, Signer } from 'ethers';
 import { createTransaction } from '../utils/transactions';
+import { getErc20Contract } from './erc20';
+import { BigNumber, Signer, ethers } from 'ethers';
 
 export const getErc20PoolContract = (
   poolAddress: Address,

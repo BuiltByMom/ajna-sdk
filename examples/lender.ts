@@ -1,10 +1,10 @@
 import { AjnaSDK } from '../src/classes/ajna';
 import { FungiblePool } from '../src/classes/fungible-pool';
+import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { constants, providers } from 'ethers';
-import { Address } from '../src/types';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -78,7 +78,7 @@ export const run = async () => {
   // pool = await deployPool(wethAddress, daiAddress);
   console.log(await pool.getStats());
   // add 1000 DAI pricing ETH at 2007.0213
-  await addLiquidity('1000', '2007.0213');
+  // await addLiquidity('1000', '2007.0213');
   // await removeLiquidity('10.1', '103.04');
 };
 

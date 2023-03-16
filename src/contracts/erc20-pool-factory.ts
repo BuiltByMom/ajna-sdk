@@ -1,9 +1,9 @@
-import { BigNumber, Contract, ethers, Signer } from 'ethers';
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
 import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
 import { Address, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
+import { BigNumber, Contract, Signer, ethers } from 'ethers';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(
