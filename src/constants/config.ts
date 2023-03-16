@@ -2,11 +2,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const CONTRACT_ERC20_POOL_FACTORY =
-  process.env.AJNA_CONTRACT_ERC20_POOL_FACTORY || '';
+export const CONTRACT_ERC20_POOL_FACTORY = process.env.AJNA_CONTRACT_ERC20_POOL_FACTORY || '';
 
-export const CONTRACT_ERC721_POOL_FACTORY =
-  process.env.AJNA_CONTRACT_ERC721_POOL_FACTORY || '';
+export const CONTRACT_ERC721_POOL_FACTORY = process.env.AJNA_CONTRACT_ERC721_POOL_FACTORY || '';
 
 export const POOL_UTILS = process.env.AJNA_POOL_UTILS || '';
 

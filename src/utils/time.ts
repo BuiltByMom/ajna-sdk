@@ -3,10 +3,7 @@ import { Provider, SignerOrProvider } from 'constants/interfaces';
 import { Signer } from 'ethers';
 
 // calculates expiration time based on current block timestamp
-export const getExpiry = async (
-  signer: SignerOrProvider,
-  ttlSeconds: number | null
-) => {
+export const getExpiry = async (signer: SignerOrProvider, ttlSeconds: number | null) => {
   // TODO: Make this a utility method somewhere
   let provider: Provider;
   if (signer instanceof Signer) {

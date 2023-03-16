@@ -9,10 +9,7 @@ import {
 import { getErc20Contract } from './erc20';
 import { ethers } from 'ethers';
 
-export const getErc20PoolContract = (
-  poolAddress: Address,
-  provider: SignerOrProvider
-) => {
+export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
   return new ethers.Contract(poolAddress, ERC20Pool, provider);
 };
 

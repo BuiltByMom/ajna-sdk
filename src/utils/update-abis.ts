@@ -22,10 +22,7 @@ export const updateAbis = function () {
       const formattedAbi = iface.format(FormatTypes.json).toString();
       const translatedAbi = JSON.stringify(JSON.parse(formattedAbi));
       // write the translated ABI to disk
-      fs.writeFileSync(
-        path.join(process.cwd(), 'src/abis', file.name),
-        translatedAbi
-      );
+      fs.writeFileSync(path.join(process.cwd(), 'src/abis', file.name), translatedAbi);
     }
   }
 };

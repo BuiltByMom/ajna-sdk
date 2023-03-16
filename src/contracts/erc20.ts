@@ -6,16 +6,11 @@ import {
 } from '../constants/interfaces';
 import { ethers } from 'ethers';
 
-export const getErc20Contract = (
-  contractAddress: string,
-  provider: SignerOrProvider
-) => {
+export const getErc20Contract = (contractAddress: string, provider: SignerOrProvider) => {
   return new ethers.Contract(contractAddress, erc20Abi, provider);
 };
 
-export const getCollateralBalance = async (
-  params: CollateralBalanceParamsContract
-) => {
+export const getCollateralBalance = async (params: CollateralBalanceParamsContract) => {
   const { collateralAddress, holderAddress, provider } = params;
   const contractCollateral = getErc20Contract(collateralAddress, provider);
 

@@ -10,10 +10,7 @@ const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 // Use this for local testnets, where JSON keystores are unavailable.
 // const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
 // Use this for a real chain, such as Goerli or Mainnet.
-const signerLender = addAccountFromKeystore(
-  process.env.ETH_KEYSTORE || '',
-  provider
-);
+const signerLender = addAccountFromKeystore(process.env.ETH_KEYSTORE || '', provider);
 if (signerLender == null) throw new Error('wallet not unlocked');
 
 const ajna = new AjnaSDK(provider);

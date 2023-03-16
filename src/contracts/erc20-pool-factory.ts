@@ -21,15 +21,10 @@ export const deployPool = async (
   const contractInstance: Contract = getErc20PoolFactoryContract(signer);
   const interestRateParam = interestRate;
 
-  const tx = await contractInstance.deployPool(
-    collateralAddress,
-    quoteAddress,
-    interestRateParam,
-    {
-      from: await signer.getAddress(),
-      gasLimit: 1000000,
-    }
-  );
+  const tx = await contractInstance.deployPool(collateralAddress, quoteAddress, interestRateParam, {
+    from: await signer.getAddress(),
+    gasLimit: 1000000,
+  });
 
   return await tx.wait();
 };
@@ -42,9 +37,5 @@ export const deployedPools = async (
 ) => {
   const contractInstance: Contract = getErc20PoolFactoryContract(provider);
 
-  return await contractInstance.deployedPools(
-    nonSubsetHash,
-    collateralAddress,
-    quoteAddress
-  );
+  return await contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
 };

@@ -7,12 +7,7 @@ import {
   RepayDebtParams,
   SignerOrProvider,
 } from '../constants/interfaces';
-import {
-  approve,
-  drawDebt,
-  getErc20PoolContract,
-  repayDebt,
-} from '../contracts/erc20-pool';
+import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
@@ -44,12 +39,7 @@ class FungiblePool extends Pool {
     });
   };
 
-  drawDebt = async ({
-    signer,
-    amountToBorrow,
-    limitIndex,
-    collateralToPledge,
-  }: DrawDebtParams) => {
+  drawDebt = async ({ signer, amountToBorrow, limitIndex, collateralToPledge }: DrawDebtParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const estimateLoan = await this.estimateLoan({
@@ -91,9 +81,7 @@ class FungiblePool extends Pool {
   };
 
   getLoan = async (borrowerAddress: Address) => {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(
-      this.poolAddress
-    );
+    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
       borrowerAddress
@@ -106,9 +94,7 @@ class FungiblePool extends Pool {
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
-    const collateralization = debt.gt(0)
-      ? collateral.mul(lup).div(debt)
-      : BigNumber.from(1);
+    const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : BigNumber.from(1);
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return {
@@ -142,14 +128,8 @@ class FungiblePool extends Pool {
     return bucket;
   };
 
-  estimateLoan = async ({
-    signer,
-    debtAmount,
-    collateralAmount,
-  }: EstimateLoanParams) => {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(
-      this.poolAddress
-    );
+  estimateLoan = async ({ signer, debtAmount, collateralAmount }: EstimateLoanParams) => {
+    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
       await signer.getAddress()
@@ -172,9 +152,7 @@ class FungiblePool extends Pool {
       debtAmount: poolDebt.add(debtAmount),
     });
 
-    const thresholdPrice = debt
-      .add(debtAmount)
-      .div(collateral.add(collateralAmount));
+    const thresholdPrice = debt.add(debtAmount).div(collateral.add(collateralAmount));
 
     return {
       lupIndex: lupIndex.toNumber(),
