@@ -1,13 +1,13 @@
+import { MAX_FENWICK_INDEX } from '../constants';
+import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
 import {
   Address,
   DrawDebtParams,
   EstimateLoanParams,
   GenericApproveParams,
-  MAX_FENWICK_INDEX,
   RepayDebtParams,
   SignerOrProvider,
-} from '../constants/interfaces';
-import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
+} from '../types';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './bucket';
 import { Pool } from './pool';
@@ -31,12 +31,7 @@ class FungiblePool extends Pool {
   }
 
   collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve({
-      provider: signer,
-      poolAddress: this.poolAddress,
-      tokenAddress: this.collateralAddress,
-      allowance: allowance,
-    });
+    return await approve(signer, this.poolAddress, this.collateralAddress, allowance);
   };
 
   drawDebt = async ({ signer, amountToBorrow, limitIndex, collateralToPledge }: DrawDebtParams) => {

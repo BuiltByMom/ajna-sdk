@@ -1,5 +1,4 @@
 import {
-  AddQuoteTokenParamsContract,
   Address,
   DebtInfoParamsContract,
   DepositIndexParamsContract,
@@ -7,18 +6,17 @@ import {
   LoansInfoParamsContract,
   MoveQuoteTokenParamsContract,
   RemoveQuoteTokenParamsContract,
-} from '../constants/interfaces';
-import { BigNumber } from 'ethers';
+} from '../types';
+import { createTransaction } from '../utils/transactions';
+import { BigNumber, Contract } from 'ethers';
 
-export const addQuoteToken = async ({
-  contract,
-  amount,
-  bucketIndex,
-  expiry,
-}: AddQuoteTokenParamsContract) => {
-  return await contract.addQuoteToken(amount, bucketIndex, expiry, {
-    gasLimit: 1000000,
-  });
+export const addQuoteToken = async (
+  contract: Contract,
+  amount: BigNumber,
+  bucketIndex: number,
+  expiry: number
+) => {
+  return await createTransaction(contract, 'addQuoteToken', [amount, bucketIndex, expiry]);
 };
 
 export const moveQuoteToken = async ({

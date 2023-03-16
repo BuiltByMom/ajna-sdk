@@ -1,17 +1,3 @@
-import {
-  AddQuoteTokenParams,
-  DebtInfoParams,
-  DepositIndexParams,
-  GenericApproveParams,
-  GetIndexesPriceByRangeParams,
-  GetPositionParams,
-  LenderInfoParams,
-  LoansInfoParams,
-  MoveQuoteTokenParams,
-  Provider,
-  RemoveQuoteTokenParams,
-  SignerOrProvider,
-} from '../constants/interfaces';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -27,6 +13,20 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
+import {
+  AddQuoteTokenParams,
+  DebtInfoParams,
+  DepositIndexParams,
+  GenericApproveParams,
+  GetIndexesPriceByRangeParams,
+  GetPositionParams,
+  LenderInfoParams,
+  LoansInfoParams,
+  MoveQuoteTokenParams,
+  Provider,
+  RemoveQuoteTokenParams,
+  SignerOrProvider,
+} from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './pool-utils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
@@ -70,23 +70,18 @@ abstract class Pool {
   };
 
   quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
-    return await approve({
-      provider: signer,
-      poolAddress: this.poolAddress,
-      tokenAddress: this.quoteAddress,
-      allowance: allowance,
-    });
+    return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   };
 
   addQuoteToken = async ({ signer, amount, bucketIndex, ttlSeconds }: AddQuoteTokenParams) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await addQuoteToken({
-      contract: contractPoolWithSigner,
-      amount: amount,
+    return await addQuoteToken(
+      contractPoolWithSigner,
+      amount,
       bucketIndex,
-      expiry: await getExpiry(this.provider, ttlSeconds),
-    });
+      await getExpiry(this.provider, ttlSeconds)
+    );
   };
 
   moveQuoteToken = async ({

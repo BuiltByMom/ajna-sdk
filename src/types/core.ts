@@ -1,4 +1,7 @@
-import { BigNumber, Contract, Signer, providers } from 'ethers';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
+import { BigNumber, Contract, providers, Signer as EthersSigner } from 'ethers';
+
+export type Signer = EthersSigner;
 
 export type SignerOrProvider = Signer | providers.Provider;
 
@@ -200,6 +203,19 @@ export type RepayParamsContract = BaseParamsWithContract & {
   amount: BigNumber;
 };
 
-/************** Constants **************/
+export interface TransactionOverrides {
+  to?: string;
+  from?: string;
+  value?: string;
+  gasLimit?: number;
+  gasPrice?: string;
+  nonce?: string;
+}
 
-export const MAX_FENWICK_INDEX = 7388;
+export interface WrappedTransaction {
+  verify(): Promise<string>;
+  submit(confirmations?: number): Promise<TransactionReceipt>;
+  submitResponse(): Promise<TransactionResponse>;
+  verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
+  verifyAndSubmitResponse(): Promise<TransactionResponse>;
+}

@@ -1,5 +1,5 @@
-import { SignerOrProvider } from '../constants/interfaces';
 import { getPoolInfoUtilsContract, indexToPrice, priceToIndex } from '../contracts/pool-info-utils';
+import { SignerOrProvider } from '../types';
 import { BigNumber, Contract } from 'ethers';
 
 /**

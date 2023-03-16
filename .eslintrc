@@ -10,7 +10,8 @@
   "rules": {
     "no-console": 1,
     "prettier/prettier": 2,
-    "comma-dangle": 0
+    "comma-dangle": 0,
+    "@typescript-eslint/no-explicit-any": "off"
   },
   "env": {
     "browser": true,

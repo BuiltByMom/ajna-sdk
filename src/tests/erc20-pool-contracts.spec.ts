@@ -7,23 +7,29 @@ import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import './test-utils.ts';
 import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
 
 jest.setTimeout(1200000);
 
+const COLLATERAL_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
+const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
+const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
+const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
+const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
+
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  const signerLender = addAccountFromKey(config.LENDER_KEY, provider);
-  const signerBorrower = addAccountFromKey(config.BORROWER_KEY, provider);
+  const signerLender = addAccountFromKey(LENDER_KEY, provider);
+  const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   let pool: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
     // mint tokens to actors
-    const signerDeployer = addAccountFromKey(config.DEPLOYER_KEY, provider);
-    const TWETH = getErc20Contract(config.COLLATERAL_ADDRESS, provider);
+    const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+    const TWETH = getErc20Contract(COLLATERAL_ADDRESS, provider);
     const receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
       toWad(BigNumber.from('10'))
@@ -32,14 +38,34 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should confirm AjnaSDK pool succesfully', async () => {
-    pool = await ajna.factory.deployPool({
+    const tx = await ajna.factory.deployPool({
       signer: signerLender,
-      collateralAddress: config.COLLATERAL_ADDRESS,
-      quoteAddress: config.QUOTE_ADDRESS,
+      collateralAddress: COLLATERAL_ADDRESS,
+      quoteAddress: QUOTE_ADDRESS,
       interestRate: toWad('0.05'),
     });
 
-    expect(pool.poolAddress).not.toBe('');
+    await tx.verifyAndSubmit();
+
+    pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
+
+    expect(pool).toBeDefined();
+    expect(pool.poolAddress).not.toBe(constants.AddressZero);
+    expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
+    expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+  });
+
+  it('should not allow to create existing pool', async () => {
+    const tx = await ajna.factory.deployPool({
+      signer: signerLender,
+      collateralAddress: COLLATERAL_ADDRESS,
+      quoteAddress: QUOTE_ADDRESS,
+      interestRate: toWad('0.05'),
+    });
+
+    await expect(async () => {
+      await tx.verify();
+    }).rejects.toThrow();
   });
 
   it('should use addQuoteToken succesfully', async () => {
@@ -47,19 +73,31 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndex = 2000;
     const allowance = 100000000;
 
-    await pool.quoteApprove({
+    let tx = await pool.quoteApprove({
       signer: signerLender,
       allowance: toWad(allowance),
     });
+    let response = await tx.verifyAndSubmitResponse();
+    await response.wait();
 
-    const receipt = await pool.addQuoteToken({
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+
+    tx = await pool.addQuoteToken({
       signer: signerLender,
       amount: toWad(quoteAmount),
       bucketIndex,
       ttlSeconds: null,
     });
+    response = await tx.verifyAndSubmitResponse();
 
-    expect(receipt.transactionHash).not.toBe('');
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+
+    const receipt = await response.wait();
+
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
   });
 
   it('should use drawDebt succesfully', async () => {
@@ -67,10 +105,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
-    await pool.collateralApprove({
+    const tx = await pool.collateralApprove({
       signer: signerBorrower,
       allowance: collateralToPledge,
     });
+
+    await tx.verifyAndSubmit();
 
     const receipt = await pool.drawDebt({
       signer: signerBorrower,
@@ -127,10 +167,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
 
-    await pool.quoteApprove({
+    const tx = await pool.quoteApprove({
       signer: signerBorrower,
       allowance: maxQuoteTokenAmountToRepay,
     });
+    await tx.verifyAndSubmit();
 
     const receipt = await pool.repayDebt({
       signer: signerBorrower,
@@ -193,17 +234,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const quoteAmount = toWad(0.5);
     const bucketIndex = 1234;
 
-    await pool.quoteApprove({
+    let tx = await pool.quoteApprove({
       signer: signerLender,
       allowance: quoteAmount,
     });
+    await tx.verifyAndSubmit();
 
-    await pool.addQuoteToken({
+    tx = await pool.addQuoteToken({
       signer: signerLender,
       amount: quoteAmount,
       bucketIndex,
       ttlSeconds: null,
     });
+    await tx.verifyAndSubmit();
 
     const buckets = await pool.getIndexesPriceByRange({
       minPrice: toWad(0.01),

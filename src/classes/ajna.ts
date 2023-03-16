@@ -1,4 +1,4 @@
-import { Provider } from '../constants/interfaces';
+import { Provider } from '../types';
 import { FungiblePoolFactory } from './factory';
 
 class AjnaSDK {

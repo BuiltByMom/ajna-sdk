@@ -1,5 +1,5 @@
 import { SdkError } from '../classes/types';
-import { Provider, SignerOrProvider } from 'constants/interfaces';
+import { Provider, SignerOrProvider } from '../types';
 import { Signer } from 'ethers';
 
 // calculates expiration time based on current block timestamp
