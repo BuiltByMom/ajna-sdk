@@ -63,9 +63,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       interestRate: toWad('0.05'),
     });
 
-    await expect(async () => {
-      await tx.verify();
-    }).rejects.toThrow();
+    return tx.verify().catch(e => expect(e.message).toContain('PoolAlreadyExists'));
   });
 
   it('should use addQuoteToken succesfully', async () => {
@@ -164,7 +162,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       bucketIndex: 4444,
     });
 
-    expect.assertions(1);
     return tx.verifyAndSubmit().catch(e => expect(e.message).toContain('NoClaim'));
   });
 

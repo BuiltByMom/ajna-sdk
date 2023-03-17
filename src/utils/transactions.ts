@@ -25,30 +25,14 @@ class WrappedTransactionClass implements WrappedTransaction {
     this._contract = contract;
   }
 
+  /**
+   * Determines if a transaction will fail by asking the node for a gas estimate.
+   * @throws {@link SdkError} if transaction will fail at current block height.
+   * @returns Gas estimate for the transaction.
+   */
   async verify() {
-    // FIXME: On Goerli using Alchemy node, `provider.call` does not raise an
-    // error for a bad transaction.  Perhaps `estimateGas` should be done here,
-    // and `verifyAndSubmitResponse` should call this method?
-    return await this._contract.provider.call(this._transaction);
-  }
-
-  async submitResponse() {
-    return await this._contract.signer.sendTransaction(this._transaction);
-  }
-
-  async submit(confirmations?: number) {
-    const response = await this.submitResponse();
-    return await response.wait(confirmations);
-  }
-
-  async verifyAndSubmitResponse() {
     try {
-      const estimatedGas = await this._contract.provider.estimateGas(this._transaction);
-      const txWithAdjustedGas = {
-        ...this._transaction,
-        gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
-      };
-      return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+      return await this._contract.provider.estimateGas(this._transaction);
     } catch (error: unknown) {
       const errorHash = this.parseCustomErrorHashFromNodeError(error);
       if (errorHash !== null) {
@@ -62,6 +46,37 @@ class WrappedTransactionClass implements WrappedTransaction {
     }
   }
 
+  async submitResponse() {
+    return await this._contract.signer.sendTransaction(this._transaction);
+  }
+
+  async submit(confirmations?: number) {
+    const response = await this.submitResponse();
+    return await response.wait(confirmations);
+  }
+
+  /**
+   * Estimates gas, submits a transaction with gas estimate, and waits for the
+   * node to acknowledge the transaction is pending.
+   * @throws {@link SdkError} if transaction will fail at current block height.
+   * @returns TransactionResponse
+   */
+  async verifyAndSubmitResponse() {
+    const estimatedGas = await this.verify();
+    const txWithAdjustedGas = {
+      ...this._transaction,
+      gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
+    };
+    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+  }
+
+  /**
+   * Estimates gas, submits a transaction with gas estimate, and waits for the transaction to be
+   * included in a block.
+   * @param confirmations Optionally wait for specific number of confirmations.
+   * @throws {@link SdkError} if transaction will fail at current block height.
+   * @returns TransactionReceipt
+   */
   async verifyAndSubmit(confirmations?: number) {
     const response = await this.verifyAndSubmitResponse();
     return await response.wait(confirmations);
@@ -69,7 +84,7 @@ class WrappedTransactionClass implements WrappedTransaction {
 
   /**
    * Looks through exception data to find the error hash for various node providers.
-   * @param error thrown by Ethers in response to an estimateGas failure
+   * @param error Error thrown by Ethers in response to an estimateGas failure.
    * @returns string
    */
   parseCustomErrorHashFromNodeError(error: any) {
@@ -94,10 +109,10 @@ class WrappedTransactionClass implements WrappedTransaction {
   }
 
   /**
-   * Matches error hash from node with custom errors in contract
-   * @param contract Instance of contract with interface prepared from ABI
-   * @param errorData Error hash string parsed from exception raised by node
-   * @returns Human-readable reason explaining why transaction would revert
+   * Matches error hash from node with custom errors in contract.
+   * @param contract Instance of contract with interface prepared from ABI.
+   * @param errorData Error hash string parsed from exception raised by node.
+   * @returns Human-readable reason explaining why transaction would revert.
    */
   getCustomErrorFromHash(contract: Contract, errorData: string) {
     // retrieve the list of custom errors available to the contract
