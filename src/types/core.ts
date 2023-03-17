@@ -213,7 +213,7 @@ export interface TransactionOverrides {
 }
 
 export interface WrappedTransaction {
-  verify(): Promise<string>;
+  verify(): Promise<BigNumber>;
   submit(confirmations?: number): Promise<TransactionReceipt>;
   submitResponse(): Promise<TransactionResponse>;
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
