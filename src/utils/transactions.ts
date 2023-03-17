@@ -37,8 +37,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       const errorHash = this.parseCustomErrorHashFromNodeError(error);
       if (errorHash !== null) {
         const reason = this.getCustomErrorFromHash(this._contract, errorHash);
-        const exception = new SdkError(reason);
-        exception.innerException = error;
+        const exception = new SdkError(reason, error);
         throw exception;
       } else {
         throw error;
