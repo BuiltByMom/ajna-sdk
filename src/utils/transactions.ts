@@ -42,6 +42,7 @@ class WrappedTransactionClass implements WrappedTransaction {
 
   /**
    * Verifies that the transaction is valid by calling the transaction with the current state of the blockchain. If the transaction is reverted, an error will be thrown.
+   * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns {Promise<any>} - The result of the transaction call.
    */
   async verify() {
@@ -68,6 +69,7 @@ class WrappedTransactionClass implements WrappedTransaction {
 
   /**
    * Verifies the transaction and submits it with an adjusted gas limit. Returns transaction response.
+   * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns {Promise<any>} - The transaction receipt.
    */
   async verifyAndSubmitResponse() {
@@ -84,6 +86,7 @@ class WrappedTransactionClass implements WrappedTransaction {
   /**
    * Verifies the transaction and submits it with an adjusted gas limit, and waits for confirmation.
    * @param {number} [confirmations] - The number of confirmations to wait for (default is 1).
+   * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns {Promise<any>} - The transaction receipt.
    */
   async verifyAndSubmit(confirmations?: number) {
