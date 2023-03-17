@@ -1,7 +1,8 @@
-import { ContractError } from '../classes/types';
+import { SdkError } from '../classes/types';
 import { GAS_MULTIPLIER } from '../constants';
 import { TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 
 export async function createTransaction(
   contract: Contract,
@@ -51,7 +52,10 @@ class WrappedTransactionClass implements WrappedTransaction {
     } catch (error: unknown) {
       const errorHash = this.parseCustomErrorHashFromNodeError(error);
       if (errorHash !== null) {
-        throw new ContractError(this._contract, errorHash);
+        const reason = this.getCustomErrorFromHash(this._contract, errorHash);
+        const exception = new SdkError(reason);
+        exception.innerException = error;
+        throw exception;
       } else {
         throw error;
       }
@@ -63,6 +67,11 @@ class WrappedTransactionClass implements WrappedTransaction {
     return await response.wait(confirmations);
   }
 
+  /**
+   * Looks through exception data to find the error hash for various node providers.
+   * @param error thrown by Ethers in response to an estimateGas failure
+   * @returns string
+   */
   parseCustomErrorHashFromNodeError(error: any) {
     if (
       // works with Alchemy node on Goerli
@@ -82,5 +91,28 @@ class WrappedTransactionClass implements WrappedTransaction {
       return error.error.error.data.result;
     }
     return null;
+  }
+
+  /**
+   * Matches error hash from node with custom errors in contract
+   * @param contract Instance of contract with interface prepared from ABI
+   * @param errorData Error hash string parsed from exception raised by node
+   * @returns Human-readable reason explaining why transaction would revert
+   */
+  getCustomErrorFromHash(contract: Contract, errorData: string) {
+    // retrieve the list of custom errors available to the contract
+    const customErrorNames = Object.keys(contract.interface.errors);
+
+    // index the contract's errors by the first 8 bytes of their hash
+    const errorsByHash = Object.fromEntries(
+      customErrorNames.map(name => [keccak256(toUtf8Bytes(name)).substring(0, 10), name])
+    );
+
+    if (errorData in errorsByHash) {
+      return errorsByHash[errorData];
+    } else {
+      // unexpected
+      return 'Custom error not found for hash ' + errorData;
+    }
   }
 }
