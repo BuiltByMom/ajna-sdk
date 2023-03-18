@@ -4,6 +4,14 @@ import { TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 
+/**
+ * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
+ * @param contract The ethers.js contract instance.
+ * @param methodName The name of the method to call on the contract.
+ * @param args An array of arguments to pass to the method.
+ * @param overrides An optional object with transaction overrides, such as gasPrice and gasLimit.
+ * @returns The wrapped transaction object.
+ */
 export async function createTransaction(
   contract: Contract,
   methodName: string,
@@ -16,19 +24,34 @@ export async function createTransaction(
   return new WrappedTransactionClass(tx, contract);
 }
 
+/**
+ * A class representing a wrapped transaction that can be used to submit, verify, and estimate gas for a transaction.
+ */
 class WrappedTransactionClass implements WrappedTransaction {
+  /**
+   * The populated transaction object.
+   */
   readonly _transaction: PopulatedTransaction;
+  /**
+   * The ethers.js contract instance.
+   */
   readonly _contract: BaseContract;
 
+  /**
+   * Creates a new wrapped transaction instance.
+   * @param transaction The populated transaction object.
+   * @param contract The ethers.js contract instance.
+   */
   constructor(transaction: PopulatedTransaction, contract: BaseContract) {
     this._transaction = transaction;
     this._contract = contract;
   }
 
   /**
-   * Determines if a transaction will fail by asking the node for a gas estimate.
-   * @throws {@link SdkError} if transaction will fail at current block height.
-   * @returns Gas estimate for the transaction.
+   * Verifies that the transaction can be executed by estimating its gas cost.
+   * @returns A Promise that resolves to the estimated gas cost.
+   * @throws {@link SdkError} An SDK error if the transaction execution failed and the error reason can be identified.
+   * @throws The original error if the transaction execution failed and the error reason cannot be identified.
    */
   async verify() {
     try {
@@ -44,10 +67,19 @@ class WrappedTransactionClass implements WrappedTransaction {
     }
   }
 
+  /**
+   * Submits the transaction to the blockchain using the signer.
+   * @returns The transaction receipt.
+   */
   async submitResponse() {
     return await this._contract.signer.sendTransaction(this._transaction);
   }
 
+  /**
+   * Submits the transaction to the blockchain and waits for it to be mined.
+   * @param confirmations The number of confirmations to wait for (default is 1).
+   * @returns A Promise that resolves to the transaction receipt.
+   */
   async submit(confirmations?: number) {
     const response = await this.submitResponse();
     return await response.wait(confirmations);

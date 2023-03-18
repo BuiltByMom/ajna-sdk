@@ -105,19 +105,21 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
-    const tx = await pool.collateralApprove({
+    let tx = await pool.collateralApprove({
       signer: signerBorrower,
       allowance: collateralToPledge,
     });
 
     await tx.verifyAndSubmit();
 
-    const receipt = await pool.drawDebt({
+    tx = await pool.drawDebt({
       signer: signerBorrower,
       amountToBorrow,
       limitIndex,
       collateralToPledge,
     });
+
+    const receipt = await tx.verifyAndSubmit();
 
     expect(receipt.transactionHash).not.toBe('');
   });
@@ -126,18 +128,20 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
 
-    const tx = await pool.quoteApprove({
+    let tx = await pool.quoteApprove({
       signer: signerBorrower,
       allowance: maxQuoteTokenAmountToRepay,
     });
     await tx.verifyAndSubmit();
 
-    const receipt = await pool.repayDebt({
+    tx = await pool.repayDebt({
       signer: signerBorrower,
       maxQuoteTokenAmountToRepay,
       collateralAmountToPull,
       limitIndex: null,
     });
+
+    const receipt = await tx.verifyAndSubmit();
 
     expect(receipt.transactionHash).not.toBe('');
   });

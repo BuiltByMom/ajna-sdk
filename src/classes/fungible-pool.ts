@@ -47,13 +47,13 @@ class FungiblePool extends Pool {
       throw new Error('ERR_BORROWER_UNCOLLATERALIZED');
     }
 
-    return await drawDebt({
-      contract: contractPoolWithSigner,
-      borrowerAddress: await signer.getAddress(),
-      amountToBorrow: amountToBorrow,
-      limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
-      collateralToPledge: collateralToPledge,
-    });
+    return await drawDebt(
+      contractPoolWithSigner,
+      await signer.getAddress(),
+      amountToBorrow,
+      limitIndex ?? MAX_FENWICK_INDEX,
+      collateralToPledge
+    );
   };
 
   repayDebt = async ({
@@ -65,14 +65,14 @@ class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const sender = await signer.getAddress();
-    return await repayDebt({
-      contract: contractPoolWithSigner,
-      borrowerAddress: sender,
-      maxQuoteTokenAmountToRepay: maxQuoteTokenAmountToRepay,
-      collateralAmountToPull: collateralAmountToPull,
-      collateralReceiver: sender,
-      limitIndex: limitIndex ?? MAX_FENWICK_INDEX,
-    });
+    return await repayDebt(
+      contractPoolWithSigner,
+      sender,
+      maxQuoteTokenAmountToRepay,
+      collateralAmountToPull,
+      sender,
+      limitIndex ?? MAX_FENWICK_INDEX
+    );
   };
 
   getLoan = async (borrowerAddress: Address) => {

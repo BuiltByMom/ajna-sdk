@@ -1,6 +1,6 @@
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
 import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
-import { Address, SignerOrProvider } from '../types';
+import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 import { BigNumber, Contract, Signer, ethers } from 'ethers';
@@ -13,31 +13,30 @@ export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   );
 };
 
-export const deployPool = async (
+export async function deployPool(
   signer: Signer,
   collateralAddress: Address,
   quoteAddress: Address,
-  interestRate: BigNumber
-) => {
+  interestRate: BigNumber,
+  overrides?: TransactionOverrides
+) {
   const contractInstance: Contract = getErc20PoolFactoryContract(signer);
 
   return await createTransaction(
     contractInstance,
     'deployPool',
     [collateralAddress, quoteAddress, interestRate],
-    {
-      from: await signer.getAddress(),
-    }
+    overrides
   );
-};
+}
 
-export const deployedPools = async (
+export async function deployedPools(
   provider: SignerOrProvider,
   collateralAddress: Address,
   quoteAddress: Address,
   nonSubsetHash: string
-) => {
+) {
   const contractInstance: Contract = getErc20PoolFactoryContract(provider);
 
   return await contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
-};
+}
