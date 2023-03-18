@@ -66,7 +66,7 @@ const removeLiquidity = async (amount: string, price: string) => {
     maxAmount: toWad(amount),
     bucketIndex: priceToIndex(toWad(price)),
   });
-  console.log(tx);
+  await tx.verifyAndSubmit();
 };
 
 export const run = async () => {
@@ -74,9 +74,10 @@ export const run = async () => {
   // create existing pool to test exception handling
   // pool = await deployPool(wethAddress, daiAddress);
   console.log(await pool.getStats());
+  return;
   // add 1000 DAI pricing ETH at 2007.0213
-  // await addLiquidity('1000', '2007.0213');
-  // await removeLiquidity('10.1', '103.04');
+  await addLiquidity('1000', '2007.0213');
+  await removeLiquidity('10.1', '103.04');
 };
 
 run();
