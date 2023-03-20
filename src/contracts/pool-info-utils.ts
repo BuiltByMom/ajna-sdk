@@ -1,8 +1,8 @@
-import { Contract as ContractMulti } from 'ethcall';
-import { BigNumber, Contract, ethers } from 'ethers';
 import PoolInfoUtilsAbi from '../abis/PoolInfoUtils.json';
 import { POOL_UTILS } from '../constants/config';
 import { Address, SignerOrProvider } from '../types';
+import { Contract as ContractMulti } from 'ethcall';
+import { BigNumber, Contract, ethers } from 'ethers';
 
 export const getPoolInfoUtilsContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(POOL_UTILS, PoolInfoUtilsAbi, provider);

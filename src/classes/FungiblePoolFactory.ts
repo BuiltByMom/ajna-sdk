@@ -1,8 +1,8 @@
-import { BigNumber, Signer, utils } from 'ethers';
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
+import { BigNumber, Signer, utils } from 'ethers';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.
