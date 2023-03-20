@@ -32,12 +32,7 @@ const getPool = async () => {
 };
 
 const deployPool = async (collateral: Address, quote: Address) => {
-  const tx = await ajna.factory.deployPool({
-    signer: signerLender,
-    collateralAddress: collateral,
-    quoteAddress: quote,
-    interestRate: toWad('0.05'),
-  });
+  const tx = await ajna.factory.deployPool(signerLender, collateral, quote, toWad('0.05'));
   await tx.verifyAndSubmit();
   return await ajna.factory.getPool(wethAddress, daiAddress);
 };
@@ -45,27 +40,15 @@ const deployPool = async (collateral: Address, quote: Address) => {
 // Using fine-grained approval, add liquidity to the pool
 const addLiquidity = async (amount: string, price: string) => {
   // TODO: approve and add in a multicall
-  let tx = await pool.quoteApprove({
-    signer: signerLender,
-    allowance: toWad(amount),
-  });
+  let tx = await pool.quoteApprove(signerLender, toWad(amount));
   await tx.verifyAndSubmit();
 
-  tx = await pool.addQuoteToken({
-    signer: signerLender,
-    amount: toWad(amount),
-    bucketIndex: priceToIndex(toWad(price)),
-    ttlSeconds: null,
-  });
+  tx = await pool.addQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)), null);
   await tx.verifyAndSubmit();
 };
 
 const removeLiquidity = async (amount: string, price: string) => {
-  const tx = await pool.removeQuoteToken({
-    signer: signerLender,
-    maxAmount: toWad(amount),
-    bucketIndex: priceToIndex(toWad(price)),
-  });
+  const tx = await pool.removeQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)));
   await tx.verifyAndSubmit();
 };
 

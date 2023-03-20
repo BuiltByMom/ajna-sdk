@@ -1,3 +1,5 @@
+import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
+import { BigNumber, Contract, Signer } from 'ethers';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -13,24 +15,9 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import {
-  AddQuoteTokenParams,
-  DebtInfoParams,
-  DepositIndexParams,
-  GenericApproveParams,
-  GetIndexesPriceByRangeParams,
-  GetPositionParams,
-  LenderInfoParams,
-  LoansInfoParams,
-  MoveQuoteTokenParams,
-  Provider,
-  RemoveQuoteTokenParams,
-  SignerOrProvider,
-} from '../types';
+import { Address, Provider, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './pool-utils';
-import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract } from 'ethers';
 
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
@@ -64,16 +51,21 @@ abstract class Pool {
     this.contract = contract;
   }
 
-  initialize = async () => {
+  async initialize() {
     this.ethcallProvider = new ProviderMulti();
     await this.ethcallProvider.init(this.provider as Provider);
-  };
+  }
 
-  quoteApprove = async ({ signer, allowance }: GenericApproveParams) => {
+  async quoteApprove(signer: Signer, allowance: BigNumber) {
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
-  };
+  }
 
-  addQuoteToken = async ({ signer, amount, bucketIndex, ttlSeconds }: AddQuoteTokenParams) => {
+  async addQuoteToken(
+    signer: Signer,
+    amount: BigNumber,
+    bucketIndex: number,
+    ttlSeconds: number | null
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addQuoteToken(
@@ -82,91 +74,76 @@ abstract class Pool {
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
-  };
+  }
 
-  moveQuoteToken = async ({
-    signer,
-    maxAmountToMove,
-    fromIndex,
-    toIndex,
-    ttlSeconds,
-  }: MoveQuoteTokenParams) => {
+  async moveQuoteToken(
+    signer: Signer,
+    maxAmountToMove: BigNumber,
+    fromIndex: number,
+    toIndex: number,
+    ttlSeconds: number | null
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await moveQuoteToken({
-      contract: contractPoolWithSigner,
-      maxAmountToMove: maxAmountToMove,
+    return await moveQuoteToken(
+      contractPoolWithSigner,
+      maxAmountToMove,
       fromIndex,
       toIndex,
-      expiry: await getExpiry(this.provider, ttlSeconds),
-    });
-  };
+      await getExpiry(this.provider, ttlSeconds)
+    );
+  }
 
-  removeQuoteToken = async ({ signer, maxAmount, bucketIndex }: RemoveQuoteTokenParams) => {
+  async removeQuoteToken(signer: Signer, maxAmount: BigNumber, bucketIndex: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await removeQuoteToken({
-      contract: contractPoolWithSigner,
-      maxAmount: maxAmount,
-      bucketIndex,
-    });
-  };
+    return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
+  }
 
-  lenderInfo = async ({ signer, lenderAddress, index }: LenderInfoParams) => {
+  async lenderInfo(signer: Signer, lenderAddress: Address, index: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    const [lpBalance, depositTime] = await lenderInfo({
-      contract: contractPoolWithSigner,
-      lenderAddress,
-      index,
-    });
+    const [lpBalance, depositTime] = await lenderInfo(contractPoolWithSigner, lenderAddress, index);
 
     return {
       lpBalance,
       depositTime,
     };
-  };
+  }
 
-  debtInfo = async ({ signer }: DebtInfoParams) => {
+  async debtInfo(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    const [poolDebt] = await debtInfo({
-      contract: contractPoolWithSigner,
-    });
+    const [poolDebt] = await debtInfo(contractPoolWithSigner);
 
     return {
       poolDebt,
     };
-  };
+  }
 
-  loansInfo = async ({ signer }: LoansInfoParams) => {
+  async loansInfo(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    const [borrowerAddress, loan, noOfLoans] = await loansInfo({
-      contract: contractPoolWithSigner,
-    });
+    const [borrowerAddress, loan, noOfLoans] = await loansInfo(contractPoolWithSigner);
 
     return {
       borrowerAddress,
       loan,
       noOfLoans,
     };
-  };
+  }
 
-  getPrices = async () => {
-    const [hpb, htp, lup] = await poolPricesInfo({
-      contract: this.contractUtils,
-      poolAddress: this.poolAddress,
-    });
+  async getPrices() {
+    const [hpb, htp, lup] = await poolPricesInfo(this.contractUtils, this.poolAddress);
 
     return {
       hpb,
       htp,
       lup,
     };
-  };
+  }
 
-  getStats = async () => {
+  async getStats() {
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
     const data: string[] = await this.ethcallProvider.all([
@@ -185,32 +162,27 @@ abstract class Pool {
       actualUtilization,
       targetUtilization,
     };
-  };
+  }
 
-  getPosition = async ({ signer, bucketIndex, proposedWithdrawal }: GetPositionParams) => {
+  async getPosition(signer: Signer, bucketIndex: number, proposedWithdrawal: BigNumber | null) {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
     const pastOneDayTimestamp = Date.now() / 1000 - 24 * 3600;
-    const [, , , htpIndex, ,] = await poolPricesInfo({
-      contract: this.contractUtils,
-      poolAddress: this.poolAddress,
-    });
+    const [, , , htpIndex, ,] = await poolPricesInfo(this.contractUtils, this.poolAddress);
 
-    const { poolDebt } = await this.debtInfo({
-      signer,
-    });
+    const { poolDebt } = await this.debtInfo(signer);
 
-    const { lpBalance, depositTime: depositTimeBN } = await this.lenderInfo({
+    const { lpBalance, depositTime: depositTimeBN } = await this.lenderInfo(
       signer,
-      lenderAddress: await signer.getAddress(),
-      index: bucketIndex,
-    });
+      await signer.getAddress(),
+      bucketIndex
+    );
 
-    const lupIndexAfterWithdrawal = await this.depositIndex({
+    const lupIndexAfterWithdrawal = await this.depositIndex(
       signer,
-      debtAmount: poolDebt.add(withdrawalAmountBN),
-    });
+      poolDebt.add(withdrawalAmountBN)
+    );
 
     if (lupIndexAfterWithdrawal.toNumber() > htpIndex.toNumber()) {
       insufficientLiquidityForWithdraw = true;
@@ -230,18 +202,15 @@ abstract class Pool {
       penaltyFee,
       penaltyTimeRemaining: depositTime + 24 * 3600,
     };
-  };
+  }
 
-  depositIndex = async ({ signer, debtAmount }: DepositIndexParams) => {
+  async depositIndex(signer: Signer, debtAmount: BigNumber) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await depositIndex({
-      contract: contractPoolWithSigner,
-      debtAmount: debtAmount,
-    });
-  };
+    return await depositIndex(contractPoolWithSigner, debtAmount);
+  }
 
-  getIndexesPriceByRange = async ({ minPrice, maxPrice }: GetIndexesPriceByRangeParams) => {
+  async getIndexesPriceByRange(minPrice: BigNumber, maxPrice: BigNumber) {
     const minIndexCall = this.contractUtilsMulti.priceToIndex(minPrice);
     const maxIndexCall = this.contractUtilsMulti.priceToIndex(maxPrice);
     const response: BigNumber[][] = await this.ethcallProvider.all([minIndexCall, maxIndexCall]);
@@ -274,7 +243,7 @@ abstract class Pool {
     return buckets.filter(element => {
       return element !== null;
     });
-  };
+  }
 }
 
 export { Pool };

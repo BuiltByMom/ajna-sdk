@@ -1,16 +1,17 @@
-import {
-  Address,
-  FactoryDeployPoolParams,
-  SignerOrProvider,
-  WrappedTransaction,
-} from '../types/core';
 import { FungiblePool } from 'classes/fungible-pool';
+import { BigNumber, Signer } from 'ethers';
+import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
 
 export interface IERC20PoolFactory {
   /**
    * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
    */
-  deployPool(params: FactoryDeployPoolParams): Promise<WrappedTransaction>;
+  deployPool(
+    signer: Signer,
+    collateralAddress: Address,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction>;
   /**
    * Returns pool instance for the given collateral and quote tokens addresses.
    */
