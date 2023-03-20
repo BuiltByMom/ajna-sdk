@@ -1,4 +1,4 @@
-import { AjnaSDK } from '../classes/ajna';
+import { AjnaSDK } from '../classes/AjnaSDK';
 import { TEST_CONFIG as config } from '../constants/config';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';

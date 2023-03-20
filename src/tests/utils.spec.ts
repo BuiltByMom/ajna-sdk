@@ -1,4 +1,4 @@
-import { PoolUtils } from '../classes/pool-utils';
+import { PoolUtils } from '../classes/PoolUtils';
 import { TEST_CONFIG as config } from '../constants/config';
 import { fromWad, toWad } from '../utils/numeric';
 import {

@@ -1,5 +1,5 @@
 import { Provider } from '../types';
-import { FungiblePoolFactory } from './factory';
+import { FungiblePoolFactory } from './FungiblePoolFactory';
 
 class AjnaSDK {
   provider: Provider;

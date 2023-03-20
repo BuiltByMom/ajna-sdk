@@ -1,5 +1,5 @@
-import { AjnaSDK } from '../src/classes/ajna';
-import { FungiblePool } from '../src/classes/fungible-pool';
+import { AjnaSDK } from '../src/classes/AjnaSDK';
+import { FungiblePool } from '../src/classes/FungiblePool';
 import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';

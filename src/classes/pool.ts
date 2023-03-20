@@ -17,7 +17,7 @@ import {
 } from '../contracts/pool-info-utils';
 import { Address, Provider, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
-import { PoolUtils } from './pool-utils';
+import { PoolUtils } from './PoolUtils';
 
 /**
  * Abstract baseclass used for pools, regardless of collateral type.

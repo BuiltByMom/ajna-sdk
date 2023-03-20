@@ -1,4 +1,4 @@
-import { FungiblePool } from 'classes/fungible-pool';
+import { FungiblePool } from 'classes/FungiblePool';
 import { BigNumber, Signer } from 'ethers';
 import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
 

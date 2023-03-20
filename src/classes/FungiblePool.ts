@@ -1,10 +1,10 @@
+import { BigNumber, Signer } from 'ethers';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
 import { Address, SignerOrProvider } from '../types';
 import { priceToIndex } from '../utils/pricing';
-import { Bucket } from './bucket';
-import { Pool } from './pool';
-import { BigNumber, Signer } from 'ethers';
+import { Bucket } from './Bucket';
+import { Pool } from './Pool';
 
 class FungiblePool extends Pool {
   constructor(

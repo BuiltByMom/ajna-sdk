@@ -1,6 +1,6 @@
-import { AjnaSDK } from '../classes/ajna';
-import { Bucket } from '../classes/bucket';
-import { FungiblePool } from '../classes/fungible-pool';
+import { AjnaSDK } from '../classes/AjnaSDK';
+import { Bucket } from '../classes/Bucket';
+import { FungiblePool } from '../classes/FungiblePool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
