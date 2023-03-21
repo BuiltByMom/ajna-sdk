@@ -1,5 +1,5 @@
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { BigNumber, Contract, providers, Signer as EthersSigner } from 'ethers';
+import { BigNumber, Contract, Signer as EthersSigner, providers } from 'ethers';
 
 export type Signer = EthersSigner;
 
