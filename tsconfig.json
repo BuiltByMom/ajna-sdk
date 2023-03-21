@@ -1,5 +1,4 @@
 {
-  "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
     "target": "es6",
     "lib": ["es6", "dom", "dom.iterable"],
@@ -25,5 +24,7 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/**/*.spec.ts"]
+  "exclude": ["node_modules", "src/**/*.spec.ts"],
+  // This file is not used in compilation. It is here just for a nice editor experience.
+  "extends": "@tsconfig/recommended/tsconfig.json",
 }

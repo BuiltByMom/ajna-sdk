@@ -2,7 +2,7 @@ import ERC20Pool from '../abis/ERC20Pool.json';
 import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 import { getErc20Contract } from './erc20';
-import { BigNumber, Signer, ethers, Contract } from 'ethers';
+import { BigNumber, Contract, Signer, ethers } from 'ethers';
 
 export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
   return new ethers.Contract(poolAddress, ERC20Pool, provider);
