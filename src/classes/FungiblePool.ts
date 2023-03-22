@@ -30,8 +30,8 @@ class FungiblePool extends Pool {
   drawDebt = async (
     signer: Signer,
     amountToBorrow: BigNumber,
-    limitIndex?: number,
-    collateralToPledge: BigNumber
+    collateralToPledge: BigNumber,
+    limitIndex?: number
   ) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 

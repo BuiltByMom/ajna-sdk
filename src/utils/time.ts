@@ -17,7 +17,7 @@ export const getExpiry = async (signer: SignerOrProvider, ttlSeconds?: number) =
   }
 
   // TODO: Make the default timeout configurable in the SDK
-  const ttl: number = !ttlSeconds ? 600 : ttlSeconds;
+  const ttl = ttlSeconds || 600;
   // TODO: Look into whether we can subscribe to block updates and
   // asynchronously maintain the current block height and timestamp.
   const blockNumber = await provider.getBlockNumber();

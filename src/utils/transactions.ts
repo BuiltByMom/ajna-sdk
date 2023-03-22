@@ -58,7 +58,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       return await this._contract.provider.estimateGas(this._transaction);
     } catch (error: unknown) {
       const errorHash = this.parseCustomErrorHashFromNodeError(error);
-      if (!errorHash) {
+      if (errorHash) {
         const reason = this.getCustomErrorFromHash(this._contract, errorHash);
         throw new SdkError(reason, error);
       } else {

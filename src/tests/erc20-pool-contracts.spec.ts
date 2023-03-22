@@ -101,7 +101,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await tx.verifyAndSubmit();
 
-    tx = await pool.drawDebt(signerBorrower, amountToBorrow, limitIndex, collateralToPledge);
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
 
     const receipt = await tx.verifyAndSubmit();
 
