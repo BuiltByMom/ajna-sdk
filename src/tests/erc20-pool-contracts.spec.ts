@@ -115,11 +115,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let tx = await pool.quoteApprove(signerBorrower, maxQuoteTokenAmountToRepay);
     await tx.verifyAndSubmit();
 
-    tx = await pool.repayDebt(
-      signerBorrower,
-      maxQuoteTokenAmountToRepay,
-      collateralAmountToPull
-    );
+    tx = await pool.repayDebt(signerBorrower, maxQuoteTokenAmountToRepay, collateralAmountToPull);
 
     const receipt = await tx.verifyAndSubmit();
 

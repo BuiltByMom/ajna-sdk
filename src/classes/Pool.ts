@@ -60,12 +60,7 @@ abstract class Pool {
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   }
 
-  async addQuoteToken(
-    signer: Signer,
-    amount: BigNumber,
-    bucketIndex: number,
-    ttlSeconds?: number
-  ) {
+  async addQuoteToken(signer: Signer, amount: BigNumber, bucketIndex: number, ttlSeconds?: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addQuoteToken(
