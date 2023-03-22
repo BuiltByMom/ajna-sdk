@@ -58,7 +58,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       return await this._contract.provider.estimateGas(this._transaction);
     } catch (error: unknown) {
       const errorHash = this.parseCustomErrorHashFromNodeError(error);
-      if (errorHash !== null) {
+      if (!errorHash) {
         const reason = this.getCustomErrorFromHash(this._contract, errorHash);
         throw new SdkError(reason, error);
       } else {
@@ -123,7 +123,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       'error' in error && // estimateGas error
       'error' in error.error && // response error
       'code' in error.error.error && // execution revert error
-      error.error.error.code == 3 // indicates execution reverted
+      error.error.error.code === 3 // indicates execution reverted
     ) {
       return error.error.error.data;
     } else if (
@@ -135,7 +135,7 @@ class WrappedTransactionClass implements WrappedTransaction {
     ) {
       return error.error.error.data.result;
     }
-    return null;
+    return;
   }
 
   /**

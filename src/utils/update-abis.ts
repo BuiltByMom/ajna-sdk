@@ -18,7 +18,7 @@ export const updateAbis = function () {
 
       // remove adjacent duplicate definitions
       for (let i = 0; i < parsed.length; ++i) {
-        if (i > 0 && JSON.stringify(parsed[i - 1]) == JSON.stringify(parsed[i])) {
+        if (i > 0 && JSON.stringify(parsed[i - 1]) === JSON.stringify(parsed[i])) {
           parsed.splice(i, 1);
         }
       }
