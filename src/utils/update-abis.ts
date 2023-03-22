@@ -14,13 +14,23 @@ export const updateAbis = function () {
     if (abisWeCareAbout.has(file.name)) {
       // read and parse JSON output written by contracts tooling
       const jsonAbi = fs.readFileSync(path.join(dir.path, file.name));
-      const parsed = JSON.parse(jsonAbi.toString());
+      const parsed = JSON.parse(jsonAbi.toString()).abi;
+
+      // remove adjacent duplicate definitions
+      for (let i = 0; i < parsed.length; ++i) {
+        if (i > 0 && JSON.stringify(parsed[i - 1]) == JSON.stringify(parsed[i])) {
+          parsed.splice(i, 1);
+        }
+      }
+
       // create the Ethers.js Interface used for translation,
       // and pass only the desired ABI content
-      const iface = new Interface(parsed.abi);
+      const iface = new Interface(parsed);
+
       // perform the translation
       const formattedAbi = iface.format(FormatTypes.json).toString();
       const translatedAbi = JSON.stringify(JSON.parse(formattedAbi));
+
       // write the translated ABI to disk
       fs.writeFileSync(path.join(process.cwd(), 'src/abis', file.name), translatedAbi);
     }
@@ -35,4 +45,6 @@ const abisWeCareAbout = new Set([
   'ERC721Pool.json',
   'ERC721PoolFactory.json',
   'PoolInfoUtils.json',
+  'PositionManager.json',
+  'RewardsManager.json',
 ]);

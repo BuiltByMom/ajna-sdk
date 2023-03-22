@@ -271,11 +271,7 @@
     "anonymous": false,
     "name": "ReserveAuction",
     "inputs": [
-      {
-        "type": "uint256",
-        "name": "claimableReservesRemaining",
-        "indexed": false
-      },
+      { "type": "uint256", "name": "claimableReservesRemaining", "indexed": false },
       { "type": "uint256", "name": "auctionPrice", "indexed": false },
       { "type": "uint256", "name": "currentBurnEpoch", "indexed": false }
     ]
