@@ -24,7 +24,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/**/*.spec.ts"],
-  // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@tsconfig/recommended/tsconfig.json",
+  "exclude": ["node_modules", "src/**/*.spec.ts"]
 }
