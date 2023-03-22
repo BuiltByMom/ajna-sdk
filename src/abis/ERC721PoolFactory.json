@@ -1,9 +1,5 @@
 [
-  {
-    "type": "constructor",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "ajna_" }]
-  },
+  { "type": "constructor", "payable": false, "inputs": [{ "type": "address", "name": "ajna_" }] },
   { "type": "error", "name": "CreateFail", "inputs": [] },
   { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
   { "type": "error", "name": "NFTNotSupported", "inputs": [] },
