@@ -1,8 +1,8 @@
-import { deployPool, deployedPools } from '../contracts/erc20-pool-factory';
-import { Address, FactoryDeployPoolParams, IERC20PoolFactory, SignerOrProvider } from '../types';
+import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
+import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
-import { FungiblePool } from './fungible-pool';
-import { utils } from 'ethers';
+import { FungiblePool } from './FungiblePool';
+import { BigNumber, Signer, utils } from 'ethers';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.
@@ -12,9 +12,12 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
     super(signerOrProvider);
   }
 
-  async deployPool(params: FactoryDeployPoolParams) {
-    const { signer, collateralAddress, quoteAddress, interestRate } = params;
-
+  async deployPool(
+    signer: Signer,
+    collateralAddress: Address,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ) {
     return await deployPool(signer, collateralAddress, quoteAddress, interestRate);
   }
 

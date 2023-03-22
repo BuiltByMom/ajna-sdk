@@ -1,4 +1,4 @@
-import { AjnaSDK } from '../classes/ajna';
+import { AjnaSDK } from '../classes/AjnaSDK';
 import { TEST_CONFIG as config } from '../constants/config';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
@@ -21,12 +21,12 @@ describe('Transaction utils tests', () => {
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
 
   it('should return wrapped transaction object', async () => {
-    const tx = await ajna.factory.deployPool({
-      signer: signerLender,
-      collateralAddress: USDC_ADDRESS,
-      quoteAddress: USDT_ADDRESS,
-      interestRate: toWad('0.05'),
-    });
+    const tx = await ajna.factory.deployPool(
+      signerLender,
+      USDC_ADDRESS,
+      USDT_ADDRESS,
+      toWad('0.05')
+    );
 
     const response = await tx.verifyAndSubmitResponse();
 
@@ -41,12 +41,7 @@ describe('Transaction utils tests', () => {
   });
 
   it('validate method should not submit actual transaction; submit should submit actual transaction', async () => {
-    let tx = await ajna.factory.deployPool({
-      signer: signerLender,
-      collateralAddress: USDT_ADDRESS,
-      quoteAddress: DAI_ADDRESS,
-      interestRate: toWad('0.05'),
-    });
+    let tx = await ajna.factory.deployPool(signerLender, USDT_ADDRESS, DAI_ADDRESS, toWad('0.05'));
 
     const nonce = await signerLender.getTransactionCount();
     const responseString = await tx.verify();
@@ -60,12 +55,7 @@ describe('Transaction utils tests', () => {
     expect(pool.collateralAddress).toBe(USDT_ADDRESS);
     expect(pool.quoteAddress).toBe(DAI_ADDRESS);
 
-    tx = await ajna.factory.deployPool({
-      signer: signerLender,
-      collateralAddress: USDT_ADDRESS,
-      quoteAddress: DAI_ADDRESS,
-      interestRate: toWad('0.05'),
-    });
+    tx = await ajna.factory.deployPool(signerLender, USDT_ADDRESS, DAI_ADDRESS, toWad('0.05'));
     await tx.submit();
 
     pool = await ajna.factory.getPool(USDT_ADDRESS, DAI_ADDRESS);

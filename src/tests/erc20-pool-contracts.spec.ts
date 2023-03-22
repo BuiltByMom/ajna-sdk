@@ -1,6 +1,6 @@
-import { AjnaSDK } from '../classes/ajna';
-import { Bucket } from '../classes/bucket';
-import { FungiblePool } from '../classes/fungible-pool';
+import { AjnaSDK } from '../classes/AjnaSDK';
+import { Bucket } from '../classes/Bucket';
+import { FungiblePool } from '../classes/FungiblePool';
 import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
@@ -38,12 +38,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should confirm AjnaSDK pool succesfully', async () => {
-    const tx = await ajna.factory.deployPool({
-      signer: signerLender,
-      collateralAddress: COLLATERAL_ADDRESS,
-      quoteAddress: QUOTE_ADDRESS,
-      interestRate: toWad('0.05'),
-    });
+    const tx = await ajna.factory.deployPool(
+      signerLender,
+      COLLATERAL_ADDRESS,
+      QUOTE_ADDRESS,
+      toWad('0.05')
+    );
 
     await tx.verifyAndSubmit();
 
@@ -56,12 +56,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should not allow to create existing pool', async () => {
-    const tx = await ajna.factory.deployPool({
-      signer: signerLender,
-      collateralAddress: COLLATERAL_ADDRESS,
-      quoteAddress: QUOTE_ADDRESS,
-      interestRate: toWad('0.05'),
-    });
+    const tx = await ajna.factory.deployPool(
+      signerLender,
+      COLLATERAL_ADDRESS,
+      QUOTE_ADDRESS,
+      toWad('0.05')
+    );
 
     expect(async () => {
       await tx.verify();
@@ -73,22 +73,14 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndex = 2000;
     const allowance = 100000000;
 
-    let tx = await pool.quoteApprove({
-      signer: signerLender,
-      allowance: toWad(allowance),
-    });
+    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
     let response = await tx.verifyAndSubmitResponse();
     await response.wait();
 
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
-    tx = await pool.addQuoteToken({
-      signer: signerLender,
-      amount: toWad(quoteAmount),
-      bucketIndex,
-      ttlSeconds: null,
-    });
+    tx = await pool.addQuoteToken(signerLender, toWad(quoteAmount), bucketIndex, null);
     response = await tx.verifyAndSubmitResponse();
 
     expect(response).toBeDefined();
@@ -105,19 +97,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
-    let tx = await pool.collateralApprove({
-      signer: signerBorrower,
-      allowance: collateralToPledge,
-    });
+    let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
 
     await tx.verifyAndSubmit();
 
-    tx = await pool.drawDebt({
-      signer: signerBorrower,
-      amountToBorrow,
-      limitIndex,
-      collateralToPledge,
-    });
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, limitIndex, collateralToPledge);
 
     const receipt = await tx.verifyAndSubmit();
 
@@ -128,18 +112,15 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
 
-    let tx = await pool.quoteApprove({
-      signer: signerBorrower,
-      allowance: maxQuoteTokenAmountToRepay,
-    });
+    let tx = await pool.quoteApprove(signerBorrower, maxQuoteTokenAmountToRepay);
     await tx.verifyAndSubmit();
 
-    tx = await pool.repayDebt({
-      signer: signerBorrower,
+    tx = await pool.repayDebt(
+      signerBorrower,
       maxQuoteTokenAmountToRepay,
       collateralAmountToPull,
-      limitIndex: null,
-    });
+      null
+    );
 
     const receipt = await tx.verifyAndSubmit();
 
@@ -150,11 +131,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const quoteAmount = toWad(1);
     const bucketIndex = 2000;
 
-    const tx = await pool.removeQuoteToken({
-      signer: signerLender,
-      maxAmount: quoteAmount,
-      bucketIndex,
-    });
+    const tx = await pool.removeQuoteToken(signerLender, quoteAmount, bucketIndex);
 
     const receipt = await tx.verifyAndSubmit();
     expect(receipt.transactionHash).not.toBe('');
@@ -162,11 +139,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
   it('should raise appropriate error if removeQuoteToken fails', async () => {
     // attempt to remove liquidity from a bucket in which lender has no LP
-    const tx = await pool.removeQuoteToken({
-      signer: signerLender,
-      maxAmount: toWad('22.153'),
-      bucketIndex: 4444,
-    });
+    const tx = await pool.removeQuoteToken(signerLender, toWad('22.153'), 4444);
 
     expect(async () => {
       await tx.verifyAndSubmit();
@@ -178,13 +151,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketIndexFrom = 2000;
     const bucketIndexTo = 2001;
 
-    const tx = await pool.moveQuoteToken({
-      signer: signerLender,
+    const tx = await pool.moveQuoteToken(
+      signerLender,
       maxAmountToMove,
-      fromIndex: bucketIndexFrom,
-      toIndex: bucketIndexTo,
-      ttlSeconds: null,
-    });
+      bucketIndexFrom,
+      bucketIndexTo,
+      null
+    );
 
     const receipt = await tx.verifyAndSubmit();
     expect(receipt.transactionHash).not.toBe('');
@@ -212,42 +185,25 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const quoteAmount = toWad(0.5);
     const bucketIndex = 1234;
 
-    let tx = await pool.quoteApprove({
-      signer: signerLender,
-      allowance: quoteAmount,
-    });
+    let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addQuoteToken({
-      signer: signerLender,
-      amount: quoteAmount,
-      bucketIndex,
-      ttlSeconds: null,
-    });
+    tx = await pool.addQuoteToken(signerLender, quoteAmount, bucketIndex, null);
     await tx.verifyAndSubmit();
 
-    const buckets = await pool.getIndexesPriceByRange({
-      minPrice: toWad(0.01),
-      maxPrice: toWad(0.1),
-    });
+    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(0.1));
 
     expect(buckets.length).not.toBe(0);
   });
 
   it('should use getIndexesPriceByRange onChain succesfully with MEDIUM min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange({
-      minPrice: toWad(0.01),
-      maxPrice: toWad(1),
-    });
+    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(1));
 
     expect(buckets.length).not.toBe(0);
   });
 
   it('should use getIndexesPriceByRange onChain succesfully with LONG min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange({
-      minPrice: toWad(0.01),
-      maxPrice: toWad(3),
-    });
+    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(3));
 
     expect(buckets.length).not.toBe(0);
   });
@@ -285,21 +241,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use getPosition succesfully', async () => {
-    const position = await pool.getPosition({
-      signer: signerLender,
-      bucketIndex: 1234,
-      proposedWithdrawal: toWad(0.1),
-    });
+    const position = await pool.getPosition(signerLender, 1234, toWad(0.1));
 
     expect(position).not.toBe('');
   });
 
   it('should use estimateLoan succesfully', async () => {
-    const estimateLoan = await pool.estimateLoan({
-      signer: signerLender,
-      debtAmount: toWad(1),
-      collateralAmount: toWad(5),
-    });
+    const estimateLoan = await pool.estimateLoan(signerLender, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
   });

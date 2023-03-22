@@ -19,17 +19,11 @@ class PoolUtils {
   };
 
   priceToIndex = async (price: BigNumber) => {
-    return await priceToIndex({
-      contract: this.contract,
-      price,
-    });
+    return await priceToIndex(this.contract, price);
   };
 
   indexToPrice = async (index: number) => {
-    return await indexToPrice({
-      contract: this.contract,
-      index,
-    });
+    return await indexToPrice(this.contract, index);
   };
 }
 

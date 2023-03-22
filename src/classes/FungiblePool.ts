@@ -1,17 +1,10 @@
 import { MAX_FENWICK_INDEX } from '../constants';
 import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
-import {
-  Address,
-  DrawDebtParams,
-  EstimateLoanParams,
-  GenericApproveParams,
-  RepayDebtParams,
-  SignerOrProvider,
-} from '../types';
+import { Address, SignerOrProvider } from '../types';
 import { priceToIndex } from '../utils/pricing';
-import { Bucket } from './bucket';
-import { Pool } from './pool';
-import { BigNumber } from 'ethers';
+import { Bucket } from './Bucket';
+import { Pool } from './Pool';
+import { BigNumber, Signer } from 'ethers';
 
 class FungiblePool extends Pool {
   constructor(
@@ -30,18 +23,19 @@ class FungiblePool extends Pool {
     this.initialize();
   }
 
-  collateralApprove = async ({ signer, allowance }: GenericApproveParams) => {
+  collateralApprove = async (signer: Signer, allowance: BigNumber) => {
     return await approve(signer, this.poolAddress, this.collateralAddress, allowance);
   };
 
-  drawDebt = async ({ signer, amountToBorrow, limitIndex, collateralToPledge }: DrawDebtParams) => {
+  drawDebt = async (
+    signer: Signer,
+    amountToBorrow: BigNumber,
+    limitIndex: number | null,
+    collateralToPledge: BigNumber
+  ) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    const estimateLoan = await this.estimateLoan({
-      signer,
-      debtAmount: amountToBorrow,
-      collateralAmount: collateralToPledge,
-    });
+    const estimateLoan = await this.estimateLoan(signer, amountToBorrow, collateralToPledge);
 
     if (!estimateLoan.canBorrow) {
       throw new Error('ERR_BORROWER_UNCOLLATERALIZED');
@@ -56,12 +50,12 @@ class FungiblePool extends Pool {
     );
   };
 
-  repayDebt = async ({
-    signer,
-    maxQuoteTokenAmountToRepay,
-    collateralAmountToPull,
-    limitIndex,
-  }: RepayDebtParams) => {
+  repayDebt = async (
+    signer: Signer,
+    maxQuoteTokenAmountToRepay: BigNumber,
+    collateralAmountToPull: BigNumber,
+    limitIndex: number | null
+  ) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const sender = await signer.getAddress();
@@ -123,7 +117,7 @@ class FungiblePool extends Pool {
     return bucket;
   };
 
-  estimateLoan = async ({ signer, debtAmount, collateralAmount }: EstimateLoanParams) => {
+  estimateLoan = async (signer: Signer, debtAmount: BigNumber, collateralAmount: BigNumber) => {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
@@ -138,14 +132,9 @@ class FungiblePool extends Pool {
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
 
-    const { poolDebt } = await this.debtInfo({
-      signer,
-    });
+    const { poolDebt } = await this.debtInfo(signer);
 
-    const lupIndex = await this.depositIndex({
-      signer,
-      debtAmount: poolDebt.add(debtAmount),
-    });
+    const lupIndex = await this.depositIndex(signer, poolDebt.add(debtAmount));
 
     const thresholdPrice = debt.add(debtAmount).div(collateral.add(collateralAmount));
 

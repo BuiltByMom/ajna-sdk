@@ -1,65 +1,63 @@
-import {
-  Address,
-  DebtInfoParamsContract,
-  DepositIndexParamsContract,
-  LenderInfoParamsContract,
-  LoansInfoParamsContract,
-  MoveQuoteTokenParamsContract,
-  RemoveQuoteTokenParamsContract,
-} from '../types';
+import { Address, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 import { BigNumber, Contract } from 'ethers';
 
-export const addQuoteToken = async (
+export async function addQuoteToken(
   contract: Contract,
   amount: BigNumber,
   bucketIndex: number,
-  expiry: number
-) => {
-  return await createTransaction(contract, 'addQuoteToken', [amount, bucketIndex, expiry]);
-};
+  expiry: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    'addQuoteToken',
+    [amount, bucketIndex, expiry],
+    overrides
+  );
+}
 
-export const moveQuoteToken = async ({
-  contract,
-  maxAmountToMove,
-  fromIndex,
-  toIndex,
-  expiry,
-}: MoveQuoteTokenParamsContract) => {
-  return await createTransaction(contract, 'moveQuoteToken', [
-    maxAmountToMove,
-    fromIndex,
-    toIndex,
-    expiry,
-  ]);
-};
+export async function moveQuoteToken(
+  contract: Contract,
+  maxAmountToMove: BigNumber,
+  fromIndex: number,
+  toIndex: number,
+  expiry: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    'moveQuoteToken',
+    [maxAmountToMove, fromIndex, toIndex, expiry],
+    overrides
+  );
+}
 
-export const removeQuoteToken = async ({
-  contract,
-  maxAmount,
-  bucketIndex,
-}: RemoveQuoteTokenParamsContract) => {
-  return await createTransaction(contract, 'removeQuoteToken', [maxAmount, bucketIndex]);
-};
+export async function removeQuoteToken(
+  contract: Contract,
+  maxAmount: BigNumber,
+  bucketIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(contract, 'removeQuoteToken', [maxAmount, bucketIndex], overrides);
+}
 
-export const lenderInfo = async ({
-  contract,
-  lenderAddress,
-  index,
-}: LenderInfoParamsContract): Promise<[BigNumber, BigNumber]> => {
+export async function lenderInfo(
+  contract: Contract,
+  lenderAddress: Address,
+  index: number
+): Promise<[BigNumber, BigNumber]> {
   return await contract.lenderInfo(index, lenderAddress);
-};
+}
 
-export const debtInfo = async ({ contract }: DebtInfoParamsContract) => {
+export async function debtInfo(contract: Contract) {
   return await contract.debtInfo();
-};
+}
 
-export const loansInfo = async ({
-  contract,
-}: LoansInfoParamsContract): Promise<[Address, BigNumber, BigNumber]> => {
+export async function loansInfo(contract: Contract): Promise<[Address, BigNumber, BigNumber]> {
   return await contract.loansInfo();
-};
+}
 
-export const depositIndex = async ({ contract, debtAmount }: DepositIndexParamsContract) => {
+export async function depositIndex(contract: Contract, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
-};
+}

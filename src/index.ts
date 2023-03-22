@@ -8,4 +8,4 @@ export * from './contracts/erc721';
 export * from './contracts/erc721-pool';
 export * from './contracts/erc721-pool-factory';
 
-export { AjnaSDK } from './classes/ajna';
+export * from './classes/AjnaSDK';

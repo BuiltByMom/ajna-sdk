@@ -1,16 +1,8 @@
 import PoolInfoUtilsAbi from '../abis/PoolInfoUtils.json';
 import { POOL_UTILS } from '../constants/config';
-import {
-  BorrowerInfoParamsContract,
-  PoolBucketInfoParamsContract,
-  PoolIndexToPriceParamsContract,
-  PoolLpsToQuoteTokensParamsContract,
-  PoolPriceToIndexParamsContract,
-  PoolPricesInfoParamsContract,
-  SignerOrProvider,
-} from '../types';
+import { Address, SignerOrProvider } from '../types';
 import { Contract as ContractMulti } from 'ethcall';
-import { ethers } from 'ethers';
+import { BigNumber, Contract, ethers } from 'ethers';
 
 export const getPoolInfoUtilsContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(POOL_UTILS, PoolInfoUtilsAbi, provider);
@@ -20,62 +12,43 @@ export const getPoolInfoUtilsContractMulti = () => {
   return new ContractMulti(POOL_UTILS, PoolInfoUtilsAbi);
 };
 
-export const borrowerInfo = async ({
-  contract: contractPool,
-  poolAddress,
-  borrowerAddress,
-}: BorrowerInfoParamsContract) => {
+export const borrowerInfo = async (
+  contractPool: Contract,
+  poolAddress: Address,
+  borrowerAddress: Address
+) => {
   return await contractPool.borrowerInfo(poolAddress, borrowerAddress);
 };
 
-export const poolPricesInfo = async ({
-  contract: contractPool,
-  poolAddress,
-}: PoolPricesInfoParamsContract) => {
+export const poolPricesInfo = async (contractPool: Contract, poolAddress: Address) => {
   return await contractPool.poolPricesInfo(poolAddress);
 };
 
-export const poolLoansInfo = async ({
-  contract: contractPool,
-  poolAddress,
-}: PoolPricesInfoParamsContract) => {
+export const poolLoansInfo = async (contractPool: Contract, poolAddress: Address) => {
   return await contractPool.poolLoansInfo(poolAddress);
 };
 
-export const poolUtilizationInfo = async ({
-  contract: contractPool,
-  poolAddress,
-}: PoolPricesInfoParamsContract) => {
+export const poolUtilizationInfo = async (contractPool: Contract, poolAddress: Address) => {
   return await contractPool.poolUtilizationInfo(poolAddress);
 };
 
-export const bucketInfo = async ({
-  contract: contractPool,
-  poolAddress,
-  index,
-}: PoolBucketInfoParamsContract) => {
+export const bucketInfo = async (contractPool: Contract, poolAddress: Address, index: number) => {
   return await contractPool.bucketInfo(poolAddress, index);
 };
 
-export const lpsToQuoteTokens = async ({
-  contract: contractPool,
-  poolAddress,
-  lpTokens,
-  index,
-}: PoolLpsToQuoteTokensParamsContract) => {
+export const lpsToQuoteTokens = async (
+  contractPool: Contract,
+  poolAddress: Address,
+  lpTokens: BigNumber,
+  index: number
+) => {
   return await contractPool.lpsToQuoteTokens(poolAddress, lpTokens, index);
 };
 
-export const priceToIndex = async ({
-  contract: contractPool,
-  price,
-}: PoolPriceToIndexParamsContract) => {
+export const priceToIndex = async (contractPool: Contract, price: BigNumber) => {
   return await contractPool.priceToIndex(price);
 };
 
-export const indexToPrice = async ({
-  contract: contractPool,
-  index,
-}: PoolIndexToPriceParamsContract) => {
+export const indexToPrice = async (contractPool: Contract, index: number) => {
   return await contractPool.indexToPrice(index);
 };

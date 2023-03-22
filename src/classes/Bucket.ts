@@ -39,11 +39,11 @@ class Bucket {
    * @notice Load bucket state from PoolInfoUtils contract
    */
   initialize = async () => {
-    const [bucketPrice, deposit, collateral, bucketLPs, , exchangeRate] = await bucketInfo({
-      contract: this.contractUtils,
-      poolAddress: this.poolAddress,
-      index: this.index,
-    });
+    const [bucketPrice, deposit, collateral, bucketLPs, , exchangeRate] = await bucketInfo(
+      this.contractUtils,
+      this.poolAddress,
+      this.index
+    );
     this.price = bucketPrice;
     this.deposit = deposit;
     this.collateral = collateral;
@@ -58,12 +58,7 @@ class Bucket {
    *  @return quoteAmount_ The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
    */
   lpsToQuoteTokens = async (lpTokens: BigNumber) => {
-    return await lpsToQuoteTokens({
-      contract: this.contractUtils,
-      poolAddress: this.poolAddress,
-      lpTokens,
-      index: this.index,
-    });
+    return await lpsToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 }
 
