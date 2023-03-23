@@ -1,10 +1,11 @@
+import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { FungiblePool } from '../src/classes/FungiblePool';
+import { SdkError } from '../src/classes/types';
 import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
-import { constants, providers } from 'ethers';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -12,7 +13,7 @@ const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 // const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
 // Use this for a real chain, such as Goerli or Mainnet.
 const signerLender = addAccountFromKeystore(process.env.ETH_KEYSTORE || '', provider);
-if (!signerLender) throw new Error('wallet not unlocked');
+if (!signerLender) throw new SdkError('Wallet not unlocked');
 
 const ajna = new AjnaSDK(provider);
 const wethAddress = process.env.WETH_TOKEN || '0x0';
