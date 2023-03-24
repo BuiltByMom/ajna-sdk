@@ -60,12 +60,7 @@ abstract class Pool {
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   }
 
-  async addQuoteToken(
-    signer: Signer,
-    amount: BigNumber,
-    bucketIndex: number,
-    ttlSeconds: number | null
-  ) {
+  async addQuoteToken(signer: Signer, amount: BigNumber, bucketIndex: number, ttlSeconds?: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addQuoteToken(
@@ -81,7 +76,7 @@ abstract class Pool {
     maxAmountToMove: BigNumber,
     fromIndex: number,
     toIndex: number,
-    ttlSeconds: number | null
+    ttlSeconds?: number
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -164,7 +159,7 @@ abstract class Pool {
     };
   }
 
-  async getPosition(signer: Signer, bucketIndex: number, proposedWithdrawal: BigNumber | null) {
+  async getPosition(signer: Signer, bucketIndex: number, proposedWithdrawal?: BigNumber) {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
@@ -240,9 +235,7 @@ abstract class Pool {
       index = swiftIndex;
     });
 
-    return buckets.filter(element => {
-      return element !== null;
-    });
+    return buckets.filter(element => !!element);
   }
 }
 

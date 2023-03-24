@@ -80,7 +80,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
-    tx = await pool.addQuoteToken(signerLender, toWad(quoteAmount), bucketIndex, null);
+    tx = await pool.addQuoteToken(signerLender, toWad(quoteAmount), bucketIndex);
     response = await tx.verifyAndSubmitResponse();
 
     expect(response).toBeDefined();
@@ -101,7 +101,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await tx.verifyAndSubmit();
 
-    tx = await pool.drawDebt(signerBorrower, amountToBorrow, limitIndex, collateralToPledge);
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
 
     const receipt = await tx.verifyAndSubmit();
 
@@ -115,12 +115,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let tx = await pool.quoteApprove(signerBorrower, maxQuoteTokenAmountToRepay);
     await tx.verifyAndSubmit();
 
-    tx = await pool.repayDebt(
-      signerBorrower,
-      maxQuoteTokenAmountToRepay,
-      collateralAmountToPull,
-      null
-    );
+    tx = await pool.repayDebt(signerBorrower, maxQuoteTokenAmountToRepay, collateralAmountToPull);
 
     const receipt = await tx.verifyAndSubmit();
 
@@ -155,8 +150,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signerLender,
       maxAmountToMove,
       bucketIndexFrom,
-      bucketIndexTo,
-      null
+      bucketIndexTo
     );
 
     const receipt = await tx.verifyAndSubmit();
@@ -188,7 +182,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addQuoteToken(signerLender, quoteAmount, bucketIndex, null);
+    tx = await pool.addQuoteToken(signerLender, quoteAmount, bucketIndex);
     await tx.verifyAndSubmit();
 
     const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(0.1));

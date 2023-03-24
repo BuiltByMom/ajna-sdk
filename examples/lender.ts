@@ -1,10 +1,11 @@
+import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { FungiblePool } from '../src/classes/FungiblePool';
+import { SdkError } from '../src/classes/types';
 import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
-import { constants, providers } from 'ethers';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -12,7 +13,7 @@ const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 // const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
 // Use this for a real chain, such as Goerli or Mainnet.
 const signerLender = addAccountFromKeystore(process.env.ETH_KEYSTORE || '', provider);
-if (signerLender == null) throw new Error('wallet not unlocked');
+if (!signerLender) throw new SdkError('Wallet not unlocked');
 
 const ajna = new AjnaSDK(provider);
 const wethAddress = process.env.WETH_TOKEN || '0x0';
@@ -22,7 +23,7 @@ let pool: FungiblePool;
 // Looks for pool, deploying it if it doesn't already exist
 const getPool = async () => {
   pool = await ajna.factory.getPool(wethAddress, daiAddress);
-  if (pool.poolAddress == constants.AddressZero) {
+  if (pool.poolAddress === constants.AddressZero) {
     pool = await deployPool(wethAddress, daiAddress);
     console.log('Deployed pool to ', pool.poolAddress);
   } else {
@@ -43,7 +44,7 @@ const addLiquidity = async (amount: string, price: string) => {
   let tx = await pool.quoteApprove(signerLender, toWad(amount));
   await tx.verifyAndSubmit();
 
-  tx = await pool.addQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)), null);
+  tx = await pool.addQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)));
   await tx.verifyAndSubmit();
 };
 

@@ -5,7 +5,7 @@ export default async function setup() {
     shell: true,
   });
 
-  if (setupProcess == null || setupProcess.status != 0) {
+  if (!setupProcess || setupProcess.status !== 0) {
     process.exit(1);
   }
 }
