@@ -63,7 +63,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       toWad('0.05')
     );
 
-    expect(async () => {
+    await expect(async () => {
       await tx.verify();
     }).rejects.toThrow('PoolAlreadyExists()');
   });
@@ -244,5 +244,39 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const estimateLoan = await pool.estimateLoan(signerLender, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
+  });
+
+  it('should use addCollateral succesfully for borrower', async () => {
+    const collateralAmount = toWad(0.5);
+    const bucketIndex = 1234;
+
+    let tx = await pool.collateralApprove(signerBorrower, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    let bucket = await pool.getBucketByIndex(bucketIndex);
+    const bucketCollateralBefore = bucket.collateral;
+
+    tx = await pool.addCollateral(signerBorrower, collateralAmount, bucketIndex);
+    const receipt = await tx.verifyAndSubmit();
+
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
+
+    bucket = await pool.getBucketByIndex(bucketIndex);
+    expect(bucket.collateral).toEqual(bucketCollateralBefore?.add(collateralAmount));
+  });
+
+  it('should reject addCollateral if expired block number is set', async () => {
+    const collateralAmount = toWad(0.5);
+    const bucketIndex = 1234;
+
+    let tx = await pool.collateralApprove(signerBorrower, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.addCollateral(signerBorrower, collateralAmount, bucketIndex, 0);
+
+    await expect(async () => {
+      await tx.verify();
+    }).rejects.toThrow('TransactionExpired()');
   });
 });
