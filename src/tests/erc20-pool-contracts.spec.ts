@@ -90,6 +90,9 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
+
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    expect(bucket.bucketLPs?.gt(0)).toBe(true);
   });
 
   it('should use drawDebt succesfully', async () => {
@@ -264,6 +267,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     bucket = await pool.getBucketByIndex(bucketIndex);
     expect(bucket.collateral).toEqual(bucketCollateralBefore?.add(collateralAmount));
+    expect(bucket.bucketLPs?.gt(0)).toBe(true);
   });
 
   it('should reject addCollateral if expired block number is set', async () => {
