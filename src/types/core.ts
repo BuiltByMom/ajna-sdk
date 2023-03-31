@@ -29,8 +29,3 @@ export interface WrappedTransaction {
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
   verifyAndSubmitResponse(): Promise<TransactionResponse>;
 }
-
-export interface CallData {
-  methodName: string;
-  args: Array<any>;
-}

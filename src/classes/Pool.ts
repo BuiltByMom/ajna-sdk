@@ -6,7 +6,6 @@ import {
   lenderInfo,
   loansInfo,
   moveQuoteToken,
-  multicall,
   removeQuoteToken,
 } from '../contracts/pool';
 import {
@@ -14,7 +13,7 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, Provider, SignerOrProvider } from '../types';
+import { Address, Provider, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
@@ -204,12 +203,6 @@ abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await depositIndex(contractPoolWithSigner, debtAmount);
-  }
-
-  async multicall(signer: Signer, callData: Array<CallData>) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await multicall(contractPoolWithSigner, callData);
   }
 
   async getIndexesPriceByRange(minPrice: BigNumber, maxPrice: BigNumber) {
