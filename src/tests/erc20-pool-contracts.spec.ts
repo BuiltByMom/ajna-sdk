@@ -252,38 +252,38 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(estimateLoan).not.toBe('');
   });
 
-  it('should use addCollateral succesfully for borrower', async () => {
+  it('should use addCollateral succesfully', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
 
-    let tx = await pool.collateralApprove(signerBorrower, collateralAmount);
+    let tx = await pool.collateralApprove(signerLender, collateralAmount);
     await tx.verifyAndSubmit();
 
     let bucket = await pool.getBucketByIndex(bucketIndex);
-    const bucketCollateralBefore = bucket.collateral;
+    const bucketCollateralBefore = bucket.collateral || BigNumber.from(0);
 
-    tx = await pool.addCollateral(signerBorrower, collateralAmount, bucketIndex);
+    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex);
     const receipt = await tx.verifyAndSubmit();
 
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
 
     bucket = await pool.getBucketByIndex(bucketIndex);
-    expect(bucket.collateral).toEqual(bucketCollateralBefore?.add(collateralAmount));
+    expect(bucket.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
     expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
 
-    const info = await pool.lenderInfo(signerBorrower, signerBorrower.address, bucketIndex);
+    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
-  it('should reject addCollateral if expired block number is set', async () => {
+  it('should reject addCollateral if expired ttl set', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
 
-    let tx = await pool.collateralApprove(signerBorrower, collateralAmount);
+    let tx = await pool.collateralApprove(signerLender, collateralAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addCollateral(signerBorrower, collateralAmount, bucketIndex, 0);
+    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex, 0);
 
     await expect(async () => {
       await tx.verify();

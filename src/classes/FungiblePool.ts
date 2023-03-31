@@ -78,7 +78,7 @@ class FungiblePool extends Pool {
 
   addCollateral = async (
     signer: Signer,
-    collatearlAmountToAdd: BigNumber,
+    collateralAmountToAdd: BigNumber,
     bucketIndex: number,
     ttlSeconds?: number
   ) => {
