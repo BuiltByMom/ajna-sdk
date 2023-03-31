@@ -86,7 +86,7 @@ class FungiblePool extends Pool {
 
     return await addCollateral(
       contractPoolWithSigner,
-      collatearlAmountToAdd,
+      collateralAmountToAdd,
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
