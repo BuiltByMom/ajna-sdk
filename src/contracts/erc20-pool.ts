@@ -47,6 +47,21 @@ export async function repayDebt(
   );
 }
 
+export async function addCollateral(
+  contract: Contract,
+  amountToAdd: BigNumber,
+  bucketIndex: number,
+  expiry?: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    'addCollateral',
+    [amountToAdd, bucketIndex, expiry],
+    overrides
+  );
+}
+
 export async function approve(
   signer: Signer,
   poolAddress: Address,

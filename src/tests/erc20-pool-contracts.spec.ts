@@ -64,7 +64,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       toWad('0.05')
     );
 
-    expect(async () => {
+    await expect(async () => {
       await tx.verify();
     }).rejects.toThrow('PoolAlreadyExists()');
   });
@@ -91,6 +91,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
+
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
+
+    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
   it('should use drawDebt succesfully', async () => {
@@ -290,5 +296,43 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     expect(bucketDeposit.gt(0)).toBeTruthy();
     expect(bucket2Deposit.gt(0)).toBeTruthy();
+  });
+
+  it('should use addCollateral succesfully', async () => {
+    const collateralAmount = toWad(0.5);
+    const bucketIndex = 1234;
+
+    let tx = await pool.collateralApprove(signerLender, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    let bucket = await pool.getBucketByIndex(bucketIndex);
+    const bucketCollateralBefore = bucket.collateral || BigNumber.from(0);
+
+    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex);
+    const receipt = await tx.verifyAndSubmit();
+
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBe(1);
+
+    bucket = await pool.getBucketByIndex(bucketIndex);
+    expect(bucket.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
+    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
+
+    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    expect(info.lpBalance?.gt(0)).toBeTruthy();
+  });
+
+  it('should reject addCollateral if expired ttl set', async () => {
+    const collateralAmount = toWad(0.5);
+    const bucketIndex = 1234;
+
+    let tx = await pool.collateralApprove(signerLender, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex, 0);
+
+    await expect(async () => {
+      await tx.verify();
+    }).rejects.toThrow('TransactionExpired()');
   });
 });

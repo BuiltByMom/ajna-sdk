@@ -1,10 +1,17 @@
+import { BigNumber, Signer } from 'ethers';
+import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
-import { approve, drawDebt, getErc20PoolContract, repayDebt } from '../contracts/erc20-pool';
+import {
+  addCollateral,
+  approve,
+  drawDebt,
+  getErc20PoolContract,
+  repayDebt,
+} from '../contracts/erc20-pool';
 import { Address, SignerOrProvider } from '../types';
 import { priceToIndex } from '../utils/pricing';
 import { Bucket } from './Bucket';
 import { Pool } from './Pool';
-import { BigNumber, Signer } from 'ethers';
 
 class FungiblePool extends Pool {
   constructor(
@@ -66,6 +73,22 @@ class FungiblePool extends Pool {
       collateralAmountToPull,
       sender,
       limitIndex ?? MAX_FENWICK_INDEX
+    );
+  };
+
+  addCollateral = async (
+    signer: Signer,
+    collateralAmountToAdd: BigNumber,
+    bucketIndex: number,
+    ttlSeconds?: number
+  ) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await addCollateral(
+      contractPoolWithSigner,
+      collateralAmountToAdd,
+      bucketIndex,
+      await getExpiry(this.provider, ttlSeconds)
     );
   };
 
