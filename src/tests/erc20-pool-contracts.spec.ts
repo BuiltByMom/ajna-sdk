@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
@@ -5,9 +7,8 @@ import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
+import { getExpiry } from '../utils/time';
 import './test-utils.ts';
-import dotenv from 'dotenv';
-import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
 
@@ -250,6 +251,51 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const estimateLoan = await pool.estimateLoan(signerLender, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
+  });
+
+  it('should use multicall succesfully', async () => {
+    const quoteAmount = 10;
+    const bucketIndex = 3330;
+    const bucketIndex2 = 3331;
+    const allowance = 100000000;
+
+    let bucket = await pool.getBucketByIndex(bucketIndex);
+    let bucket2 = await pool.getBucketByIndex(bucketIndex2);
+    let bucketDeposit = bucket.deposit || BigNumber.from(0);
+    let bucket2Deposit = bucket2.deposit || BigNumber.from(0);
+
+    expect(bucketDeposit.eq(0)).toBeTruthy();
+    expect(bucket2Deposit.eq(0)).toBeTruthy();
+
+    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    let response = await tx.verifyAndSubmitResponse();
+    await response.wait();
+
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+
+    tx = await pool.multicall(signerLender, [
+      {
+        methodName: 'addQuoteToken',
+        args: [toWad(quoteAmount), bucketIndex, await getExpiry(provider)],
+      },
+      {
+        methodName: 'addQuoteToken',
+        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider)],
+      },
+    ]);
+    response = await tx.verifyAndSubmitResponse();
+
+    expect(response).toBeDefined();
+    expect(response.hash).not.toBe('');
+
+    bucket = await pool.getBucketByIndex(bucketIndex);
+    bucket2 = await pool.getBucketByIndex(bucketIndex2);
+    bucketDeposit = bucket.deposit || BigNumber.from(0);
+    bucket2Deposit = bucket2.deposit || BigNumber.from(0);
+
+    expect(bucketDeposit.gt(0)).toBeTruthy();
+    expect(bucket2Deposit.gt(0)).toBeTruthy();
   });
 
   it('should use addCollateral succesfully', async () => {

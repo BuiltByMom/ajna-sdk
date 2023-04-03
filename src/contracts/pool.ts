@@ -1,4 +1,4 @@
-import { Address, TransactionOverrides } from '../types';
+import { Address, TransactionOverrides, CallData } from '../types';
 import { createTransaction } from '../utils/transactions';
 import { BigNumber, Contract } from 'ethers';
 
@@ -60,4 +60,16 @@ export async function loansInfo(contract: Contract): Promise<[Address, BigNumber
 
 export async function depositIndex(contract: Contract, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
+}
+
+export async function multicall(
+  contract: Contract,
+  callData: Array<CallData>,
+  overrides?: TransactionOverrides
+) {
+  const multicallData = callData.map(callData =>
+    contract.interface.encodeFunctionData(callData.methodName, callData.args)
+  );
+
+  return await createTransaction(contract, 'multicall', [multicallData], overrides);
 }
