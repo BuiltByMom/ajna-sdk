@@ -289,4 +289,33 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       await tx.verify();
     }).rejects.toThrow('TransactionExpired()');
   });
+
+  it('should use removeCollateral successfully', async () => {
+    const collateralAmount = constants.MaxUint256;
+    const bucketIndex = 1234;
+
+    const tx = await pool.removeCollateral(signerLender, collateralAmount, bucketIndex);
+    const receipt = await tx.verifyAndSubmit();
+
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    const bucketCollateral = bucket.collateral ?? BigNumber.from(0);
+
+    expect(receipt.transactionHash).not.toBe('');
+    expect(bucketCollateral.eq(0)).toBeTruthy();
+  });
+
+  it('should reject removeCollateral if amount requested is above the balance', async () => {
+    const collateralAmount = toWad(1);
+    const bucketIndex = 1234;
+
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    const bucketCollateral = bucket.collateral ?? BigNumber.from(0);
+    expect(bucketCollateral.eq(0)).toBeTruthy();
+
+    const tx = await pool.removeCollateral(signerLender, collateralAmount, bucketIndex);
+
+    await expect(async () => {
+      await tx.verify();
+    }).rejects.toThrow('InsufficientCollateral()');
+  });
 });

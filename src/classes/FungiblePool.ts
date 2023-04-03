@@ -3,6 +3,7 @@ import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import {
   addCollateral,
+  removeCollateral,
   approve,
   drawDebt,
   getErc20PoolContract,
@@ -90,6 +91,12 @@ class FungiblePool extends Pool {
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
+  };
+
+  removeCollateral = async (signer: Signer, maxAmount: BigNumber, bucketIndex: number) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await removeCollateral(contractPoolWithSigner, maxAmount, bucketIndex);
   };
 
   getLoan = async (borrowerAddress: Address) => {
