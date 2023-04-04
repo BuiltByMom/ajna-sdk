@@ -1,8 +1,9 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import {
   addCollateral,
+  removeCollateral,
   approve,
   drawDebt,
   getErc20PoolContract,
@@ -90,6 +91,16 @@ class FungiblePool extends Pool {
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
+  };
+
+  removeCollateral = async (
+    signer: Signer,
+    bucketIndex: number,
+    maxAmount: BigNumber = constants.MaxUint256
+  ) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
   };
 
   getLoan = async (borrowerAddress: Address) => {
