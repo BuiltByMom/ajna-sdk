@@ -1,3 +1,5 @@
+import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
+import { BigNumber, Contract, Signer } from 'ethers';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -16,8 +18,6 @@ import {
 import { Address, Provider, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
-import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer } from 'ethers';
 
 /**
  * Abstract baseclass used for pools, regardless of collateral type.

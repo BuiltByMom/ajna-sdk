@@ -1,6 +1,6 @@
+import { BigNumber, Contract } from 'ethers';
 import { Address, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
-import { BigNumber, Contract } from 'ethers';
 
 export async function addQuoteToken(
   contract: Contract,

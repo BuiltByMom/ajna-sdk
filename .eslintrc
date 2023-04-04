@@ -9,7 +9,7 @@
   },
   "rules": {
     "no-console": 1,
-    "prettier/prettier": 2,
+    "prettier/prettier": ["error", { "endOfLine": "auto" }],
     "comma-dangle": 0,
     "@typescript-eslint/no-explicit-any": "off"
   },
