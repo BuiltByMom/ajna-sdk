@@ -11,8 +11,7 @@ export async function addQuoteToken(
 ) {
   return await createTransaction(
     contract,
-    'addQuoteToken',
-    [amount, bucketIndex, expiry],
+    { methodName: 'addQuoteToken', args: [amount, bucketIndex, expiry] },
     overrides
   );
 }
@@ -27,8 +26,7 @@ export async function moveQuoteToken(
 ) {
   return await createTransaction(
     contract,
-    'moveQuoteToken',
-    [maxAmountToMove, fromIndex, toIndex, expiry],
+    { methodName: 'moveQuoteToken', args: [maxAmountToMove, fromIndex, toIndex, expiry] },
     overrides
   );
 }
@@ -39,7 +37,11 @@ export async function removeQuoteToken(
   bucketIndex: number,
   overrides?: TransactionOverrides
 ) {
-  return await createTransaction(contract, 'removeQuoteToken', [maxAmount, bucketIndex], overrides);
+  return await createTransaction(
+    contract,
+    { methodName: 'removeQuoteToken', args: [maxAmount, bucketIndex] },
+    overrides
+  );
 }
 
 export async function lenderInfo(

@@ -1,6 +1,6 @@
 import { SdkError } from '../classes/types';
 import { GAS_MULTIPLIER } from '../constants';
-import { TransactionOverrides, WrappedTransaction } from '../types';
+import { CallData, TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 
@@ -14,10 +14,10 @@ import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
  */
 export async function createTransaction(
   contract: Contract,
-  methodName: string,
-  args: Array<any>,
+  callData: CallData,
   overrides?: TransactionOverrides
 ): Promise<WrappedTransaction> {
+  const { methodName, args = [] } = callData;
   const tx = await contract.populateTransaction[methodName](
     ...(overrides ? [...args, overrides] : [...args])
   );

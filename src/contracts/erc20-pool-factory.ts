@@ -24,8 +24,7 @@ export async function deployPool(
 
   return await createTransaction(
     contractInstance,
-    'deployPool',
-    [collateralAddress, quoteAddress, interestRate],
+    { methodName: 'deployPool', args: [collateralAddress, quoteAddress, interestRate] },
     overrides
   );
 }
