@@ -32,5 +32,5 @@ export interface WrappedTransaction {
 
 export interface CallData {
   methodName: string;
-  args: Array<any>;
+  args?: Array<any>;
 }

@@ -11,5 +11,9 @@ export async function multicall(
     contract.interface.encodeFunctionData(callData.methodName, callData.args)
   );
 
-  return await createTransaction(contract, 'multicall', [multicallData], overrides);
+  return await createTransaction(
+    contract,
+    { methodName: 'multicall', args: [multicallData] },
+    overrides
+  );
 }

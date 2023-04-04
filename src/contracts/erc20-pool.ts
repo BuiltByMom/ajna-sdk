@@ -18,8 +18,10 @@ export async function drawDebt(
 ) {
   return await createTransaction(
     contract,
-    'drawDebt',
-    [borrowerAddress, amountToBorrow, limitIndex, collateralToPledge],
+    {
+      methodName: 'drawDebt',
+      args: [borrowerAddress, amountToBorrow, limitIndex, collateralToPledge],
+    },
     overrides
   );
 }
@@ -35,14 +37,16 @@ export async function repayDebt(
 ) {
   return await createTransaction(
     contract,
-    'repayDebt',
-    [
-      borrowerAddress,
-      maxQuoteTokenAmountToRepay,
-      collateralAmountToPull,
-      collateralReceiver,
-      limitIndex,
-    ],
+    {
+      methodName: 'repayDebt',
+      args: [
+        borrowerAddress,
+        maxQuoteTokenAmountToRepay,
+        collateralAmountToPull,
+        collateralReceiver,
+        limitIndex,
+      ],
+    },
     overrides
   );
 }
@@ -56,8 +60,7 @@ export async function addCollateral(
 ) {
   return await createTransaction(
     contract,
-    'addCollateral',
-    [amountToAdd, bucketIndex, expiry],
+    { methodName: 'addCollateral', args: [amountToAdd, bucketIndex, expiry] },
     overrides
   );
 }
@@ -68,7 +71,11 @@ export async function removeCollateral(
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  return await createTransaction(contract, 'removeCollateral', [maxAmount, bucketIndex], overrides);
+  return await createTransaction(
+    contract,
+    { methodName: 'removeCollateral', args: [maxAmount, bucketIndex] },
+    overrides
+  );
 }
 
 export async function approve(
@@ -80,5 +87,9 @@ export async function approve(
 ) {
   const contract = getErc20Contract(tokenAddress, signer);
 
-  return await createTransaction(contract, 'approve', [poolAddress, allowance], overrides);
+  return await createTransaction(
+    contract,
+    { methodName: 'approve', args: [poolAddress, allowance] },
+    overrides
+  );
 }
