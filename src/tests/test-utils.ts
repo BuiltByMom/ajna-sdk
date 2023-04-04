@@ -1,8 +1,6 @@
-// workaround to Jest bug involve backend changing from jasmine to circus
-// from https://github.com/facebook/jest/issues/11698
+import { WrappedTransaction } from '../types/core';
 
-function fail(reason = 'fail was called in a test.') {
-  throw new Error(reason);
-}
-
-global.fail = fail;
+export const submitAndVerifyTransaction = async (tx: WrappedTransaction) => {
+  const receipt = await tx.verifyAndSubmit();
+  expect(receipt.transactionHash).not.toBe('');
+};

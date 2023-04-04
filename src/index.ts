@@ -1,5 +1,4 @@
-export * from './constants/config';
-export * from './constants/interfaces';
+export * from './classes/Config';
 
 export * from './contracts/erc20';
 export * from './contracts/erc20-pool';

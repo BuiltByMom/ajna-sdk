@@ -1,2 +1,2 @@
-export * from './config';
+export * from '../classes/Config';
 export * from './common';

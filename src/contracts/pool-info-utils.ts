@@ -1,15 +1,15 @@
 import { Contract as ContractMulti } from 'ethcall';
 import { BigNumber, Contract, ethers } from 'ethers';
 import PoolInfoUtilsAbi from '../abis/PoolInfoUtils.json';
-import { POOL_UTILS } from '../constants/config';
+import { Config } from '../classes/Config';
 import { Address, SignerOrProvider } from '../types';
 
 export const getPoolInfoUtilsContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(POOL_UTILS, PoolInfoUtilsAbi, provider);
+  return new ethers.Contract(Config.poolUtils, PoolInfoUtilsAbi, provider);
 };
 
 export const getPoolInfoUtilsContractMulti = () => {
-  return new ContractMulti(POOL_UTILS, PoolInfoUtilsAbi);
+  return new ContractMulti(Config.poolUtils, PoolInfoUtilsAbi);
 };
 
 export const borrowerInfo = async (

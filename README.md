@@ -47,8 +47,8 @@ Example scripts are provided in the `examples/` directory. To run one, first rev
 
 ## Unit testing
 
-Copy `.env.example` to `.env` to run tests against a dockerized Ajna testnet.
-**Addresses and keys in the example file are publicly known. Do not attempt to use these addresses on a public network!**
+Unit tests run against a dockerized Ajna testnet.
+**Addresses and keys in test configuration are publicly known. Do not attempt to use these addresses on a public network!**
 
 `yarn test` runs `jest` tests once.
 `yarn test:dev` runs the `jest` tests in watch mode, waiting for file changes.

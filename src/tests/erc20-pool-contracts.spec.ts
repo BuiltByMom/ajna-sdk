@@ -3,12 +3,13 @@ import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
-import { TEST_CONFIG as config } from '../constants/config';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
+import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
-import './test-utils.ts';
+import './test-fail.ts';
+import { submitAndVerifyTransaction } from './test-utils';
 
 dotenv.config();
 
@@ -81,7 +82,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
-    tx = await pool.addQuoteToken(signerLender, toWad(quoteAmount), bucketIndex);
+    tx = await pool.addQuoteToken(signerLender, bucketIndex, toWad(quoteAmount));
     response = await tx.verifyAndSubmitResponse();
 
     expect(response).toBeDefined();
@@ -110,9 +111,18 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
 
-    const receipt = await tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
+  });
 
-    expect(receipt.transactionHash).not.toBe('');
+  it('should use poolStats successfully', async () => {
+    const stats = await pool.getStats();
+
+    expect(stats.poolSize?.gte(toWad('10'))).toBeTruthy();
+    expect(stats.loansCount?.eq(BigNumber.from(1))).toBeTruthy();
+    expect(stats.minDebtAmount?.gte(toWad('0'))).toBeTruthy();
+    expect(stats.collateralization?.gte(toWad('1'))).toBeTruthy();
+    expect(stats.actualUtilization?.gte(toWad('0.01'))).toBeTruthy();
+    expect(stats.targetUtilization?.gte(toWad('0'))).toBeTruthy();
   });
 
   it('should use repayDebt succesfully', async () => {
@@ -124,24 +134,21 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     tx = await pool.repayDebt(signerBorrower, maxQuoteTokenAmountToRepay, collateralAmountToPull);
 
-    const receipt = await tx.verifyAndSubmit();
-
-    expect(receipt.transactionHash).not.toBe('');
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use removeQuoteToken succesfully', async () => {
     const quoteAmount = toWad(1);
     const bucketIndex = 2000;
 
-    const tx = await pool.removeQuoteToken(signerLender, quoteAmount, bucketIndex);
+    const tx = await pool.removeQuoteToken(signerLender, bucketIndex, quoteAmount);
 
-    const receipt = await tx.verifyAndSubmit();
-    expect(receipt.transactionHash).not.toBe('');
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should raise appropriate error if removeQuoteToken fails', async () => {
     // attempt to remove liquidity from a bucket in which lender has no LP
-    const tx = await pool.removeQuoteToken(signerLender, toWad('22.153'), 4444);
+    const tx = await pool.removeQuoteToken(signerLender, 4444, toWad('22.153'));
 
     expect(async () => {
       await tx.verifyAndSubmit();
@@ -155,13 +162,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     const tx = await pool.moveQuoteToken(
       signerLender,
-      maxAmountToMove,
       bucketIndexFrom,
-      bucketIndexTo
+      bucketIndexTo,
+      maxAmountToMove
     );
 
-    const receipt = await tx.verifyAndSubmit();
-    expect(receipt.transactionHash).not.toBe('');
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use getLoan succesfully', async () => {
@@ -189,7 +195,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addQuoteToken(signerLender, quoteAmount, bucketIndex);
+    tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
     await tx.verifyAndSubmit();
 
     const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(0.1));
@@ -251,6 +257,14 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const estimateLoan = await pool.estimateLoan(signerLender, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
+  });
+
+  it('should remove all quote token without specifying amount', async () => {
+    const bucketIndex = 2000;
+
+    // remove all liquidity from bucket
+    const tx = await pool.removeQuoteToken(signerLender, bucketIndex);
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use multicall succesfully', async () => {

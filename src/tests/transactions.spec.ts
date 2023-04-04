@@ -1,7 +1,7 @@
 import { AjnaSDK } from '../classes/AjnaSDK';
-import { TEST_CONFIG as config } from '../constants/config';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
+import { TEST_CONFIG as config } from './test-constants';
 import './test-utils.ts';
 import dotenv from 'dotenv';
 import { constants, providers } from 'ethers';

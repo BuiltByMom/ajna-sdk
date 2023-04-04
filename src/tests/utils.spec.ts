@@ -1,12 +1,12 @@
 import { PoolUtils } from '../classes/PoolUtils';
-import { TEST_CONFIG as config } from '../constants/config';
 import { fromWad, toWad } from '../utils/numeric';
 import {
   indexToPrice as indexToPriceLocal,
   priceToIndex as priceToIndexLocal,
 } from '../utils/pricing';
+import { TEST_CONFIG as config } from './test-constants';
 import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
 
@@ -71,5 +71,13 @@ describe('Utility tests', () => {
     expect(() => {
       priceToIndexLocal(toWad('0.00000005'));
     }).toThrow('ERR_BUCKET_PRICE_OUT_OF_BOUNDS');
+  });
+
+  it('uint256_max constant should return the expected value', async () => {
+    expect(constants.MaxUint256).toEqual(
+      BigNumber.from(
+        '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+      )
+    );
   });
 });

@@ -1,11 +1,12 @@
-import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
+import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
 import { SdkError } from '../src/classes/types';
 import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { toWad } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
+import { constants, providers } from 'ethers';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -15,6 +16,7 @@ const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 const signerLender = addAccountFromKeystore(process.env.ETH_KEYSTORE || '', provider);
 if (!signerLender) throw new SdkError('Wallet not unlocked');
 
+Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
 const wethAddress = process.env.WETH_TOKEN || '0x0';
 const daiAddress = process.env.DAI_TOKEN || '0x0';
@@ -40,28 +42,27 @@ const deployPool = async (collateral: Address, quote: Address) => {
 
 // Using fine-grained approval, add liquidity to the pool
 const addLiquidity = async (amount: string, price: string) => {
-  // TODO: approve and add in a multicall
   let tx = await pool.quoteApprove(signerLender, toWad(amount));
   await tx.verifyAndSubmit();
 
-  tx = await pool.addQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)));
+  tx = await pool.addQuoteToken(signerLender, priceToIndex(toWad(price)), toWad(amount));
   await tx.verifyAndSubmit();
 };
 
-const removeLiquidity = async (amount: string, price: string) => {
-  const tx = await pool.removeQuoteToken(signerLender, toWad(amount), priceToIndex(toWad(price)));
-  await tx.verifyAndSubmit();
-};
+// const removeLiquidity = async (amount: string, price: string) => {
+//   const tx = await pool.removeQuoteToken(signerLender, priceToIndex(toWad(price)), toWad(amount));
+//   await tx.verifyAndSubmit();
+// };
 
 export const run = async () => {
   const pool = await getPool();
   // create existing pool to test exception handling
   // pool = await deployPool(wethAddress, daiAddress);
   console.log(await pool.getStats());
-  return;
-  // add 1000 DAI pricing ETH at 2007.0213
-  await addLiquidity('1000', '2007.0213');
-  await removeLiquidity('10.1', '103.04');
+
+  // add 100 DAI pricing ETH at 2007.0213
+  await addLiquidity('100', '2007.0213');
+  // await removeLiquidity('10.1', '103.04');
 };
 
 run();

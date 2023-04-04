@@ -1,7 +1,7 @@
-import { DEFAULT_TTL } from '../constants';
-import { Signer } from 'ethers';
 import { SdkError } from '../classes/types';
+import { DEFAULT_TTL } from '../constants';
 import { Provider, SignerOrProvider } from '../types';
+import { Signer } from 'ethers';
 
 // calculates expiration time based on current block timestamp
 export const getExpiry = async (signer: SignerOrProvider, ttlSeconds: number = DEFAULT_TTL) => {

@@ -1,5 +1,5 @@
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
-import { CONTRACT_ERC20_POOL_FACTORY } from '../constants/config';
+import { Config } from '../classes/Config';
 import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
@@ -7,7 +7,7 @@ import { BigNumber, Contract, Signer, ethers } from 'ethers';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(
-    checksumAddress(CONTRACT_ERC20_POOL_FACTORY),
+    checksumAddress(Config.erc20PoolFactory),
     erc20PoolFactoryAbi,
     provider
   );

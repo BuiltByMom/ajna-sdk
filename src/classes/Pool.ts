@@ -1,6 +1,6 @@
 import { multicall } from '../contracts/common';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer } from 'ethers';
+import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -61,7 +61,7 @@ abstract class Pool {
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   }
 
-  async addQuoteToken(signer: Signer, amount: BigNumber, bucketIndex: number, ttlSeconds?: number) {
+  async addQuoteToken(signer: Signer, bucketIndex: number, amount: BigNumber, ttlSeconds?: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addQuoteToken(
@@ -74,9 +74,9 @@ abstract class Pool {
 
   async moveQuoteToken(
     signer: Signer,
-    maxAmountToMove: BigNumber,
     fromIndex: number,
     toIndex: number,
+    maxAmountToMove = constants.MaxUint256,
     ttlSeconds?: number
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);
@@ -90,7 +90,7 @@ abstract class Pool {
     );
   }
 
-  async removeQuoteToken(signer: Signer, maxAmount: BigNumber, bucketIndex: number) {
+  async removeQuoteToken(signer: Signer, bucketIndex: number, maxAmount = constants.MaxUint256) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
@@ -151,12 +151,12 @@ abstract class Pool {
     const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
 
     return {
-      poolSize,
-      loansCount,
-      minDebtAmount,
-      collateralization,
-      actualUtilization,
-      targetUtilization,
+      poolSize: BigNumber.from(poolSize),
+      loansCount: BigNumber.from(loansCount),
+      minDebtAmount: BigNumber.from(minDebtAmount),
+      collateralization: BigNumber.from(collateralization),
+      actualUtilization: BigNumber.from(actualUtilization),
+      targetUtilization: BigNumber.from(targetUtilization),
     };
   }
 
