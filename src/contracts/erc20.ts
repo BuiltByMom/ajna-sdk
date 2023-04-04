@@ -1,6 +1,6 @@
+import { ethers } from 'ethers';
 import erc20Abi from '../abis/ERC20.json';
 import { Address, SignerOrProvider } from '../types';
-import { ethers } from 'ethers';
 
 export const getErc20Contract = (contractAddress: string, provider: SignerOrProvider) => {
   return new ethers.Contract(contractAddress, erc20Abi, provider);
