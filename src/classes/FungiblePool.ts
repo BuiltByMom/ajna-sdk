@@ -1,4 +1,4 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import {
@@ -93,10 +93,14 @@ class FungiblePool extends Pool {
     );
   };
 
-  removeCollateral = async (signer: Signer, maxAmount: BigNumber, bucketIndex: number) => {
+  removeCollateral = async (
+    signer: Signer,
+    bucketIndex: number,
+    maxAmount: BigNumber = constants.MaxUint256
+  ) => {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await removeCollateral(contractPoolWithSigner, maxAmount, bucketIndex);
+    return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
   };
 
   getLoan = async (borrowerAddress: Address) => {

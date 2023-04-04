@@ -64,8 +64,8 @@ export async function addCollateral(
 
 export async function removeCollateral(
   contract: Contract,
-  maxAmount: BigNumber,
   bucketIndex: number,
+  maxAmount: BigNumber,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(contract, 'removeCollateral', [maxAmount, bucketIndex], overrides);

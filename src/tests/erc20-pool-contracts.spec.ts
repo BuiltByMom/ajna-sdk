@@ -294,7 +294,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const collateralAmount = constants.MaxUint256;
     const bucketIndex = 1234;
 
-    const tx = await pool.removeCollateral(signerLender, collateralAmount, bucketIndex);
+    const tx = await pool.removeCollateral(signerLender, bucketIndex, collateralAmount);
     const receipt = await tx.verifyAndSubmit();
 
     const bucket = await pool.getBucketByIndex(bucketIndex);
@@ -304,7 +304,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucketCollateral.eq(0)).toBeTruthy();
   });
 
-  it('should reject removeCollateral if amount requested is above the balance', async () => {
+  it('removeCollateral should reject if bucket has 0 collateral balance', async () => {
     const collateralAmount = toWad(1);
     const bucketIndex = 1234;
 
@@ -312,7 +312,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucketCollateral = bucket.collateral ?? BigNumber.from(0);
     expect(bucketCollateral.eq(0)).toBeTruthy();
 
-    const tx = await pool.removeCollateral(signerLender, collateralAmount, bucketIndex);
+    const tx = await pool.removeCollateral(signerLender, bucketIndex, collateralAmount);
 
     await expect(async () => {
       await tx.verify();
