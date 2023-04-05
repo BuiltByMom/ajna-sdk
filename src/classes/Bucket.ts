@@ -2,6 +2,7 @@ import {
   bucketInfo,
   getPoolInfoUtilsContract,
   lpsToQuoteTokens,
+  lpsToCollateral,
 } from '../contracts/pool-info-utils';
 import { Address, SignerOrProvider } from '../types';
 import { BigNumber, Contract } from 'ethers';
@@ -59,6 +60,15 @@ class Bucket {
    */
   lpsToQuoteTokens = async (lpTokens: BigNumber) => {
     return await lpsToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
+  };
+
+  /**
+   *  @notice Calculate the amount of collateral tokens in bucket for a given amount of LP Tokens.
+   *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
+   *  @return quoteAmount_ The exact amount of collateral tokens that can be exchanged for the given LP Tokens, WAD units.
+   */
+  lpsToCollateral = async (lpTokens: BigNumber) => {
+    return await lpsToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 }
 

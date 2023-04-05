@@ -45,6 +45,15 @@ export const lpsToQuoteTokens = async (
   return await contractPool.lpsToQuoteTokens(poolAddress, lpTokens, index);
 };
 
+export const lpsToCollateral = async (
+  contractPool: Contract,
+  poolAddress: Address,
+  lpTokens: BigNumber,
+  index: number
+) => {
+  return await contractPool.lpsToCollateral(poolAddress, lpTokens, index);
+};
+
 export const priceToIndex = async (contractPool: Contract, price: BigNumber) => {
   return await contractPool.priceToIndex(price);
 };

@@ -336,6 +336,16 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
+  it('should use lpsToQuoteCollateral succesfully', async () => {
+    const bucketIndex = 1234;
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    expect(bucket).not.toBe('');
+
+    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    const deposit = await bucket.lpsToCollateral(info.lpBalance);
+    expect(deposit.eq(toWad(0.5))).toBeTruthy();
+  });
+
   it('should reject addCollateral if expired ttl set', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
