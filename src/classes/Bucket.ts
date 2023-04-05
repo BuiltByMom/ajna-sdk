@@ -56,16 +56,16 @@ class Bucket {
   /**
    *  @notice Calculate the amount of quote tokens in bucket for a given amount of LP Tokens.
    *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
-   *  @return quoteAmount_ The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
+   *  @return The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
    */
   lpsToQuoteTokens = async (lpTokens: BigNumber) => {
     return await lpsToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 
   /**
-   *  @notice Calculate the amount of collateral tokens in bucket for a given amount of LP Tokens.
+   *  @notice Calculate the amount of collateral in bucket for a given amount of LP Tokens.
    *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
-   *  @return quoteAmount_ The exact amount of collateral tokens that can be exchanged for the given LP Tokens, WAD units.
+   *  @return The exact amount of collateral that can be exchanged for the given LP Tokens, WAD units.
    */
   lpsToCollateral = async (lpTokens: BigNumber) => {
     return await lpsToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
