@@ -1,5 +1,5 @@
 import { PoolUtils } from '../classes/PoolUtils';
-import { fromWad, toWad } from '../utils/numeric';
+import { fromWad, toWad, wdiv, wmul } from '../utils/numeric';
 import {
   indexToPrice as indexToPriceLocal,
   priceToIndex as priceToIndexLocal,
@@ -71,6 +71,11 @@ describe('Utility tests', () => {
     expect(() => {
       priceToIndexLocal(toWad('0.00000005'));
     }).toThrow('ERR_BUCKET_PRICE_OUT_OF_BOUNDS');
+  });
+
+  it('should multiply and divide WADs', async () => {
+    expect(wmul(toWad(500), toWad('1.53')).eq(toWad(765))).toBeTruthy();
+    expect(wdiv(toWad(20140520), toWad(8)).eq(toWad(2517565))).toBeTruthy();
   });
 
   it('uint256_max constant should return the expected value', async () => {

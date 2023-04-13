@@ -96,10 +96,8 @@ abstract class Pool {
     return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
   }
 
-  async lenderInfo(signer: Signer, lenderAddress: Address, index: number) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    const [lpBalance, depositTime] = await lenderInfo(contractPoolWithSigner, lenderAddress, index);
+  async lenderInfo(lenderAddress: Address, index: number) {
+    const [lpBalance, depositTime] = await lenderInfo(this.contract, lenderAddress, index);
 
     return {
       lpBalance,
@@ -107,16 +105,17 @@ abstract class Pool {
     };
   }
 
-  async debtInfo(signer: Signer) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    const [poolDebt] = await debtInfo(contractPoolWithSigner);
+  async debtInfo() {
+    const [debt, accruedDebt, debtInAuction] = await debtInfo(this.contract);
 
     return {
-      poolDebt,
+      pendingDebt: BigNumber.from(debt),
+      accruedDebt: BigNumber.from(accruedDebt),
+      debtInAuction: BigNumber.from(debtInAuction),
     };
   }
 
+  // FIXME: shouldn't need signer here
   async loansInfo(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -152,7 +151,7 @@ abstract class Pool {
 
     return {
       poolSize: BigNumber.from(poolSize),
-      loansCount: BigNumber.from(loansCount),
+      loansCount: +loansCount,
       minDebtAmount: BigNumber.from(minDebtAmount),
       collateralization: BigNumber.from(collateralization),
       actualUtilization: BigNumber.from(actualUtilization),
@@ -160,25 +159,21 @@ abstract class Pool {
     };
   }
 
-  async getPosition(signer: Signer, bucketIndex: number, proposedWithdrawal?: BigNumber) {
+  async getPosition(lenderAddress: Address, bucketIndex: number, proposedWithdrawal?: BigNumber) {
     let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
     const pastOneDayTimestamp = Date.now() / 1000 - 24 * 3600;
     const [, , , htpIndex, ,] = await poolPricesInfo(this.contractUtils, this.poolAddress);
 
-    const { poolDebt } = await this.debtInfo(signer);
+    const { pendingDebt } = await this.debtInfo();
 
     const { lpBalance, depositTime: depositTimeBN } = await this.lenderInfo(
-      signer,
-      await signer.getAddress(),
+      lenderAddress,
       bucketIndex
     );
 
-    const lupIndexAfterWithdrawal = await this.depositIndex(
-      signer,
-      poolDebt.add(withdrawalAmountBN)
-    );
+    const lupIndexAfterWithdrawal = await this.depositIndex(pendingDebt.add(withdrawalAmountBN));
 
     if (lupIndexAfterWithdrawal.toNumber() > htpIndex.toNumber()) {
       insufficientLiquidityForWithdraw = true;
@@ -200,10 +195,8 @@ abstract class Pool {
     };
   }
 
-  async depositIndex(signer: Signer, debtAmount: BigNumber) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await depositIndex(contractPoolWithSigner, debtAmount);
+  async depositIndex(debtAmount: BigNumber) {
+    return await depositIndex(this.contract, debtAmount);
   }
 
   async multicall(signer: Signer, callData: Array<CallData>) {

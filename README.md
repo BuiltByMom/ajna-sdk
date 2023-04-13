@@ -12,19 +12,8 @@ A typescript SDK that can be used to create Dapps and keepers in Ajna ecosystem.
 
 ### Exception handling
 
-To improve responsiveness, the SDK may raise an `SdkException` locally if it knows the transaction will not succeed with the current state. The SDK does not attempt to handle or wrap contract reverts or connectivity errors. As such, the consumer should assume all onchain calls could throw an exception.
+To improve responsiveness, the SDK may raise an `SdkException` locally if it knows the transaction will not succeed with the current state. The SDK does trap reverts to decode and and throw an exception revealing the reason. The SDK does not attempt to handle connectivity errors. As such, the consumer should assume all onchain calls could throw an exception.
 
-// TODO: Make a list of generally expected exception classes (ours and Ethers.js).
-
-## Notices
-
-Due to [an issue in Ethers.js v5](https://github.com/ethers-io/ethers.js/issues/1029), warnings like the following will be printed when using this library in a console application:
-
-```
-duplicate definition - AuctionNotCleared()
-duplicate definition - RemoveDepositLockedByAuctionDebt()
-duplicate definition - TransactionExpired()
-```
 
 ## Usage
 
@@ -43,7 +32,7 @@ Price buckets in Ajna are identified by an integer bucket index, between 1 (high
 
 ### Examples
 
-Example scripts are provided in the `examples/` directory. To run one, first review the script and set relevant environment variables. Then run `npx ts-node examples/<script_name>.ts`.
+Example scripts are provided in the `examples/` directory.
 
 ## Unit testing
 

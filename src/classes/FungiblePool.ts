@@ -42,8 +42,13 @@ class FungiblePool extends Pool {
     limitIndex?: number
   ) => {
     const contractPoolWithSigner = this.contract.connect(signer);
+    const borrowerAddress = await signer.getAddress();
 
-    const estimateLoan = await this.estimateLoan(signer, amountToBorrow, collateralToPledge);
+    const estimateLoan = await this.estimateLoan(
+      borrowerAddress,
+      amountToBorrow,
+      collateralToPledge
+    );
 
     if (!estimateLoan.canBorrow) {
       throw new Error('ERR_BORROWER_UNCOLLATERALIZED');
@@ -51,7 +56,7 @@ class FungiblePool extends Pool {
 
     return await drawDebt(
       contractPoolWithSigner,
-      await signer.getAddress(),
+      borrowerAddress,
       amountToBorrow,
       limitIndex ?? MAX_FENWICK_INDEX,
       collateralToPledge
@@ -151,11 +156,15 @@ class FungiblePool extends Pool {
     return bucket;
   };
 
-  estimateLoan = async (signer: Signer, debtAmount: BigNumber, collateralAmount: BigNumber) => {
+  estimateLoan = async (
+    borrowerAddress: Address,
+    debtAmount: BigNumber,
+    collateralAmount: BigNumber
+  ) => {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
-      await signer.getAddress()
+      borrowerAddress
     );
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
@@ -164,13 +173,13 @@ class FungiblePool extends Pool {
     ]);
 
     const [, , , , lup] = response[0];
-    const [debt, collateral] = response[1];
+    const [borrowerDebt, collateral] = response[1];
 
-    const { poolDebt } = await this.debtInfo(signer);
+    const { pendingDebt } = await this.debtInfo();
 
-    const lupIndex = await this.depositIndex(signer, poolDebt.add(debtAmount));
+    const lupIndex = await this.depositIndex(pendingDebt.add(debtAmount));
 
-    const thresholdPrice = debt.add(debtAmount).div(collateral.add(collateralAmount));
+    const thresholdPrice = borrowerDebt.add(debtAmount).div(collateral.add(collateralAmount));
 
     return {
       lupIndex: lupIndex.toNumber(),

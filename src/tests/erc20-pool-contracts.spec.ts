@@ -96,7 +96,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucket = await pool.getBucketByIndex(bucketIndex);
     expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
 
-    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
@@ -118,11 +118,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const stats = await pool.getStats();
 
     expect(stats.poolSize?.gte(toWad('10'))).toBeTruthy();
-    expect(stats.loansCount?.eq(BigNumber.from(1))).toBeTruthy();
+    expect(stats.loansCount).toEqual(1);
     expect(stats.minDebtAmount?.gte(toWad('0'))).toBeTruthy();
     expect(stats.collateralization?.gte(toWad('1'))).toBeTruthy();
     expect(stats.actualUtilization?.gte(toWad('0.01'))).toBeTruthy();
     expect(stats.targetUtilization?.gte(toWad('0'))).toBeTruthy();
+  });
+
+  it('should be able to query pool debt', async () => {
+    const debtInfo = await pool.debtInfo();
+
+    expect(debtInfo.pendingDebt?.gte(debtInfo.accruedDebt)).toBeTruthy();
+    expect(debtInfo.accruedDebt?.gte(BigNumber.from(1))).toBeTruthy();
+    expect(debtInfo.debtInAuction?.eq(BigNumber.from(0))).toBeTruthy();
   });
 
   it('should use repayDebt succesfully', async () => {
@@ -248,13 +256,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use getPosition succesfully', async () => {
-    const position = await pool.getPosition(signerLender, 1234, toWad(0.1));
+    const position = await pool.getPosition(signerLender.address, 1234, toWad(0.1));
 
     expect(position).not.toBe('');
   });
 
   it('should use estimateLoan succesfully', async () => {
-    const estimateLoan = await pool.estimateLoan(signerLender, toWad(1), toWad(5));
+    const estimateLoan = await pool.estimateLoan(signerBorrower.address, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
   });
@@ -332,7 +340,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
     expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
 
-    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
@@ -341,7 +349,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const bucket = await pool.getBucketByIndex(bucketIndex);
     expect(bucket).not.toBe('');
 
-    const info = await pool.lenderInfo(signerLender, signerLender.address, bucketIndex);
+    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
     const deposit = await bucket.lpsToCollateral(info.lpBalance);
     expect(deposit.eq(toWad(0.5))).toBeTruthy();
   });
