@@ -1,11 +1,13 @@
-import { multicall } from '../contracts/common';
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { MAX_FENWICK_INDEX } from '../constants';
+import { multicall } from '../contracts/common';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
   debtInfo,
   depositIndex,
+  kickWithDeposit,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
@@ -17,6 +19,7 @@ import {
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, Provider, SignerOrProvider } from '../types';
+import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
 
@@ -236,6 +239,31 @@ abstract class Pool {
     });
 
     return buckets.filter(element => !!element);
+  }
+
+  async kickWithDeposit(signer: Signer, index: number, limitIndex: number = MAX_FENWICK_INDEX) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await kickWithDeposit(contractPoolWithSigner, index, limitIndex);
+  }
+
+  async isKickable(borrowerAddress: Address) {
+    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
+    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
+      this.poolAddress,
+      borrowerAddress
+    );
+
+    const response: BigNumber[][] = await this.ethcallProvider.all([
+      poolPricesInfoCall,
+      borrowerInfoCall,
+    ]);
+
+    const [, , , , lup] = response[0];
+    const [debt, collateral] = response[1];
+    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0); // 5.004808009710524046 / 0.0002 = 25024
+
+    return lup.lte(toWad(tp));
   }
 }
 
