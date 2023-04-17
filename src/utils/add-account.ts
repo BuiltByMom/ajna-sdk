@@ -63,7 +63,6 @@ function ctrlc() {
 }
 
 function newchar(c: string) {
-  // TODO: account for copy/paste
   stdout.write('*'.repeat(c.length));
   input += c;
 }
