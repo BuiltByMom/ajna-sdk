@@ -1,13 +1,13 @@
 import { getPoolInfoUtilsContract, indexToPrice, priceToIndex } from '../contracts/pool-info-utils';
-import { SignerOrProvider } from '../types';
-import { BigNumber, Contract } from 'ethers';
+import { PoolInfoUtils, SignerOrProvider } from '../types';
+import { BigNumber } from 'ethers';
 
 /**
  * Utilities which can be applied to any pool.
  */
 class PoolUtils {
   provider: SignerOrProvider;
-  contract: Contract;
+  contract: PoolInfoUtils;
 
   constructor(provider: SignerOrProvider) {
     this.provider = provider;
