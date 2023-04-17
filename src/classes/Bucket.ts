@@ -4,15 +4,15 @@ import {
   lpsToQuoteTokens,
   lpsToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, SignerOrProvider } from '../types';
-import { BigNumber, Contract } from 'ethers';
+import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
+import { BigNumber } from 'ethers';
 
 /**
  * Models a price bucket in a pool
  */
 class Bucket {
   provider: SignerOrProvider;
-  contractUtils: Contract;
+  contractUtils: PoolInfoUtils;
   poolAddress: string;
   index: number;
   wasInitialized: boolean;
