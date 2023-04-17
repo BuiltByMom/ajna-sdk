@@ -19,6 +19,7 @@ import {
 import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
+import { PoolInfoUtils } from 'types/contracts';
 
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
@@ -26,7 +27,7 @@ import { PoolUtils } from './PoolUtils';
 abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
-  contractUtils: Contract;
+  contractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
   poolAddress: string;
   quoteAddress: string;
