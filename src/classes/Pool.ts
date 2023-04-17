@@ -8,6 +8,7 @@ import {
   debtInfo,
   depositIndex,
   kickWithDeposit,
+  kick,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
@@ -246,6 +247,12 @@ abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await kickWithDeposit(contractPoolWithSigner, index, limitIndex);
+  }
+
+  async kick(signer: Signer, borrowerAddress: Address, limitIndex: number = MAX_FENWICK_INDEX) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await kick(contractPoolWithSigner, borrowerAddress, limitIndex);
   }
 
   async isKickable(borrowerAddress: Address) {

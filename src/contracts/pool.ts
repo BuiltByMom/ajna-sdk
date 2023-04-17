@@ -76,3 +76,16 @@ export async function kickWithDeposit(
     overrides
   );
 }
+
+export async function kick(
+  contract: Contract,
+  borrowerAddress: Address,
+  limitIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'kick', args: [borrowerAddress, limitIndex] },
+    overrides
+  );
+}

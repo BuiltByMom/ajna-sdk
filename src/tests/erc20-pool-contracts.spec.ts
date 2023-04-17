@@ -5,6 +5,7 @@ import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
+import { revertToSnapshot, takeSnapshot } from '../utils/ganache';
 import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
@@ -403,71 +404,90 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     }).rejects.toThrow('InsufficientCollateral()');
   });
 
-  it('should use kickWithDeposit', async () => {
-    // add 10 quote tokens to 2500 bucket (price 3863)
-    const lowerBucketIndex = 2500;
-    const quoteAmount = toWad(10);
+  describe('Liquidations', () => {
+    let snapshotId: number;
 
-    let tx = await pool.quoteApprove(signerLender, quoteAmount);
-    await submitAndVerifyTransaction(tx);
+    beforeAll(async () => {
+      // add 10 quote tokens to 2500 bucket (price 3863)
+      const lowerBucketIndex = 2500;
+      const quoteAmount = toWad(10);
+      const approveAmount = toWad(100000);
 
-    tx = await pool.addQuoteToken(signerLender, lowerBucketIndex, quoteAmount);
-    await submitAndVerifyTransaction(tx);
+      let tx = await pool.quoteApprove(signerLender, approveAmount);
+      await submitAndVerifyTransaction(tx);
 
-    // draw debt as borrower2
-    const bucketIndex = 2001;
-    let amountToBorrow = toWad(5);
-    let collateralToPledge = toWad(0.0003);
+      tx = await pool.addQuoteToken(signerLender, lowerBucketIndex, quoteAmount);
+      await submitAndVerifyTransaction(tx);
 
-    tx = await pool.collateralApprove(signerBorrower2, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
+      // draw debt as borrower2
+      const bucketIndex = 2001;
+      let amountToBorrow = toWad(5);
+      let collateralToPledge = toWad(0.0003);
 
-    tx = await pool.drawDebt(signerBorrower2, amountToBorrow, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
+      tx = await pool.collateralApprove(signerBorrower2, collateralToPledge);
+      await submitAndVerifyTransaction(tx);
 
-    // check pool lup index
-    let debtInfo = await pool.debtInfo();
-    let lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
-    expect(+lupIndex).toBe(bucketIndex);
+      tx = await pool.drawDebt(signerBorrower2, amountToBorrow, collateralToPledge);
+      await submitAndVerifyTransaction(tx);
 
-    // check loan, make sure borrower2 threshold price is higher than lup price
-    let bucket = await pool.getBucketByIndex(lupIndex);
-    let lupPrice = bucket.price;
-    const loan = await pool.getLoan(await signerBorrower2.getAddress());
+      // check pool lup index
+      let debtInfo = await pool.debtInfo();
+      let lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+      expect(+lupIndex).toBe(bucketIndex);
 
-    expect(lupPrice).toBeDefined();
-    expect(lupPrice && lupPrice.gt(toWad(loan.thresholdPrice))).toBeTruthy();
+      // check loan, make sure borrower2 threshold price is higher than lup price
+      let bucket = await pool.getBucketByIndex(lupIndex);
+      let lupPrice = bucket.price;
+      const loan = await pool.getLoan(await signerBorrower2.getAddress());
 
-    let isKickable = await pool.isKickable(signerBorrower2.address);
-    expect(isKickable).toBeFalsy();
+      expect(lupPrice).toBeDefined();
+      expect(lupPrice && lupPrice.gt(toWad(loan.thresholdPrice))).toBeTruthy();
 
-    // draw debt as another borrower to pull lup down
-    amountToBorrow = toWad(10);
-    collateralToPledge = toWad(1);
+      const isKickable = await pool.isKickable(signerBorrower2.address);
+      expect(isKickable).toBeFalsy();
 
-    tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
+      // draw debt as another borrower to pull lup down
+      amountToBorrow = toWad(10);
+      collateralToPledge = toWad(1);
 
-    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
+      tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
+      await submitAndVerifyTransaction(tx);
 
-    // // check pool lup index again, make sure lup went below bucket 2001
-    debtInfo = await pool.debtInfo();
-    lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
-    // expect(+lupIndex).toBeLessThan(bucketIndex);
+      tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
+      await submitAndVerifyTransaction(tx);
 
-    // check loan again, make sure borrower2 threshold price is lower than lup price
-    bucket = await pool.getBucketByIndex(lupIndex);
-    lupPrice = bucket.price;
+      // check pool lup index again, make sure lup went below bucket 2001
+      debtInfo = await pool.debtInfo();
+      lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+      expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
-    expect(lupPrice).toBeDefined();
-    expect(lupPrice && lupPrice.lt(toWad(loan.thresholdPrice))).toBeTruthy();
+      // check loan again, make sure borrower2 threshold price is lower than lup price
+      bucket = await pool.getBucketByIndex(lupIndex);
+      lupPrice = bucket.price;
 
-    isKickable = await pool.isKickable(signerBorrower2.address);
-    expect(isKickable).toBeTruthy();
+      expect(lupPrice).toBeDefined();
+      expect(lupPrice && lupPrice.lt(toWad(loan.thresholdPrice))).toBeTruthy();
 
-    // kick with deposit
-    tx = await pool.kickWithDeposit(signerLender, bucketIndex);
-    await submitAndVerifyTransaction(tx);
+      snapshotId = await takeSnapshot(provider);
+    });
+
+    afterEach(async () => {
+      await revertToSnapshot(provider, snapshotId);
+    });
+
+    it('should use kick and isKickable ', async () => {
+      const isKickable = await pool.isKickable(signerBorrower2.address);
+      expect(isKickable).toBeTruthy();
+
+      const tx = await pool.kick(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+    });
+
+    it('should use kickWithDeposit', async () => {
+      const bucketIndex = 2001;
+
+      const tx = await pool.kickWithDeposit(signerLender, bucketIndex);
+      await submitAndVerifyTransaction(tx);
+    });
   });
 });
