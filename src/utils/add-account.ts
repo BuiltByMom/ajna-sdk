@@ -1,33 +1,82 @@
 import { Wallet, providers } from 'ethers';
 import fs from 'fs';
 
+const stdout = process.stdout;
+const stdin = process.stdin;
+let input = '';
+const provider = new providers.JsonRpcProvider(
+  `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
+);
+
 export const addAccountFromKey = (key: string, provider: providers.Provider) => {
   return new Wallet(key, provider);
 };
 
-export const addAccountFromKeystore = (
-  keystorePath: string,
-  provider: providers.Provider,
-  password = ''
-) => {
+let jsonKeystore: string;
+export const addAccountFromKeystore = (keystorePath: string) => {
   // read the keystore file, confirming it exists
-  const jsonKeystore = fs.readFileSync(keystorePath).toString();
-
-  const pswd = password === '' ? prompt('Enter keystore password: ') : password;
-  let wallet = Wallet.fromEncryptedJsonSync(jsonKeystore, pswd);
-  wallet = wallet.connect(provider);
-  return wallet;
-};
-
-// TODO: prevent echoing password to stdout
-const prompt = (msg: string) => {
-  fs.writeSync(1, msg);
-  let s = '';
-  const stdin = fs.openSync('/dev/stdin', 'rs');
-  const buf = Buffer.alloc(1);
-  while (buf[0] - 10 && buf[0] - 13) {
-    s += buf;
-    fs.readSync(stdin, buf, 0, 1, null);
+  try {
+    jsonKeystore = fs.readFileSync(keystorePath).toString();
+  } catch (error) {
+    if (!jsonKeystore) {
+      console.error(
+        `Could not find the jsonKeyStore at the path ${keystorePath}. Please try again.`
+      );
+      process.exit();
+    }
   }
-  return s.slice(1);
+
+  stdout.write('Enter keystore password: ');
+  stdin.setRawMode(true);
+  stdin.resume();
+  stdin.setEncoding('utf-8');
+  stdin.on('data', pwd);
 };
+
+export const pwd = (data: any) => {
+  const c = data;
+  switch (c) {
+    case '\u0004': // Ctrl-d
+    case '\r':
+    case '\n':
+      return enter();
+    case '\u0003': // Ctrl-c
+      return ctrlc();
+    default:
+      // backspace
+      if (c.charCodeAt(0) === 8) return backspace();
+      else return newchar(c);
+  }
+};
+
+function enter() {
+  stdin.removeListener('data', pwd);
+  stdin.setRawMode(false);
+  stdin.pause();
+  unlockWallet(input, provider);
+}
+
+function ctrlc() {
+  stdin.removeListener('data', pwd);
+  stdin.setRawMode(false);
+  stdin.pause();
+}
+
+function newchar(c: string) {
+  // TODO: account for copy/paste
+  stdout.write('*'.repeat(c.length));
+  input += c;
+}
+
+function backspace() {
+  input = input.slice(0, input.length - 1);
+}
+
+function unlockWallet(input: string, provider: providers.Provider) {
+  let wallet = Wallet.fromEncryptedJsonSync(jsonKeystore, input);
+  wallet = wallet.connect(provider);
+  // console.log('\n\nUnlocked Wallet!\n\n', wallet);
+  return wallet;
+}
+
+addAccountFromKeystore('./borrow.json');
