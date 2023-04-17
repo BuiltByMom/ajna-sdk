@@ -78,4 +78,4 @@ function unlockWallet(input: string, provider: providers.Provider) {
   return wallet;
 }
 
-addAccountFromKeystore('./borrow.json');
+// addAccountFromKeystore('./secrets.json');
