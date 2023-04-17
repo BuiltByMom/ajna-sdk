@@ -6,8 +6,8 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
-import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
+import { TEST_CONFIG as config } from './test-constants';
 import './test-fail.ts';
 import { submitAndVerifyTransaction } from './test-utils';
 
@@ -20,20 +20,26 @@ const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
+const BORROWER_2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
+  const signerBorrower2 = addAccountFromKey(BORROWER_2_KEY, provider);
+  const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   let pool: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
     // mint tokens to actors
-    const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
     const TWETH = getErc20Contract(COLLATERAL_ADDRESS, provider);
-    const receipt = await TWETH.connect(signerDeployer).transfer(
+    let receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
+      toWad(BigNumber.from('10'))
+    );
+    receipt = await TWETH.connect(signerDeployer).transfer(
+      signerBorrower2.address,
       toWad(BigNumber.from('10'))
     );
     expect(receipt.transactionHash).not.toBe('');
@@ -395,5 +401,73 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await expect(async () => {
       await tx.verify();
     }).rejects.toThrow('InsufficientCollateral()');
+  });
+
+  it('should use kickWithDeposit', async () => {
+    // add 10 quote tokens to 2500 bucket (price 3863)
+    const lowerBucketIndex = 2500;
+    const quoteAmount = toWad(10);
+
+    let tx = await pool.quoteApprove(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.addQuoteToken(signerLender, lowerBucketIndex, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    // draw debt as borrower2
+    const bucketIndex = 2001;
+    let amountToBorrow = toWad(5);
+    let collateralToPledge = toWad(0.0003);
+
+    tx = await pool.collateralApprove(signerBorrower2, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.drawDebt(signerBorrower2, amountToBorrow, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    // check pool lup index
+    let debtInfo = await pool.debtInfo();
+    let lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+    expect(+lupIndex).toBe(bucketIndex);
+
+    // check loan, make sure borrower2 threshold price is higher than lup price
+    let bucket = await pool.getBucketByIndex(lupIndex);
+    let lupPrice = bucket.price;
+    const loan = await pool.getLoan(await signerBorrower2.getAddress());
+
+    expect(lupPrice).toBeDefined();
+    expect(lupPrice && lupPrice.gt(toWad(loan.thresholdPrice))).toBeTruthy();
+
+    let isKickable = await pool.isKickable(signerBorrower2.address);
+    expect(isKickable).toBeFalsy();
+
+    // draw debt as another borrower to pull lup down
+    amountToBorrow = toWad(10);
+    collateralToPledge = toWad(1);
+
+    tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    // // check pool lup index again, make sure lup went below bucket 2001
+    debtInfo = await pool.debtInfo();
+    lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+    // expect(+lupIndex).toBeLessThan(bucketIndex);
+
+    // check loan again, make sure borrower2 threshold price is lower than lup price
+    bucket = await pool.getBucketByIndex(lupIndex);
+    lupPrice = bucket.price;
+
+    expect(lupPrice).toBeDefined();
+    expect(lupPrice && lupPrice.lt(toWad(loan.thresholdPrice))).toBeTruthy();
+
+    isKickable = await pool.isKickable(signerBorrower2.address);
+    expect(isKickable).toBeTruthy();
+
+    // kick with deposit
+    tx = await pool.kickWithDeposit(signerLender, bucketIndex);
+    await submitAndVerifyTransaction(tx);
   });
 });

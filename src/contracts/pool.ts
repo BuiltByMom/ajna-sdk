@@ -63,3 +63,16 @@ export async function loansInfo(contract: Contract): Promise<[Address, BigNumber
 export async function depositIndex(contract: Contract, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
 }
+
+export async function kickWithDeposit(
+  contract: Contract,
+  index: number,
+  limitIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'kickWithDeposit', args: [index, limitIndex] },
+    overrides
+  );
+}
