@@ -4,7 +4,7 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
-import { addAccountFromKey } from '../utils/add-account';
+import { addAccount } from '../utils/add-account';
 import { timeJump } from '../utils/ganache';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
@@ -30,10 +30,11 @@ const TESTB_DAI_POOL_ADDRESS = '0x3578b4489fe9ee07fd1d62f767ddcdf2b99ea511';
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  const signerLender = addAccountFromKey(LENDER_KEY, provider);
-  const signerLender2 = addAccountFromKey(LENDER_2_KEY, provider);
-  const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
-  const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+  const account = addAccount(provider);
+  const signerLender2 = account.addAccountFromKey(LENDER_2_KEY);
+  const signerLender = account.addAccountFromKey(LENDER_KEY);
+  const signerBorrower = account.addAccountFromKey(BORROWER_KEY);
+  const signerDeployer = account.addAccountFromKey(DEPLOYER_KEY);
   const TWETH = getErc20Contract(TWETH_ADDRESS, provider);
   const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
@@ -439,7 +440,8 @@ describe('ERC20 Pool', () => {
     let pool: FungiblePool = {} as FungiblePool;
 
     // Mint tokens to actors
-    const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+    const account = addAccount(provider);
+    const signerDeployer = account.addAccountFromKey(DEPLOYER_KEY);
     const TOKEN_C = getErc20Contract(TDAI_ADDRESS, provider);
     const TOKEN_Q = getErc20Contract(TWETH_ADDRESS, provider); // TWETH
     const TOKEN_AJNA = getErc20Contract(Config.ajnaToken, provider);

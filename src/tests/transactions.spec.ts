@@ -1,6 +1,6 @@
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { Pool } from '../classes/Pool';
-import { addAccountFromKey } from '../utils/add-account';
+import { addAccount } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { constants, providers } from 'ethers';
@@ -19,7 +19,8 @@ const LENDER_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25
 describe('Transaction utils tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  const signerLender = addAccountFromKey(LENDER_KEY, provider);
+  const account = addAccount(provider);
+  const signerLender = account.addAccountFromKey(LENDER_KEY);
 
   it('should return wrapped transaction object', async () => {
     const tx = await ajna.factory.deployPool(
