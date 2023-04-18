@@ -24,6 +24,54 @@ import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
 import { PoolInfoUtils } from 'types/contracts';
 
+export interface DebtInfo {
+  /** total unaccrued debt in pool at the current block height */
+  pendingDebt: BigNumber;
+  /** debt accrued by pool as of the last pool interaction */
+  accruedDebt: BigNumber;
+  /** debt under liquidation */
+  debtInAuction: BigNumber;
+}
+
+export interface LoansInfo {
+  /** lender with the least-collateralized loan */
+  maxBorrower: Address;
+  /** highest threshold price (HTP) */
+  maxThresholdPrice: BigNumber;
+  /** number of loans in the pool */
+  noOfLoans: number;
+}
+
+export interface PriceInfo {
+  /** price of the highest price bucket with deposit */
+  hpb: BigNumber;
+  /** fenwick index of the HPB */
+  hpbIndex: number;
+  /** highest threshold price */
+  htp: BigNumber;
+  /** fenwick index of the HTP */
+  htpIndex: number;
+  /** lowest utilized price */
+  lup: BigNumber;
+  /** fenwick index of the LUP */
+  lupIndex: number;
+}
+
+export interface Stats {
+  /** amount of liquidity in the pool (including utilized liquidity) */
+  poolSize: BigNumber;
+  /** number of loans in the pool */
+  loansCount: number;
+  /** minimum amount of debt a borrower can draw */
+  minDebtAmount: BigNumber;
+  /** collateralization ratio expressed as percentage */
+  collateralization: BigNumber;
+  /** meaningful actual utilization of the pool (MAU) */
+  actualUtilization: BigNumber;
+  /** pool target utilization (TU), related to inverse of collateralization */
+  targetUtilization: BigNumber;
+}
+
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
  */
@@ -61,10 +109,24 @@ abstract class Pool {
     await this.ethcallProvider.init(this.provider as Provider);
   }
 
+  /**
+   * approve this pool to manage quote token
+   * @param signer pool user
+   * @param allowance approval amount (or MaxUint256)
+   * @returns transaction
+   */
   async quoteApprove(signer: Signer, allowance: BigNumber) {
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
   }
 
+  /**
+   * deposits quote token into a bucket
+   * @param signer lender
+   * @param bucketIndex identifies the price bucket
+   * @param amount amount to deposit
+   * @param ttlSeconds revert if not processed in this amount of block time
+   * @returns transaction
+   */
   async addQuoteToken(signer: Signer, bucketIndex: number, amount: BigNumber, ttlSeconds?: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -76,6 +138,15 @@ abstract class Pool {
     );
   }
 
+  /**
+   * moves quote token between buckets
+   * @param signer lender
+   * @param fromIndex price bucket from which quote token should be withdrawn
+   * @param toIndex price bucket to which quote token should be deposited
+   * @param maxAmountToMove optionally limits amount to move
+   * @param ttlSeconds revert if not processed in this amount of time
+   * @returns transaction
+   */
   async moveQuoteToken(
     signer: Signer,
     fromIndex: number,
@@ -94,55 +165,88 @@ abstract class Pool {
     );
   }
 
+  /**
+   * removes quote token from a bucket
+   * @param signer lender
+   * @param bucketIndex identifies the price bucket
+   * @param maxAmount optionally limits amount to remove
+   * @returns transaction
+   */
   async removeQuoteToken(signer: Signer, bucketIndex: number, maxAmount = constants.MaxUint256) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
   }
 
+  /**
+   * checks a lender's LP balance in a bucket
+   * @param lenderAddress lender
+   * @param index fenwick index of the desired bucket
+   * @returns LP balance and timestamp of last deposit for the bucket
+   */
   async lenderInfo(lenderAddress: Address, index: number) {
     const [lpBalance, depositTime] = await lenderInfo(this.contract, lenderAddress, index);
 
+    // TODO: contracts use depositTime for handling bucket bankruptcy; suggest we not expose it here
     return {
       lpBalance,
       depositTime,
     };
   }
 
-  async debtInfo() {
-    const [debt, accruedDebt, debtInAuction] = await debtInfo(this.contract);
+  /**
+   * retrieves pool debt information
+   * @returns {@link DebtInfo}
+   */
+  async debtInfo(): Promise<DebtInfo> {
+    const [pending, accrued, inAuction] = await debtInfo(this.contract);
 
     return {
-      pendingDebt: BigNumber.from(debt),
-      accruedDebt: BigNumber.from(accruedDebt),
-      debtInAuction: BigNumber.from(debtInAuction),
+      pendingDebt: BigNumber.from(pending),
+      accruedDebt: BigNumber.from(accrued),
+      debtInAuction: BigNumber.from(inAuction),
     };
   }
 
-  // FIXME: shouldn't need signer here
-  async loansInfo(signer: Signer) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    const [borrowerAddress, loan, noOfLoans] = await loansInfo(contractPoolWithSigner);
+  /**
+   * retrieves pool loan information
+   * @returns {@link LoansInfo}
+   */
+  async loansInfo(): Promise<LoansInfo> {
+    const [maxBorrower, maxThresholdPrice, noOfLoans] = await loansInfo(this.contract);
 
     return {
-      borrowerAddress,
-      loan,
-      noOfLoans,
+      maxBorrower,
+      maxThresholdPrice,
+      noOfLoans: +noOfLoans,
     };
   }
 
-  async getPrices() {
-    const [hpb, htp, lup] = await poolPricesInfo(this.contractUtils, this.poolAddress);
+  /**
+   * retrieves pool reference prices
+   * @returns {@link PriceInfo}
+   */
+  async getPrices(): Promise<PriceInfo> {
+    const [hpb, hpbIndex, htp, htpIndex, lup, lupIndex] = await poolPricesInfo(
+      this.contractUtils,
+      this.poolAddress
+    );
 
     return {
       hpb,
+      hpbIndex: +hpbIndex,
       htp,
+      htpIndex: +htpIndex,
       lup,
+      lupIndex: +lupIndex,
     };
   }
 
-  async getStats() {
+  /**
+   * retrieves pool statistics
+   * @returns {@link Stats}
+   */
+  async getStats(): Promise<Stats> {
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
     const data: string[] = await this.ethcallProvider.all([
@@ -163,19 +267,16 @@ abstract class Pool {
     };
   }
 
+  // TODO: needs work; should use multicall, query exchange rate, and show LP value in both quote
+  // and collateral token
   async getPosition(lenderAddress: Address, bucketIndex: number, proposedWithdrawal?: BigNumber) {
-    let penaltyFee = 0;
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
-    const pastOneDayTimestamp = Date.now() / 1000 - 24 * 3600;
     const [, , , htpIndex, ,] = await poolPricesInfo(this.contractUtils, this.poolAddress);
 
     const { pendingDebt } = await this.debtInfo();
 
-    const { lpBalance, depositTime: depositTimeBN } = await this.lenderInfo(
-      lenderAddress,
-      bucketIndex
-    );
+    const { lpBalance } = await this.lenderInfo(lenderAddress, bucketIndex);
 
     const lupIndexAfterWithdrawal = await this.depositIndex(pendingDebt.add(withdrawalAmountBN));
 
@@ -183,32 +284,35 @@ abstract class Pool {
       insufficientLiquidityForWithdraw = true;
     }
 
-    const depositTime = Number(depositTimeBN.toString());
-
-    // Calculate the past 24hours and check if bigger timestamp than depositTime
-    if (pastOneDayTimestamp > depositTime) {
-      // TODO: Calculate penalty _feeRate??? but will come from contract.
-      penaltyFee = 0.0001;
-    }
-
     return {
-      insufficientLiquidityForWithdraw,
       lpBalance,
-      penaltyFee,
-      penaltyTimeRemaining: depositTime + 24 * 3600,
+      insufficientLiquidityForWithdraw,
     };
   }
 
+  /**
+   * measuring from highest price bucket with liquidity, determines index at which all liquidity in
+   * the book has been utilized by specified debt; useful for estimating LUP
+   * @param debtAmount pool debt to be applied to liquidity
+   * @returns fenwick index
+   */
   async depositIndex(debtAmount: BigNumber) {
     return await depositIndex(this.contract, debtAmount);
   }
 
+  /**
+   * enables signer to bundle transactions together atomically in a single request
+   * @param signer consumer initiating transactions
+   * @param callData array of transactions to sign and submit
+   * @returns transaction
+   */
   async multicall(signer: Signer, callData: Array<CallData>) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await multicall(contractPoolWithSigner, callData);
   }
 
+  // TODO: calculate priceToIndex client-side, return any buckets with liquidity, rename accordingly
   async getIndexesPriceByRange(minPrice: BigNumber, maxPrice: BigNumber) {
     const minIndexCall = this.contractUtilsMulti.priceToIndex(minPrice);
     const maxIndexCall = this.contractUtilsMulti.priceToIndex(maxPrice);

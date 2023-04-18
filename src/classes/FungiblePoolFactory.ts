@@ -12,6 +12,14 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
     super(signerOrProvider);
   }
 
+  /**
+   * creates a new pool
+   * @param signer pool creator
+   * @param collateralAddress address of the ERC20 collateral token
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   * @returns transaction
+   */
   async deployPool(
     signer: Signer,
     collateralAddress: Address,
@@ -21,6 +29,12 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
     return await deployPool(signer, collateralAddress, quoteAddress, interestRate);
   }
 
+  /**
+   * returns existing pool
+   * @param collateralAddress token address
+   * @param quoteAddress token address
+   * @returns {@link Pool} modeling desired pool
+   */
   async getPool(collateralAddress: Address, quoteAddress: Address) {
     const poolAddress = await this.getPoolAddress(collateralAddress, quoteAddress);
 
@@ -34,6 +48,12 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
     return newPool;
   }
 
+  /**
+   * finds address of an existing pool for two tokens
+   * @param collateralAddress token address
+   * @param quoteAddress token address
+   * @returns address of the existing pool
+   */
   async getPoolAddress(collateralAddress: Address, quoteAddress: Address) {
     const nonSubsetHash = utils.keccak256(utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH'));
 

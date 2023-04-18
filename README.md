@@ -34,7 +34,13 @@ Price buckets in Ajna are identified by an integer bucket index, between 1 (high
 
 Example scripts are provided in the `examples/` directory.
 
-## Unit testing
+## Development
+
+### Documentation
+
+To build documentation, run `yarn document`.  HTML will be generated in the `sdk-api/docs` directory.
+
+### Unit testing
 
 Unit tests run against a dockerized Ajna testnet.
 **Addresses and keys in test configuration are publicly known. Do not attempt to use these addresses on a public network!**
@@ -44,11 +50,7 @@ Unit tests run against a dockerized Ajna testnet.
 
 To pass parameters to `jest`, run using `npx`. For example, to run a single test and print console output:
 
-```shell
-npx jest --silent=false -t 'should confirm AjnaSDK pool succesfully'
-```
-
-## Maintenance
+### Maintenance
 
 This package offers a facility to translate ABIs as compiled to a format consumable by Ethers.js. To use:
 

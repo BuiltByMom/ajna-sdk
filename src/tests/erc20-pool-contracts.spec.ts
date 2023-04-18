@@ -6,10 +6,10 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
-import { getExpiry } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
-import './test-fail.ts';
+import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
+import { indexToPrice, priceToIndex } from '../utils/pricing';
 
 dotenv.config();
 
@@ -45,7 +45,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(receipt.transactionHash).not.toBe('');
   });
 
-  it('should confirm AjnaSDK pool succesfully', async () => {
+  it('should confirm AjnaSDK pool successfully', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
       COLLATERAL_ADDRESS,
@@ -76,7 +76,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     }).rejects.toThrow('PoolAlreadyExists()');
   });
 
-  it('should use addQuoteToken succesfully', async () => {
+  it('should use addQuoteToken successfully', async () => {
     const quoteAmount = 10;
     const bucketIndex = 2000;
     const allowance = 100000000;
@@ -106,7 +106,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
-  it('should use drawDebt succesfully', async () => {
+  it('should use drawDebt successfully', async () => {
     const amountToBorrow = toWad(1.0);
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
@@ -139,7 +139,23 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(debtInfo.debtInAuction?.eq(BigNumber.from(0))).toBeTruthy();
   });
 
-  it('should use repayDebt succesfully', async () => {
+  it('should use getPrices and loansInfo successfully', async () => {
+    const prices = await pool.getPrices();
+
+    expect(prices.hpb).toEqual(indexToPrice(2000));
+    expect(prices.hpbIndex).toEqual(2000);
+    expect(prices.htp).toEqual(toWad('0.333653846153846154'));
+    expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
+    expect(prices.lup).toEqual(indexToPrice(2000));
+    expect(prices.lupIndex).toEqual(2000);
+
+    const loansInfo = await pool.loansInfo();
+    expect(loansInfo.maxBorrower).toEqual(signerBorrower.address);
+    expect(loansInfo.maxThresholdPrice).toEqual(prices.htp);
+    expect(loansInfo.noOfLoans).toEqual(1);
+  });
+
+  it('should use repayDebt successfully', async () => {
     const collateralAmountToPull = toWad(1);
     const maxQuoteTokenAmountToRepay = toWad(1);
 
@@ -151,7 +167,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await submitAndVerifyTransaction(tx);
   });
 
-  it('should use removeQuoteToken succesfully', async () => {
+  it('should use removeQuoteToken successfully', async () => {
     const quoteAmount = toWad(1);
     const bucketIndex = 2000;
 
@@ -169,7 +185,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     }).rejects.toThrow('NoClaim()');
   });
 
-  it('should use moveQuoteToken succesfully', async () => {
+  it('should use moveQuoteToken successfully', async () => {
     const maxAmountToMove = toWad(5);
     const bucketIndexFrom = 2000;
     const bucketIndexTo = 2001;
@@ -184,25 +200,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await submitAndVerifyTransaction(tx);
   });
 
-  it('should use getLoan succesfully', async () => {
+  it('should use getLoan successfully', async () => {
     const loan = await pool.getLoan(await signerBorrower.getAddress());
 
     expect(loan.collateralization.toString()).not.toBe('');
   });
 
-  it('should use getPrices succesfully', async () => {
-    const prices = await pool.getPrices();
-
-    expect(prices).not.toBe('');
-  });
-
-  it('should use getStats succesfully', async () => {
+  it('should use getStats successfully', async () => {
     const stats = await pool.getStats();
 
     expect(stats).not.toBe('');
   });
 
-  it('should use getIndexesPriceByRange onChain succesfully with SHORT min/max range', async () => {
+  it('should use getIndexesPriceByRange onChain successfully with SHORT min/max range', async () => {
     const quoteAmount = toWad(0.5);
     const bucketIndex = 1234;
 
@@ -217,19 +227,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(buckets.length).not.toBe(0);
   });
 
-  it('should use getIndexesPriceByRange onChain succesfully with MEDIUM min/max range', async () => {
+  it('should use getIndexesPriceByRange onChain successfully with MEDIUM min/max range', async () => {
     const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(1));
 
     expect(buckets.length).not.toBe(0);
   });
 
-  it('should use getIndexesPriceByRange onChain succesfully with LONG min/max range', async () => {
+  it('should use getIndexesPriceByRange onChain successfully with LONG min/max range', async () => {
     const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(3));
 
     expect(buckets.length).not.toBe(0);
   });
 
-  it('should use getBucketByIndex succesfully', async () => {
+  it('should use getBucketByIndex successfully', async () => {
     const bucket: Bucket = await pool.getBucketByIndex(1234);
 
     expect(bucket).not.toBe('');
@@ -240,7 +250,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket.exchangeRate).toEqual(toWad('1'));
   });
 
-  it('should use getBucketByPrice succesfully', async () => {
+  it('should use getBucketByPrice successfully', async () => {
     const bucket: Bucket = await pool.getBucketByPrice(toWad('0.1'));
 
     expect(bucket).not.toBe('');
@@ -251,7 +261,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket.exchangeRate).toEqual(toWad('1'));
   });
 
-  it('should use lpsToQuoteTokens succesfully', async () => {
+  it('should use lpsToQuoteTokens successfully', async () => {
     const bucket = await pool.getBucketByIndex(2000);
 
     expect(bucket).not.toBe('');
@@ -261,13 +271,15 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(deposit.gt(toWad('4'))).toBeTruthy();
   });
 
-  it('should use getPosition succesfully', async () => {
+  // TODO: test properly
+  it('should use getPosition successfully', async () => {
     const position = await pool.getPosition(signerLender.address, 1234, toWad(0.1));
 
     expect(position).not.toBe('');
   });
 
-  it('should use estimateLoan succesfully', async () => {
+  // TODO: test properly
+  it('should use estimateLoan successfully', async () => {
     const estimateLoan = await pool.estimateLoan(signerBorrower.address, toWad(1), toWad(5));
 
     expect(estimateLoan).not.toBe('');
@@ -281,7 +293,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await submitAndVerifyTransaction(tx);
   });
 
-  it('should use multicall succesfully', async () => {
+  it('should use multicall successfully', async () => {
     const quoteAmount = 10;
     const bucketIndex = 3330;
     const bucketIndex2 = 3331;
@@ -326,7 +338,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket2Deposit.gt(0)).toBeTruthy();
   });
 
-  it('should use addCollateral succesfully', async () => {
+  it('should use addCollateral successfully', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
 
@@ -350,7 +362,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
-  it('should use lpsToQuoteCollateral succesfully', async () => {
+  it('should use lpsToQuoteCollateral successfully', async () => {
     const bucketIndex = 1234;
     const bucket = await pool.getBucketByIndex(bucketIndex);
     expect(bucket).not.toBe('');
