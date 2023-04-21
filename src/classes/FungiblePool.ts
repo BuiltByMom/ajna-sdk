@@ -117,8 +117,8 @@ class FungiblePool extends Pool {
    */
   async addCollateral(
     signer: Signer,
-    collateralAmountToAdd: BigNumber,
     bucketIndex: number,
+    collateralAmountToAdd: BigNumber,
     ttlSeconds?: number
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);

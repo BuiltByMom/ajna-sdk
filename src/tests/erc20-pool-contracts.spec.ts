@@ -371,7 +371,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let bucket = await pool.getBucketByIndex(bucketIndex);
     const bucketCollateralBefore = bucket.collateral || BigNumber.from(0);
 
-    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex);
+    tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount);
     const receipt = await tx.verifyAndSubmit();
 
     expect(receipt).toBeDefined();
@@ -402,7 +402,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     let tx = await pool.collateralApprove(signerLender, collateralAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addCollateral(signerLender, collateralAmount, bucketIndex, 0);
+    tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount, 0);
 
     await expect(async () => {
       await tx.verify();
