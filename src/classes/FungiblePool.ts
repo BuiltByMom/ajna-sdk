@@ -9,6 +9,7 @@ import {
   getErc20PoolContractMulti,
   repayDebt,
   getErc20PoolContract,
+  bucketTake,
 } from '../contracts/erc20-pool';
 import { Address, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
@@ -231,6 +232,32 @@ class FungiblePool extends Pool {
   }
 
   // TODO: implement estimateRepay, to see how repaying debt or pulling collateral would impact loan
+
+  /**
+   * performs arb take operation during debt liquidation auction
+   * @param signer taker
+   * @param borrowerAddress borrower address
+   * @param bucketIndex identifies the price bucket
+   * @returns transaction
+   */
+  arbTake = async (signer: Signer, borrowerAddress: Address, bucketIndex: number) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await bucketTake(contractPoolWithSigner, borrowerAddress, false, bucketIndex);
+  };
+
+  /**
+   * performs deposit take operation during debt liquidation auction
+   * @param signer taker
+   * @param borrowerAddress borrower address
+   * @param bucketIndex identifies the price bucket
+   * @returns transaction
+   */
+  depositTake = async (signer: Signer, borrowerAddress: Address, bucketIndex: number) => {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await bucketTake(contractPoolWithSigner, borrowerAddress, true, bucketIndex);
+  };
 }
 
 export { FungiblePool };

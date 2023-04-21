@@ -98,3 +98,17 @@ export async function approve(
     overrides
   );
 }
+
+export async function bucketTake(
+  contract: Contract,
+  borrowerAddress: Address,
+  depositTake: boolean,
+  bucketIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'bucketTake', args: [borrowerAddress, depositTake, bucketIndex] },
+    overrides
+  );
+}

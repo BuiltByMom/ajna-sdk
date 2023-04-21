@@ -5,7 +5,7 @@ import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
-import { revertToSnapshot, takeSnapshot } from '../utils/ganache';
+import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
 import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
@@ -506,7 +506,9 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     });
 
     afterEach(async () => {
-      await revertToSnapshot(provider, snapshotId);
+      expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
+      // Re-take snapshot after every test, as same snapshot couldn't be used twice
+      snapshotId = await takeSnapshot(provider);
     });
 
     it('should use kick and isKickable ', async () => {
@@ -521,6 +523,46 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       const bucketIndex = 2001;
 
       const tx = await pool.kickWithDeposit(signerLender, bucketIndex);
+      await submitAndVerifyTransaction(tx);
+    });
+
+    it('should use arb take', async () => {
+      const bucketIndex = 2001;
+
+      // kick first
+      let tx = await pool.kick(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+
+      // wait 8 hours TakeNotPastCooldown()
+      const jumpTimeSeconds = 9 * 60 * 60; // 8 hours
+      await timeJump(provider, jumpTimeSeconds);
+
+      // take
+      tx = await pool.arbTake(signerLender, signerBorrower2.address, bucketIndex);
+      await submitAndVerifyTransaction(tx);
+    });
+
+    it('should use deposit take', async () => {
+      const bucketIndex = 2001;
+      const allowance = 100000000;
+      const quoteAmount = 10;
+
+      // kick first
+      let tx = await pool.kick(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+
+      tx = await pool.quoteApprove(signerLender, toWad(allowance));
+      await submitAndVerifyTransaction(tx);
+
+      tx = await pool.addQuoteToken(signerLender, bucketIndex, toWad(quoteAmount));
+      await submitAndVerifyTransaction(tx);
+
+      // wait 8 hours TakeNotPastCooldown()
+      const jumpTimeSeconds = 9 * 60 * 60; // 8 hours
+      await timeJump(provider, jumpTimeSeconds);
+
+      // take
+      tx = await pool.depositTake(signerLender, signerBorrower2.address, bucketIndex);
       await submitAndVerifyTransaction(tx);
     });
   });
