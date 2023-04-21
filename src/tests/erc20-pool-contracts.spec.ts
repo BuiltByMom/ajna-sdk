@@ -533,8 +533,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       let tx = await pool.kick(signerLender, signerBorrower2.address);
       await submitAndVerifyTransaction(tx);
 
-      // wait 8 hours TakeNotPastCooldown()
-      const jumpTimeSeconds = 9 * 60 * 60; // 8 hours
+      // wait 8 hours
+      const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
       await timeJump(provider, jumpTimeSeconds);
 
       // take
@@ -557,8 +557,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       tx = await pool.addQuoteToken(signerLender, bucketIndex, toWad(quoteAmount));
       await submitAndVerifyTransaction(tx);
 
-      // wait 8 hours TakeNotPastCooldown()
-      const jumpTimeSeconds = 9 * 60 * 60; // 8 hours
+      // wait 8 hours
+      const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
       await timeJump(provider, jumpTimeSeconds);
 
       // take
