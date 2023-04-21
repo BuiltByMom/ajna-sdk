@@ -57,13 +57,8 @@ class WrappedTransactionClass implements WrappedTransaction {
     try {
       return await this._contract.provider.estimateGas(this._transaction);
     } catch (error: unknown) {
-      const errorHash = this.parseCustomErrorHashFromNodeError(error);
-      if (errorHash) {
-        const reason = this.getCustomErrorFromHash(this._contract, errorHash);
-        throw new SdkError(reason, error);
-      } else {
-        throw error;
-      }
+      const reason = this.parseNodeError(this._contract, error);
+      throw new SdkError(reason, error);
     }
   }
 
@@ -117,25 +112,25 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @param error Error thrown by Ethers in response to an estimateGas failure.
    * @returns string
    */
-  parseCustomErrorHashFromNodeError(error: any) {
-    if (
+  parseNodeError(contract: Contract, error: any) {
+    if (error?.error?.error?.code === 3) {
       // works with Alchemy node on Goerli
-      'error' in error && // estimateGas error
-      'error' in error.error && // response error
-      'code' in error.error.error && // execution revert error
-      error.error.error.code === 3 // indicates execution reverted
-    ) {
-      return error.error.error.data;
-    } else if (
+      // if the hash does not map to a custom error, return the node-provided error
+      return this.getCustomErrorFromHash(contract, error.error.error.data) ?? error.error.error;
+    } else if (error?.error?.error?.data?.result) {
       // works on mainnet-forked Ganache local testnet
-      'error' in error && // estimateGas error
-      'error' in error.error && // server error
-      'data' in error.error.error && // execution revert error
-      'result' in error.error.error.data // error hash
-    ) {
-      return error.error.error.data.result;
+      // if ganache provided no reason, try to match it to a custom error
+      if (error.error.error.data.reason === null) {
+        const errorHash = error.error.error.data.result;
+        return (
+          this.getCustomErrorFromHash(contract, errorHash) ??
+          'Custom error not found for hash ' + errorHash
+        );
+      } else {
+        return error.error.error.data.reason;
+      }
     }
-    return;
+    return 'Revert reason unknown';
   }
 
   /**
@@ -156,8 +151,7 @@ class WrappedTransactionClass implements WrappedTransaction {
     if (errorData in errorsByHash) {
       return errorsByHash[errorData];
     } else {
-      // unexpected
-      return 'Custom error not found for hash ' + errorData;
+      return undefined;
     }
   }
 }

@@ -79,6 +79,7 @@ export interface Stats {
 abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
+  contractMulti: ContractMulti;
   contractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
   poolAddress: string;
@@ -92,7 +93,8 @@ abstract class Pool {
     poolAddress: string,
     collateralAddress: string,
     quoteAddress: string,
-    contract: Contract
+    contract: Contract,
+    contractMulti: ContractMulti
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
@@ -103,6 +105,7 @@ abstract class Pool {
     this.collateralAddress = collateralAddress;
     this.ethcallProvider = {} as ProviderMulti;
     this.contract = contract;
+    this.contractMulti = contractMulti;
   }
 
   async initialize() {
@@ -268,25 +271,53 @@ abstract class Pool {
     };
   }
 
-  // TODO: needs work; should use multicall, query exchange rate, and show LP value in both quote
-  // and collateral token
+  // TODO: Should return a position object, with an estimateWithdraw() method.
   async getPosition(lenderAddress: Address, bucketIndex: number, proposedWithdrawal?: BigNumber) {
+    // determine how much LP the lender has in the bucket
     let insufficientLiquidityForWithdraw = false;
     const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
-    const [, , , htpIndex, ,] = await poolPricesInfo(this.contractUtils, this.poolAddress);
 
-    const { pendingDebt } = await this.debtInfo();
+    // pool contract multicall to find pending debt and LPB
+    const poolDebtInfoCall = this.contractMulti.debtInfo();
+    const poolLenderInfoCall = this.contractMulti.lenderInfo(bucketIndex, lenderAddress);
+    let data: string[] = await this.ethcallProvider.all([poolDebtInfoCall, poolLenderInfoCall]);
+    const [pendingDebt] = data[0];
+    const [lpBalance] = data[1];
 
-    const { lpBalance } = await this.lenderInfo(lenderAddress, bucketIndex);
+    // info contract multicall to get htp and calculate token amounts for LPB
+    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
+    const lpsToQuoteCall = this.contractUtilsMulti.lpsToQuoteTokens(
+      this.poolAddress,
+      lpBalance,
+      bucketIndex
+    );
+    const lpsToCollateralCall = this.contractUtilsMulti.lpsToCollateral(
+      this.poolAddress,
+      lpBalance,
+      bucketIndex
+    );
+    data = await this.ethcallProvider.all([
+      poolPricesInfoCall,
+      lpsToQuoteCall,
+      lpsToCollateralCall,
+    ]);
+    const [, , , htpIndex] = data[0];
+    const depositRedeemable = data[1];
+    const collateralRedeemable = data[2];
 
-    const lupIndexAfterWithdrawal = await this.depositIndex(pendingDebt.add(withdrawalAmountBN));
+    // model withdraw amount as extra debt to estimate where withdrawal would move the LUP
+    const pendingDebtBN = BigNumber.from(pendingDebt);
+    const lupIndexAfterWithdrawal = await this.depositIndex(pendingDebtBN.add(withdrawalAmountBN));
 
-    if (lupIndexAfterWithdrawal.toNumber() > htpIndex.toNumber()) {
+    // if LUP goes below HTP (higher index), lender could not withdraw proposed amount
+    if (lupIndexAfterWithdrawal.toNumber() > +htpIndex) {
       insufficientLiquidityForWithdraw = true;
     }
 
     return {
       lpBalance,
+      depositRedeemable,
+      collateralRedeemable,
       insufficientLiquidityForWithdraw,
     };
   }

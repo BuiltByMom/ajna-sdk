@@ -33,12 +33,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   let pool: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
-    // mint tokens to actors
+    // transfer minted tokens to actors
     const TWETH = getErc20Contract(COLLATERAL_ADDRESS, provider);
     let receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower.address,
       toWad(BigNumber.from('10'))
     );
+    expect(receipt.transactionHash).not.toBe('');
+    const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
+    receipt = await TDAI.connect(signerDeployer).transfer(
+      signerBorrower.address,
+      toWad(BigNumber.from('2'))
+    );
+    expect(receipt.transactionHash).not.toBe('');
     receipt = await TWETH.connect(signerDeployer).transfer(
       signerBorrower2.address,
       toWad(BigNumber.from('10'))
@@ -158,13 +165,15 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
   it('should use repayDebt successfully', async () => {
     const collateralAmountToPull = toWad(1);
-    const maxQuoteTokenAmountToRepay = toWad(1);
+    const maxQuoteTokenAmountToRepay = toWad(2);
 
-    let tx = await pool.quoteApprove(signerBorrower, maxQuoteTokenAmountToRepay);
-    await tx.verifyAndSubmit();
+    let tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
+    await submitAndVerifyTransaction(tx);
 
     tx = await pool.repayDebt(signerBorrower, maxQuoteTokenAmountToRepay, collateralAmountToPull);
 
+    // FIXME: full repayment produces revert with hash 0x03119322, which does not match
+    // known custom errors in the ABIs
     await submitAndVerifyTransaction(tx);
   });
 
@@ -199,12 +208,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     );
 
     await submitAndVerifyTransaction(tx);
-  });
-
-  it('should use getLoan successfully', async () => {
-    const loan = await pool.getLoan(await signerBorrower.getAddress());
-
-    expect(loan.collateralization.toString()).not.toBe('');
   });
 
   it('should use getStats successfully', async () => {
@@ -272,18 +275,37 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(deposit.gt(toWad('4'))).toBeTruthy();
   });
 
-  // TODO: test properly
   it('should use getPosition successfully', async () => {
-    const position = await pool.getPosition(signerLender.address, 1234, toWad(0.1));
+    // getPosition on bucket where lender has no LPB
+    let position = await pool.getPosition(signerLender.address, 4321);
+    expect(position.lpBalance).toEqual(toWad(0));
+    expect(position.depositRedeemable).toEqual(toWad(0));
+    expect(position.collateralRedeemable).toEqual(toWad(0));
 
-    expect(position).not.toBe('');
+    // getPosition on bucket where lender has LPB
+    position = await pool.getPosition(signerLender.address, 1234);
+    expect(position.lpBalance).toEqual(toWad('0.5'));
+    expect(position.depositRedeemable).toEqual(toWad('0.5'));
+    expect(position.collateralRedeemable).toEqual(toWad(0));
   });
 
-  // TODO: test properly
-  it('should use estimateLoan successfully', async () => {
-    const estimateLoan = await pool.estimateLoan(signerBorrower.address, toWad(1), toWad(5));
+  it('should use getLoan successfully', async () => {
+    const loan = await pool.getLoan(await signerBorrower.getAddress());
+    expect(loan.collateralization).toEqual(toWad(1));
+    expect(loan.debt).toEqual(toWad(0));
+    expect(loan.collateral).toEqual(toWad(2));
+    expect(loan.thresholdPrice).toEqual(toWad(0));
+  });
 
-    expect(estimateLoan).not.toBe('');
+  it('should use estimateLoan successfully', async () => {
+    const loanEstimate = await pool.estimateLoan(signerBorrower.address, toWad(1), toWad(5));
+    const prices = await pool.getPrices();
+    expect(loanEstimate.collateralization.gt(toWad(1))).toBeTruthy();
+    expect(loanEstimate.debt.gte(toWad(1))).toBeTruthy();
+    expect(loanEstimate.collateral.gte(toWad(5))).toBeTruthy();
+    expect(loanEstimate.thresholdPrice.lt(prices.lup)).toBeTruthy();
+    expect(loanEstimate.lup.lte(prices.lup));
+    expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
   });
 
   it('should remove all quote token without specifying amount', async () => {
@@ -453,7 +475,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       const loan = await pool.getLoan(await signerBorrower2.getAddress());
 
       expect(lupPrice).toBeDefined();
-      expect(lupPrice && lupPrice.gt(toWad(loan.thresholdPrice))).toBeTruthy();
+      expect(lupPrice && lupPrice.gt(loan.thresholdPrice)).toBeTruthy();
 
       const isKickable = await pool.isKickable(signerBorrower2.address);
       expect(isKickable).toBeFalsy();

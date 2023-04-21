@@ -3,9 +3,14 @@ import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 import { getErc20Contract } from './erc20';
 import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { Contract as ContractMulti } from 'ethcall';
 
 export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
   return new ethers.Contract(poolAddress, ERC20Pool, provider);
+};
+
+export const getErc20PoolContractMulti = (poolAddress: Address) => {
+  return new ContractMulti(poolAddress, ERC20Pool);
 };
 
 export async function drawDebt(

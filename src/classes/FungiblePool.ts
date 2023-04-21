@@ -6,23 +6,21 @@ import {
   removeCollateral,
   approve,
   drawDebt,
-  getErc20PoolContract,
+  getErc20PoolContractMulti,
   repayDebt,
+  getErc20PoolContract,
 } from '../contracts/erc20-pool';
-import { Address, SignerOrProvider } from '../types';
+import { Address, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Bucket } from './Bucket';
 import { Pool } from './Pool';
+import { toWad, wdiv } from '../utils/numeric';
 
-export interface LoanEstimate {
+export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
   lup: BigNumber;
   /** index of this hypothetical LUP */
   lupIndex: number;
-  /** hypothetical threshold price for the new loan */
-  thresholdPrice: BigNumber;
-  /** true if loan would be sufficiently collateralized, otherwise false */
-  canBorrow: boolean;
 }
 
 /**
@@ -40,7 +38,8 @@ class FungiblePool extends Pool {
       poolAddress,
       collateralAddress,
       quoteAddress,
-      getErc20PoolContract(poolAddress, provider)
+      getErc20PoolContract(poolAddress, provider),
+      getErc20PoolContractMulti(poolAddress)
     );
     this.initialize();
   }
@@ -51,9 +50,9 @@ class FungiblePool extends Pool {
    * @param allowance approval amount (or MaxUint256)
    * @returns transaction
    */
-  collateralApprove = async (signer: Signer, allowance: BigNumber) => {
+  async collateralApprove(signer: Signer, allowance: BigNumber) {
     return await approve(signer, this.poolAddress, this.collateralAddress, allowance);
-  };
+  }
 
   /**
    * pledges collateral and draws debt
@@ -63,24 +62,14 @@ class FungiblePool extends Pool {
    * @param limitIndex revert if loan would drop LUP below this bucket (or pass MAX_FENWICK_INDEX)
    * @returns transaction
    */
-  drawDebt = async (
+  async drawDebt(
     signer: Signer,
     amountToBorrow: BigNumber,
     collateralToPledge: BigNumber,
     limitIndex?: number
-  ) => {
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
     const borrowerAddress = await signer.getAddress();
-
-    const estimateLoan = await this.estimateLoan(
-      borrowerAddress,
-      amountToBorrow,
-      collateralToPledge
-    );
-
-    if (!estimateLoan.canBorrow) {
-      throw new Error('ERR_BORROWER_UNCOLLATERALIZED');
-    }
 
     return await drawDebt(
       contractPoolWithSigner,
@@ -89,7 +78,7 @@ class FungiblePool extends Pool {
       limitIndex ?? MAX_FENWICK_INDEX,
       collateralToPledge
     );
-  };
+  }
 
   /**
    * repays debt and pulls collateral
@@ -99,12 +88,12 @@ class FungiblePool extends Pool {
    * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
    * @returns transaction
    */
-  repayDebt = async (
+  async repayDebt(
     signer: Signer,
     maxQuoteTokenAmountToRepay: BigNumber,
     collateralAmountToPull: BigNumber,
     limitIndex?: number
-  ) => {
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const sender = await signer.getAddress();
@@ -116,7 +105,7 @@ class FungiblePool extends Pool {
       sender,
       limitIndex ?? MAX_FENWICK_INDEX
     );
-  };
+  }
 
   /**
    * deposit collateral token into a bucket (not for borrowers)
@@ -126,12 +115,12 @@ class FungiblePool extends Pool {
    * @param ttlSeconds revert if not processed in this amount of time
    * @returns transaction
    */
-  addCollateral = async (
+  async addCollateral(
     signer: Signer,
     collateralAmountToAdd: BigNumber,
     bucketIndex: number,
     ttlSeconds?: number
-  ) => {
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addCollateral(
@@ -140,7 +129,7 @@ class FungiblePool extends Pool {
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
-  };
+  }
 
   /**
    * withdraw collateral from a bucket (not for borrowers)
@@ -149,22 +138,22 @@ class FungiblePool extends Pool {
    * @param maxAmount optionally limits amount to remove
    * @returns transaction
    */
-  removeCollateral = async (
+  async removeCollateral(
     signer: Signer,
     bucketIndex: number,
     maxAmount: BigNumber = constants.MaxUint256
-  ) => {
+  ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
-  };
+  }
 
   /**
    * retrieve information for a specific loan
    * @param borrowerAddress identifies the loan
-   * @returns collateralization of loan, debt, pledged collateral, and threshold price
+   * @returns {@link Loan}
    */
-  getLoan = async (borrowerAddress: Address) => {
+  async getLoan(borrowerAddress: Address) {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
@@ -178,78 +167,68 @@ class FungiblePool extends Pool {
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
-    const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : BigNumber.from(1);
-    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
+    const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
+    const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
 
     return {
-      collateralization: collateralization,
+      collateralization,
       debt,
       collateral,
       thresholdPrice: tp,
     };
-  };
+  }
 
   /**
    * @param bucketIndex fenwick index of the desired bucket
    * @returns {@link Bucket} modeling bucket at specified index
    */
-  getBucketByIndex = async (bucketIndex: number) => {
+  async getBucketByIndex(bucketIndex: number) {
     const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
     await bucket.initialize();
     return bucket;
-  };
+  }
 
   /**
    * @param price price within range supported by Ajna
    * @returns {@link Bucket} modeling bucket at nearest to specified price
    */
-  getBucketByPrice = async (price: BigNumber) => {
+  async getBucketByPrice(price: BigNumber) {
     const bucketIndex = priceToIndex(price);
     // priceToIndex should throw upon invalid price
     const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
     await bucket.initialize();
     return bucket;
-  };
+  }
 
   /**
    * estimates how drawing more debt and/or pledging more collateral would impact loan
    * @param borrowerAddress identifies the loan
    * @param debtAmount additional amount of debt to draw (or 0)
    * @param collateralAmount additional amount of collateral to pledge (or 0)
-   * @returns new LUP index, threshold price, flag indicating whether loan is possible
+   * @returns {@link LoanEstimate}
    */
-  estimateLoan = async (
+  async estimateLoan(
     borrowerAddress: Address,
     debtAmount: BigNumber,
     collateralAmount: BigNumber
-  ): Promise<LoanEstimate> => {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
-      this.poolAddress,
-      borrowerAddress
-    );
+  ): Promise<LoanEstimate> {
+    const borrowerInfo = await this.contractUtils.borrowerInfo(this.poolAddress, borrowerAddress);
+    const debtInfo = await this.debtInfo();
+    const lupIndex = await this.depositIndex(debtInfo.pendingDebt.add(debtAmount));
 
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      poolPricesInfoCall,
-      borrowerInfoCall,
-    ]);
-
-    const [, , , , lup] = response[0];
-    const [borrowerDebt, collateral] = response[1];
-
-    const { pendingDebt } = await this.debtInfo();
-
-    const lupIndex = await this.depositIndex(pendingDebt.add(debtAmount));
-
-    const thresholdPrice = borrowerDebt.add(debtAmount).div(collateral.add(collateralAmount));
+    const newBorrowerDebt = borrowerInfo.debt_.add(debtAmount);
+    const newCollateralPledged = borrowerInfo.collateral_.add(collateralAmount);
+    const thresholdPrice = newBorrowerDebt.div(newCollateralPledged);
 
     return {
+      collateralization: toWad(444),
+      debt: newBorrowerDebt,
+      collateral: newCollateralPledged,
+      thresholdPrice,
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex.toNumber(),
-      thresholdPrice,
-      canBorrow: thresholdPrice.lt(lup),
     };
-  };
+  }
 
   // TODO: implement estimateRepay, to see how repaying debt or pulling collateral would impact loan
 }

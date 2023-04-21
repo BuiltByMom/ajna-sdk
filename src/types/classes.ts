@@ -32,3 +32,14 @@ export interface IBaseContract {
    */
   getProvider(): SignerOrProvider;
 }
+
+export interface Loan {
+  /** collateralization ratio (1e18 = 100%) */
+  collateralization: BigNumber;
+  /** debt including interest and fees */
+  debt: BigNumber;
+  /** pledged collateral */
+  collateral: BigNumber;
+  /** debt divided by collateral */
+  thresholdPrice: BigNumber;
+}

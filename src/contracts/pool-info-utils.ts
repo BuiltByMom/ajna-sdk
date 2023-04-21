@@ -13,55 +13,55 @@ export const getPoolInfoUtilsContractMulti = () => {
 };
 
 export const borrowerInfo = async (
-  contractPool: PoolInfoUtils,
+  contractUtils: PoolInfoUtils,
   poolAddress: Address,
   borrowerAddress: Address
 ) => {
-  return await contractPool.borrowerInfo(poolAddress, borrowerAddress);
+  return await contractUtils.borrowerInfo(poolAddress, borrowerAddress);
 };
 
-export const poolPricesInfo = async (contractPool: PoolInfoUtils, poolAddress: Address) => {
-  return await contractPool.poolPricesInfo(poolAddress);
+export const poolPricesInfo = async (contractUtils: PoolInfoUtils, poolAddress: Address) => {
+  return await contractUtils.poolPricesInfo(poolAddress);
 };
 
-export const poolLoansInfo = async (contractPool: PoolInfoUtils, poolAddress: Address) => {
-  return await contractPool.poolLoansInfo(poolAddress);
+export const poolLoansInfo = async (contractUtils: PoolInfoUtils, poolAddress: Address) => {
+  return await contractUtils.poolLoansInfo(poolAddress);
 };
 
-export const poolUtilizationInfo = async (contractPool: PoolInfoUtils, poolAddress: Address) => {
-  return await contractPool.poolUtilizationInfo(poolAddress);
+export const poolUtilizationInfo = async (contractUtils: PoolInfoUtils, poolAddress: Address) => {
+  return await contractUtils.poolUtilizationInfo(poolAddress);
 };
 
 export const bucketInfo = async (
-  contractPool: PoolInfoUtils,
+  contractUtils: PoolInfoUtils,
   poolAddress: Address,
   index: number
 ) => {
-  return await contractPool.bucketInfo(poolAddress, index);
+  return await contractUtils.bucketInfo(poolAddress, index);
 };
 
 export const lpsToQuoteTokens = async (
-  contractPool: PoolInfoUtils,
+  contractUtils: PoolInfoUtils,
   poolAddress: Address,
   lpTokens: BigNumber,
   index: number
 ) => {
-  return await contractPool.lpsToQuoteTokens(poolAddress, lpTokens, index);
+  return await contractUtils.lpsToQuoteTokens(poolAddress, lpTokens, index);
 };
 
 export const lpsToCollateral = async (
-  contractPool: PoolInfoUtils,
+  contractUtils: PoolInfoUtils,
   poolAddress: Address,
   lpTokens: BigNumber,
   index: number
 ) => {
-  return await contractPool.lpsToCollateral(poolAddress, lpTokens, index);
+  return await contractUtils.lpsToCollateral(poolAddress, lpTokens, index);
 };
 
-export const priceToIndex = async (contractPool: PoolInfoUtils, price: BigNumber) => {
-  return await contractPool.priceToIndex(price);
+export const priceToIndex = async (contractUtils: PoolInfoUtils, price: BigNumber) => {
+  return await contractUtils.priceToIndex(price);
 };
 
-export const indexToPrice = async (contractPool: PoolInfoUtils, index: number) => {
-  return await contractPool.indexToPrice(index);
+export const indexToPrice = async (contractUtils: PoolInfoUtils, index: number) => {
+  return await contractUtils.indexToPrice(index);
 };

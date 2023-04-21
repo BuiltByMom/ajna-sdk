@@ -5,9 +5,8 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "document": "typedoc src/index.ts",
-    "test": "jest",
+    "test": "jest --silent=false",
     "test:dev": "jest --watchAll",
-    "test:with-output": "jest --silent=false",
     "typechain-abis": "typechain --target ethers-v5 --discriminate-types --out-dir src/types/contracts './src/abis/*.json'",
     "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'"
   },

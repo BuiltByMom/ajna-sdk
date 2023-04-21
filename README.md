@@ -1,6 +1,6 @@
-# ajna-finance/sdk-api
+# Ajna SDK
 
-A typescript SDK that can be used to create Dapps and keepers in Ajna ecosystem.
+A typescript SDK that can be used to create Dapps and keepers in the Ajna ecosystem.
 
 ## Setup
 
@@ -12,8 +12,7 @@ A typescript SDK that can be used to create Dapps and keepers in Ajna ecosystem.
 
 ### Exception handling
 
-To improve responsiveness, the SDK may raise an `SdkException` locally if it knows the transaction will not succeed with the current state. The SDK does trap reverts to decode and and throw an exception revealing the reason. The SDK does not attempt to handle connectivity errors. As such, the consumer should assume all onchain calls could throw an exception.
-
+To improve responsiveness, the SDK may raise an `SdkException` locally if it knows the transaction will not succeed with the current state. The SDK traps reverts to decode and and throw an exception revealing the reason. The SDK does not attempt to handle connectivity errors. As such, the consumer should assume all onchain calls could throw an exception.
 
 ## Usage
 
@@ -38,7 +37,13 @@ Example scripts are provided in the `examples/` directory.
 
 ### Documentation
 
-To build documentation, run `yarn document`.  HTML will be generated in the `sdk-api/docs` directory.
+To build documentation, run `yarn document`. HTML will be generated in the `sdk-api/docs` directory.
+
+## Development
+
+### Documentation
+
+To build documentation, run `yarn document`. HTML will be generated in the `sdk-api/docs` directory.
 
 ### Unit testing
 
@@ -48,7 +53,7 @@ Unit tests run against a dockerized Ajna testnet.
 `yarn test` runs `jest` tests once.
 `yarn test:dev` runs the `jest` tests in watch mode, waiting for file changes.
 
-To pass parameters to `jest`, run using `npx`. For example, to run a single test and print console output:
+To pass parameters to `jest`, run using `npx`.
 
 ### Maintenance
 
