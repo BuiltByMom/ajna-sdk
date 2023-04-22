@@ -34,26 +34,27 @@ class AddAccount {
     stdin.setRawMode(true);
     stdin.resume();
     stdin.setEncoding('utf-8');
-    stdin.on('data', this.pwd(this));
+    stdin.on('data', (c: string) => this.pwd(c));
   };
 
-  private pwd(me: this) {
-    return (data: any) => {
-      const c = data;
-      const self = me;
-      switch (c) {
-        case '\u0004': // Ctrl-d
-        case '\r':
-        case '\n':
-          return self.enter();
-        case '\u0003': // Ctrl-c
-          return self.ctrlC();
-        default:
-          // backspace
-          if (c.charCodeAt(0) === 8) return this.backspace();
-          else return self.newChar(c);
-      }
-    };
+  private pwd(char: string) {
+    switch (char) {
+      case '\r':
+      case '\n':
+      case '\u0004': // Ctrl-d
+        this.enter();
+        break;
+      case '\u0003': // Ctrl-c
+        this.ctrlC();
+        break;
+      case '\u0008':
+      case '\u007F':
+        this.backspace();
+        break;
+      default:
+        this.newChar(char);
+        break;
+    }
   }
 
   private enter() {
@@ -67,15 +68,19 @@ class AddAccount {
     stdin.removeListener('data', this.pwd);
     stdin.setRawMode(false);
     stdin.pause();
+    process.exit();
   }
 
   private newChar(char: string) {
-    this.input += char;
     stdout.write('*'.repeat(char.length));
+    this.input += char;
   }
 
   private backspace() {
-    this.input = this.input.slice(0, this.input.length - 1);
+    if (this.input.length > 0) {
+      this.input = this.input.slice(0, -1);
+      process.stdout.write('\b \b');
+    }
   }
 
   private unlockWallet(input: string) {
