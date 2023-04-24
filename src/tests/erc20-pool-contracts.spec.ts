@@ -565,5 +565,19 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       tx = await pool.depositTake(signerLender, signerBorrower2.address, bucketIndex);
       await submitAndVerifyTransaction(tx);
     });
+
+    it('should use take', async () => {
+      // kick first
+      let tx = await pool.kick(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+
+      // wait 8 hours
+      const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+      await timeJump(provider, jumpTimeSeconds);
+
+      // take
+      tx = await pool.take(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+    });
   });
 });

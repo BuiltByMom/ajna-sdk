@@ -18,8 +18,9 @@ export async function createTransaction(
   overrides?: TransactionOverrides
 ): Promise<WrappedTransaction> {
   const { methodName, args = [] } = callData;
+  const argsFiltered = args.filter(a => a !== undefined);
   const tx = await contract.populateTransaction[methodName](
-    ...(overrides ? [...args, overrides] : [...args])
+    ...(overrides ? [...argsFiltered, overrides] : [...argsFiltered])
   );
   return new WrappedTransactionClass(tx, contract);
 }

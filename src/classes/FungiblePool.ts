@@ -10,8 +10,9 @@ import {
   repayDebt,
   getErc20PoolContract,
   bucketTake,
+  take,
 } from '../contracts/erc20-pool';
-import { Address, Loan, SignerOrProvider } from '../types';
+import { Address, CallData, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Bucket } from './Bucket';
 import { Pool } from './Pool';
@@ -240,11 +241,11 @@ class FungiblePool extends Pool {
    * @param bucketIndex identifies the price bucket
    * @returns transaction
    */
-  arbTake = async (signer: Signer, borrowerAddress: Address, bucketIndex: number) => {
+  async arbTake(signer: Signer, borrowerAddress: Address, bucketIndex: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await bucketTake(contractPoolWithSigner, borrowerAddress, false, bucketIndex);
-  };
+  }
 
   /**
    * performs deposit take operation during debt liquidation auction
@@ -253,11 +254,57 @@ class FungiblePool extends Pool {
    * @param bucketIndex identifies the price bucket
    * @returns transaction
    */
-  depositTake = async (signer: Signer, borrowerAddress: Address, bucketIndex: number) => {
+  async depositTake(signer: Signer, borrowerAddress: Address, bucketIndex: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await bucketTake(contractPoolWithSigner, borrowerAddress, true, bucketIndex);
-  };
+  }
+
+  /**
+   * called by actors to purchase collateral from the auction in exchange for quote token
+   * @param signer taker
+   * @param borrower address of the borower take is being called upon
+   * @param maxAmount max amount of collateral that will be taken from the auction
+   * @returns transaction
+   */
+  async take(
+    signer: Signer,
+    borrowerAddress: Address,
+    maxAmount: BigNumber = constants.MaxUint256
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await take(
+      contractPoolWithSigner,
+      borrowerAddress,
+      maxAmount,
+      await signer.getAddress()
+    );
+  }
+
+  /**
+   * called by actors to purchase collateral from the auction in exchange for quote token with otption to invoke callback function
+   * @param signer taker
+   * @param borrower address of the borower take is being called upon
+   * @param maxAmount max amount of collateral that will be taken from the auction
+   * @param callee identifies where collateral should be sent and where quote token should be obtained
+   * @param callData if provided, take will assume the callee implements IERC*Taker. Take will send collateral to
+   *                 callee before passing this data to IERC*Taker.atomicSwapCallback. If not provided,
+   *                 the callback function will not be invoked.
+   * @returns transaction
+   */
+  // TODO: needs to be tested properly
+  async takeWithCall(
+    signer: Signer,
+    borrowerAddress: Address,
+    maxAmount: BigNumber,
+    callee: Address,
+    callData?: CallData
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await take(contractPoolWithSigner, borrowerAddress, maxAmount, callee, callData);
+  }
 }
 
 export { FungiblePool };
