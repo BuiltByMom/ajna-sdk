@@ -6,12 +6,12 @@ const stdin = process.stdin;
 
 class AddAccount {
   private provider: providers.Provider;
-  private jsonKeystore: any;
-  input: string;
+  private input = '';
+  private jsonKeystore = '';
+  private wallet?: Wallet;
 
   constructor(provider: providers.Provider = providers.getDefaultProvider()) {
     this.provider = provider;
-    this.input = '';
   }
 
   addAccountFromKey = (key: string) => {
@@ -34,60 +34,77 @@ class AddAccount {
     stdin.setRawMode(true);
     stdin.resume();
     stdin.setEncoding('utf-8');
-    stdin.on('data', (c: string) => this.pwd(c));
+    stdin.on('data', (c: string) => this.handleKeystroke(c));
+    return this;
   };
 
-  private pwd(char: string) {
+  getWallet() {
+    return this.wallet;
+  }
+
+  private handleKeystroke(char: string) {
     switch (char) {
       case '\r':
       case '\n':
-      case '\u0004': // Ctrl-d
-        this.enter();
-        break;
+      case '\u0004': {
+        // Ctrl-d
+        return this.enter();
+      }
       case '\u0003': // Ctrl-c
-        this.ctrlC();
-        break;
+        return this.ctrlC();
       case '\u0008':
       case '\u007F':
-        this.backspace();
-        break;
+        return this.backspace();
       default:
-        this.newChar(char);
-        break;
+        return this.newChar(char);
     }
   }
 
   private enter() {
-    stdin.removeListener('data', this.pwd);
+    stdin.removeListener('data', this.handleKeystroke);
     stdin.setRawMode(false);
     stdin.pause();
-    this.unlockWallet(this.input);
+    const wallet = this.unlockWallet(this.input);
+    this.resetInput();
+    return wallet;
+  }
+
+  private resetInput() {
+    // Reset input (plaintext pw)
+    this.input = '';
   }
 
   private ctrlC() {
-    stdin.removeListener('data', this.pwd);
+    this.resetInput();
+    stdin.removeListener('data', this.handleKeystroke);
     stdin.setRawMode(false);
     stdin.pause();
     process.exit();
   }
 
-  private newChar(char: string) {
-    stdout.write('*'.repeat(char.length));
-    this.input += char;
-  }
-
   private backspace() {
     if (this.input.length > 0) {
       this.input = this.input.slice(0, -1);
-      process.stdout.write('\b \b');
+      stdout.write('\b \b');
     }
   }
 
+  private newChar(char: string) {
+    this.input = this.input.concat(char);
+    stdout.write('*'.repeat(char.length));
+  }
+
   private unlockWallet(input: string) {
-    let wallet = Wallet.fromEncryptedJsonSync(this.jsonKeystore, input);
-    wallet = wallet.connect(this.provider);
-    console.log('\n\nUnlocked Wallet!\n\n', wallet);
-    return wallet;
+    try {
+      const wallet = Wallet.fromEncryptedJsonSync(this.jsonKeystore, input);
+      this.wallet = wallet.connect(this.provider);
+      console.log('\n\nUnlocked Wallet!\n\n', wallet);
+      this.resetInput();
+      return this.wallet;
+    } catch (error: any) {
+      console.error('ERROR:', error);
+    }
+    return;
   }
 }
 

@@ -36,3 +36,7 @@ function getProvider(signer: SignerOrProvider): Provider {
   }
   throw new SdkError('Provider cannot be empty');
 }
+
+export const wait = async (t: number) => {
+  return new Promise(resolve => setTimeout(() => resolve(null), t));
+};
