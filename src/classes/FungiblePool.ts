@@ -236,7 +236,7 @@ class FungiblePool extends Pool {
   /**
    * performs arb take operation during debt liquidation auction
    * @param signer taker
-   * @param borrowerAddress borrower address
+   * @param borrowerAddress identifies the loan to liquidate
    * @param bucketIndex identifies the price bucket
    * @returns transaction
    */
@@ -249,7 +249,7 @@ class FungiblePool extends Pool {
   /**
    * performs deposit take operation during debt liquidation auction
    * @param signer taker
-   * @param borrowerAddress borrower address
+   * @param borrowerAddress identifies the loan to liquidate
    * @param bucketIndex identifies the price bucket
    * @returns transaction
    */
