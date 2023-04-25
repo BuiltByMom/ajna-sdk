@@ -263,7 +263,7 @@ class FungiblePool extends Pool {
   /**
    * called by actors to purchase collateral from the auction in exchange for quote token
    * @param signer taker
-   * @param borrower address of the borower take is being called upon
+   * @param borrower identifies the loan being liquidated
    * @param maxAmount max amount of collateral that will be taken from the auction
    * @returns transaction
    */
@@ -285,7 +285,7 @@ class FungiblePool extends Pool {
   /**
    * called by actors to purchase collateral from the auction in exchange for quote token with otption to invoke callback function
    * @param signer taker
-   * @param borrower address of the borower take is being called upon
+   * @param borrower identifies the loan being liquidated
    * @param maxAmount max amount of collateral that will be taken from the auction
    * @param callee identifies where collateral should be sent and where quote token should be obtained
    * @param callData if provided, take will assume the callee implements IERC*Taker. Take will send collateral to
