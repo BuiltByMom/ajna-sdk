@@ -11,6 +11,7 @@ import {
   getErc20PoolContract,
   bucketTake,
   take,
+  settle,
 } from '../contracts/erc20-pool';
 import { Address, CallData, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
@@ -304,6 +305,22 @@ class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await take(contractPoolWithSigner, borrowerAddress, maxAmount, callee, callData);
+  }
+
+  /**
+   *  alled by actors to settle an amount of debt in a completed liquidation.
+   *  @param  borrowerAddress address of the auctioned borrower
+   *  @param  maxDepth  measured from HPB, maximum number of buckets deep to settle debt,
+   *                    used to prevent unbounded iteration clearing large liquidations
+   */
+  async settle(
+    signer: Signer,
+    borrowerAddress: Address,
+    maxDepth: BigNumber = constants.MaxUint256
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await settle(contractPoolWithSigner, borrowerAddress, maxDepth);
   }
 }
 
