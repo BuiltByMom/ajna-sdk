@@ -18,7 +18,7 @@ class AddAccount {
     return new Wallet(key, this.provider);
   };
 
-  addAccountFromKeystore = (keystorePath: string) => {
+  addAccountFromKeystore = (keystorePath: string): Wallet | undefined => {
     // read the keystore file, confirming it exists
     try {
       this.jsonKeystore = fs.readFileSync(keystorePath).toString();
@@ -35,8 +35,12 @@ class AddAccount {
     stdin.resume();
     stdin.setEncoding('utf-8');
     stdin.on('data', (c: string) => this.handleKeystroke(c));
-    return this;
+    return this.getWallet();
   };
+
+  getProvider() {
+    return this.provider;
+  }
 
   getWallet() {
     return this.wallet;
