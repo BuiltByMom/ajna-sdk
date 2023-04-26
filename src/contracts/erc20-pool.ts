@@ -131,16 +131,3 @@ export async function take(
     overrides
   );
 }
-
-export async function settle(
-  contract: Contract,
-  borrowerAddress: Address,
-  maxDepth: BigNumber,
-  overrides?: TransactionOverrides
-) {
-  return await createTransaction(
-    contract,
-    { methodName: 'settle', args: [borrowerAddress, maxDepth] },
-    overrides
-  );
-}

@@ -13,6 +13,7 @@ import {
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
+  settle,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -407,6 +408,22 @@ abstract class Pool {
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0); // 5.004808009710524046 / 0.0002 = 25024
 
     return lup.lte(toWad(tp));
+  }
+
+  /**
+   *  alled by actors to settle an amount of debt in a completed liquidation.
+   *  @param  borrowerAddress address of the auctioned borrower
+   *  @param  maxDepth  measured from HPB, maximum number of buckets deep to settle debt,
+   *                    used to prevent unbounded iteration clearing large liquidations
+   */
+  async settle(
+    signer: Signer,
+    borrowerAddress: Address,
+    maxDepth: BigNumber = constants.MaxUint256
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await settle(contractPoolWithSigner, borrowerAddress, maxDepth);
   }
 }
 

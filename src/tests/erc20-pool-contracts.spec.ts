@@ -584,6 +584,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       let tx = await pool.kick(signerLender, signerBorrower2.address);
       await submitAndVerifyTransaction(tx);
 
+      await expect(async () => {
+        tx = await pool.settle(signerBorrower, signerBorrower2.address);
+        await tx.verify();
+      }).rejects.toThrow('AuctionNotClearable()');
+
       // wait 72 hours
       const jumpTimeSeconds = 72 * 60 * 60; // 72 hours
       await timeJump(provider, jumpTimeSeconds);
