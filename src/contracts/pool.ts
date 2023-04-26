@@ -93,7 +93,7 @@ export async function kick(
 export async function settle(
   contract: Contract,
   borrowerAddress: Address,
-  maxDepth: BigNumber,
+  maxDepth: number,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(
