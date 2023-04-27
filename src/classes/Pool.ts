@@ -73,7 +73,7 @@ export interface Stats {
   actualUtilization: BigNumber;
   /** pool target utilization (TU), related to inverse of collateralization */
   targetUtilization: BigNumber;
-
+  reserves: BigNumber;
   claimableReserves: BigNumber;
   claimableReservesRemaining: BigNumber;
   auctionPrice: BigNumber;
@@ -281,7 +281,7 @@ abstract class Pool {
 
     const [poolSize, loansCount] = data[0];
     const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
-    const [claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
+    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
 
     return {
       poolSize: BigNumber.from(poolSize),
@@ -290,6 +290,7 @@ abstract class Pool {
       collateralization: BigNumber.from(collateralization),
       actualUtilization: BigNumber.from(actualUtilization),
       targetUtilization: BigNumber.from(targetUtilization),
+      reserves: BigNumber.from(reserves),
       claimableReserves: BigNumber.from(claimableReserves),
       claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
       auctionPrice: BigNumber.from(auctionPrice),

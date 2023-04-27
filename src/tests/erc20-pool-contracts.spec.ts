@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { fromWad, toWad } from '../utils/numeric';
+import { toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -18,7 +18,7 @@ jest.setTimeout(1200000);
 
 const COLLATERAL_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
 const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
-const AJNA_TOKEN_ADDRESS = '0xaadebCF61AA7Da0573b524DE57c67aDa797D46c5';
+const AJNA_TOKEN_ADDRESS = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -56,8 +56,9 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const AJNA = getErc20Contract(AJNA_TOKEN_ADDRESS, provider);
     receipt = await AJNA.connect(signerDeployer).transfer(
       signerLender.address,
-      toWad(BigNumber.from('100000000000000000000000'))
+      toWad(BigNumber.from('100000'))
     );
+
     expect(receipt.transactionHash).not.toBe('');
   });
 
@@ -590,7 +591,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     });
   });
 
-  it.only('Claimable reserve auctions', async () => {
+  it('Claimable reserve auctions', async () => {
     const COLLATERAL_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
     const QUOTE_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
 
@@ -692,18 +693,12 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     jumpTimeSeconds = 32 * 60 * 60;
     await timeJump(provider, jumpTimeSeconds);
 
-    // reserve * auctionPrice = aution
     const stats = await pool.getStats();
-    const { auctionPrice, claimableReserves, claimableReservesRemaining } = stats;
-    console.log(
-      'reserves claimablae remaining',
-      fromWad(auctionPrice),
-      fromWad(claimableReserves),
-      fromWad(claimableReservesRemaining)
-    );
+    const { auctionPrice, claimableReservesRemaining } = stats;
+    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice);
 
     // approve ajna tokens
-    tx = await pool.ajnaApprove(signerLender, toWad('100000000000000000000000'));
+    tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
