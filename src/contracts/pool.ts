@@ -90,6 +90,19 @@ export async function kick(
   );
 }
 
+export async function settle(
+  contract: Contract,
+  borrowerAddress: Address,
+  maxDepth: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'settle', args: [borrowerAddress, maxDepth] },
+    overrides
+  );
+}
+
 export async function kickReserveAuction(contract: Contract, overrides?: TransactionOverrides) {
   return await createTransaction(
     contract,

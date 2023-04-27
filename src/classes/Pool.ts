@@ -1,19 +1,21 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { MAX_FENWICK_INDEX } from '../constants';
+import { PoolInfoUtils } from 'types/contracts';
+import { MAX_FENWICK_INDEX, MAX_SETTLE_BUCKETS } from '../constants';
 import { multicall } from '../contracts/common';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
   debtInfo,
   depositIndex,
-  kickWithDeposit,
   kick,
+  kickReserveAuction,
+  kickWithDeposit,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
-  kickReserveAuction,
+  settle,
   takeReserves,
 } from '../contracts/pool';
 import {
@@ -25,7 +27,6 @@ import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
-import { PoolInfoUtils } from 'types/contracts';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -430,9 +431,21 @@ abstract class Pool {
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
-    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0); // 5.004808009710524046 / 0.0002 = 25024
+    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return lup.lte(toWad(tp));
+  }
+
+  /**
+   *  called by actors to settle an amount of debt in a completed liquidation
+   *  @param  borrowerAddress address of the auctioned borrower
+   *  @param  maxDepth  measured from HPB, maximum number of buckets deep to settle debt,
+   *                    used to prevent unbounded iteration clearing large liquidations
+   */
+  async settle(signer: Signer, borrowerAddress: Address, maxDepth = MAX_SETTLE_BUCKETS) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await settle(contractPoolWithSigner, borrowerAddress, maxDepth);
   }
 
   /**

@@ -521,7 +521,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       snapshotId = await takeSnapshot(provider);
     });
 
-    it('should use kick and isKickable ', async () => {
+    it('should use kick and isKickable', async () => {
       const isKickable = await pool.isKickable(signerBorrower2.address);
       expect(isKickable).toBeTruthy();
 
@@ -587,6 +587,23 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
       // take
       tx = await pool.take(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+    });
+
+    it('should use settle', async () => {
+      let tx = await pool.kick(signerLender, signerBorrower2.address);
+      await submitAndVerifyTransaction(tx);
+
+      await expect(async () => {
+        tx = await pool.settle(signerBorrower, signerBorrower2.address);
+        await tx.verify();
+      }).rejects.toThrow('AuctionNotClearable()');
+
+      // wait 72 hours
+      const jumpTimeSeconds = 72 * 60 * 60; // 72 hours
+      await timeJump(provider, jumpTimeSeconds);
+
+      tx = await pool.settle(signerBorrower, signerBorrower2.address);
       await submitAndVerifyTransaction(tx);
     });
   });
