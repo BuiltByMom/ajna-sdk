@@ -13,11 +13,12 @@ jest.setTimeout(1200000);
 const USDC_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const DAI_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f';
+const AJNA_TOKEN_ADDRESS = '0xaadebCF61AA7Da0573b524DE57c67aDa797D46c5';
 const LENDER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
 
 describe('Transaction utils tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
-  const ajna = new AjnaSDK(provider);
+  const ajna = new AjnaSDK(provider, AJNA_TOKEN_ADDRESS);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
 
   it('should return wrapped transaction object', async () => {

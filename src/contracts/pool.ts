@@ -89,3 +89,24 @@ export async function kick(
     overrides
   );
 }
+
+export async function kickReserveAuction(contract: Contract, overrides?: TransactionOverrides) {
+  return await createTransaction(
+    contract,
+    { methodName: 'startClaimableReserveAuction' },
+    overrides
+  );
+}
+
+// TODO: this method returns value and needs transaction return value support
+export async function takeReserves(
+  contract: Contract,
+  maxAmount: BigNumber,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'takeReserves', args: [maxAmount] },
+    overrides
+  );
+}

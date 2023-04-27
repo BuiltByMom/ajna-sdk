@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { toWad } from '../utils/numeric';
+import { fromWad, toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -18,6 +18,7 @@ jest.setTimeout(1200000);
 
 const COLLATERAL_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
 const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
+const AJNA_TOKEN_ADDRESS = '0xaadebCF61AA7Da0573b524DE57c67aDa797D46c5';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -25,7 +26,7 @@ const BORROWER_2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef8
 
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
-  const ajna = new AjnaSDK(provider);
+  const ajna = new AjnaSDK(provider, AJNA_TOKEN_ADDRESS);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerBorrower2 = addAccountFromKey(BORROWER_2_KEY, provider);
@@ -51,6 +52,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       toWad(BigNumber.from('10'))
     );
     expect(receipt.transactionHash).not.toBe('');
+
+    const AJNA = getErc20Contract(AJNA_TOKEN_ADDRESS, provider);
+    receipt = await AJNA.connect(signerDeployer).transfer(
+      signerLender.address,
+      toWad(BigNumber.from('100000000000000000000000'))
+    );
+    expect(receipt.transactionHash).not.toBe('');
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
@@ -58,6 +66,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signerLender,
       COLLATERAL_ADDRESS,
       QUOTE_ADDRESS,
+      // AJNA_TOKEN_ADDRESS,
       toWad('0.05')
     );
 
@@ -579,5 +588,126 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       tx = await pool.take(signerLender, signerBorrower2.address);
       await submitAndVerifyTransaction(tx);
     });
+  });
+
+  it.only('Claimable reserve auctions', async () => {
+    const COLLATERAL_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
+    const QUOTE_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
+
+    let pool: FungiblePool = {} as FungiblePool;
+
+    // Mint tokens to actors
+    const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+    const TOKEN_C = getErc20Contract(COLLATERAL_ADDRESS, provider);
+    const TOKEN_Q = getErc20Contract(QUOTE_ADDRESS, provider); // TWETH
+    const tokenAmount = toWad(BigNumber.from(100000));
+
+    await TOKEN_Q.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
+    await TOKEN_Q.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
+
+    await TOKEN_C.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
+    await TOKEN_C.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
+
+    const borrowerTokenC = await TOKEN_C.balanceOf(signerBorrower.address);
+    const borrowerTokenQ = await TOKEN_Q.balanceOf(signerBorrower.address);
+
+    const lenderTokenC = await TOKEN_C.balanceOf(signerLender.address);
+    const lenderTokenQ = await TOKEN_Q.balanceOf(signerLender.address);
+
+    expect(borrowerTokenC).not.toBe(tokenAmount);
+    expect(borrowerTokenQ).not.toBe(tokenAmount);
+    expect(lenderTokenC).not.toBe(tokenAmount);
+    expect(lenderTokenQ).not.toBe(tokenAmount);
+
+    // Deploy pool
+    let tx = await ajna.factory.deployPool(
+      signerLender,
+      COLLATERAL_ADDRESS,
+      QUOTE_ADDRESS,
+      toWad('0.05')
+    );
+
+    await tx.submit();
+
+    pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
+
+    expect(pool.poolAddress).not.toBe(constants.AddressZero);
+    expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
+    expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+
+    // Lender adds quote
+    const quoteAmount = toWad(50000);
+    // ETH/DAI (collateral / quote)
+    const bucketIndex = 2632; // price 2000
+    const allowance = toWad(1000000);
+
+    tx = await pool.quoteApprove(signerLender, allowance);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
+    expect(info.lpBalance?.gt(0)).toBeTruthy();
+
+    // draw debt
+    const amountToBorrow = toWad(1000);
+    const collateralToPledge = toWad(100);
+
+    tx = await pool.collateralApprove(signerBorrower, allowance);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    // wait year (8760 hours)
+    let jumpTimeSeconds = 8760 * 60 * 60;
+    await timeJump(provider, jumpTimeSeconds);
+
+    // check and repay debt, expected debt value around 1053
+    const repayDebtAmountInQuote = toWad(1100);
+
+    let debtInfo = await pool.debtInfo();
+    expect(debtInfo.pendingDebt.lt(repayDebtAmountInQuote)).toBeTruthy();
+
+    tx = await pool.quoteApprove(signerBorrower, allowance);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
+    await submitAndVerifyTransaction(tx);
+
+    // check debt info index
+    debtInfo = await pool.debtInfo();
+    expect(debtInfo.pendingDebt.eq(toWad(0))).toBeTruthy();
+
+    // reserves info?
+
+    // kick auction
+    tx = await pool.kickReserveAuction(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    // wait 32 hours
+    jumpTimeSeconds = 32 * 60 * 60;
+    await timeJump(provider, jumpTimeSeconds);
+
+    // reserve * auctionPrice = aution
+    const stats = await pool.getStats();
+    const { auctionPrice, claimableReserves, claimableReservesRemaining } = stats;
+    console.log(
+      'reserves claimablae remaining',
+      fromWad(auctionPrice),
+      fromWad(claimableReserves),
+      fromWad(claimableReservesRemaining)
+    );
+
+    // approve ajna tokens
+    tx = await pool.ajnaApprove(signerLender, toWad('100000000000000000000000'));
+    await tx.verifyAndSubmit();
+
+    // take collateral and burn Ajna
+    tx = await pool.takeReserves(signerLender);
+    await submitAndVerifyTransaction(tx);
   });
 });

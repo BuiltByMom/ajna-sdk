@@ -13,6 +13,8 @@ import {
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
+  kickReserveAuction,
+  takeReserves,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -71,6 +73,10 @@ export interface Stats {
   actualUtilization: BigNumber;
   /** pool target utilization (TU), related to inverse of collateralization */
   targetUtilization: BigNumber;
+
+  claimableReserves: BigNumber;
+  claimableReservesRemaining: BigNumber;
+  auctionPrice: BigNumber;
 }
 
 /**
@@ -82,9 +88,10 @@ abstract class Pool {
   contractMulti: ContractMulti;
   contractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
-  poolAddress: string;
-  quoteAddress: string;
-  collateralAddress: string;
+  poolAddress: Address;
+  quoteAddress: Address;
+  collateralAddress: Address;
+  ajnaAddress: Address;
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
 
@@ -93,6 +100,7 @@ abstract class Pool {
     poolAddress: string,
     collateralAddress: string,
     quoteAddress: string,
+    ajnaAddress: string,
     contract: Contract,
     contractMulti: ContractMulti
   ) {
@@ -103,6 +111,7 @@ abstract class Pool {
     this.utils = new PoolUtils(provider as Provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
+    this.ajnaAddress = ajnaAddress;
     this.ethcallProvider = {} as ProviderMulti;
     this.contract = contract;
     this.contractMulti = contractMulti;
@@ -111,6 +120,16 @@ abstract class Pool {
   async initialize() {
     this.ethcallProvider = new ProviderMulti();
     await this.ethcallProvider.init(this.provider as Provider);
+  }
+
+  /**
+   * approve this pool to manage Ajna token
+   * @param signer pool user
+   * @param allowance approval amount (or MaxUint256)
+   * @returns transaction
+   */
+  async ajnaApprove(signer: Signer, allowance: BigNumber) {
+    return await approve(signer, this.poolAddress, this.ajnaAddress, allowance);
   }
 
   /**
@@ -253,13 +272,16 @@ abstract class Pool {
   async getStats(): Promise<Stats> {
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
+    const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
     const data: string[] = await this.ethcallProvider.all([
       poolLoansInfoCall,
       poolUtilizationInfoCall,
+      poolReservesInfo,
     ]);
 
     const [poolSize, loansCount] = data[0];
     const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
+    const [claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
 
     return {
       poolSize: BigNumber.from(poolSize),
@@ -268,6 +290,9 @@ abstract class Pool {
       collateralization: BigNumber.from(collateralization),
       actualUtilization: BigNumber.from(actualUtilization),
       targetUtilization: BigNumber.from(targetUtilization),
+      claimableReserves: BigNumber.from(claimableReserves),
+      claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
+      auctionPrice: BigNumber.from(auctionPrice),
     };
   }
 
@@ -407,6 +432,27 @@ abstract class Pool {
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0); // 5.004808009710524046 / 0.0002 = 25024
 
     return lup.lte(toWad(tp));
+  }
+
+  /**
+   * called by actor to start a `Claimable Reserve Auction` (`CRA`).
+   * @returns fenwick index
+   */
+  async kickReserveAuction(signer: Signer) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await kickReserveAuction(contractPoolWithSigner);
+  }
+
+  /**
+   *  purchases claimable reserves during a `CRA` using `Ajna` token.
+   *  @param maxAmount maximum amount of quote token to purchase at the current auction price.
+   *  @return actual amount of reserves taken.
+   */
+  async takeReserves(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await takeReserves(contractPoolWithSigner, maxAmount);
   }
 }
 

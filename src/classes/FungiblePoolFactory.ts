@@ -8,8 +8,12 @@ import { BigNumber, Signer, utils } from 'ethers';
  * Factory used to find or create pools with ERC20 collateral.
  */
 class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
-  constructor(signerOrProvider: SignerOrProvider) {
+  private ajnaAddress: Address;
+
+  constructor(signerOrProvider: SignerOrProvider, ajnaAddress: Address) {
     super(signerOrProvider);
+
+    this.ajnaAddress = ajnaAddress;
   }
 
   /**
@@ -42,7 +46,8 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
       this.getProvider(),
       poolAddress,
       collateralAddress,
-      quoteAddress
+      quoteAddress,
+      this.ajnaAddress
     );
 
     return newPool;
