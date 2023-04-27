@@ -67,7 +67,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       signerLender,
       COLLATERAL_ADDRESS,
       QUOTE_ADDRESS,
-      // AJNA_TOKEN_ADDRESS,
       toWad('0.05')
     );
 
@@ -699,8 +698,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     // check debt info index
     debtInfo = await pool.debtInfo();
     expect(debtInfo.pendingDebt.eq(toWad(0))).toBeTruthy();
-
-    // reserves info?
 
     // kick auction
     tx = await pool.kickReserveAuction(signerLender);
