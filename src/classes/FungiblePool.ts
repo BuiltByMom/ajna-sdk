@@ -31,15 +31,17 @@ export interface LoanEstimate extends Loan {
 class FungiblePool extends Pool {
   constructor(
     provider: SignerOrProvider,
-    poolAddress: string,
-    collateralAddress: string,
-    quoteAddress: string
+    poolAddress: Address,
+    collateralAddress: Address,
+    quoteAddress: Address,
+    ajnaAddress: Address
   ) {
     super(
       provider,
       poolAddress,
       collateralAddress,
       quoteAddress,
+      ajnaAddress,
       getErc20PoolContract(poolAddress, provider),
       getErc20PoolContractMulti(poolAddress)
     );

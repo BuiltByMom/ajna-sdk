@@ -1,5 +1,6 @@
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
+import { Config } from '../classes/Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 import { BigNumber, Signer, utils } from 'ethers';
@@ -42,7 +43,8 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
       this.getProvider(),
       poolAddress,
       collateralAddress,
-      quoteAddress
+      quoteAddress,
+      Config.ajnaToken
     );
 
     return newPool;

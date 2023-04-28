@@ -6,11 +6,12 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { toWad } from '../utils/numeric';
+import { toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
+import { Config } from '../constants';
 
 dotenv.config();
 
@@ -600,5 +601,109 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       tx = await pool.settle(signerBorrower, signerBorrower2.address);
       await submitAndVerifyTransaction(tx);
     });
+  });
+
+  it('should kick and participate in claimable reserve auction', async () => {
+    const COLLATERAL_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
+    const QUOTE_ADDRESS = '0x6bc99fa34d0076377731049695180e53bcdd767f';
+
+    let pool: FungiblePool = {} as FungiblePool;
+
+    // Mint tokens to actors
+    const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+    const TOKEN_C = getErc20Contract(COLLATERAL_ADDRESS, provider);
+    const TOKEN_Q = getErc20Contract(QUOTE_ADDRESS, provider); // TWETH
+    const TOKEN_AJNA = getErc20Contract(Config.ajnaToken, provider);
+    const tokenAmount = toWad(BigNumber.from(100000));
+
+    await TOKEN_Q.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
+    await TOKEN_Q.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
+
+    await TOKEN_C.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
+    await TOKEN_C.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
+
+    await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
+    // Deploy pool
+    let tx = await ajna.factory.deployPool(
+      signerLender,
+      COLLATERAL_ADDRESS,
+      QUOTE_ADDRESS,
+      toWad('0.05')
+    );
+    await tx.submit();
+
+    pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
+
+    expect(pool.poolAddress).not.toBe(constants.AddressZero);
+    expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
+    expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+
+    // Lender adds quote
+    const quoteAmount = toWad(50000);
+    // ETH/DAI (collateral / quote)
+    const bucketIndex = 2632; // price 2000
+    const allowance = toWad(1000000);
+
+    tx = await pool.quoteApprove(signerLender, allowance);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
+    expect(info.lpBalance?.gt(0)).toBeTruthy();
+
+    // draw debt
+    const amountToBorrow = toWad(1000);
+    const collateralToPledge = toWad(100);
+
+    tx = await pool.collateralApprove(signerBorrower, allowance);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
+    await submitAndVerifyTransaction(tx);
+
+    // wait year (8760 hours)
+    let jumpTimeSeconds = 8760 * 60 * 60;
+    await timeJump(provider, jumpTimeSeconds);
+
+    // check and repay debt, expected debt value around 1053
+    const repayDebtAmountInQuote = toWad(1100);
+
+    let debtInfo = await pool.debtInfo();
+    expect(debtInfo.pendingDebt.lt(repayDebtAmountInQuote)).toBeTruthy();
+
+    tx = await pool.quoteApprove(signerBorrower, allowance);
+    await tx.verifyAndSubmit();
+
+    tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
+    await submitAndVerifyTransaction(tx);
+
+    // check debt info index
+    debtInfo = await pool.debtInfo();
+    expect(debtInfo.pendingDebt.eq(toWad(0))).toBeTruthy();
+
+    // kick auction
+    tx = await pool.kickReserveAuction(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    // wait 32 hours
+    jumpTimeSeconds = 32 * 60 * 60;
+    await timeJump(provider, jumpTimeSeconds);
+
+    // approve ajna tokens
+    const stats = await pool.getStats();
+    const { auctionPrice, claimableReservesRemaining } = stats;
+    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice).add(toWad(1));
+
+    tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
+    await tx.verifyAndSubmit();
+
+    // take collateral and burn Ajna
+    tx = await pool.takeAndBurn(signerLender);
+    await submitAndVerifyTransaction(tx);
   });
 });

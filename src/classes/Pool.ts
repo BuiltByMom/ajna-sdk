@@ -1,5 +1,6 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { PoolInfoUtils } from 'types/contracts';
 import { MAX_FENWICK_INDEX, MAX_SETTLE_BUCKETS } from '../constants';
 import { multicall } from '../contracts/common';
 import { approve } from '../contracts/erc20-pool';
@@ -7,13 +8,15 @@ import {
   addQuoteToken,
   debtInfo,
   depositIndex,
-  kickWithDeposit,
   kick,
+  kickReserveAuction,
+  kickWithDeposit,
   lenderInfo,
   loansInfo,
   moveQuoteToken,
   removeQuoteToken,
   settle,
+  takeReserves,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -24,7 +27,6 @@ import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
-import { PoolInfoUtils } from 'types/contracts';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -72,6 +74,14 @@ export interface Stats {
   actualUtilization: BigNumber;
   /** pool target utilization (TU), related to inverse of collateralization */
   targetUtilization: BigNumber;
+  /** the amount of excess quote tokens */
+  reserves: BigNumber;
+  /** denominated in quote token, or `0` if no reserves can be auctioned */
+  claimableReserves: BigNumber;
+  /** amount of claimable reserves which has not yet been taken */
+  claimableReservesRemaining: BigNumber;
+  /** current price at which `1` quote token may be purchased, denominated in `Ajna` */
+  auctionPrice: BigNumber;
 }
 
 /**
@@ -83,9 +93,10 @@ abstract class Pool {
   contractMulti: ContractMulti;
   contractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
-  poolAddress: string;
-  quoteAddress: string;
-  collateralAddress: string;
+  poolAddress: Address;
+  quoteAddress: Address;
+  collateralAddress: Address;
+  ajnaAddress: Address;
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
 
@@ -94,6 +105,7 @@ abstract class Pool {
     poolAddress: string,
     collateralAddress: string,
     quoteAddress: string,
+    ajnaAddress: string,
     contract: Contract,
     contractMulti: ContractMulti
   ) {
@@ -104,6 +116,7 @@ abstract class Pool {
     this.utils = new PoolUtils(provider as Provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
+    this.ajnaAddress = ajnaAddress;
     this.ethcallProvider = {} as ProviderMulti;
     this.contract = contract;
     this.contractMulti = contractMulti;
@@ -112,6 +125,16 @@ abstract class Pool {
   async initialize() {
     this.ethcallProvider = new ProviderMulti();
     await this.ethcallProvider.init(this.provider as Provider);
+  }
+
+  /**
+   * approve this pool to manage Ajna token
+   * @param signer pool user
+   * @param allowance approval amount (or MaxUint256)
+   * @returns transaction
+   */
+  async ajnaApprove(signer: Signer, allowance: BigNumber) {
+    return await approve(signer, this.poolAddress, this.ajnaAddress, allowance);
   }
 
   /**
@@ -254,13 +277,16 @@ abstract class Pool {
   async getStats(): Promise<Stats> {
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
+    const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
     const data: string[] = await this.ethcallProvider.all([
       poolLoansInfoCall,
       poolUtilizationInfoCall,
+      poolReservesInfo,
     ]);
 
     const [poolSize, loansCount] = data[0];
     const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
+    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
 
     return {
       poolSize: BigNumber.from(poolSize),
@@ -269,6 +295,10 @@ abstract class Pool {
       collateralization: BigNumber.from(collateralization),
       actualUtilization: BigNumber.from(actualUtilization),
       targetUtilization: BigNumber.from(targetUtilization),
+      reserves: BigNumber.from(reserves),
+      claimableReserves: BigNumber.from(claimableReserves),
+      claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
+      auctionPrice: BigNumber.from(auctionPrice),
     };
   }
 
@@ -401,7 +431,7 @@ abstract class Pool {
 
     const [, , , , lup] = response[0];
     const [debt, collateral] = response[1];
-    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0); // 5.004808009710524046 / 0.0002 = 25024
+    const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return lup.lte(toWad(tp));
   }
@@ -416,6 +446,27 @@ abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await settle(contractPoolWithSigner, borrowerAddress, maxDepth);
+  }
+
+  /**
+   * called by actor to start a `Claimable Reserve Auction` (`CRA`).
+   * @returns fenwick index
+   */
+  async kickReserveAuction(signer: Signer) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await kickReserveAuction(contractPoolWithSigner);
+  }
+
+  /**
+   *  purchases claimable reserves during a `CRA` using `Ajna` token.
+   *  @param maxAmount maximum amount of quote token to purchase at the current auction price.
+   *  @return actual amount of reserves taken.
+   */
+  async takeAndBurn(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await takeReserves(contractPoolWithSigner, maxAmount);
   }
 }
 
