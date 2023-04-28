@@ -74,9 +74,13 @@ export interface Stats {
   actualUtilization: BigNumber;
   /** pool target utilization (TU), related to inverse of collateralization */
   targetUtilization: BigNumber;
+  /** pool total quote token reserves */
   reserves: BigNumber;
+  /** pool total quote token reserves available for clam through claimable auction */
   claimableReserves: BigNumber;
+  /** pool remaining quote token reserves available for clam through claimable auction */
   claimableReservesRemaining: BigNumber;
+  /** price of quote token available for clam through claimable auction */
   auctionPrice: BigNumber;
 }
 
