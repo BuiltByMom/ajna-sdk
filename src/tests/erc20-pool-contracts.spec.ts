@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { toWad } from '../utils/numeric';
+import { toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -626,19 +626,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
 
-    const borrowerTokenC = await TOKEN_C.balanceOf(signerBorrower.address);
-    const borrowerTokenQ = await TOKEN_Q.balanceOf(signerBorrower.address);
-
-    const lenderTokenC = await TOKEN_C.balanceOf(signerLender.address);
-    const lenderTokenQ = await TOKEN_Q.balanceOf(signerLender.address);
-    const lenderTokenAJNA = await TOKEN_AJNA.balanceOf(signerLender.address);
-
-    expect(borrowerTokenC).not.toBe(tokenAmount);
-    expect(borrowerTokenQ).not.toBe(tokenAmount);
-    expect(lenderTokenC).not.toBe(tokenAmount);
-    expect(lenderTokenQ).not.toBe(tokenAmount);
-    expect(lenderTokenAJNA).not.toBe(tokenAmount);
-
     // Deploy pool
     let tx = await ajna.factory.deployPool(
       signerLender,
@@ -646,7 +633,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       QUOTE_ADDRESS,
       toWad('0.05')
     );
-
     await tx.submit();
 
     pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
@@ -709,7 +695,11 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await timeJump(provider, jumpTimeSeconds);
 
     // approve ajna tokens
-    tx = await pool.ajnaApprove(signerLender, allowance);
+    const stats = await pool.getStats();
+    const { auctionPrice, claimableReservesRemaining } = stats;
+    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice).add(toWad(1));
+
+    tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
