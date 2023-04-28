@@ -1,4 +1,4 @@
-import { Address, Provider } from '../types';
+import { Provider } from '../types';
 import { FungiblePoolFactory } from './FungiblePoolFactory';
 
 class AjnaSDK {
@@ -6,9 +6,9 @@ class AjnaSDK {
   // TODO: SDK should offer both factories, with addresses loaded from configuration, not as args.
   factory: FungiblePoolFactory;
 
-  constructor(provider: Provider, ajnaAddress: Address) {
+  constructor(provider: Provider) {
     this.provider = provider;
-    this.factory = new FungiblePoolFactory(provider, ajnaAddress);
+    this.factory = new FungiblePoolFactory(provider);
   }
 }
 

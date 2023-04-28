@@ -1,5 +1,6 @@
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
+import { Config } from '../classes/Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 import { BigNumber, Signer, utils } from 'ethers';
@@ -8,12 +9,8 @@ import { BigNumber, Signer, utils } from 'ethers';
  * Factory used to find or create pools with ERC20 collateral.
  */
 class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
-  private ajnaAddress: Address;
-
-  constructor(signerOrProvider: SignerOrProvider, ajnaAddress: Address) {
+  constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
-
-    this.ajnaAddress = ajnaAddress;
   }
 
   /**
@@ -47,7 +44,7 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
       poolAddress,
       collateralAddress,
       quoteAddress,
-      this.ajnaAddress
+      Config.ajnaToken
     );
 
     return newPool;

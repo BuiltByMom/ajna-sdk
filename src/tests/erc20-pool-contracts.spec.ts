@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { toWad, wmul } from '../utils/numeric';
+import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -18,7 +18,6 @@ jest.setTimeout(1200000);
 
 const COLLATERAL_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
 const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
-const AJNA_TOKEN_ADDRESS = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -26,7 +25,7 @@ const BORROWER_2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef8
 
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
-  const ajna = new AjnaSDK(provider, AJNA_TOKEN_ADDRESS);
+  const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerBorrower2 = addAccountFromKey(BORROWER_2_KEY, provider);
@@ -53,7 +52,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     );
     expect(receipt.transactionHash).not.toBe('');
 
-    const AJNA = getErc20Contract(AJNA_TOKEN_ADDRESS, provider);
+    const AJNA = getErc20Contract(config.AJNA_TOKEN_ADDRESS, provider);
     receipt = await AJNA.connect(signerDeployer).transfer(
       signerLender.address,
       toWad(BigNumber.from('100000'))
@@ -607,7 +606,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     });
   });
 
-  it('Claimable reserve auctions', async () => {
+  it('should kick and participate in claimable reserve auction', async () => {
     const COLLATERAL_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
     const QUOTE_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
 
@@ -707,12 +706,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     jumpTimeSeconds = 32 * 60 * 60;
     await timeJump(provider, jumpTimeSeconds);
 
-    const stats = await pool.getStats();
-    const { auctionPrice, claimableReservesRemaining } = stats;
-    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice);
-
     // approve ajna tokens
-    tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
+    tx = await pool.ajnaApprove(signerLender, allowance);
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna

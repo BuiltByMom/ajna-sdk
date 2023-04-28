@@ -4,6 +4,7 @@ export const TEST_CONFIG = {
   ETH_RPC_URL: 'http://0.0.0.0:8555',
   COLLATERAL_ADDRESS: '0x97112a824376a2672a61c63c1c20cb4ee5855bc7',
   QUOTE_ADDRESS: '0xc91261159593173b5d82e1024c3e3529e945dc28',
+  AJNA_TOKEN_ADDRESS: '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d',
   DEPLOYER: '0xeeDC2EE00730314b7d7ddBf7d19e81FB7E5176CA',
   DEPLOYER_KEY: '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8',
   LENDER: '0xbC33716Bb8Dc2943C0dFFdE1F0A1d2D66F33515E',
@@ -15,9 +16,11 @@ export const TEST_CONFIG = {
 const erc20PoolFactoryAddress = '0xaCBDae8801983605EFC40f48812f7efF797504da';
 const erc721PoolFactoryAddress = '0xC01c2D208ebaA1678F14818Db7A698F11cd0B6AB';
 const poolUtilsAddress = '0x325Cf36179A4d55F09bE9d3C2E1f4337d49A9f2b';
+const ajnaTokenAddress = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
 
 export const testnetAddresses = new Config(
   erc20PoolFactoryAddress,
   erc721PoolFactoryAddress,
-  poolUtilsAddress
+  poolUtilsAddress,
+  ajnaTokenAddress
 );
