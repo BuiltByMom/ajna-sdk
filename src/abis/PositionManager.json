@@ -102,7 +102,9 @@
       { "type": "address", "name": "lender", "indexed": true },
       { "type": "uint256", "name": "tokenId", "indexed": false },
       { "type": "uint256", "name": "fromIndex", "indexed": false },
-      { "type": "uint256", "name": "toIndex", "indexed": false }
+      { "type": "uint256", "name": "toIndex", "indexed": false },
+      { "type": "uint256", "name": "lpRedeemedFrom", "indexed": false },
+      { "type": "uint256", "name": "lpAwardedTo", "indexed": false }
     ]
   },
   {
@@ -191,7 +193,7 @@
   },
   {
     "type": "function",
-    "name": "getLPs",
+    "name": "getLP",
     "constant": true,
     "stateMutability": "view",
     "payable": false,

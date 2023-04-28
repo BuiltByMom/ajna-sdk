@@ -24,6 +24,11 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'DeployQuoteCollateralSameToken',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'DeployWithZeroAddress',
     inputs: [],
   },

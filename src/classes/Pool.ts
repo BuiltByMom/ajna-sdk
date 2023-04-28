@@ -317,21 +317,17 @@ abstract class Pool {
 
     // info contract multicall to get htp and calculate token amounts for LPB
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const lpsToQuoteCall = this.contractUtilsMulti.lpsToQuoteTokens(
+    const lpToQuoteCall = this.contractUtilsMulti.lpToQuoteTokens(
       this.poolAddress,
       lpBalance,
       bucketIndex
     );
-    const lpsToCollateralCall = this.contractUtilsMulti.lpsToCollateral(
+    const lpToCollateralCall = this.contractUtilsMulti.lpToCollateral(
       this.poolAddress,
       lpBalance,
       bucketIndex
     );
-    data = await this.ethcallProvider.all([
-      poolPricesInfoCall,
-      lpsToQuoteCall,
-      lpsToCollateralCall,
-    ]);
+    data = await this.ethcallProvider.all([poolPricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
     const [, , , htpIndex] = data[0];
     const depositRedeemable = data[1];
     const collateralRedeemable = data[2];

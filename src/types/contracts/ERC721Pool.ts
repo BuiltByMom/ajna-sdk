@@ -27,7 +27,7 @@ export interface ERC721PoolInterface extends utils.Interface {
   functions: {
     'addCollateral(uint256[],uint256,uint256)': FunctionFragment;
     'addQuoteToken(uint256,uint256,uint256)': FunctionFragment;
-    'approveLpTransferors(address[])': FunctionFragment;
+    'approveLPTransferors(address[])': FunctionFragment;
     'approvedTransferors(address,address)': FunctionFragment;
     'auctionInfo(address)': FunctionFragment;
     'borrowerInfo(address)': FunctionFragment;
@@ -42,7 +42,9 @@ export interface ERC721PoolInterface extends utils.Interface {
     'debtInfo()': FunctionFragment;
     'decreaseLPAllowance(address,uint256[],uint256[])': FunctionFragment;
     'depositIndex(uint256)': FunctionFragment;
+    'depositScale(uint256)': FunctionFragment;
     'depositSize()': FunctionFragment;
+    'depositUpToIndex(uint256)': FunctionFragment;
     'depositUtilization()': FunctionFragment;
     'drawDebt(address,uint256,uint256,uint256[])': FunctionFragment;
     'emasInfo()': FunctionFragment;
@@ -54,6 +56,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     'interestRateInfo()': FunctionFragment;
     'isSubset()': FunctionFragment;
     'kick(address,uint256)': FunctionFragment;
+    'kickReserveAuction()': FunctionFragment;
     'kickWithDeposit(uint256,uint256)': FunctionFragment;
     'kickerInfo(address)': FunctionFragment;
     'lenderInfo(uint256,address)': FunctionFragment;
@@ -74,17 +77,18 @@ export interface ERC721PoolInterface extends utils.Interface {
     'repayDebt(address,uint256,uint256,address,uint256)': FunctionFragment;
     'reservesInfo()': FunctionFragment;
     'revokeLPAllowance(address,uint256[])': FunctionFragment;
-    'revokeLpTransferors(address[])': FunctionFragment;
+    'revokeLPTransferors(address[])': FunctionFragment;
     'settle(address,uint256)': FunctionFragment;
     'stampLoan()': FunctionFragment;
-    'startClaimableReserveAuction()': FunctionFragment;
     'take(address,uint256,address,bytes)': FunctionFragment;
     'takeReserves(uint256)': FunctionFragment;
     'tokenIdsAllowed(uint256)': FunctionFragment;
     'totalAuctionsInPool()': FunctionFragment;
+    'totalBorrowerTokens(address)': FunctionFragment;
+    'totalBucketTokens()': FunctionFragment;
     'totalT0Debt()': FunctionFragment;
     'totalT0DebtInAuction()': FunctionFragment;
-    'transferLPs(address,address,uint256[])': FunctionFragment;
+    'transferLP(address,address,uint256[])': FunctionFragment;
     'updateInterest()': FunctionFragment;
     'withdrawBonds(address,uint256)': FunctionFragment;
   };
@@ -93,7 +97,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | 'addCollateral'
       | 'addQuoteToken'
-      | 'approveLpTransferors'
+      | 'approveLPTransferors'
       | 'approvedTransferors'
       | 'auctionInfo'
       | 'borrowerInfo'
@@ -108,7 +112,9 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'debtInfo'
       | 'decreaseLPAllowance'
       | 'depositIndex'
+      | 'depositScale'
       | 'depositSize'
+      | 'depositUpToIndex'
       | 'depositUtilization'
       | 'drawDebt'
       | 'emasInfo'
@@ -120,6 +126,7 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'interestRateInfo'
       | 'isSubset'
       | 'kick'
+      | 'kickReserveAuction'
       | 'kickWithDeposit'
       | 'kickerInfo'
       | 'lenderInfo'
@@ -140,17 +147,18 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'repayDebt'
       | 'reservesInfo'
       | 'revokeLPAllowance'
-      | 'revokeLpTransferors'
+      | 'revokeLPTransferors'
       | 'settle'
       | 'stampLoan'
-      | 'startClaimableReserveAuction'
       | 'take'
       | 'takeReserves'
       | 'tokenIdsAllowed'
       | 'totalAuctionsInPool'
+      | 'totalBorrowerTokens'
+      | 'totalBucketTokens'
       | 'totalT0Debt'
       | 'totalT0DebtInAuction'
-      | 'transferLPs'
+      | 'transferLP'
       | 'updateInterest'
       | 'withdrawBonds'
   ): FunctionFragment;
@@ -172,7 +180,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: 'approveLpTransferors',
+    functionFragment: 'approveLPTransferors',
     values: [PromiseOrValue<string>[]]
   ): string;
   encodeFunctionData(
@@ -213,7 +221,15 @@ export interface ERC721PoolInterface extends utils.Interface {
     functionFragment: 'depositIndex',
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: 'depositScale',
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(functionFragment: 'depositSize', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'depositUpToIndex',
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(functionFragment: 'depositUtilization', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'drawDebt',
@@ -253,6 +269,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     functionFragment: 'kick',
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(functionFragment: 'kickReserveAuction', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'kickWithDeposit',
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
@@ -316,7 +333,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
-    functionFragment: 'revokeLpTransferors',
+    functionFragment: 'revokeLPTransferors',
     values: [PromiseOrValue<string>[]]
   ): string;
   encodeFunctionData(
@@ -324,7 +341,6 @@ export interface ERC721PoolInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: 'stampLoan', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'startClaimableReserveAuction', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'take',
     values: [
@@ -343,10 +359,15 @@ export interface ERC721PoolInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: 'totalAuctionsInPool', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'totalBorrowerTokens',
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(functionFragment: 'totalBucketTokens', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0Debt', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0DebtInAuction', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: 'transferLPs',
+    functionFragment: 'transferLP',
     values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(functionFragment: 'updateInterest', values?: undefined): string;
@@ -357,7 +378,7 @@ export interface ERC721PoolInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: 'addCollateral', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'addQuoteToken', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'approveLpTransferors', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'approveLPTransferors', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'approvedTransferors', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'auctionInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'borrowerInfo', data: BytesLike): Result;
@@ -372,7 +393,9 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'debtInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'decreaseLPAllowance', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'depositIndex', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'depositScale', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'depositSize', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'depositUpToIndex', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'depositUtilization', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'drawDebt', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'emasInfo', data: BytesLike): Result;
@@ -384,6 +407,7 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'interestRateInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isSubset', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kick', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'kickReserveAuction', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kickWithDeposit', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kickerInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lenderInfo', data: BytesLike): Result;
@@ -404,32 +428,37 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'repayDebt', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'reservesInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'revokeLPAllowance', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'revokeLpTransferors', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'revokeLPTransferors', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'settle', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'stampLoan', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'startClaimableReserveAuction', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'take', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'takeReserves', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'tokenIdsAllowed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalAuctionsInPool', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'totalBorrowerTokens', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'totalBucketTokens', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalT0Debt', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalT0DebtInAuction', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'transferLPs', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'transferLP', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'updateInterest', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'withdrawBonds', data: BytesLike): Result;
 
   events: {
     'AddCollateralNFT(address,uint256,uint256[],uint256)': EventFragment;
     'AddQuoteToken(address,uint256,uint256,uint256,uint256)': EventFragment;
-    'ApproveLpTransferors(address,address[])': EventFragment;
+    'ApproveLPTransferors(address,address[])': EventFragment;
     'AuctionNFTSettle(address,uint256,uint256,uint256)': EventFragment;
     'AuctionSettle(address,uint256)': EventFragment;
     'BondWithdrawn(address,address,uint256)': EventFragment;
     'BucketBankruptcy(uint256,uint256)': EventFragment;
     'BucketTake(address,uint256,uint256,uint256,uint256,bool)': EventFragment;
     'BucketTakeLPAwarded(address,address,uint256,uint256)': EventFragment;
+    'DecreaseLPAllowance(address,address,uint256[],uint256[])': EventFragment;
     'DrawDebtNFT(address,uint256,uint256[],uint256)': EventFragment;
+    'Flashloan(address,address,uint256)': EventFragment;
+    'IncreaseLPAllowance(address,address,uint256[],uint256[])': EventFragment;
     'Kick(address,uint256,uint256,uint256)': EventFragment;
+    'KickReserveAuction(uint256,uint256,uint256)': EventFragment;
     'LoanStamped(address)': EventFragment;
     'MergeOrRemoveCollateralNFT(address,uint256,uint256)': EventFragment;
     'MoveQuoteToken(address,uint256,uint256,uint256,uint256,uint256,uint256)': EventFragment;
@@ -437,26 +466,30 @@ export interface ERC721PoolInterface extends utils.Interface {
     'RemoveQuoteToken(address,uint256,uint256,uint256,uint256)': EventFragment;
     'RepayDebt(address,uint256,uint256,uint256)': EventFragment;
     'ReserveAuction(uint256,uint256,uint256)': EventFragment;
-    'RevokeLpAllowance(address,uint256[])': EventFragment;
-    'RevokeLpTransferors(address,address[])': EventFragment;
-    'SetLpAllowance(address,uint256[],uint256[])': EventFragment;
+    'ResetInterestRate(uint256,uint256)': EventFragment;
+    'RevokeLPAllowance(address,address,uint256[])': EventFragment;
+    'RevokeLPTransferors(address,address[])': EventFragment;
     'Settle(address,uint256)': EventFragment;
     'Take(address,uint256,uint256,uint256,bool)': EventFragment;
-    'TransferLPs(address,address,uint256[],uint256)': EventFragment;
+    'TransferLP(address,address,uint256[],uint256)': EventFragment;
     'UpdateInterestRate(uint256,uint256)': EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: 'AddCollateralNFT'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'AddQuoteToken'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'ApproveLpTransferors'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'ApproveLPTransferors'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'AuctionNFTSettle'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'AuctionSettle'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'BondWithdrawn'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'BucketBankruptcy'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'BucketTake'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'BucketTakeLPAwarded'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'DecreaseLPAllowance'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'DrawDebtNFT'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Flashloan'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'IncreaseLPAllowance'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Kick'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'KickReserveAuction'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'LoanStamped'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'MergeOrRemoveCollateralNFT'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'MoveQuoteToken'): EventFragment;
@@ -464,12 +497,12 @@ export interface ERC721PoolInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: 'RemoveQuoteToken'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'RepayDebt'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'ReserveAuction'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'RevokeLpAllowance'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'RevokeLpTransferors'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'SetLpAllowance'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'ResetInterestRate'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'RevokeLPAllowance'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'RevokeLPTransferors'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Settle'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Take'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'TransferLPs'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'TransferLP'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'UpdateInterestRate'): EventFragment;
 }
 
@@ -500,21 +533,21 @@ export type AddQuoteTokenEvent = TypedEvent<
 
 export type AddQuoteTokenEventFilter = TypedEventFilter<AddQuoteTokenEvent>;
 
-export interface ApproveLpTransferorsEventObject {
+export interface ApproveLPTransferorsEventObject {
   lender: string;
   transferors: string[];
 }
-export type ApproveLpTransferorsEvent = TypedEvent<
+export type ApproveLPTransferorsEvent = TypedEvent<
   [string, string[]],
-  ApproveLpTransferorsEventObject
+  ApproveLPTransferorsEventObject
 >;
 
-export type ApproveLpTransferorsEventFilter = TypedEventFilter<ApproveLpTransferorsEvent>;
+export type ApproveLPTransferorsEventFilter = TypedEventFilter<ApproveLPTransferorsEvent>;
 
 export interface AuctionNFTSettleEventObject {
   borrower: string;
   collateral: BigNumber;
-  lps: BigNumber;
+  lp: BigNumber;
   index: BigNumber;
 }
 export type AuctionNFTSettleEvent = TypedEvent<
@@ -577,6 +610,19 @@ export type BucketTakeLPAwardedEvent = TypedEvent<
 
 export type BucketTakeLPAwardedEventFilter = TypedEventFilter<BucketTakeLPAwardedEvent>;
 
+export interface DecreaseLPAllowanceEventObject {
+  owner: string;
+  spender: string;
+  indexes: BigNumber[];
+  amounts: BigNumber[];
+}
+export type DecreaseLPAllowanceEvent = TypedEvent<
+  [string, string, BigNumber[], BigNumber[]],
+  DecreaseLPAllowanceEventObject
+>;
+
+export type DecreaseLPAllowanceEventFilter = TypedEventFilter<DecreaseLPAllowanceEvent>;
+
 export interface DrawDebtNFTEventObject {
   borrower: string;
   amountBorrowed: BigNumber;
@@ -590,6 +636,28 @@ export type DrawDebtNFTEvent = TypedEvent<
 
 export type DrawDebtNFTEventFilter = TypedEventFilter<DrawDebtNFTEvent>;
 
+export interface FlashloanEventObject {
+  receiver: string;
+  token: string;
+  amount: BigNumber;
+}
+export type FlashloanEvent = TypedEvent<[string, string, BigNumber], FlashloanEventObject>;
+
+export type FlashloanEventFilter = TypedEventFilter<FlashloanEvent>;
+
+export interface IncreaseLPAllowanceEventObject {
+  owner: string;
+  spender: string;
+  indexes: BigNumber[];
+  amounts: BigNumber[];
+}
+export type IncreaseLPAllowanceEvent = TypedEvent<
+  [string, string, BigNumber[], BigNumber[]],
+  IncreaseLPAllowanceEventObject
+>;
+
+export type IncreaseLPAllowanceEventFilter = TypedEventFilter<IncreaseLPAllowanceEvent>;
+
 export interface KickEventObject {
   borrower: string;
   debt: BigNumber;
@@ -599,6 +667,18 @@ export interface KickEventObject {
 export type KickEvent = TypedEvent<[string, BigNumber, BigNumber, BigNumber], KickEventObject>;
 
 export type KickEventFilter = TypedEventFilter<KickEvent>;
+
+export interface KickReserveAuctionEventObject {
+  claimableReservesRemaining: BigNumber;
+  auctionPrice: BigNumber;
+  currentBurnEpoch: BigNumber;
+}
+export type KickReserveAuctionEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  KickReserveAuctionEventObject
+>;
+
+export type KickReserveAuctionEventFilter = TypedEventFilter<KickReserveAuctionEvent>;
 
 export interface LoanStampedEventObject {
   borrower: string;
@@ -688,39 +768,39 @@ export type ReserveAuctionEvent = TypedEvent<
 
 export type ReserveAuctionEventFilter = TypedEventFilter<ReserveAuctionEvent>;
 
-export interface RevokeLpAllowanceEventObject {
+export interface ResetInterestRateEventObject {
+  oldRate: BigNumber;
+  newRate: BigNumber;
+}
+export type ResetInterestRateEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  ResetInterestRateEventObject
+>;
+
+export type ResetInterestRateEventFilter = TypedEventFilter<ResetInterestRateEvent>;
+
+export interface RevokeLPAllowanceEventObject {
+  owner: string;
   spender: string;
   indexes: BigNumber[];
 }
-export type RevokeLpAllowanceEvent = TypedEvent<
-  [string, BigNumber[]],
-  RevokeLpAllowanceEventObject
+export type RevokeLPAllowanceEvent = TypedEvent<
+  [string, string, BigNumber[]],
+  RevokeLPAllowanceEventObject
 >;
 
-export type RevokeLpAllowanceEventFilter = TypedEventFilter<RevokeLpAllowanceEvent>;
+export type RevokeLPAllowanceEventFilter = TypedEventFilter<RevokeLPAllowanceEvent>;
 
-export interface RevokeLpTransferorsEventObject {
+export interface RevokeLPTransferorsEventObject {
   lender: string;
   transferors: string[];
 }
-export type RevokeLpTransferorsEvent = TypedEvent<
+export type RevokeLPTransferorsEvent = TypedEvent<
   [string, string[]],
-  RevokeLpTransferorsEventObject
+  RevokeLPTransferorsEventObject
 >;
 
-export type RevokeLpTransferorsEventFilter = TypedEventFilter<RevokeLpTransferorsEvent>;
-
-export interface SetLpAllowanceEventObject {
-  spender: string;
-  indexes: BigNumber[];
-  amounts: BigNumber[];
-}
-export type SetLpAllowanceEvent = TypedEvent<
-  [string, BigNumber[], BigNumber[]],
-  SetLpAllowanceEventObject
->;
-
-export type SetLpAllowanceEventFilter = TypedEventFilter<SetLpAllowanceEvent>;
+export type RevokeLPTransferorsEventFilter = TypedEventFilter<RevokeLPTransferorsEvent>;
 
 export interface SettleEventObject {
   borrower: string;
@@ -744,18 +824,18 @@ export type TakeEvent = TypedEvent<
 
 export type TakeEventFilter = TypedEventFilter<TakeEvent>;
 
-export interface TransferLPsEventObject {
+export interface TransferLPEventObject {
   owner: string;
   newOwner: string;
   indexes: BigNumber[];
-  lps: BigNumber;
+  lp: BigNumber;
 }
-export type TransferLPsEvent = TypedEvent<
+export type TransferLPEvent = TypedEvent<
   [string, string, BigNumber[], BigNumber],
-  TransferLPsEventObject
+  TransferLPEventObject
 >;
 
-export type TransferLPsEventFilter = TypedEventFilter<TransferLPsEvent>;
+export type TransferLPEventFilter = TypedEventFilter<TransferLPEvent>;
 
 export interface UpdateInterestRateEventObject {
   oldRate: BigNumber;
@@ -796,20 +876,20 @@ export interface ERC721Pool extends BaseContract {
 
   functions: {
     addCollateral(
-      tokenIdsToAdd_: PromiseOrValue<BigNumberish>[],
+      tokenIds_: PromiseOrValue<BigNumberish>[],
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     addQuoteToken(
-      quoteTokenAmountToAdd_: PromiseOrValue<BigNumberish>,
+      amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    approveLpTransferors(
+    approveLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -836,16 +916,16 @@ export interface ERC721Pool extends BaseContract {
         string,
         boolean
       ] & {
-        kicker: string;
-        bondFactor: BigNumber;
-        bondSize: BigNumber;
-        kickTime: BigNumber;
-        kickMomp: BigNumber;
-        neutralPrice: BigNumber;
-        head: string;
-        next: string;
-        prev: string;
-        alreadyTaken: boolean;
+        kicker_: string;
+        bondFactor_: BigNumber;
+        bondSize_: BigNumber;
+        kickTime_: BigNumber;
+        kickMomp_: BigNumber;
+        neutralPrice_: BigNumber;
+        head_: string;
+        next_: string;
+        prev_: string;
+        alreadyTaken_: boolean;
       }
     >;
 
@@ -891,7 +971,7 @@ export interface ERC721Pool extends BaseContract {
 
     currentBurnEpoch(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber]>;
+    debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     decreaseLPAllowance(
       spender_: PromiseOrValue<string>,
@@ -905,7 +985,17 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    depositScale(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     depositSize(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    depositUpToIndex(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     depositUtilization(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -953,14 +1043,18 @@ export interface ERC721Pool extends BaseContract {
     isSubset(overrides?: CallOverrides): Promise<[boolean]>;
 
     kick(
-      borrowerAddress_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      borrower_: PromiseOrValue<string>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    kickReserveAuction(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     kickWithDeposit(
       index_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1007,7 +1101,7 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<ContractTransaction>;
 
     moveQuoteToken(
-      maxAmountToMove_: PromiseOrValue<BigNumberish>,
+      maxAmount_: PromiseOrValue<BigNumberish>,
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
@@ -1058,7 +1152,7 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    revokeLpTransferors(
+    revokeLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -1070,10 +1164,6 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<ContractTransaction>;
 
     stampLoan(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    startClaimableReserveAuction(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1097,11 +1187,18 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    totalBorrowerTokens(
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    totalBucketTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     totalT0Debt(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    transferLPs(
+    transferLP(
       owner_: PromiseOrValue<string>,
       newOwner_: PromiseOrValue<string>,
       indexes_: PromiseOrValue<BigNumberish>[],
@@ -1120,20 +1217,20 @@ export interface ERC721Pool extends BaseContract {
   };
 
   addCollateral(
-    tokenIdsToAdd_: PromiseOrValue<BigNumberish>[],
+    tokenIds_: PromiseOrValue<BigNumberish>[],
     index_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   addQuoteToken(
-    quoteTokenAmountToAdd_: PromiseOrValue<BigNumberish>,
+    amount_: PromiseOrValue<BigNumberish>,
     index_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  approveLpTransferors(
+  approveLPTransferors(
     transferors_: PromiseOrValue<string>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -1160,16 +1257,16 @@ export interface ERC721Pool extends BaseContract {
       string,
       boolean
     ] & {
-      kicker: string;
-      bondFactor: BigNumber;
-      bondSize: BigNumber;
-      kickTime: BigNumber;
-      kickMomp: BigNumber;
-      neutralPrice: BigNumber;
-      head: string;
-      next: string;
-      prev: string;
-      alreadyTaken: boolean;
+      kicker_: string;
+      bondFactor_: BigNumber;
+      bondSize_: BigNumber;
+      kickTime_: BigNumber;
+      kickMomp_: BigNumber;
+      neutralPrice_: BigNumber;
+      head_: string;
+      next_: string;
+      prev_: string;
+      alreadyTaken_: boolean;
     }
   >;
 
@@ -1212,7 +1309,7 @@ export interface ERC721Pool extends BaseContract {
 
   currentBurnEpoch(overrides?: CallOverrides): Promise<BigNumber>;
 
-  debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber]>;
+  debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
   decreaseLPAllowance(
     spender_: PromiseOrValue<string>,
@@ -1223,7 +1320,14 @@ export interface ERC721Pool extends BaseContract {
 
   depositIndex(debt_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
 
+  depositScale(index_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+
   depositSize(overrides?: CallOverrides): Promise<BigNumber>;
+
+  depositUpToIndex(
+    index_: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1271,14 +1375,18 @@ export interface ERC721Pool extends BaseContract {
   isSubset(overrides?: CallOverrides): Promise<boolean>;
 
   kick(
-    borrowerAddress_: PromiseOrValue<string>,
-    limitIndex_: PromiseOrValue<BigNumberish>,
+    borrower_: PromiseOrValue<string>,
+    npLimitIndex_: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  kickReserveAuction(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   kickWithDeposit(
     index_: PromiseOrValue<BigNumberish>,
-    limitIndex_: PromiseOrValue<BigNumberish>,
+    npLimitIndex_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1317,7 +1425,7 @@ export interface ERC721Pool extends BaseContract {
   ): Promise<ContractTransaction>;
 
   moveQuoteToken(
-    maxAmountToMove_: PromiseOrValue<BigNumberish>,
+    maxAmount_: PromiseOrValue<BigNumberish>,
     fromIndex_: PromiseOrValue<BigNumberish>,
     toIndex_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
@@ -1368,7 +1476,7 @@ export interface ERC721Pool extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  revokeLpTransferors(
+  revokeLPTransferors(
     transferors_: PromiseOrValue<string>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -1380,10 +1488,6 @@ export interface ERC721Pool extends BaseContract {
   ): Promise<ContractTransaction>;
 
   stampLoan(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  startClaimableReserveAuction(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1404,11 +1508,18 @@ export interface ERC721Pool extends BaseContract {
 
   totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
+  totalBorrowerTokens(
+    borrower_: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
   totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
-  transferLPs(
+  transferLP(
     owner_: PromiseOrValue<string>,
     newOwner_: PromiseOrValue<string>,
     indexes_: PromiseOrValue<BigNumberish>[],
@@ -1427,20 +1538,20 @@ export interface ERC721Pool extends BaseContract {
 
   callStatic: {
     addCollateral(
-      tokenIdsToAdd_: PromiseOrValue<BigNumberish>[],
+      tokenIds_: PromiseOrValue<BigNumberish>[],
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     addQuoteToken(
-      quoteTokenAmountToAdd_: PromiseOrValue<BigNumberish>,
+      amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approveLpTransferors(
+    approveLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1467,16 +1578,16 @@ export interface ERC721Pool extends BaseContract {
         string,
         boolean
       ] & {
-        kicker: string;
-        bondFactor: BigNumber;
-        bondSize: BigNumber;
-        kickTime: BigNumber;
-        kickMomp: BigNumber;
-        neutralPrice: BigNumber;
-        head: string;
-        next: string;
-        prev: string;
-        alreadyTaken: boolean;
+        kicker_: string;
+        bondFactor_: BigNumber;
+        bondSize_: BigNumber;
+        kickTime_: BigNumber;
+        kickMomp_: BigNumber;
+        neutralPrice_: BigNumber;
+        head_: string;
+        next_: string;
+        prev_: string;
+        alreadyTaken_: boolean;
       }
     >;
 
@@ -1522,7 +1633,7 @@ export interface ERC721Pool extends BaseContract {
 
     currentBurnEpoch(overrides?: CallOverrides): Promise<BigNumber>;
 
-    debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber]>;
+    debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     decreaseLPAllowance(
       spender_: PromiseOrValue<string>,
@@ -1536,7 +1647,17 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    depositScale(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depositSize(overrides?: CallOverrides): Promise<BigNumber>;
+
+    depositUpToIndex(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1584,14 +1705,16 @@ export interface ERC721Pool extends BaseContract {
     isSubset(overrides?: CallOverrides): Promise<boolean>;
 
     kick(
-      borrowerAddress_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      borrower_: PromiseOrValue<string>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
+    kickReserveAuction(overrides?: CallOverrides): Promise<void>;
+
     kickWithDeposit(
       index_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1635,20 +1758,20 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & {
         collateralMerged_: BigNumber;
-        bucketLPs_: BigNumber;
+        bucketLP_: BigNumber;
       }
     >;
 
     moveQuoteToken(
-      maxAmountToMove_: PromiseOrValue<BigNumberish>,
+      maxAmount_: PromiseOrValue<BigNumberish>,
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
-        fromBucketLPs_: BigNumber;
-        toBucketLPs_: BigNumber;
+        fromBucketLP_: BigNumber;
+        toBucketLP_: BigNumber;
         movedAmount_: BigNumber;
       }
     >;
@@ -1671,8 +1794,8 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
-        collateralAmount_: BigNumber;
-        lpAmount_: BigNumber;
+        removedAmount_: BigNumber;
+        redeemedLP_: BigNumber;
       }
     >;
 
@@ -1683,7 +1806,7 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & {
         removedAmount_: BigNumber;
-        redeemedLPs_: BigNumber;
+        redeemedLP_: BigNumber;
       }
     >;
 
@@ -1704,7 +1827,7 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    revokeLpTransferors(
+    revokeLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1716,8 +1839,6 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<void>;
 
     stampLoan(overrides?: CallOverrides): Promise<void>;
-
-    startClaimableReserveAuction(overrides?: CallOverrides): Promise<void>;
 
     take(
       borrowerAddress_: PromiseOrValue<string>,
@@ -1739,11 +1860,18 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
+    totalBorrowerTokens(
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
     totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transferLPs(
+    transferLP(
       owner_: PromiseOrValue<string>,
       newOwner_: PromiseOrValue<string>,
       indexes_: PromiseOrValue<BigNumberish>[],
@@ -1788,25 +1916,25 @@ export interface ERC721Pool extends BaseContract {
       lup?: null
     ): AddQuoteTokenEventFilter;
 
-    'ApproveLpTransferors(address,address[])'(
+    'ApproveLPTransferors(address,address[])'(
       lender?: PromiseOrValue<string> | null,
       transferors?: null
-    ): ApproveLpTransferorsEventFilter;
-    ApproveLpTransferors(
+    ): ApproveLPTransferorsEventFilter;
+    ApproveLPTransferors(
       lender?: PromiseOrValue<string> | null,
       transferors?: null
-    ): ApproveLpTransferorsEventFilter;
+    ): ApproveLPTransferorsEventFilter;
 
     'AuctionNFTSettle(address,uint256,uint256,uint256)'(
       borrower?: PromiseOrValue<string> | null,
       collateral?: null,
-      lps?: null,
+      lp?: null,
       index?: null
     ): AuctionNFTSettleEventFilter;
     AuctionNFTSettle(
       borrower?: PromiseOrValue<string> | null,
       collateral?: null,
-      lps?: null,
+      lp?: null,
       index?: null
     ): AuctionNFTSettleEventFilter;
 
@@ -1869,6 +1997,19 @@ export interface ERC721Pool extends BaseContract {
       lpAwardedKicker?: null
     ): BucketTakeLPAwardedEventFilter;
 
+    'DecreaseLPAllowance(address,address,uint256[],uint256[])'(
+      owner?: PromiseOrValue<string> | null,
+      spender?: PromiseOrValue<string> | null,
+      indexes?: null,
+      amounts?: null
+    ): DecreaseLPAllowanceEventFilter;
+    DecreaseLPAllowance(
+      owner?: PromiseOrValue<string> | null,
+      spender?: PromiseOrValue<string> | null,
+      indexes?: null,
+      amounts?: null
+    ): DecreaseLPAllowanceEventFilter;
+
     'DrawDebtNFT(address,uint256,uint256[],uint256)'(
       borrower?: PromiseOrValue<string> | null,
       amountBorrowed?: null,
@@ -1882,6 +2023,30 @@ export interface ERC721Pool extends BaseContract {
       lup?: null
     ): DrawDebtNFTEventFilter;
 
+    'Flashloan(address,address,uint256)'(
+      receiver?: PromiseOrValue<string> | null,
+      token?: PromiseOrValue<string> | null,
+      amount?: null
+    ): FlashloanEventFilter;
+    Flashloan(
+      receiver?: PromiseOrValue<string> | null,
+      token?: PromiseOrValue<string> | null,
+      amount?: null
+    ): FlashloanEventFilter;
+
+    'IncreaseLPAllowance(address,address,uint256[],uint256[])'(
+      owner?: PromiseOrValue<string> | null,
+      spender?: PromiseOrValue<string> | null,
+      indexes?: null,
+      amounts?: null
+    ): IncreaseLPAllowanceEventFilter;
+    IncreaseLPAllowance(
+      owner?: PromiseOrValue<string> | null,
+      spender?: PromiseOrValue<string> | null,
+      indexes?: null,
+      amounts?: null
+    ): IncreaseLPAllowanceEventFilter;
+
     'Kick(address,uint256,uint256,uint256)'(
       borrower?: PromiseOrValue<string> | null,
       debt?: null,
@@ -1894,6 +2059,17 @@ export interface ERC721Pool extends BaseContract {
       collateral?: null,
       bond?: null
     ): KickEventFilter;
+
+    'KickReserveAuction(uint256,uint256,uint256)'(
+      claimableReservesRemaining?: null,
+      auctionPrice?: null,
+      currentBurnEpoch?: null
+    ): KickReserveAuctionEventFilter;
+    KickReserveAuction(
+      claimableReservesRemaining?: null,
+      auctionPrice?: null,
+      currentBurnEpoch?: null
+    ): KickReserveAuctionEventFilter;
 
     'LoanStamped(address)'(borrower?: PromiseOrValue<string> | null): LoanStampedEventFilter;
     LoanStamped(borrower?: PromiseOrValue<string> | null): LoanStampedEventFilter;
@@ -1980,34 +2156,31 @@ export interface ERC721Pool extends BaseContract {
       currentBurnEpoch?: null
     ): ReserveAuctionEventFilter;
 
-    'RevokeLpAllowance(address,uint256[])'(
+    'ResetInterestRate(uint256,uint256)'(
+      oldRate?: null,
+      newRate?: null
+    ): ResetInterestRateEventFilter;
+    ResetInterestRate(oldRate?: null, newRate?: null): ResetInterestRateEventFilter;
+
+    'RevokeLPAllowance(address,address,uint256[])'(
+      owner?: PromiseOrValue<string> | null,
       spender?: PromiseOrValue<string> | null,
       indexes?: null
-    ): RevokeLpAllowanceEventFilter;
-    RevokeLpAllowance(
+    ): RevokeLPAllowanceEventFilter;
+    RevokeLPAllowance(
+      owner?: PromiseOrValue<string> | null,
       spender?: PromiseOrValue<string> | null,
       indexes?: null
-    ): RevokeLpAllowanceEventFilter;
+    ): RevokeLPAllowanceEventFilter;
 
-    'RevokeLpTransferors(address,address[])'(
+    'RevokeLPTransferors(address,address[])'(
       lender?: PromiseOrValue<string> | null,
       transferors?: null
-    ): RevokeLpTransferorsEventFilter;
-    RevokeLpTransferors(
+    ): RevokeLPTransferorsEventFilter;
+    RevokeLPTransferors(
       lender?: PromiseOrValue<string> | null,
       transferors?: null
-    ): RevokeLpTransferorsEventFilter;
-
-    'SetLpAllowance(address,uint256[],uint256[])'(
-      spender?: PromiseOrValue<string> | null,
-      indexes?: null,
-      amounts?: null
-    ): SetLpAllowanceEventFilter;
-    SetLpAllowance(
-      spender?: PromiseOrValue<string> | null,
-      indexes?: null,
-      amounts?: null
-    ): SetLpAllowanceEventFilter;
+    ): RevokeLPTransferorsEventFilter;
 
     'Settle(address,uint256)'(
       borrower?: PromiseOrValue<string> | null,
@@ -2030,13 +2203,13 @@ export interface ERC721Pool extends BaseContract {
       isReward?: null
     ): TakeEventFilter;
 
-    'TransferLPs(address,address,uint256[],uint256)'(
+    'TransferLP(address,address,uint256[],uint256)'(
       owner?: null,
       newOwner?: null,
       indexes?: null,
-      lps?: null
-    ): TransferLPsEventFilter;
-    TransferLPs(owner?: null, newOwner?: null, indexes?: null, lps?: null): TransferLPsEventFilter;
+      lp?: null
+    ): TransferLPEventFilter;
+    TransferLP(owner?: null, newOwner?: null, indexes?: null, lp?: null): TransferLPEventFilter;
 
     'UpdateInterestRate(uint256,uint256)'(
       oldRate?: null,
@@ -2047,20 +2220,20 @@ export interface ERC721Pool extends BaseContract {
 
   estimateGas: {
     addCollateral(
-      tokenIdsToAdd_: PromiseOrValue<BigNumberish>[],
+      tokenIds_: PromiseOrValue<BigNumberish>[],
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     addQuoteToken(
-      quoteTokenAmountToAdd_: PromiseOrValue<BigNumberish>,
+      amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    approveLpTransferors(
+    approveLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -2123,7 +2296,17 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    depositScale(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depositSize(overrides?: CallOverrides): Promise<BigNumber>;
+
+    depositUpToIndex(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2171,14 +2354,18 @@ export interface ERC721Pool extends BaseContract {
     isSubset(overrides?: CallOverrides): Promise<BigNumber>;
 
     kick(
-      borrowerAddress_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      borrower_: PromiseOrValue<string>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    kickReserveAuction(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     kickWithDeposit(
       index_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2211,7 +2398,7 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<BigNumber>;
 
     moveQuoteToken(
-      maxAmountToMove_: PromiseOrValue<BigNumberish>,
+      maxAmount_: PromiseOrValue<BigNumberish>,
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
@@ -2262,7 +2449,7 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    revokeLpTransferors(
+    revokeLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -2274,10 +2461,6 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<BigNumber>;
 
     stampLoan(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
-
-    startClaimableReserveAuction(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
 
     take(
       borrowerAddress_: PromiseOrValue<string>,
@@ -2299,11 +2482,18 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
+    totalBorrowerTokens(
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
     totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transferLPs(
+    transferLP(
       owner_: PromiseOrValue<string>,
       newOwner_: PromiseOrValue<string>,
       indexes_: PromiseOrValue<BigNumberish>[],
@@ -2321,20 +2511,20 @@ export interface ERC721Pool extends BaseContract {
 
   populateTransaction: {
     addCollateral(
-      tokenIdsToAdd_: PromiseOrValue<BigNumberish>[],
+      tokenIds_: PromiseOrValue<BigNumberish>[],
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     addQuoteToken(
-      quoteTokenAmountToAdd_: PromiseOrValue<BigNumberish>,
+      amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    approveLpTransferors(
+    approveLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -2406,7 +2596,17 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    depositScale(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     depositSize(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    depositUpToIndex(
+      index_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     depositUtilization(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2454,14 +2654,18 @@ export interface ERC721Pool extends BaseContract {
     isSubset(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     kick(
-      borrowerAddress_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      borrower_: PromiseOrValue<string>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    kickReserveAuction(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     kickWithDeposit(
       index_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2503,7 +2707,7 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     moveQuoteToken(
-      maxAmountToMove_: PromiseOrValue<BigNumberish>,
+      maxAmount_: PromiseOrValue<BigNumberish>,
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
@@ -2554,7 +2758,7 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    revokeLpTransferors(
+    revokeLPTransferors(
       transferors_: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -2566,10 +2770,6 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     stampLoan(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    startClaimableReserveAuction(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2593,11 +2793,18 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    totalBorrowerTokens(
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalBucketTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     totalT0Debt(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    transferLPs(
+    transferLP(
       owner_: PromiseOrValue<string>,
       newOwner_: PromiseOrValue<string>,
       indexes_: PromiseOrValue<BigNumberish>[],

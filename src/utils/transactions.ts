@@ -114,21 +114,19 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns string
    */
   parseNodeError(contract: Contract, error: any) {
-    if (error?.error?.error?.code === 3) {
-      // works with Alchemy node on Goerli
-      // if the hash does not map to a custom error, return the node-provided error
-      return this.getCustomErrorFromHash(contract, error.error.error.data) ?? error.error.error;
-    } else if (error?.error?.error?.data?.result) {
+    if (error?.error?.error) {
+      const innerError = error.error.error;
       // works on mainnet-forked Ganache local testnet
-      // if ganache provided no reason, try to match it to a custom error
-      if (error.error.error.data.reason === null) {
-        const errorHash = error.error.error.data.result;
-        return (
-          this.getCustomErrorFromHash(contract, errorHash) ??
-          'Custom error not found for hash ' + errorHash
-        );
-      } else {
-        return error.error.error.data.reason;
+      if (innerError.data?.reason) return innerError.data.reason;
+      if (innerError.data?.result) {
+        const errorHash = innerError.data.result;
+        return this.getCustomErrorFromHash(contract, errorHash);
+      }
+      // works with Alchemy node on Goerli
+      if (innerError.code === 3) {
+        // if the hash does not map to a custom error, return the node-provided error
+        return this.getCustomErrorFromHash(contract, error.error.error.data) ?? error.error.error;
+        // TODO: retest this
       }
     }
     return 'Revert reason unknown';

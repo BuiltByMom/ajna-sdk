@@ -11,13 +11,15 @@ import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
+import { Config } from '../constants';
 
 dotenv.config();
 
 jest.setTimeout(1200000);
 
-const COLLATERAL_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
-const QUOTE_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
+const WETH_ADDRESS = '0x6bc99fa34d0076377731049695180e53bcdd767f';
+const TESTA_ADDRESS = '0x9b3d4d0d039cd7a32b6aa66fd88862d0f041ade8';
+const QUOTE_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -30,59 +32,54 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerBorrower2 = addAccountFromKey(BORROWER_2_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+  const TWETH = getErc20Contract(WETH_ADDRESS, provider);
+  const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
+  let poolA: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
-    // transfer minted tokens to actors
-    const TWETH = getErc20Contract(COLLATERAL_ADDRESS, provider);
-    let receipt = await TWETH.connect(signerDeployer).transfer(
-      signerBorrower.address,
-      toWad(BigNumber.from('10'))
-    );
+    // fund lender
+    let receipt = await TDAI.connect(signerDeployer).transfer(signerLender.address, toWad('10'));
     expect(receipt.transactionHash).not.toBe('');
-    const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
-    receipt = await TDAI.connect(signerDeployer).transfer(
-      signerBorrower.address,
-      toWad(BigNumber.from('2'))
-    );
-    expect(receipt.transactionHash).not.toBe('');
-    receipt = await TWETH.connect(signerDeployer).transfer(
-      signerBorrower2.address,
-      toWad(BigNumber.from('10'))
-    );
+    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('0.5'));
     expect(receipt.transactionHash).not.toBe('');
 
-    const AJNA = getErc20Contract(config.AJNA_TOKEN_ADDRESS, provider);
-    receipt = await AJNA.connect(signerDeployer).transfer(
-      signerLender.address,
-      toWad(BigNumber.from('100000'))
-    );
-
+    // fund borrower
+    receipt = await TWETH.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
     expect(receipt.transactionHash).not.toBe('');
+    receipt = await TDAI.connect(signerDeployer).transfer(signerBorrower.address, toWad('2'));
+    expect(receipt.transactionHash).not.toBe('');
+
+    // fund borrower2
+    receipt = await TWETH.connect(signerDeployer).transfer(signerBorrower2.address, toWad('10'));
+    expect(receipt.transactionHash).not.toBe('');
+
+    // initialize canned pool
+    poolA = await ajna.factory.getPool(TESTA_ADDRESS, QUOTE_ADDRESS);
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
-      COLLATERAL_ADDRESS,
+      WETH_ADDRESS,
       QUOTE_ADDRESS,
       toWad('0.05')
     );
 
     await tx.verifyAndSubmit();
 
-    pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
+    pool = await ajna.factory.getPool(WETH_ADDRESS, QUOTE_ADDRESS);
 
     expect(pool).toBeDefined();
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
+    expect(pool.collateralAddress).toBe(WETH_ADDRESS);
     expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
   });
 
   it('should not allow to create existing pool', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
-      COLLATERAL_ADDRESS,
+      WETH_ADDRESS,
       QUOTE_ADDRESS,
       toWad('0.05')
     );
@@ -137,35 +134,35 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use poolStats successfully', async () => {
-    const stats = await pool.getStats();
+    const stats = await poolA.getStats();
 
-    expect(stats.poolSize?.gte(toWad('10'))).toBeTruthy();
+    expect(stats.poolSize?.gte(toWad('25000'))).toBeTruthy();
     expect(stats.loansCount).toEqual(1);
     expect(stats.minDebtAmount?.gte(toWad('0'))).toBeTruthy();
     expect(stats.collateralization?.gte(toWad('1'))).toBeTruthy();
-    expect(stats.actualUtilization?.gte(toWad('0.01'))).toBeTruthy();
+    expect(stats.actualUtilization?.gte(toWad('0'))).toBeTruthy();
     expect(stats.targetUtilization?.gte(toWad('0'))).toBeTruthy();
   });
 
   it('should be able to query pool debt', async () => {
-    const debtInfo = await pool.debtInfo();
+    const debtInfo = await poolA.debtInfo();
 
     expect(debtInfo.pendingDebt?.gte(debtInfo.accruedDebt)).toBeTruthy();
-    expect(debtInfo.accruedDebt?.gte(BigNumber.from(1))).toBeTruthy();
+    expect(debtInfo.accruedDebt?.gte(BigNumber.from(10005))).toBeTruthy();
     expect(debtInfo.debtInAuction?.eq(BigNumber.from(0))).toBeTruthy();
   });
 
   it('should use getPrices and loansInfo successfully', async () => {
-    const prices = await pool.getPrices();
+    const prices = await poolA.getPrices();
 
-    expect(prices.hpb).toEqual(indexToPrice(2000));
-    expect(prices.hpbIndex).toEqual(2000);
-    expect(prices.htp).toEqual(toWad('0.333653846153846154'));
+    expect(prices.hpb).toEqual(indexToPrice(3236));
+    expect(prices.hpbIndex).toEqual(3236);
+    expect(prices.htp).toEqual(toWad('76.997041420118343231'));
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
-    expect(prices.lup).toEqual(indexToPrice(2000));
-    expect(prices.lupIndex).toEqual(2000);
+    expect(prices.lup).toEqual(indexToPrice(3242));
+    expect(prices.lupIndex).toEqual(3242);
 
-    const loansInfo = await pool.loansInfo();
+    const loansInfo = await poolA.loansInfo();
     expect(loansInfo.maxBorrower).toEqual(signerBorrower.address);
     expect(loansInfo.maxThresholdPrice).toEqual(prices.htp);
     expect(loansInfo.noOfLoans).toEqual(1);
@@ -273,13 +270,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(bucket.exchangeRate).toEqual(toWad('1'));
   });
 
-  it('should use lpsToQuoteTokens successfully', async () => {
+  it('should use lpToQuoteTokens successfully', async () => {
     const bucket = await pool.getBucketByIndex(2000);
 
     expect(bucket).not.toBe('');
     expect(bucket.exchangeRate?.gte(toWad('1'))).toBeTruthy();
     expect(bucket.exchangeRate?.lt(toWad('1.1'))).toBeTruthy();
-    const deposit = await bucket.lpsToQuoteTokens(toWad('10'));
+    const deposit = await bucket.lpToQuoteTokens(toWad('10'));
     expect(deposit.gt(toWad('4'))).toBeTruthy();
   });
 
@@ -393,13 +390,13 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(info.lpBalance?.gt(0)).toBeTruthy();
   });
 
-  it('should use lpsToQuoteCollateral successfully', async () => {
+  it('should use lpToQuoteCollateral successfully', async () => {
     const bucketIndex = 1234;
     const bucket = await pool.getBucketByIndex(bucketIndex);
     expect(bucket).not.toBe('');
 
     const info = await pool.lenderInfo(signerLender.address, bucketIndex);
-    const deposit = await bucket.lpsToCollateral(info.lpBalance);
+    const deposit = await bucket.lpToCollateral(info.lpBalance);
     expect(deposit.eq(toWad(0.5))).toBeTruthy();
   });
 
@@ -607,8 +604,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should kick and participate in claimable reserve auction', async () => {
-    const COLLATERAL_ADDRESS = '0xc91261159593173b5d82e1024c3e3529e945dc28';
-    const QUOTE_ADDRESS = '0x97112a824376a2672a61c63c1c20cb4ee5855bc7';
+    const COLLATERAL_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
+    const QUOTE_ADDRESS = '0x6bc99fa34d0076377731049695180e53bcdd767f';
 
     let pool: FungiblePool = {} as FungiblePool;
 
@@ -616,6 +613,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
     const TOKEN_C = getErc20Contract(COLLATERAL_ADDRESS, provider);
     const TOKEN_Q = getErc20Contract(QUOTE_ADDRESS, provider); // TWETH
+    const TOKEN_AJNA = getErc20Contract(Config.ajnaToken, provider);
     const tokenAmount = toWad(BigNumber.from(100000));
 
     await TOKEN_Q.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
@@ -626,16 +624,20 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
     await TOKEN_C.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
 
+    await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
+
     const borrowerTokenC = await TOKEN_C.balanceOf(signerBorrower.address);
     const borrowerTokenQ = await TOKEN_Q.balanceOf(signerBorrower.address);
 
     const lenderTokenC = await TOKEN_C.balanceOf(signerLender.address);
     const lenderTokenQ = await TOKEN_Q.balanceOf(signerLender.address);
+    const lenderTokenAJNA = await TOKEN_AJNA.balanceOf(signerLender.address);
 
     expect(borrowerTokenC).not.toBe(tokenAmount);
     expect(borrowerTokenQ).not.toBe(tokenAmount);
     expect(lenderTokenC).not.toBe(tokenAmount);
     expect(lenderTokenQ).not.toBe(tokenAmount);
+    expect(lenderTokenAJNA).not.toBe(tokenAmount);
 
     // Deploy pool
     let tx = await ajna.factory.deployPool(

@@ -104,11 +104,7 @@ export async function settle(
 }
 
 export async function kickReserveAuction(contract: Contract, overrides?: TransactionOverrides) {
-  return await createTransaction(
-    contract,
-    { methodName: 'startClaimableReserveAuction' },
-    overrides
-  );
+  return await createTransaction(contract, { methodName: 'kickReserveAuction' }, overrides);
 }
 
 // TODO: this method returns value and needs transaction return value support

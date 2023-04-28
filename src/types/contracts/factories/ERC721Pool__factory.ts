@@ -99,12 +99,17 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'InsufficientLPs',
+    name: 'InsufficientLP',
     inputs: [],
   },
   {
     type: 'error',
     name: 'InsufficientLiquidity',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'InvalidAllowancesInput',
     inputs: [],
   },
   {
@@ -344,7 +349,7 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
-    name: 'ApproveLpTransferors',
+    name: 'ApproveLPTransferors',
     inputs: [
       {
         type: 'address',
@@ -375,7 +380,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'lps',
+        name: 'lp',
         indexed: false,
       },
       {
@@ -508,6 +513,33 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
+    name: 'DecreaseLPAllowance',
+    inputs: [
+      {
+        type: 'address',
+        name: 'owner',
+        indexed: true,
+      },
+      {
+        type: 'address',
+        name: 'spender',
+        indexed: true,
+      },
+      {
+        type: 'uint256[]',
+        name: 'indexes',
+        indexed: false,
+      },
+      {
+        type: 'uint256[]',
+        name: 'amounts',
+        indexed: false,
+      },
+    ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
     name: 'DrawDebtNFT',
     inputs: [
       {
@@ -535,6 +567,55 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
+    name: 'Flashloan',
+    inputs: [
+      {
+        type: 'address',
+        name: 'receiver',
+        indexed: true,
+      },
+      {
+        type: 'address',
+        name: 'token',
+        indexed: true,
+      },
+      {
+        type: 'uint256',
+        name: 'amount',
+        indexed: false,
+      },
+    ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    name: 'IncreaseLPAllowance',
+    inputs: [
+      {
+        type: 'address',
+        name: 'owner',
+        indexed: true,
+      },
+      {
+        type: 'address',
+        name: 'spender',
+        indexed: true,
+      },
+      {
+        type: 'uint256[]',
+        name: 'indexes',
+        indexed: false,
+      },
+      {
+        type: 'uint256[]',
+        name: 'amounts',
+        indexed: false,
+      },
+    ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
     name: 'Kick',
     inputs: [
       {
@@ -555,6 +636,28 @@ const _abi = [
       {
         type: 'uint256',
         name: 'bond',
+        indexed: false,
+      },
+    ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    name: 'KickReserveAuction',
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'claimableReservesRemaining',
+        indexed: false,
+      },
+      {
+        type: 'uint256',
+        name: 'auctionPrice',
+        indexed: false,
+      },
+      {
+        type: 'uint256',
+        name: 'currentBurnEpoch',
         indexed: false,
       },
     ],
@@ -746,8 +849,30 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
-    name: 'RevokeLpAllowance',
+    name: 'ResetInterestRate',
     inputs: [
+      {
+        type: 'uint256',
+        name: 'oldRate',
+        indexed: false,
+      },
+      {
+        type: 'uint256',
+        name: 'newRate',
+        indexed: false,
+      },
+    ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    name: 'RevokeLPAllowance',
+    inputs: [
+      {
+        type: 'address',
+        name: 'owner',
+        indexed: true,
+      },
       {
         type: 'address',
         name: 'spender',
@@ -763,7 +888,7 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
-    name: 'RevokeLpTransferors',
+    name: 'RevokeLPTransferors',
     inputs: [
       {
         type: 'address',
@@ -773,28 +898,6 @@ const _abi = [
       {
         type: 'address[]',
         name: 'transferors',
-        indexed: false,
-      },
-    ],
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    name: 'SetLpAllowance',
-    inputs: [
-      {
-        type: 'address',
-        name: 'spender',
-        indexed: true,
-      },
-      {
-        type: 'uint256[]',
-        name: 'indexes',
-        indexed: false,
-      },
-      {
-        type: 'uint256[]',
-        name: 'amounts',
         indexed: false,
       },
     ],
@@ -851,7 +954,7 @@ const _abi = [
   {
     type: 'event',
     anonymous: false,
-    name: 'TransferLPs',
+    name: 'TransferLP',
     inputs: [
       {
         type: 'address',
@@ -870,7 +973,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'lps',
+        name: 'lp',
         indexed: false,
       },
     ],
@@ -900,7 +1003,7 @@ const _abi = [
     inputs: [
       {
         type: 'uint256[]',
-        name: 'tokenIdsToAdd_',
+        name: 'tokenIds_',
       },
       {
         type: 'uint256',
@@ -914,7 +1017,7 @@ const _abi = [
     outputs: [
       {
         type: 'uint256',
-        name: 'bucketLPs_',
+        name: 'bucketLP_',
       },
     ],
   },
@@ -926,7 +1029,7 @@ const _abi = [
     inputs: [
       {
         type: 'uint256',
-        name: 'quoteTokenAmountToAdd_',
+        name: 'amount_',
       },
       {
         type: 'uint256',
@@ -940,13 +1043,13 @@ const _abi = [
     outputs: [
       {
         type: 'uint256',
-        name: 'bucketLPs_',
+        name: 'bucketLP_',
       },
     ],
   },
   {
     type: 'function',
-    name: 'approveLpTransferors',
+    name: 'approveLPTransferors',
     constant: false,
     payable: false,
     inputs: [
@@ -992,43 +1095,43 @@ const _abi = [
     outputs: [
       {
         type: 'address',
-        name: 'kicker',
+        name: 'kicker_',
       },
       {
         type: 'uint256',
-        name: 'bondFactor',
+        name: 'bondFactor_',
       },
       {
         type: 'uint256',
-        name: 'bondSize',
+        name: 'bondSize_',
       },
       {
         type: 'uint256',
-        name: 'kickTime',
+        name: 'kickTime_',
       },
       {
         type: 'uint256',
-        name: 'kickMomp',
+        name: 'kickMomp_',
       },
       {
         type: 'uint256',
-        name: 'neutralPrice',
+        name: 'neutralPrice_',
       },
       {
         type: 'address',
-        name: 'head',
+        name: 'head_',
       },
       {
         type: 'address',
-        name: 'next',
+        name: 'next_',
       },
       {
         type: 'address',
-        name: 'prev',
+        name: 'prev_',
       },
       {
         type: 'bool',
-        name: 'alreadyTaken',
+        name: 'alreadyTaken_',
       },
     ],
   },
@@ -1230,6 +1333,9 @@ const _abi = [
       {
         type: 'uint256',
       },
+      {
+        type: 'uint256',
+      },
     ],
   },
   {
@@ -1273,11 +1379,47 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'depositScale',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'index_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'depositSize',
     constant: true,
     stateMutability: 'view',
     payable: false,
     inputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'depositUpToIndex',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'index_',
+      },
+    ],
     outputs: [
       {
         type: 'uint256',
@@ -1486,13 +1628,21 @@ const _abi = [
     inputs: [
       {
         type: 'address',
-        name: 'borrowerAddress_',
+        name: 'borrower_',
       },
       {
         type: 'uint256',
-        name: 'limitIndex_',
+        name: 'npLimitIndex_',
       },
     ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'kickReserveAuction',
+    constant: false,
+    payable: false,
+    inputs: [],
     outputs: [],
   },
   {
@@ -1507,7 +1657,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'limitIndex_',
+        name: 'npLimitIndex_',
       },
     ],
     outputs: [],
@@ -1672,7 +1822,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'bucketLPs_',
+        name: 'bucketLP_',
       },
     ],
   },
@@ -1684,7 +1834,7 @@ const _abi = [
     inputs: [
       {
         type: 'uint256',
-        name: 'maxAmountToMove_',
+        name: 'maxAmount_',
       },
       {
         type: 'uint256',
@@ -1702,11 +1852,11 @@ const _abi = [
     outputs: [
       {
         type: 'uint256',
-        name: 'fromBucketLPs_',
+        name: 'fromBucketLP_',
       },
       {
         type: 'uint256',
-        name: 'toBucketLPs_',
+        name: 'toBucketLP_',
       },
       {
         type: 'uint256',
@@ -1815,11 +1965,11 @@ const _abi = [
     outputs: [
       {
         type: 'uint256',
-        name: 'collateralAmount_',
+        name: 'removedAmount_',
       },
       {
         type: 'uint256',
-        name: 'lpAmount_',
+        name: 'redeemedLP_',
       },
     ],
   },
@@ -1845,7 +1995,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'redeemedLPs_',
+        name: 'redeemedLP_',
       },
     ],
   },
@@ -1919,7 +2069,7 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'revokeLpTransferors',
+    name: 'revokeLPTransferors',
     constant: false,
     payable: false,
     inputs: [
@@ -1950,14 +2100,6 @@ const _abi = [
   {
     type: 'function',
     name: 'stampLoan',
-    constant: false,
-    payable: false,
-    inputs: [],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'startClaimableReserveAuction',
     constant: false,
     payable: false,
     inputs: [],
@@ -2038,6 +2180,37 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'totalBorrowerTokens',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'borrower_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'totalBucketTokens',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'totalT0Debt',
     constant: true,
     stateMutability: 'view',
@@ -2064,7 +2237,7 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'transferLPs',
+    name: 'transferLP',
     constant: false,
     payable: false,
     inputs: [
