@@ -703,7 +703,7 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
-    tx = await pool.takeReserves(signerLender);
+    tx = await pool.takeAndBurn(signerLender);
     await submitAndVerifyTransaction(tx);
   });
 });
