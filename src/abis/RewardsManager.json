@@ -8,8 +8,8 @@
     ]
   },
   { "type": "error", "name": "AlreadyClaimed", "inputs": [] },
+  { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
   { "type": "error", "name": "EpochNotAvailable", "inputs": [] },
-  { "type": "error", "name": "ExchangeRateUpdateTooLate", "inputs": [] },
   { "type": "error", "name": "MoveStakedLiquidityInvalid", "inputs": [] },
   { "type": "error", "name": "NotOwnerOfDeposit", "inputs": [] },
   {

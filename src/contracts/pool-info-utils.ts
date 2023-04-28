@@ -40,22 +40,22 @@ export const bucketInfo = async (
   return await contractUtils.bucketInfo(poolAddress, index);
 };
 
-export const lpsToQuoteTokens = async (
+export const lpToQuoteTokens = async (
   contractUtils: PoolInfoUtils,
   poolAddress: Address,
   lpTokens: BigNumber,
   index: number
 ) => {
-  return await contractUtils.lpsToQuoteTokens(poolAddress, lpTokens, index);
+  return await contractUtils.lpToQuoteTokens(poolAddress, lpTokens, index);
 };
 
-export const lpsToCollateral = async (
+export const lpToCollateral = async (
   contractUtils: PoolInfoUtils,
   poolAddress: Address,
   lpTokens: BigNumber,
   index: number
 ) => {
-  return await contractUtils.lpsToCollateral(poolAddress, lpTokens, index);
+  return await contractUtils.lpToCollateral(poolAddress, lpTokens, index);
 };
 
 export const priceToIndex = async (contractUtils: PoolInfoUtils, price: BigNumber) => {

@@ -1,8 +1,8 @@
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
-  lpsToQuoteTokens,
-  lpsToCollateral,
+  lpToQuoteTokens,
+  lpToCollateral,
 } from '../contracts/pool-info-utils';
 import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { BigNumber } from 'ethers';
@@ -58,8 +58,8 @@ class Bucket {
    *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
    *  @return The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
    */
-  lpsToQuoteTokens = async (lpTokens: BigNumber) => {
-    return await lpsToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
+  lpToQuoteTokens = async (lpTokens: BigNumber) => {
+    return await lpToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 
   /**
@@ -67,8 +67,8 @@ class Bucket {
    *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
    *  @return The exact amount of collateral that can be exchanged for the given LP Tokens, WAD units.
    */
-  lpsToCollateral = async (lpTokens: BigNumber) => {
-    return await lpsToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
+  lpToCollateral = async (lpTokens: BigNumber) => {
+    return await lpToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 }
 

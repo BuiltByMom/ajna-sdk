@@ -123,6 +123,49 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'auctionStatus',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'ajnaPool_',
+      },
+      {
+        type: 'address',
+        name: 'borrower_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'kickTime_',
+      },
+      {
+        type: 'uint256',
+        name: 'collateral_',
+      },
+      {
+        type: 'uint256',
+        name: 'debtToCover_',
+      },
+      {
+        type: 'bool',
+        name: 'isCollateralized_',
+      },
+      {
+        type: 'uint256',
+        name: 'price_',
+      },
+      {
+        type: 'uint256',
+        name: 'neutralPrice_',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'borrowFeeRate',
     constant: true,
     stateMutability: 'view',
@@ -201,7 +244,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'bucketLPs_',
+        name: 'bucketLP_',
       },
       {
         type: 'uint256',
@@ -264,6 +307,7 @@ const _abi = [
     outputs: [
       {
         type: 'uint256',
+        name: 'htp_',
       },
     ],
   },
@@ -306,7 +350,7 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'lpsToCollateral',
+    name: 'lpToCollateral',
     constant: true,
     stateMutability: 'view',
     payable: false,
@@ -317,7 +361,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'lps_',
+        name: 'lp_',
       },
       {
         type: 'uint256',
@@ -333,7 +377,7 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'lpsToQuoteTokens',
+    name: 'lpToQuoteTokens',
     constant: true,
     stateMutability: 'view',
     payable: false,
@@ -344,7 +388,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'lps_',
+        name: 'lp_',
       },
       {
         type: 'uint256',

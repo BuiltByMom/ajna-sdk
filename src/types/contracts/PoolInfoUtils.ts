@@ -23,6 +23,7 @@ import type {
 
 export interface PoolInfoUtilsInterface extends utils.Interface {
   functions: {
+    'auctionStatus(address,address)': FunctionFragment;
     'borrowFeeRate(address)': FunctionFragment;
     'borrowerInfo(address,address)': FunctionFragment;
     'bucketInfo(address,uint256)': FunctionFragment;
@@ -31,8 +32,8 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
     'htp(address)': FunctionFragment;
     'indexToPrice(uint256)': FunctionFragment;
     'lenderInterestMargin(address)': FunctionFragment;
-    'lpsToCollateral(address,uint256,uint256)': FunctionFragment;
-    'lpsToQuoteTokens(address,uint256,uint256)': FunctionFragment;
+    'lpToCollateral(address,uint256,uint256)': FunctionFragment;
+    'lpToQuoteTokens(address,uint256,uint256)': FunctionFragment;
     'lup(address)': FunctionFragment;
     'lupIndex(address)': FunctionFragment;
     'momp(address)': FunctionFragment;
@@ -46,6 +47,7 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | 'auctionStatus'
       | 'borrowFeeRate'
       | 'borrowerInfo'
       | 'bucketInfo'
@@ -54,8 +56,8 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
       | 'htp'
       | 'indexToPrice'
       | 'lenderInterestMargin'
-      | 'lpsToCollateral'
-      | 'lpsToQuoteTokens'
+      | 'lpToCollateral'
+      | 'lpToQuoteTokens'
       | 'lup'
       | 'lupIndex'
       | 'momp'
@@ -67,6 +69,10 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
       | 'unutilizedDepositFeeRate'
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: 'auctionStatus',
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: 'borrowFeeRate', values: [PromiseOrValue<string>]): string;
   encodeFunctionData(
     functionFragment: 'borrowerInfo',
@@ -88,11 +94,11 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: 'lpsToCollateral',
+    functionFragment: 'lpToCollateral',
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: 'lpsToQuoteTokens',
+    functionFragment: 'lpToQuoteTokens',
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: 'lup', values: [PromiseOrValue<string>]): string;
@@ -117,6 +123,7 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(functionFragment: 'auctionStatus', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'borrowFeeRate', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'borrowerInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'bucketInfo', data: BytesLike): Result;
@@ -125,8 +132,8 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'htp', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'indexToPrice', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lenderInterestMargin', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'lpsToCollateral', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'lpsToQuoteTokens', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'lpToCollateral', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'lpToQuoteTokens', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lup', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lupIndex', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'momp', data: BytesLike): Result;
@@ -167,6 +174,21 @@ export interface PoolInfoUtils extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    auctionStatus(
+      ajnaPool_: PromiseOrValue<string>,
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
+        kickTime_: BigNumber;
+        collateral_: BigNumber;
+        debtToCover_: BigNumber;
+        isCollateralized_: boolean;
+        price_: BigNumber;
+        neutralPrice_: BigNumber;
+      }
+    >;
+
     borrowFeeRate(
       ajnaPool_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -193,7 +215,7 @@ export interface PoolInfoUtils extends BaseContract {
         price_: BigNumber;
         quoteTokens_: BigNumber;
         collateral_: BigNumber;
-        bucketLPs_: BigNumber;
+        bucketLP_: BigNumber;
         scale_: BigNumber;
         exchangeRate_: BigNumber;
       }
@@ -203,7 +225,10 @@ export interface PoolInfoUtils extends BaseContract {
 
     hpbIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    htp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    htp(
+      ajnaPool_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { htp_: BigNumber }>;
 
     indexToPrice(
       index_: PromiseOrValue<BigNumberish>,
@@ -215,16 +240,16 @@ export interface PoolInfoUtils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { lenderInterestMargin_: BigNumber }>;
 
-    lpsToCollateral(
+    lpToCollateral(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { collateralAmount_: BigNumber }>;
 
-    lpsToQuoteTokens(
+    lpToQuoteTokens(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { quoteAmount_: BigNumber }>;
@@ -298,6 +323,21 @@ export interface PoolInfoUtils extends BaseContract {
     ): Promise<[BigNumber]>;
   };
 
+  auctionStatus(
+    ajnaPool_: PromiseOrValue<string>,
+    borrower_: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
+      kickTime_: BigNumber;
+      collateral_: BigNumber;
+      debtToCover_: BigNumber;
+      isCollateralized_: boolean;
+      price_: BigNumber;
+      neutralPrice_: BigNumber;
+    }
+  >;
+
   borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
   borrowerInfo(
@@ -321,7 +361,7 @@ export interface PoolInfoUtils extends BaseContract {
       price_: BigNumber;
       quoteTokens_: BigNumber;
       collateral_: BigNumber;
-      bucketLPs_: BigNumber;
+      bucketLP_: BigNumber;
       scale_: BigNumber;
       exchangeRate_: BigNumber;
     }
@@ -340,16 +380,16 @@ export interface PoolInfoUtils extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  lpsToCollateral(
+  lpToCollateral(
     ajnaPool_: PromiseOrValue<string>,
-    lps_: PromiseOrValue<BigNumberish>,
+    lp_: PromiseOrValue<BigNumberish>,
     index_: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  lpsToQuoteTokens(
+  lpToQuoteTokens(
     ajnaPool_: PromiseOrValue<string>,
-    lps_: PromiseOrValue<BigNumberish>,
+    lp_: PromiseOrValue<BigNumberish>,
     index_: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -420,6 +460,21 @@ export interface PoolInfoUtils extends BaseContract {
   ): Promise<BigNumber>;
 
   callStatic: {
+    auctionStatus(
+      ajnaPool_: PromiseOrValue<string>,
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
+        kickTime_: BigNumber;
+        collateral_: BigNumber;
+        debtToCover_: BigNumber;
+        isCollateralized_: boolean;
+        price_: BigNumber;
+        neutralPrice_: BigNumber;
+      }
+    >;
+
     borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     borrowerInfo(
@@ -443,7 +498,7 @@ export interface PoolInfoUtils extends BaseContract {
         price_: BigNumber;
         quoteTokens_: BigNumber;
         collateral_: BigNumber;
-        bucketLPs_: BigNumber;
+        bucketLP_: BigNumber;
         scale_: BigNumber;
         exchangeRate_: BigNumber;
       }
@@ -465,16 +520,16 @@ export interface PoolInfoUtils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lpsToCollateral(
+    lpToCollateral(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lpsToQuoteTokens(
+    lpToQuoteTokens(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -551,6 +606,12 @@ export interface PoolInfoUtils extends BaseContract {
   filters: {};
 
   estimateGas: {
+    auctionStatus(
+      ajnaPool_: PromiseOrValue<string>,
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     borrowerInfo(
@@ -581,16 +642,16 @@ export interface PoolInfoUtils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lpsToCollateral(
+    lpToCollateral(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lpsToQuoteTokens(
+    lpToQuoteTokens(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -630,6 +691,12 @@ export interface PoolInfoUtils extends BaseContract {
   };
 
   populateTransaction: {
+    auctionStatus(
+      ajnaPool_: PromiseOrValue<string>,
+      borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     borrowFeeRate(
       ajnaPool_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -672,16 +739,16 @@ export interface PoolInfoUtils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lpsToCollateral(
+    lpToCollateral(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lpsToQuoteTokens(
+    lpToQuoteTokens(
       ajnaPool_: PromiseOrValue<string>,
-      lps_: PromiseOrValue<BigNumberish>,
+      lp_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

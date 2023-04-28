@@ -63,3 +63,5 @@ This package offers a facility to translate ABIs as compiled to a format consuma
 - Run `yarn update-abis` to overwrite current ABIs in `src/abis`.
 
 This facility was tested against `brownie` compilation output.
+
+After updating ABIs, run `yarn typechain-abis` to generate typescript wrappers around contracts. Be sure to prettify generated code before committing.

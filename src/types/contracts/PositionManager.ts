@@ -31,7 +31,7 @@ export interface PositionManagerInterface extends utils.Interface {
     'balanceOf(address)': FunctionFragment;
     'burn((uint256,address))': FunctionFragment;
     'getApproved(uint256)': FunctionFragment;
-    'getLPs(uint256,uint256)': FunctionFragment;
+    'getLP(uint256,uint256)': FunctionFragment;
     'getPositionIndexes(uint256)': FunctionFragment;
     'getPositionIndexesFiltered(uint256)': FunctionFragment;
     'getPositionInfo(uint256,uint256)': FunctionFragment;
@@ -64,7 +64,7 @@ export interface PositionManagerInterface extends utils.Interface {
       | 'balanceOf'
       | 'burn'
       | 'getApproved'
-      | 'getLPs'
+      | 'getLP'
       | 'getPositionIndexes'
       | 'getPositionIndexesFiltered'
       | 'getPositionInfo'
@@ -105,7 +105,7 @@ export interface PositionManagerInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: 'getLPs',
+    functionFragment: 'getLP',
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -222,7 +222,7 @@ export interface PositionManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'burn', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getApproved', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'getLPs', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'getLP', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPositionIndexes', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPositionIndexesFiltered', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPositionInfo', data: BytesLike): Result;
@@ -258,7 +258,7 @@ export interface PositionManagerInterface extends utils.Interface {
     'Burn(address,uint256)': EventFragment;
     'MemorializePosition(address,uint256,uint256[])': EventFragment;
     'Mint(address,address,uint256)': EventFragment;
-    'MoveLiquidity(address,uint256,uint256,uint256)': EventFragment;
+    'MoveLiquidity(address,uint256,uint256,uint256,uint256,uint256)': EventFragment;
     'RedeemPosition(address,uint256,uint256[])': EventFragment;
     'Transfer(address,address,uint256)': EventFragment;
   };
@@ -325,9 +325,11 @@ export interface MoveLiquidityEventObject {
   tokenId: BigNumber;
   fromIndex: BigNumber;
   toIndex: BigNumber;
+  lpRedeemedFrom: BigNumber;
+  lpAwardedTo: BigNumber;
 }
 export type MoveLiquidityEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
+  [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
   MoveLiquidityEventObject
 >;
 
@@ -406,7 +408,7 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getLPs(
+    getLP(
       tokenId_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -564,7 +566,7 @@ export interface PositionManager extends BaseContract {
 
   getApproved(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
-  getLPs(
+  getLP(
     tokenId_: PromiseOrValue<BigNumberish>,
     index_: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -722,7 +724,7 @@ export interface PositionManager extends BaseContract {
 
     getApproved(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
-    getLPs(
+    getLP(
       tokenId_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -909,17 +911,21 @@ export interface PositionManager extends BaseContract {
       tokenId?: null
     ): MintEventFilter;
 
-    'MoveLiquidity(address,uint256,uint256,uint256)'(
+    'MoveLiquidity(address,uint256,uint256,uint256,uint256,uint256)'(
       lender?: PromiseOrValue<string> | null,
       tokenId?: null,
       fromIndex?: null,
-      toIndex?: null
+      toIndex?: null,
+      lpRedeemedFrom?: null,
+      lpAwardedTo?: null
     ): MoveLiquidityEventFilter;
     MoveLiquidity(
       lender?: PromiseOrValue<string> | null,
       tokenId?: null,
       fromIndex?: null,
-      toIndex?: null
+      toIndex?: null,
+      lpRedeemedFrom?: null,
+      lpAwardedTo?: null
     ): MoveLiquidityEventFilter;
 
     'RedeemPosition(address,uint256,uint256[])'(
@@ -971,7 +977,7 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getLPs(
+    getLP(
       tokenId_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1136,7 +1142,7 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getLPs(
+    getLP(
       tokenId_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides

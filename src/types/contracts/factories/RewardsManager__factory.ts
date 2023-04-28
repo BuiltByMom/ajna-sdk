@@ -28,12 +28,12 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'EpochNotAvailable',
+    name: 'DeployWithZeroAddress',
     inputs: [],
   },
   {
     type: 'error',
-    name: 'ExchangeRateUpdateTooLate',
+    name: 'EpochNotAvailable',
     inputs: [],
   },
   {

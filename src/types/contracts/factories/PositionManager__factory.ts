@@ -251,6 +251,16 @@ const _abi = [
         name: 'toIndex',
         indexed: false,
       },
+      {
+        type: 'uint256',
+        name: 'lpRedeemedFrom',
+        indexed: false,
+      },
+      {
+        type: 'uint256',
+        name: 'lpAwardedTo',
+        indexed: false,
+      },
     ],
   },
   {
@@ -401,7 +411,7 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'getLPs',
+    name: 'getLP',
     constant: true,
     stateMutability: 'view',
     payable: false,

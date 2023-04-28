@@ -53,6 +53,25 @@
   },
   {
     "type": "function",
+    "name": "auctionStatus",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "ajnaPool_" },
+      { "type": "address", "name": "borrower_" }
+    ],
+    "outputs": [
+      { "type": "uint256", "name": "kickTime_" },
+      { "type": "uint256", "name": "collateral_" },
+      { "type": "uint256", "name": "debtToCover_" },
+      { "type": "bool", "name": "isCollateralized_" },
+      { "type": "uint256", "name": "price_" },
+      { "type": "uint256", "name": "neutralPrice_" }
+    ]
+  },
+  {
+    "type": "function",
     "name": "borrowFeeRate",
     "constant": true,
     "stateMutability": "view",
@@ -90,7 +109,7 @@
       { "type": "uint256", "name": "price_" },
       { "type": "uint256", "name": "quoteTokens_" },
       { "type": "uint256", "name": "collateral_" },
-      { "type": "uint256", "name": "bucketLPs_" },
+      { "type": "uint256", "name": "bucketLP_" },
       { "type": "uint256", "name": "scale_" },
       { "type": "uint256", "name": "exchangeRate_" }
     ]
@@ -120,7 +139,7 @@
     "stateMutability": "view",
     "payable": false,
     "inputs": [{ "type": "address", "name": "ajnaPool_" }],
-    "outputs": [{ "type": "uint256" }]
+    "outputs": [{ "type": "uint256", "name": "htp_" }]
   },
   {
     "type": "function",
@@ -142,26 +161,26 @@
   },
   {
     "type": "function",
-    "name": "lpsToCollateral",
+    "name": "lpToCollateral",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
     "inputs": [
       { "type": "address", "name": "ajnaPool_" },
-      { "type": "uint256", "name": "lps_" },
+      { "type": "uint256", "name": "lp_" },
       { "type": "uint256", "name": "index_" }
     ],
     "outputs": [{ "type": "uint256", "name": "collateralAmount_" }]
   },
   {
     "type": "function",
-    "name": "lpsToQuoteTokens",
+    "name": "lpToQuoteTokens",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
     "inputs": [
       { "type": "address", "name": "ajnaPool_" },
-      { "type": "uint256", "name": "lps_" },
+      { "type": "uint256", "name": "lp_" },
       { "type": "uint256", "name": "index_" }
     ],
     "outputs": [{ "type": "uint256", "name": "quoteAmount_" }]
