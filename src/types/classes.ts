@@ -42,4 +42,6 @@ export interface Loan {
   collateral: BigNumber;
   /** debt divided by collateral */
   thresholdPrice: BigNumber;
+  /** kickers penalized if liquidation taken above this price */
+  neutralPrice: BigNumber;
 }

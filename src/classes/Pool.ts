@@ -12,7 +12,6 @@ import {
   kickReserveAuction,
   kickWithDeposit,
   lenderInfo,
-  loansInfo,
   moveQuoteToken,
   removeQuoteToken,
   settle,
@@ -27,24 +26,6 @@ import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
-
-export interface DebtInfo {
-  /** total unaccrued debt in pool at the current block height */
-  pendingDebt: BigNumber;
-  /** debt accrued by pool as of the last pool interaction */
-  accruedDebt: BigNumber;
-  /** debt under liquidation */
-  debtInAuction: BigNumber;
-}
-
-export interface LoansInfo {
-  /** lender with the least-collateralized loan */
-  maxBorrower: Address;
-  /** highest threshold price (HTP) */
-  maxThresholdPrice: BigNumber;
-  /** number of loans in the pool */
-  noOfLoans: number;
-}
 
 export interface PriceInfo {
   /** price of the highest price bucket with deposit */
@@ -64,6 +45,10 @@ export interface PriceInfo {
 export interface Stats {
   /** amount of liquidity in the pool (including utilized liquidity) */
   poolSize: BigNumber;
+  /** pending amount of debt in the pool */
+  debt: BigNumber;
+  /** amount of debt under liquidation */
+  liquidationDebt: BigNumber;
   /** number of loans in the pool */
   loansCount: number;
   /** minimum amount of debt a borrower can draw */
@@ -81,7 +66,7 @@ export interface Stats {
   /** amount of claimable reserves which has not yet been taken */
   claimableReservesRemaining: BigNumber;
   /** current price at which `1` quote token may be purchased, denominated in `Ajna` */
-  auctionPrice: BigNumber;
+  reserveAuctionPrice: BigNumber;
 }
 
 /**
@@ -223,34 +208,6 @@ abstract class Pool {
   }
 
   /**
-   * retrieves pool debt information
-   * @returns {@link DebtInfo}
-   */
-  async debtInfo(): Promise<DebtInfo> {
-    const [pending, accrued, inAuction] = await debtInfo(this.contract);
-
-    return {
-      pendingDebt: BigNumber.from(pending),
-      accruedDebt: BigNumber.from(accrued),
-      debtInAuction: BigNumber.from(inAuction),
-    };
-  }
-
-  /**
-   * retrieves pool loan information
-   * @returns {@link LoansInfo}
-   */
-  async loansInfo(): Promise<LoansInfo> {
-    const [maxBorrower, maxThresholdPrice, noOfLoans] = await loansInfo(this.contract);
-
-    return {
-      maxBorrower,
-      maxThresholdPrice,
-      noOfLoans: +noOfLoans,
-    };
-  }
-
-  /**
    * retrieves pool reference prices
    * @returns {@link PriceInfo}
    */
@@ -288,8 +245,12 @@ abstract class Pool {
     const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
     const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
 
+    const [debt, , liquidationDebt] = await debtInfo(this.contract);
+
     return {
       poolSize: BigNumber.from(poolSize),
+      debt,
+      liquidationDebt,
       loansCount: +loansCount,
       minDebtAmount: BigNumber.from(minDebtAmount),
       collateralization: BigNumber.from(collateralization),
@@ -298,11 +259,10 @@ abstract class Pool {
       reserves: BigNumber.from(reserves),
       claimableReserves: BigNumber.from(claimableReserves),
       claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
-      auctionPrice: BigNumber.from(auctionPrice),
+      reserveAuctionPrice: BigNumber.from(auctionPrice),
     };
   }
 
-  // TODO: Should return a position object, with an estimateWithdraw() method.
   async getPosition(lenderAddress: Address, bucketIndex: number, proposedWithdrawal?: BigNumber) {
     // determine how much LP the lender has in the bucket
     let insufficientLiquidityForWithdraw = false;

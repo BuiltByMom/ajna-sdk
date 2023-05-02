@@ -64,8 +64,7 @@ export const run = async () => {
   const pool = await getPool();
   console.log('Found pool at ', pool.poolAddress);
   const stats = await pool.getStats();
-  const debtInfo = await pool.debtInfo();
-  console.log('Pool has ', fromWad(stats.poolSize.sub(debtInfo.pendingDebt)), ' available to lend');
+  console.log('Pool has ', fromWad(stats.poolSize.sub(stats.debt)), ' available to lend');
 
   // TODO: parse action 'draw' or 'repay'
 

@@ -16,7 +16,8 @@ import { Address, CallData, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Bucket } from './Bucket';
 import { Pool } from './Pool';
-import { toWad, wdiv } from '../utils/numeric';
+import { toWad, wdiv, wmul } from '../utils/numeric';
+import { debtInfo, depositIndex } from '../contracts/pool';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -159,6 +160,7 @@ class FungiblePool extends Pool {
    */
   async getLoan(borrowerAddress: Address) {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
+    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
       borrowerAddress
@@ -166,19 +168,23 @@ class FungiblePool extends Pool {
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
       poolPricesInfoCall,
+      poolLoansInfoCall,
       borrowerInfoCall,
     ]);
 
     const [, , , , lup] = response[0];
-    const [debt, collateral] = response[1];
+    const [, , , pendingInflator] = response[1];
+    const [debt, collateral, t0np] = response[2];
     const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
+    const np = wmul(t0np, pendingInflator);
 
     return {
       collateralization,
       debt,
       collateral,
       thresholdPrice: tp,
+      neutralPrice: np,
     };
   }
 
@@ -216,21 +222,51 @@ class FungiblePool extends Pool {
     debtAmount: BigNumber,
     collateralAmount: BigNumber
   ): Promise<LoanEstimate> {
+    // obtain the current borrower and pool debt
     const borrowerInfo = await this.contractUtils.borrowerInfo(this.poolAddress, borrowerAddress);
-    const debtInfo = await this.debtInfo();
-    const lupIndex = await this.depositIndex(debtInfo.pendingDebt.add(debtAmount));
+    const [pendingDebt, ,] = await debtInfo(this.contract);
 
-    const newBorrowerDebt = borrowerInfo.debt_.add(debtAmount);
-    const newCollateralPledged = borrowerInfo.collateral_.add(collateralAmount);
-    const thresholdPrice = newBorrowerDebt.div(newCollateralPledged);
+    // determine where this would push the LUP, the current interest rate, and loan count
+    const lupIndexCall = this.contractMulti.depositIndex(pendingDebt.add(debtAmount));
+    const rateCall = this.contractMulti.interestRateInfo();
+    const loansInfoCall = this.contractMulti.loansInfo();
+    const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
+    const data: string[] = await this.ethcallProvider.all([
+      lupIndexCall,
+      rateCall,
+      loansInfoCall,
+      totalAuctionsInPoolCall,
+    ]);
+    const lupIndex: number = +data[0];
+    const rate = BigNumber.from(data[1][0]);
+    let noOfLoans = +data[2][2];
+    const noOfAuctions = +data[3];
+    noOfLoans += noOfAuctions;
+    const lup = indexToPrice(lupIndex);
+
+    // calculate the new amount of debt and collateralization
+    const newDebt = borrowerInfo.debt_.add(debtAmount);
+    const newCollateral = borrowerInfo.collateral_.add(collateralAmount);
+    const thresholdPrice = wdiv(newDebt, newCollateral);
+    const zero = constants.Zero;
+    const encumbered = lup === zero || newDebt === zero ? zero : wdiv(newDebt, lup);
+    const collateralization = encumbered === zero ? toWad(1) : wdiv(newCollateral, encumbered);
+
+    // calculate the hypothetical MOMP and neutral price
+    const mompDebt = noOfLoans === 0 ? constants.One : pendingDebt.div(noOfLoans);
+    const mompIndex = await depositIndex(this.contract, mompDebt);
+    const momp = indexToPrice(mompIndex);
+    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
+    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
 
     return {
-      collateralization: toWad(444),
-      debt: newBorrowerDebt,
-      collateral: newCollateralPledged,
+      collateralization,
+      debt: newDebt,
+      collateral: newCollateral,
       thresholdPrice,
+      neutralPrice,
       lup: indexToPrice(lupIndex),
-      lupIndex: lupIndex.toNumber(),
+      lupIndex: lupIndex,
     };
   }
 

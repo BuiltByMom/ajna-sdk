@@ -10,6 +10,7 @@ import { toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
+import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
 
@@ -23,14 +24,14 @@ const QUOTE_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const BORROWER_2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
+const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
 describe('Ajna SDK Erc20 Pool tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
-  const signerBorrower2 = addAccountFromKey(BORROWER_2_KEY, provider);
+  const signerBorrower2 = addAccountFromKey(BORROWER2_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TWETH = getErc20Contract(WETH_ADDRESS, provider);
   const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
@@ -144,14 +145,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(stats.targetUtilization?.gte(toWad('0'))).toBeTruthy();
   });
 
-  it('should be able to query pool debt', async () => {
-    const debtInfo = await poolA.debtInfo();
-
-    expect(debtInfo.pendingDebt?.gte(debtInfo.accruedDebt)).toBeTruthy();
-    expect(debtInfo.accruedDebt?.gte(BigNumber.from(10005))).toBeTruthy();
-    expect(debtInfo.debtInAuction?.eq(BigNumber.from(0))).toBeTruthy();
-  });
-
   it('should use getPrices and loansInfo successfully', async () => {
     const prices = await poolA.getPrices();
 
@@ -161,11 +154,6 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
     expect(prices.lup).toEqual(indexToPrice(3242));
     expect(prices.lupIndex).toEqual(3242);
-
-    const loansInfo = await poolA.loansInfo();
-    expect(loansInfo.maxBorrower).toEqual(signerBorrower.address);
-    expect(loansInfo.maxThresholdPrice).toEqual(prices.htp);
-    expect(loansInfo.noOfLoans).toEqual(1);
   });
 
   it('should use repayDebt successfully', async () => {
@@ -295,20 +283,22 @@ describe('Ajna SDK Erc20 Pool tests', () => {
   });
 
   it('should use getLoan successfully', async () => {
-    const loan = await pool.getLoan(await signerBorrower.getAddress());
-    expect(loan.collateralization).toEqual(toWad(1));
-    expect(loan.debt).toEqual(toWad(0));
-    expect(loan.collateral).toEqual(toWad(2));
-    expect(loan.thresholdPrice).toEqual(toWad(0));
+    const loan = await poolA.getLoan(await signerBorrower.getAddress());
+    expect(loan.collateralization).toBeBetween(toWad(1.23), toWad(1.24));
+    expect(loan.debt).toBeBetween(toWad(10009), toWad(10018));
+    expect(loan.collateral).toEqual(toWad(130));
+    expect(loan.thresholdPrice).toBeBetween(toWad('76.9'), toWad('77.1'));
+    expect(loan.neutralPrice).toBeBetween(toWad('80.7'), toWad('80.9'));
   });
 
   it('should use estimateLoan successfully', async () => {
-    const loanEstimate = await pool.estimateLoan(signerBorrower.address, toWad(1), toWad(5));
-    const prices = await pool.getPrices();
-    expect(loanEstimate.collateralization.gt(toWad(1))).toBeTruthy();
-    expect(loanEstimate.debt.gte(toWad(1))).toBeTruthy();
-    expect(loanEstimate.collateral.gte(toWad(5))).toBeTruthy();
-    expect(loanEstimate.thresholdPrice.lt(prices.lup)).toBeTruthy();
+    const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
+    const prices = await poolA.getPrices();
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.25), toWad(1.26));
+    expect(loanEstimate.debt).toBeBetween(toWad(15009), toWad(15018));
+    expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad('75.7'), toWad('75.9'));
+    expect(loanEstimate.neutralPrice).toBeBetween(toWad('79.5'), toWad('79.7'));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
   });
@@ -470,8 +460,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       await submitAndVerifyTransaction(tx);
 
       // check pool lup index
-      let debtInfo = await pool.debtInfo();
-      let lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+      let stats = await pool.getStats();
+      let lupIndex = await pool.depositIndex(stats.debt);
       expect(+lupIndex).toBe(bucketIndex);
 
       // check loan, make sure borrower2 threshold price is higher than lup price
@@ -496,8 +486,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
       await submitAndVerifyTransaction(tx);
 
       // check pool lup index again, make sure lup went below bucket 2001
-      debtInfo = await pool.debtInfo();
-      lupIndex = await pool.depositIndex(debtInfo.pendingDebt);
+      stats = await pool.getStats();
+      lupIndex = await pool.depositIndex(stats.debt);
       expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
       // check loan again, make sure borrower2 threshold price is lower than lup price
@@ -673,8 +663,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     // check and repay debt, expected debt value around 1053
     const repayDebtAmountInQuote = toWad(1100);
 
-    let debtInfo = await pool.debtInfo();
-    expect(debtInfo.pendingDebt.lt(repayDebtAmountInQuote)).toBeTruthy();
+    let stats = await pool.getStats();
+    expect(stats.debt.lt(repayDebtAmountInQuote)).toBeTruthy();
 
     tx = await pool.quoteApprove(signerBorrower, allowance);
     await tx.verifyAndSubmit();
@@ -683,8 +673,8 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await submitAndVerifyTransaction(tx);
 
     // check debt info index
-    debtInfo = await pool.debtInfo();
-    expect(debtInfo.pendingDebt.eq(toWad(0))).toBeTruthy();
+    stats = await pool.getStats();
+    expect(stats.debt.eq(toWad(0))).toBeTruthy();
 
     // kick auction
     tx = await pool.kickReserveAuction(signerLender);
@@ -695,9 +685,9 @@ describe('Ajna SDK Erc20 Pool tests', () => {
     await timeJump(provider, jumpTimeSeconds);
 
     // approve ajna tokens
-    const stats = await pool.getStats();
-    const { auctionPrice, claimableReservesRemaining } = stats;
-    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice).add(toWad(1));
+    stats = await pool.getStats();
+    const { reserveAuctionPrice, claimableReservesRemaining } = stats;
+    const ajnaToBurn = wmul(claimableReservesRemaining, reserveAuctionPrice).add(toWad(1));
 
     tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
     await tx.verifyAndSubmit();
