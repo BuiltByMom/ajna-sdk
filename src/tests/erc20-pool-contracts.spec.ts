@@ -270,16 +270,32 @@ describe('Ajna SDK Erc20 Pool tests', () => {
 
   it('should use getPosition successfully', async () => {
     // getPosition on bucket where lender has no LPB
-    let position = await pool.getPosition(signerLender.address, 4321);
+    let position = await poolA.getPosition(signerLender.address, 4321);
     expect(position.lpBalance).toEqual(toWad(0));
     expect(position.depositRedeemable).toEqual(toWad(0));
     expect(position.collateralRedeemable).toEqual(toWad(0));
+    expect(position.depositWithdrawable).toEqual(toWad(0));
 
-    // getPosition on bucket where lender has LPB
-    position = await pool.getPosition(signerLender.address, 1234);
-    expect(position.lpBalance).toEqual(toWad('0.5'));
-    expect(position.depositRedeemable).toEqual(toWad('0.5'));
+    // getPosition on bucket with collateral
+    position = await poolA.getPosition(signerLender.address, 3220);
+    expect(position.lpBalance).toEqual(toWad('330.214012115583477633'));
+    expect(position.depositRedeemable).toEqual(toWad(0));
+    expect(position.collateralRedeemable).toEqual(toWad('3.1'));
+    expect(position.depositWithdrawable).toEqual(toWad(0));
+
+    // getPosition on bucket below LUP
+    position = await poolA.getPosition(signerLender.address, 3261);
+    expect(position.lpBalance).toEqual(toWad(5000));
+    expect(position.depositRedeemable).toEqual(toWad(5000));
     expect(position.collateralRedeemable).toEqual(toWad(0));
+    expect(position.depositWithdrawable).toEqual(position.depositRedeemable);
+
+    // getPosition on bucket above LUP
+    position = await poolA.getPosition(signerLender.address, 3242);
+    expect(position.lpBalance).toEqual(toWad(12000));
+    expect(position.depositRedeemable).toEqual(toWad(12000));
+    expect(position.collateralRedeemable).toEqual(toWad(0));
+    expect(position.depositWithdrawable).toEqual(toWad(5000));
   });
 
   it('should use getLoan successfully', async () => {

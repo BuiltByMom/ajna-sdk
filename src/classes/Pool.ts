@@ -27,6 +27,35 @@ import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
 import { PoolUtils } from './PoolUtils';
 
+export interface DebtInfo {
+  /** total unaccrued debt in pool at the current block height */
+  pendingDebt: BigNumber;
+  /** debt accrued by pool as of the last pool interaction */
+  accruedDebt: BigNumber;
+  /** debt under liquidation */
+  debtInAuction: BigNumber;
+}
+
+export interface LoansInfo {
+  /** lender with the least-collateralized loan */
+  maxBorrower: Address;
+  /** highest threshold price (HTP) */
+  maxThresholdPrice: BigNumber;
+  /** number of loans in the pool */
+  noOfLoans: number;
+}
+
+export interface Position {
+  /** lender's LP balance of a particular bucket */
+  lpBalance: BigNumber;
+  /** LP balance valued in quote token, limited by bucket balance */
+  depositRedeemable: BigNumber;
+  /** LP balance valued in quote token, limited by bucket balance */
+  collateralRedeemable: BigNumber;
+  /** estimated amount of deposit which may be withdrawn without pushing the LUP below HTP */
+  depositWithdrawable: BigNumber;
+}
+
 export interface PriceInfo {
   /** price of the highest price bucket with deposit */
   hpb: BigNumber;
@@ -263,20 +292,21 @@ abstract class Pool {
     };
   }
 
-  async getPosition(lenderAddress: Address, bucketIndex: number, proposedWithdrawal?: BigNumber) {
-    // determine how much LP the lender has in the bucket
-    let insufficientLiquidityForWithdraw = false;
-    const withdrawalAmountBN = proposedWithdrawal ?? BigNumber.from(0);
-
+  /**
+   * shows a lender's position in a single bucket
+   * @returns {@link Position}
+   */
+  async getPosition(lenderAddress: Address, bucketIndex: number): Promise<Position> {
     // pool contract multicall to find pending debt and LPB
-    const poolDebtInfoCall = this.contractMulti.debtInfo();
-    const poolLenderInfoCall = this.contractMulti.lenderInfo(bucketIndex, lenderAddress);
-    let data: string[] = await this.ethcallProvider.all([poolDebtInfoCall, poolLenderInfoCall]);
-    const [pendingDebt] = data[0];
-    const [lpBalance] = data[1];
+    let data: string[] = await this.ethcallProvider.all([
+      this.contractMulti.debtInfo(),
+      this.contractMulti.lenderInfo(bucketIndex, lenderAddress),
+    ]);
+    // const pendingDebt = BigNumber.from(data[0]);
+    const lpBalance = BigNumber.from(data[1][0]);
 
     // info contract multicall to get htp and calculate token amounts for LPB
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
+    const pricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const lpToQuoteCall = this.contractUtilsMulti.lpToQuoteTokens(
       this.poolAddress,
       lpBalance,
@@ -287,25 +317,36 @@ abstract class Pool {
       lpBalance,
       bucketIndex
     );
-    data = await this.ethcallProvider.all([poolPricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
-    const [, , , htpIndex] = data[0];
-    const depositRedeemable = data[1];
-    const collateralRedeemable = data[2];
+    data = await this.ethcallProvider.all([pricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
+    const htpIndex = +data[0][3];
+    const lupIndex = +data[0][5];
+    const depositRedeemable = BigNumber.from(data[1]);
+    const collateralRedeemable = BigNumber.from(data[2]);
 
-    // model withdraw amount as extra debt to estimate where withdrawal would move the LUP
-    const pendingDebtBN = BigNumber.from(pendingDebt);
-    const lupIndexAfterWithdrawal = await this.depositIndex(pendingDebtBN.add(withdrawalAmountBN));
-
-    // if LUP goes below HTP (higher index), lender could not withdraw proposed amount
-    if (lupIndexAfterWithdrawal.toNumber() > +htpIndex) {
-      insufficientLiquidityForWithdraw = true;
+    let depositWithdrawable;
+    if (bucketIndex > lupIndex) {
+      // if withdrawing below the LUP (higher index), the withdrawal cannot affect the LUP
+      depositWithdrawable = depositRedeemable;
+    } else {
+      let liquidityBetweenLupAndHtp = toWad(0);
+      // if pool is collateralized (LUP above HTP), find debt between current LUP and HTP
+      if (lupIndex < htpIndex) {
+        data = await this.ethcallProvider.all([
+          this.contractMulti.depositUpToIndex(lupIndex),
+          this.contractMulti.depositUpToIndex(htpIndex),
+        ]);
+        liquidityBetweenLupAndHtp = BigNumber.from(data[1]).sub(BigNumber.from(data[0]));
+      }
+      depositWithdrawable = liquidityBetweenLupAndHtp.lt(depositRedeemable)
+        ? liquidityBetweenLupAndHtp
+        : depositRedeemable;
     }
 
     return {
       lpBalance,
       depositRedeemable,
       collateralRedeemable,
-      insufficientLiquidityForWithdraw,
+      depositWithdrawable,
     };
   }
 

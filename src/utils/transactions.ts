@@ -126,7 +126,6 @@ class WrappedTransactionClass implements WrappedTransaction {
       if (innerError.code === 3) {
         // if the hash does not map to a custom error, return the node-provided error
         return this.getCustomErrorFromHash(contract, error.error.error.data) ?? error.error.error;
-        // TODO: retest this
       }
     }
     return 'Revert reason unknown';
