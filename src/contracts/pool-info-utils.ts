@@ -12,6 +12,14 @@ export const getPoolInfoUtilsContractMulti = () => {
   return new ContractMulti(Config.poolUtils, PoolInfoUtilsAbi);
 };
 
+export const auctionStatus = async (
+  contractUtils: PoolInfoUtils,
+  poolAddress: Address,
+  borrowerAddress: Address
+) => {
+  return await contractUtils.auctionStatus(poolAddress, borrowerAddress);
+};
+
 export const borrowerInfo = async (
   contractUtils: PoolInfoUtils,
   poolAddress: Address,

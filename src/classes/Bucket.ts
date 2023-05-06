@@ -10,7 +10,7 @@ import { BigNumber } from 'ethers';
 /**
  * Models a price bucket in a pool
  */
-class Bucket {
+export class Bucket {
   provider: SignerOrProvider;
   contractUtils: PoolInfoUtils;
   poolAddress: string;
@@ -71,5 +71,3 @@ class Bucket {
     return await lpToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
   };
 }
-
-export { Bucket };

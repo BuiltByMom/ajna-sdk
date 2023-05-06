@@ -9,15 +9,14 @@ import {
   getErc20PoolContractMulti,
   repayDebt,
   getErc20PoolContract,
-  bucketTake,
-  take,
 } from '../contracts/erc20-pool';
-import { Address, CallData, Loan, SignerOrProvider } from '../types';
+import { Address, Loan, SignerOrProvider } from '../types';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Bucket } from './Bucket';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
 import { debtInfo, depositIndex } from '../contracts/pool';
+import { Liquidation } from './Liquidation';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -273,75 +272,11 @@ class FungiblePool extends Pool {
   // TODO: implement estimateRepay, to see how repaying debt or pulling collateral would impact loan
 
   /**
-   * performs arb take operation during debt liquidation auction
-   * @param signer taker
-   * @param borrowerAddress identifies the loan to liquidate
-   * @param bucketIndex identifies the price bucket
-   * @returns transaction
+   * @param borrowerAddress identifies the loan under liquidation
+   * @returns {@link Liquidation} models liquidation of a specific loan
    */
-  async arbTake(signer: Signer, borrowerAddress: Address, bucketIndex: number) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await bucketTake(contractPoolWithSigner, borrowerAddress, false, bucketIndex);
-  }
-
-  /**
-   * performs deposit take operation during debt liquidation auction
-   * @param signer taker
-   * @param borrowerAddress identifies the loan to liquidate
-   * @param bucketIndex identifies the price bucket
-   * @returns transaction
-   */
-  async depositTake(signer: Signer, borrowerAddress: Address, bucketIndex: number) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await bucketTake(contractPoolWithSigner, borrowerAddress, true, bucketIndex);
-  }
-
-  /**
-   * called by actors to purchase collateral from the auction in exchange for quote token
-   * @param signer taker
-   * @param borrower identifies the loan being liquidated
-   * @param maxAmount max amount of collateral that will be taken from the auction
-   * @returns transaction
-   */
-  async take(
-    signer: Signer,
-    borrowerAddress: Address,
-    maxAmount: BigNumber = constants.MaxUint256
-  ) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await take(
-      contractPoolWithSigner,
-      borrowerAddress,
-      maxAmount,
-      await signer.getAddress()
-    );
-  }
-
-  /**
-   * called by actors to purchase collateral from the auction in exchange for quote token with otption to invoke callback function
-   * @param signer taker
-   * @param borrower identifies the loan being liquidated
-   * @param maxAmount max amount of collateral that will be taken from the auction
-   * @param callee identifies where collateral should be sent and where quote token should be obtained
-   * @param callData if provided, take will assume the callee implements IERC*Taker. Take will send collateral to
-   *                 callee before passing this data to IERC*Taker.atomicSwapCallback. If not provided,
-   *                 the callback function will not be invoked.
-   * @returns transaction
-   */
-  // TODO: needs to be tested properly
-  async takeWithCall(
-    signer: Signer,
-    borrowerAddress: Address,
-    maxAmount: BigNumber,
-    callee: Address,
-    callData?: CallData
-  ) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await take(contractPoolWithSigner, borrowerAddress, maxAmount, callee, callData);
+  getLiquidation(borrowerAddress: Address) {
+    return new Liquidation(this.provider, this.contract, borrowerAddress);
   }
 }
 
