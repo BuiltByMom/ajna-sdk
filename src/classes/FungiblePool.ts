@@ -17,6 +17,7 @@ import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
 import { debtInfo, depositIndex } from '../contracts/pool';
 import { Liquidation } from './Liquidation';
+import { SdkError } from './types';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -277,6 +278,49 @@ class FungiblePool extends Pool {
    */
   getLiquidation(borrowerAddress: Address) {
     return new Liquidation(this.provider, this.contract, borrowerAddress);
+  }
+
+  /**
+   * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
+   * @param signer address to redeem LP
+   * @param bucketIndex identifies the price bucket
+   * @returns transaction
+   */
+  async withdrawLiquidity(signer: Signer, bucketIndex: number) {
+    // get bucket details
+    const bucket = await this.getBucketByIndex(bucketIndex);
+    // determine lender's LP balance
+    const signerAddress = await signer.getAddress();
+    const [lpBalance] = await this.contract.lenderInfo(bucketIndex, signerAddress);
+    // multiply by exchange rate to estimate amount of quote token they can withdraw
+    const estimatedDepositWithdrawal = wmul(lpBalance, bucket.exchangeRate!);
+
+    // if lender has nothing to redeem, exit
+    if (lpBalance.eq(constants.Zero)) {
+      throw new SdkError(`${signerAddress} has no LP in bucket ${bucketIndex}`);
+    }
+
+    // if there is any quote token in the bucket, redeem LP for deposit first
+    const callData = [];
+    if (lpBalance && bucket.deposit!.gt(0)) {
+      callData.push({
+        methodName: 'removeQuoteToken',
+        args: [constants.MaxUint256, bucketIndex],
+      });
+    }
+
+    // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
+    // arbitrary future block where the TX will be processed.
+    const withdrawCollateral =
+      estimatedDepositWithdrawal > bucket.deposit! && bucket.collateral!.gt(0);
+    if (withdrawCollateral) {
+      callData.push({
+        methodName: 'removeCollateral',
+        args: [constants.MaxUint256, bucketIndex],
+      });
+    }
+
+    return await this.multicall(signer, callData);
   }
 }
 
