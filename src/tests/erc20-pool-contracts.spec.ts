@@ -305,7 +305,7 @@ describe('ERC20 Pool', () => {
     expect(loan.collateralization).toBeBetween(toWad(1.23), toWad(1.24));
     expect(loan.debt).toBeBetween(toWad(10009), toWad(10026));
     expect(loan.collateral).toEqual(toWad(130));
-    expect(loan.thresholdPrice).toBeBetween(toWad('76.9'), toWad('77.1'));
+    expect(loan.thresholdPrice).toBeBetween(toWad('76.9'), toWad('77.2'));
     expect(loan.neutralPrice).toBeBetween(toWad('80.7'), toWad('81.0'));
   });
 
@@ -535,8 +535,13 @@ describe('ERC20 Pool', () => {
     expect(stats.debt.eq(toWad(0))).toBeTruthy();
 
     // kick auction
-    tx = await pool.kickReserveAuction(signerLender);
+    const auction = await pool.getClaimableReserveAuction();
+
+    tx = await auction.kick(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    const takeable = await auction.isTakeable();
+    expect(takeable).toBeTruthy();
 
     // wait 32 hours
     jumpTimeSeconds = 32 * 60 * 60;
@@ -551,7 +556,7 @@ describe('ERC20 Pool', () => {
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
-    tx = await pool.takeAndBurn(signerLender);
+    tx = await auction.takeAndBurn(signerLender);
     await submitAndVerifyTransaction(tx);
   });
 

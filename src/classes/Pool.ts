@@ -9,12 +9,10 @@ import {
   debtInfo,
   depositIndex,
   kick,
-  kickReserveAuction,
   kickWithDeposit,
   lenderInfo,
   moveQuoteToken,
   removeQuoteToken,
-  takeReserves,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -24,6 +22,7 @@ import {
 import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { getExpiry } from '../utils/time';
+import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { PoolUtils } from './PoolUtils';
 
 export interface DebtInfo {
@@ -439,24 +438,18 @@ abstract class Pool {
   }
 
   /**
-   * called by actor to start a `Claimable Reserve Auction` (`CRA`).
-   * @returns fenwick index
+   * returns `Claimable Reserve Auction` (`CRA`) wrapper object
+   * @returns CRA wrapper object
    */
-  async kickReserveAuction(signer: Signer) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await kickReserveAuction(contractPoolWithSigner);
-  }
-
-  /**
-   *  purchases claimable reserves during a `CRA` using `Ajna` token.
-   *  @param maxAmount maximum amount of quote token to purchase at the current auction price.
-   *  @return actual amount of reserves taken.
-   */
-  async takeAndBurn(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await takeReserves(contractPoolWithSigner, maxAmount);
+  async getClaimableReserveAuction() {
+    // const date = Date.now();
+    // TODO: add timestamp of creation
+    return new ClaimableReserveAuction(
+      this.provider,
+      this.contract,
+      this.contractUtils,
+      this.poolAddress
+    );
   }
 }
 
