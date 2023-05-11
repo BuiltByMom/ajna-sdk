@@ -44,4 +44,6 @@ export interface Loan {
   thresholdPrice: BigNumber;
   /** kickers penalized if liquidation taken above this price */
   neutralPrice: BigNumber;
+  /** estimated bond kicker must post to liquidate */
+  liquidationBond: BigNumber;
 }

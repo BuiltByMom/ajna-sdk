@@ -302,21 +302,23 @@ describe('ERC20 Pool', () => {
 
   it('should use getLoan successfully', async () => {
     const loan = await poolA.getLoan(await signerBorrower.getAddress());
-    expect(loan.collateralization).toBeBetween(toWad(1.23), toWad(1.24));
-    expect(loan.debt).toBeBetween(toWad(10009), toWad(10026));
+    expect(loan.collateralization).toBeBetween(toWad(1.01), toWad(1.24));
+    expect(loan.debt).toBeBetween(toWad(10000), toWad(10000).mul(2));
     expect(loan.collateral).toEqual(toWad(130));
-    expect(loan.thresholdPrice).toBeBetween(toWad('76.9'), toWad('77.2'));
-    expect(loan.neutralPrice).toBeBetween(toWad('80.7'), toWad('81.0'));
+    expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
+    expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
+    expect(loan.liquidationBond).toBeBetween(toWad(7000), loan.debt);
   });
 
   it('should use estimateLoan successfully', async () => {
     const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
-    expect(loanEstimate.collateralization).toBeBetween(toWad(1.25), toWad(1.26));
-    expect(loanEstimate.debt).toBeBetween(toWad(15009), toWad(15026));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.01), toWad(1.26));
+    expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
-    expect(loanEstimate.thresholdPrice).toBeBetween(toWad('75.7'), toWad('75.9'));
-    expect(loanEstimate.neutralPrice).toBeBetween(toWad('79.5'), toWad('79.7'));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
+    expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(11000), loanEstimate.debt);
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
   });

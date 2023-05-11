@@ -154,12 +154,28 @@ class FungiblePool extends Pool {
   }
 
   /**
+   * calculates bond required to liquidate a borrower
+   * @param momp most optimistic matching price of the pool
+   * @param tp threshold price of the loan
+   * @param borrowerDebt loan debt
+   * @returns required liquidation bond, in WAD precision
+   */
+  calculateLiquidationBond(momp: BigNumber, tp: BigNumber, borrowerDebt: BigNumber) {
+    const tpMompRatio = wdiv(tp, momp);
+    const onePercent = toWad('0.01');
+    const bondFactor = tp.gt(momp) || tpMompRatio.lt(onePercent) ? onePercent : tpMompRatio;
+    // bond = bondFactor * debt
+    return wmul(bondFactor, borrowerDebt);
+  }
+
+  /**
    * retrieve information for a specific loan
    * @param borrowerAddress identifies the loan
    * @returns {@link Loan}
    */
   async getLoan(borrowerAddress: Address) {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
+    const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
@@ -168,13 +184,15 @@ class FungiblePool extends Pool {
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
       poolPricesInfoCall,
+      poolMompCall,
       poolLoansInfoCall,
       borrowerInfoCall,
     ]);
 
     const [, , , , lup] = response[0];
-    const [, , , pendingInflator] = response[1];
-    const [debt, collateral, t0np] = response[2];
+    const momp = BigNumber.from(response[1]);
+    const [, , , pendingInflator] = response[2];
+    const [debt, collateral, t0np] = response[3];
     const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
@@ -185,6 +203,7 @@ class FungiblePool extends Pool {
       collateral,
       thresholdPrice: tp,
       neutralPrice: np,
+      liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
     };
   }
 
@@ -265,6 +284,7 @@ class FungiblePool extends Pool {
       collateral: newCollateral,
       thresholdPrice,
       neutralPrice,
+      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex,
     };
