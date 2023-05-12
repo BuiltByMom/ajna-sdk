@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { timeJump } from '../utils/ganache';
-import { toWad, wmul } from '../utils/numeric';
+import { fromWad, toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -77,6 +77,7 @@ describe('ERC20 Pool', () => {
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(WETH_ADDRESS);
     expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+    expect(pool.toString()).toContain('TWETH-TDAI');
   });
 
   it('should not allow to create existing pool', async () => {
@@ -116,10 +117,10 @@ describe('ERC20 Pool', () => {
     expect(receipt.confirmations).toBe(1);
 
     const bucket = await pool.getBucketByIndex(bucketIndex);
-    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
+    expect((await bucket.getStatus()).bucketLP.gt(0)).toBeTruthy();
 
-    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
-    expect(info.lpBalance?.gt(0)).toBeTruthy();
+    const lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance?.gt(0)).toBeTruthy();
   });
 
   it('should use drawDebt successfully', async () => {
@@ -211,89 +212,87 @@ describe('ERC20 Pool', () => {
     expect(stats).not.toBe('');
   });
 
-  it('should use getIndexesPriceByRange onChain successfully with SHORT min/max range', async () => {
-    const quoteAmount = toWad(0.5);
-    const bucketIndex = 1234;
-
-    let tx = await pool.quoteApprove(signerLender, quoteAmount);
-    await tx.verifyAndSubmit();
-
-    tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
-    await tx.verifyAndSubmit();
-
-    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(0.1));
-
-    expect(buckets.length).not.toBe(0);
-  });
-
-  it('should use getIndexesPriceByRange onChain successfully with MEDIUM min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(1));
-
-    expect(buckets.length).not.toBe(0);
-  });
-
-  it('should use getIndexesPriceByRange onChain successfully with LONG min/max range', async () => {
-    const buckets = await pool.getIndexesPriceByRange(toWad(0.01), toWad(3));
-
-    expect(buckets.length).not.toBe(0);
+  it('should use getBucketsByPriceRange successfully', async () => {
+    const buckets = poolA.getBucketsByPriceRange(toWad(0.01), toWad(0.1));
+    expect(buckets.length).toBe(462);
+    expect(fromWad(buckets[0].price)).toBe('0.099834229041488465');
+    expect(fromWad(buckets[buckets.length / 2].price)).toBe('0.031544177128155871');
+    expect(fromWad(buckets[buckets.length - 1].price)).toBe('0.01001670765474992');
   });
 
   it('should use getBucketByIndex successfully', async () => {
-    const bucket: Bucket = await pool.getBucketByIndex(1234);
+    const bucket: Bucket = await poolA.getBucketByIndex(3220);
+    expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220');
+    expect(bucket.index).toEqual(3220);
+    expect(bucket.price).toEqual(toWad('106.520649069543057301'));
 
-    expect(bucket).not.toBe('');
-    expect(bucket.index).toEqual(1234);
-    expect(bucket.price).toEqual(toWad('2134186.913321104827263532'));
-    expect(bucket.deposit?.gte(toWad('0.5'))).toBeTruthy();
-    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
-    expect(bucket.exchangeRate).toEqual(toWad('1'));
+    const bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.deposit.eq(constants.Zero)).toBeTruthy();
+    expect(bucketStatus.collateral.eq(toWad(3.1))).toBeTruthy();
+    expect(bucketStatus.bucketLP.gt(0)).toBeTruthy();
+    expect(bucketStatus.exchangeRate).toEqual(toWad('1'));
   });
 
   it('should use getBucketByPrice successfully', async () => {
     const bucket: Bucket = await pool.getBucketByPrice(toWad('0.1'));
-
-    expect(bucket).not.toBe('');
+    expect(bucket.toString()).toContain(`TWETH-TDAI bucket 4618 (0.099834`);
     expect(bucket.index).toEqual(4618);
     expect(bucket.price).toEqual(toWad('0.099834229041488465'));
-    expect(bucket.deposit).toEqual(toWad('0'));
-    expect(bucket.bucketLPs).toEqual(toWad('0'));
-    expect(bucket.exchangeRate).toEqual(toWad('1'));
+
+    const bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.deposit).toEqual(toWad('0'));
+    expect(bucketStatus.bucketLP).toEqual(toWad('0'));
+    expect(bucketStatus.exchangeRate).toEqual(toWad('1'));
   });
 
   it('should use lpToQuoteTokens successfully', async () => {
-    const bucket = await pool.getBucketByIndex(2000);
+    const bucket = await poolA.getBucketByIndex(3261);
+    expect(bucket.toString()).toContain('TESTA-TDAI bucket 3261 (86.821');
 
-    expect(bucket).not.toBe('');
-    expect(bucket.exchangeRate?.gte(toWad('1'))).toBeTruthy();
-    expect(bucket.exchangeRate?.lt(toWad('1.1'))).toBeTruthy();
-    const deposit = await bucket.lpToQuoteTokens(toWad('10'));
-    expect(deposit.gt(toWad('4'))).toBeTruthy();
+    const lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance.gt(constants.Zero)).toBeTruthy();
+    const deposit = await bucket.lpToQuoteTokens(lpBalance);
+    expect(deposit.gte(toWad('5000'))).toBeTruthy();
+  });
+
+  it('should use lpToCollateral successfully', async () => {
+    const bucket = await poolA.getBucketByIndex(3220);
+    expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220 (106.52');
+
+    const lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance.gt(constants.Zero)).toBeTruthy();
+    const collateral = await bucket.lpToCollateral(lpBalance);
+    expect(collateral.eq(toWad(3.1))).toBeTruthy();
   });
 
   it('should use getPosition successfully', async () => {
     // getPosition on bucket where lender has no LPB
-    let position = await poolA.getPosition(signerLender.address, 4321);
+    let bucket = await poolA.getBucketByIndex(4321);
+    let position = await bucket.getPosition(signerLender.address);
     expect(position.lpBalance).toEqual(toWad(0));
     expect(position.depositRedeemable).toEqual(toWad(0));
     expect(position.collateralRedeemable).toEqual(toWad(0));
     expect(position.depositWithdrawable).toEqual(toWad(0));
 
     // getPosition on bucket with collateral
-    position = await poolA.getPosition(signerLender.address, 3220);
+    bucket = await poolA.getBucketByIndex(3220);
+    position = await bucket.getPosition(signerLender.address);
     expect(position.lpBalance).toEqual(toWad('330.214012115583477633'));
     expect(position.depositRedeemable).toEqual(toWad(0));
     expect(position.collateralRedeemable).toEqual(toWad('3.1'));
     expect(position.depositWithdrawable).toEqual(toWad(0));
 
     // getPosition on bucket below LUP
-    position = await poolA.getPosition(signerLender.address, 3261);
+    bucket = await poolA.getBucketByIndex(3261);
+    position = await bucket.getPosition(signerLender.address);
     expect(position.lpBalance).toEqual(toWad(5000));
     expect(position.depositRedeemable).toEqual(toWad(5000));
     expect(position.collateralRedeemable).toEqual(toWad(0));
     expect(position.depositWithdrawable).toEqual(position.depositRedeemable);
 
     // getPosition on bucket above LUP
-    position = await poolA.getPosition(signerLender.address, 3242);
+    bucket = await poolA.getBucketByIndex(3242);
+    position = await bucket.getPosition(signerLender.address);
     expect(position.lpBalance).toEqual(toWad(12000));
     expect(position.depositRedeemable).toEqual(toWad(12000));
     expect(position.collateralRedeemable).toEqual(toWad(0));
@@ -302,7 +301,7 @@ describe('ERC20 Pool', () => {
 
   it('should use getLoan successfully', async () => {
     const loan = await poolA.getLoan(await signerBorrower.getAddress());
-    expect(loan.collateralization).toBeBetween(toWad(1.01), toWad(1.24));
+    expect(loan.collateralization).toBeBetween(toWad(1.23), toWad(1.24));
     expect(loan.debt).toBeBetween(toWad(10000), toWad(10000).mul(2));
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
@@ -313,7 +312,7 @@ describe('ERC20 Pool', () => {
   it('should use estimateLoan successfully', async () => {
     const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
-    expect(loanEstimate.collateralization).toBeBetween(toWad(1.01), toWad(1.26));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.25), toWad(1.26));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
@@ -333,17 +332,17 @@ describe('ERC20 Pool', () => {
 
   it('should use multicall successfully', async () => {
     const quoteAmount = 10;
-    const bucketIndex = 3330;
+    const bucketIndex1 = 3330;
     const bucketIndex2 = 3331;
     const allowance = 100000000;
 
-    let bucket = await pool.getBucketByIndex(bucketIndex);
-    let bucket2 = await pool.getBucketByIndex(bucketIndex2);
-    let bucketDeposit = bucket.deposit || BigNumber.from(0);
-    let bucket2Deposit = bucket2.deposit || BigNumber.from(0);
+    const bucket1 = await pool.getBucketByIndex(bucketIndex1);
+    const bucket2 = await pool.getBucketByIndex(bucketIndex2);
+    let bucketStatus1 = await bucket1.getStatus();
+    let bucketStatus2 = await bucket2.getStatus();
 
-    expect(bucketDeposit.eq(0)).toBeTruthy();
-    expect(bucket2Deposit.eq(0)).toBeTruthy();
+    expect(bucketStatus1.deposit.eq(0)).toBeTruthy();
+    expect(bucketStatus2.deposit.eq(0)).toBeTruthy();
 
     let tx = await pool.quoteApprove(signerLender, toWad(allowance));
     let response = await tx.verifyAndSubmitResponse();
@@ -355,7 +354,7 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex, await getExpiry(provider)],
+        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider)],
       },
       {
         methodName: 'addQuoteToken',
@@ -367,13 +366,11 @@ describe('ERC20 Pool', () => {
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
-    bucket = await pool.getBucketByIndex(bucketIndex);
-    bucket2 = await pool.getBucketByIndex(bucketIndex2);
-    bucketDeposit = bucket.deposit || BigNumber.from(0);
-    bucket2Deposit = bucket2.deposit || BigNumber.from(0);
+    bucketStatus1 = await bucket1.getStatus();
+    bucketStatus2 = await bucket2.getStatus();
 
-    expect(bucketDeposit.gt(0)).toBeTruthy();
-    expect(bucket2Deposit.gt(0)).toBeTruthy();
+    expect(bucketStatus1.deposit.gt(0)).toBeTruthy();
+    expect(bucketStatus2.deposit.gt(0)).toBeTruthy();
   });
 
   it('should use addCollateral successfully', async () => {
@@ -383,8 +380,9 @@ describe('ERC20 Pool', () => {
     let tx = await pool.collateralApprove(signerLender, collateralAmount);
     await tx.verifyAndSubmit();
 
-    let bucket = await pool.getBucketByIndex(bucketIndex);
-    const bucketCollateralBefore = bucket.collateral || BigNumber.from(0);
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    let bucketStatus = await bucket.getStatus();
+    const bucketCollateralBefore = bucketStatus.collateral || BigNumber.from(0);
 
     tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount);
     const receipt = await tx.verifyAndSubmit();
@@ -392,22 +390,12 @@ describe('ERC20 Pool', () => {
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
 
-    bucket = await pool.getBucketByIndex(bucketIndex);
-    expect(bucket.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
-    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
+    bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
+    expect(bucketStatus.bucketLP?.gt(0)).toBeTruthy();
 
-    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
-    expect(info.lpBalance?.gt(0)).toBeTruthy();
-  });
-
-  it('should use lpToQuoteCollateral successfully', async () => {
-    const bucketIndex = 1234;
-    const bucket = await pool.getBucketByIndex(bucketIndex);
-    expect(bucket).not.toBe('');
-
-    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
-    const deposit = await bucket.lpToCollateral(info.lpBalance);
-    expect(deposit.eq(toWad(0.5))).toBeTruthy();
+    const lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance?.gt(0)).toBeTruthy();
   });
 
   it('should reject addCollateral if expired ttl set', async () => {
@@ -432,10 +420,10 @@ describe('ERC20 Pool', () => {
     const receipt = await tx.verifyAndSubmit();
 
     const bucket = await pool.getBucketByIndex(bucketIndex);
-    const bucketCollateral = bucket.collateral ?? BigNumber.from(0);
+    const bucketStatus = await bucket.getStatus();
 
     expect(receipt.transactionHash).not.toBe('');
-    expect(bucketCollateral.eq(0)).toBeTruthy();
+    expect(bucketStatus.collateral.eq(0)).toBeTruthy();
   });
 
   it('removeCollateral should reject if bucket has 0 collateral balance', async () => {
@@ -443,8 +431,8 @@ describe('ERC20 Pool', () => {
     const bucketIndex = 1234;
 
     const bucket = await pool.getBucketByIndex(bucketIndex);
-    const bucketCollateral = bucket.collateral ?? BigNumber.from(0);
-    expect(bucketCollateral.eq(0)).toBeTruthy();
+    const bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.collateral.eq(0)).toBeTruthy();
 
     const tx = await pool.removeCollateral(signerLender, bucketIndex, collateralAmount);
 
@@ -503,8 +491,8 @@ describe('ERC20 Pool', () => {
     tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
     await tx.verifyAndSubmit();
 
-    const info = await pool.lenderInfo(signerLender.address, bucketIndex);
-    expect(info.lpBalance?.gt(0)).toBeTruthy();
+    const bucket = await pool.getBucketByIndex(bucketIndex);
+    expect((await bucket.lpBalance(signerLender.address)).gt(0)).toBeTruthy();
 
     // draw debt
     const amountToBorrow = toWad(1000);
@@ -573,40 +561,36 @@ describe('ERC20 Pool', () => {
     tx = await poolA.addCollateral(signerLender, bucketIndex, collateralAmount);
     await tx.verifyAndSubmit();
 
-    let info = await poolA.lenderInfo(signerLender.address, bucketIndex);
-
     // lender2 deposits quote token
     tx = await poolA.quoteApprove(signerLender2, quoteAmount);
     await tx.verifyAndSubmit();
     tx = await poolA.addQuoteToken(signerLender2, bucketIndex, quoteAmount);
     await tx.verifyAndSubmit();
 
-    info = await poolA.lenderInfo(signerLender2.address, bucketIndex);
-    let bucket = await poolA.getBucketByIndex(bucketIndex);
+    const bucket = await poolA.getBucketByIndex(bucketIndex);
+    let bucketStatus = await bucket.getStatus();
 
-    expect(bucket.deposit?.gt(0)).toBeTruthy();
-    expect(bucket.collateral?.gt(0)).toBeTruthy();
-    expect(bucket.bucketLPs?.gt(0)).toBeTruthy();
-    expect(info.lpBalance?.gt(0)).toBeTruthy();
+    expect(bucketStatus.deposit.gt(0)).toBeTruthy();
+    expect(bucketStatus.collateral.gt(0)).toBeTruthy();
+    expect(bucketStatus.bucketLP.gt(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender2.address)).gt(0)).toBeTruthy();
 
     // lender2 withdraws quote token
-    tx = await poolA.withdrawLiquidity(signerLender2, bucketIndex);
+    tx = await bucket.withdrawLiquidity(signerLender2);
     await tx.verifyAndSubmit();
-    info = await poolA.lenderInfo(signerLender2.address, bucketIndex);
-    expect(info.lpBalance?.eq(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender2.address)).eq(0)).toBeTruthy();
 
     // lender withdraws collateral
-    tx = await poolA.withdrawLiquidity(signerLender, bucketIndex);
+    tx = await bucket.withdrawLiquidity(signerLender);
     await tx.verifyAndSubmit();
-    info = await poolA.lenderInfo(signerLender.address, bucketIndex);
-    expect(info.lpBalance?.eq(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender.address)).eq(0)).toBeTruthy();
 
-    bucket = await poolA.getBucketByIndex(bucketIndex);
-    expect(bucket.bucketLPs?.eq(0)).toBeTruthy();
+    bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.bucketLP.eq(0)).toBeTruthy();
 
     // lender withdraws with no LP
     await expect(async () => {
-      await poolA.withdrawLiquidity(signerLender, bucketIndex);
+      await bucket.withdrawLiquidity(signerLender);
     }).rejects.toThrow('no LP in bucket');
   });
 });

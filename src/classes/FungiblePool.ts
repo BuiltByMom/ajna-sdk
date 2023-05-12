@@ -1,6 +1,7 @@
 import { BigNumber, Signer, constants } from 'ethers';
 import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
+import { getErc20Contract } from '../contracts/erc20';
 import {
   addCollateral,
   removeCollateral,
@@ -10,14 +11,12 @@ import {
   repayDebt,
   getErc20PoolContract,
 } from '../contracts/erc20-pool';
+import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, Loan, SignerOrProvider } from '../types';
-import { indexToPrice, priceToIndex } from '../utils/pricing';
-import { Bucket } from './Bucket';
+import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
-import { debtInfo, depositIndex } from '../contracts/pool';
-import { Liquidation } from './Liquidation';
-import { SdkError } from './types';
+import { indexToPrice } from '../utils/pricing';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -27,9 +26,9 @@ export interface LoanEstimate extends Loan {
 }
 
 /**
- * Models a pool with ERC-20 collateral
+ * models a pool with ERC-20 collateral
  */
-class FungiblePool extends Pool {
+export class FungiblePool extends Pool {
   constructor(
     provider: SignerOrProvider,
     poolAddress: Address,
@@ -46,7 +45,17 @@ class FungiblePool extends Pool {
       getErc20PoolContract(poolAddress, provider),
       getErc20PoolContractMulti(poolAddress)
     );
-    this.initialize();
+  }
+
+  async initialize() {
+    await super.initialize();
+    const collateralToken = getErc20Contract(this.collateralAddress, this.provider);
+    this.collateralSymbol = (await collateralToken.symbol()).replace(/"+/g, '');
+    this.name = this.collateralSymbol + '-' + this.quoteSymbol;
+  }
+
+  toString() {
+    return this.name + ' pool';
   }
 
   /**
@@ -208,28 +217,6 @@ class FungiblePool extends Pool {
   }
 
   /**
-   * @param bucketIndex fenwick index of the desired bucket
-   * @returns {@link Bucket} modeling bucket at specified index
-   */
-  async getBucketByIndex(bucketIndex: number) {
-    const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
-    await bucket.initialize();
-    return bucket;
-  }
-
-  /**
-   * @param price price within range supported by Ajna
-   * @returns {@link Bucket} modeling bucket at nearest to specified price
-   */
-  async getBucketByPrice(price: BigNumber) {
-    const bucketIndex = priceToIndex(price);
-    // priceToIndex should throw upon invalid price
-    const bucket = new Bucket(this.provider, this.poolAddress, bucketIndex);
-    await bucket.initialize();
-    return bucket;
-  }
-
-  /**
    * estimates how drawing more debt and/or pledging more collateral would impact loan
    * @param borrowerAddress identifies the loan
    * @param debtAmount additional amount of debt to draw (or 0)
@@ -299,49 +286,4 @@ class FungiblePool extends Pool {
   getLiquidation(borrowerAddress: Address) {
     return new Liquidation(this.provider, this.contract, borrowerAddress);
   }
-
-  /**
-   * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
-   * @param signer address to redeem LP
-   * @param bucketIndex identifies the price bucket
-   * @returns transaction
-   */
-  async withdrawLiquidity(signer: Signer, bucketIndex: number) {
-    // get bucket details
-    const bucket = await this.getBucketByIndex(bucketIndex);
-    // determine lender's LP balance
-    const signerAddress = await signer.getAddress();
-    const [lpBalance] = await this.contract.lenderInfo(bucketIndex, signerAddress);
-    // multiply by exchange rate to estimate amount of quote token they can withdraw
-    const estimatedDepositWithdrawal = wmul(lpBalance, bucket.exchangeRate!);
-
-    // if lender has nothing to redeem, exit
-    if (lpBalance.eq(constants.Zero)) {
-      throw new SdkError(`${signerAddress} has no LP in bucket ${bucketIndex}`);
-    }
-
-    // if there is any quote token in the bucket, redeem LP for deposit first
-    const callData = [];
-    if (lpBalance && bucket.deposit!.gt(0)) {
-      callData.push({
-        methodName: 'removeQuoteToken',
-        args: [constants.MaxUint256, bucketIndex],
-      });
-    }
-
-    // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
-    // arbitrary future block where the TX will be processed.
-    const withdrawCollateral =
-      estimatedDepositWithdrawal > bucket.deposit! && bucket.collateral!.gt(0);
-    if (withdrawCollateral) {
-      callData.push({
-        methodName: 'removeCollateral',
-        args: [constants.MaxUint256, bucketIndex],
-      });
-    }
-
-    return await this.multicall(signer, callData);
-  }
 }
-
-export { FungiblePool };

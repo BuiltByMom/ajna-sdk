@@ -3,6 +3,7 @@ import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { PoolInfoUtils } from 'types/contracts';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
+import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
@@ -10,7 +11,6 @@ import {
   depositIndex,
   kick,
   kickWithDeposit,
-  lenderInfo,
   moveQuoteToken,
   removeQuoteToken,
 } from '../contracts/pool';
@@ -21,9 +21,12 @@ import {
 } from '../contracts/pool-info-utils';
 import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
+import { priceToIndex } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
+import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
+import { SdkError } from './types';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -41,17 +44,6 @@ export interface LoansInfo {
   maxThresholdPrice: BigNumber;
   /** number of loans in the pool */
   noOfLoans: number;
-}
-
-export interface Position {
-  /** lender's LP balance of a particular bucket */
-  lpBalance: BigNumber;
-  /** LP balance valued in quote token, limited by bucket balance */
-  depositRedeemable: BigNumber;
-  /** LP balance valued in quote token, limited by bucket balance */
-  collateralRedeemable: BigNumber;
-  /** estimated amount of deposit which may be withdrawn without pushing the LUP below HTP */
-  depositWithdrawable: BigNumber;
 }
 
 export interface PriceInfo {
@@ -99,16 +91,19 @@ export interface Stats {
 /**
  * Abstract baseclass used for pools, regardless of collateral type.
  */
-abstract class Pool {
+export abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
   contractMulti: ContractMulti;
   contractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
   poolAddress: Address;
-  quoteAddress: Address;
   collateralAddress: Address;
+  collateralSymbol: string | undefined;
+  quoteAddress: Address;
+  quoteSymbol: string | undefined;
   ajnaAddress: Address;
+  name: string;
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
 
@@ -129,6 +124,7 @@ abstract class Pool {
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
     this.ajnaAddress = ajnaAddress;
+    this.name = 'pool';
     this.ethcallProvider = {} as ProviderMulti;
     this.contract = contract;
     this.contractMulti = contractMulti;
@@ -137,6 +133,8 @@ abstract class Pool {
   async initialize() {
     this.ethcallProvider = new ProviderMulti();
     await this.ethcallProvider.init(this.provider as Provider);
+    const quoteToken = getErc20Contract(this.quoteAddress, this.provider);
+    this.quoteSymbol = (await quoteToken.symbol()).replace(/"+/g, '');
   }
 
   /**
@@ -218,23 +216,6 @@ abstract class Pool {
     return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
   }
 
-  // TODO: eliminate; redundant with getPosition
-  /**
-   * checks a lender's LP balance in a bucket
-   * @param lenderAddress lender
-   * @param index fenwick index of the desired bucket
-   * @returns LP balance and timestamp of last deposit for the bucket
-   */
-  async lenderInfo(lenderAddress: Address, index: number) {
-    const [lpBalance, depositTime] = await lenderInfo(this.contract, lenderAddress, index);
-
-    // TODO: contracts use depositTime for handling bucket bankruptcy; suggest we not expose it here
-    return {
-      lpBalance,
-      depositTime,
-    };
-  }
-
   /**
    * retrieves pool reference prices
    * @returns {@link PriceInfo}
@@ -291,65 +272,6 @@ abstract class Pool {
     };
   }
 
-  // TODO: move to Bucket class
-  /**
-   * shows a lender's position in a single bucket
-   * @returns {@link Position}
-   */
-  async getPosition(lenderAddress: Address, bucketIndex: number): Promise<Position> {
-    // pool contract multicall to find pending debt and LPB
-    let data: string[] = await this.ethcallProvider.all([
-      this.contractMulti.debtInfo(),
-      this.contractMulti.lenderInfo(bucketIndex, lenderAddress),
-    ]);
-    // const pendingDebt = BigNumber.from(data[0]);
-    const lpBalance = BigNumber.from(data[1][0]);
-
-    // info contract multicall to get htp and calculate token amounts for LPB
-    const pricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const lpToQuoteCall = this.contractUtilsMulti.lpToQuoteTokens(
-      this.poolAddress,
-      lpBalance,
-      bucketIndex
-    );
-    const lpToCollateralCall = this.contractUtilsMulti.lpToCollateral(
-      this.poolAddress,
-      lpBalance,
-      bucketIndex
-    );
-    data = await this.ethcallProvider.all([pricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
-    const htpIndex = +data[0][3];
-    const lupIndex = +data[0][5];
-    const depositRedeemable = BigNumber.from(data[1]);
-    const collateralRedeemable = BigNumber.from(data[2]);
-
-    let depositWithdrawable;
-    if (bucketIndex > lupIndex) {
-      // if withdrawing below the LUP (higher index), the withdrawal cannot affect the LUP
-      depositWithdrawable = depositRedeemable;
-    } else {
-      let liquidityBetweenLupAndHtp = toWad(0);
-      // if pool is collateralized (LUP above HTP), find debt between current LUP and HTP
-      if (lupIndex < htpIndex) {
-        data = await this.ethcallProvider.all([
-          this.contractMulti.depositUpToIndex(lupIndex),
-          this.contractMulti.depositUpToIndex(htpIndex),
-        ]);
-        liquidityBetweenLupAndHtp = BigNumber.from(data[1]).sub(BigNumber.from(data[0]));
-      }
-      depositWithdrawable = liquidityBetweenLupAndHtp.lt(depositRedeemable)
-        ? liquidityBetweenLupAndHtp
-        : depositRedeemable;
-    }
-
-    return {
-      lpBalance,
-      depositRedeemable,
-      collateralRedeemable,
-      depositWithdrawable,
-    };
-  }
-
   /**
    * measuring from highest price bucket with liquidity, determines index at which all liquidity in
    * the book has been utilized by specified debt; useful for estimating LUP
@@ -372,38 +294,40 @@ abstract class Pool {
     return await multicall(contractPoolWithSigner, callData);
   }
 
-  // TODO: calculate priceToIndex client-side, return any buckets with liquidity, rename accordingly
-  async getIndexesPriceByRange(minPrice: BigNumber, maxPrice: BigNumber) {
-    const minIndexCall = this.contractUtilsMulti.priceToIndex(minPrice);
-    const maxIndexCall = this.contractUtilsMulti.priceToIndex(maxPrice);
-    const response: BigNumber[][] = await this.ethcallProvider.all([minIndexCall, maxIndexCall]);
+  /**
+   * @param bucketIndex fenwick index of the desired bucket
+   * @returns {@link Bucket} modeling bucket at specified index
+   */
+  async getBucketByIndex(bucketIndex: number) {
+    const bucket = new Bucket(this.provider, this, bucketIndex);
+    return bucket;
+  }
 
-    const minIndex = response[0];
-    const maxIndex = response[1];
+  /**
+   * @param price price within range supported by Ajna
+   * @returns {@link Bucket} modeling bucket at nearest to specified price
+   */
+  async getBucketByPrice(price: BigNumber) {
+    const bucketIndex = priceToIndex(price);
+    // priceToIndex should throw upon invalid price
+    const bucket = new Bucket(this.provider, this, bucketIndex);
+    return bucket;
+  }
 
-    const indexToPriceCalls = [];
+  /**
+   * @param minPrice lowest desired price
+   * @param maxPrice highest desired price
+   * @returns array of {@link Bucket}s between specified prices
+   */
+  getBucketsByPriceRange(minPrice: BigNumber, maxPrice: BigNumber) {
+    if (minPrice.gt(maxPrice)) throw new SdkError('maxPrice must exceed minPrice');
 
-    for (let index = Number(maxIndex.toString()); index <= Number(minIndex.toString()); index++) {
-      indexToPriceCalls.push(this.contractUtilsMulti.indexToPrice(index));
+    const buckets = new Array<Bucket>();
+    for (let index = priceToIndex(maxPrice); index <= priceToIndex(minPrice); index++) {
+      buckets.push(new Bucket(this.provider, this, index));
     }
 
-    const responseCalls: BigNumber[] = await this.ethcallProvider.all(indexToPriceCalls);
-
-    const buckets: { index: number; price: BigNumber }[] = [];
-    let index = Number(maxIndex.toString());
-
-    responseCalls.forEach((price, ix) => {
-      const swiftIndex = index + ix;
-
-      buckets[swiftIndex] = {
-        index: swiftIndex,
-        price,
-      };
-
-      index = swiftIndex;
-    });
-
-    return buckets.filter(element => !!element);
+    return buckets;
   }
 
   async kickWithDeposit(signer: Signer, index: number, limitIndex: number = MAX_FENWICK_INDEX) {
@@ -452,5 +376,3 @@ abstract class Pool {
     );
   }
 }
-
-export { Pool };

@@ -45,7 +45,7 @@ export class Liquidation {
   }
 
   /**
-   *  @notice Retrieve current state of the auction.
+   *  Retrieve current state of the auction.
    *  @returns {@link AuctionStatus}
    */
   async getStatus(): Promise<AuctionStatus> {

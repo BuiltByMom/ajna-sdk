@@ -46,6 +46,7 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
       quoteAddress,
       Config.ajnaToken
     );
+    await newPool.initialize();
 
     return newPool;
   }

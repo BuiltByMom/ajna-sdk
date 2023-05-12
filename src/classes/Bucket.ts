@@ -1,73 +1,237 @@
+import { indexToPrice } from '../utils/pricing';
+import { multicall } from '../contracts/common';
+import { lenderInfo } from '../contracts/pool';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
   lpToQuoteTokens,
   lpToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
-import { BigNumber } from 'ethers';
+import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
+import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { SdkError } from './types';
+import { fromWad, toWad, wmul } from '../utils/numeric';
+import { Pool } from './Pool';
+
+export interface BucketStatus {
+  /* amount of quote token, including accrued interest, owed to the bucket */
+  deposit: BigNumber;
+  /* amount of available/unencumbered collateral deposited into the bucket */
+  collateral: BigNumber;
+  /* total amount of LP in the bucket across all lenders */
+  bucketLP: BigNumber;
+  /* values LP balance in quote token terms */
+  exchangeRate: BigNumber;
+}
+
+export interface Position {
+  /** lender's LP balance of a particular bucket */
+  lpBalance: BigNumber;
+  /** LP balance valued in quote token, limited by bucket balance */
+  depositRedeemable: BigNumber;
+  /** LP balance valued in quote token, limited by bucket balance */
+  collateralRedeemable: BigNumber;
+  /** estimated amount of deposit which may be withdrawn without pushing the LUP below HTP */
+  depositWithdrawable: BigNumber;
+}
 
 /**
- * Models a price bucket in a pool
+ * models a price bucket in a pool
  */
 export class Bucket {
   provider: SignerOrProvider;
   contractUtils: PoolInfoUtils;
-  poolAddress: string;
+  poolContract: Contract;
+  pool: Pool;
+  bucketName: string;
   index: number;
-  wasInitialized: boolean;
-  // All properties should be defined after initialize().
-  price: BigNumber | undefined;
-  deposit: BigNumber | undefined;
-  collateral: BigNumber | undefined;
-  bucketLPs: BigNumber | undefined;
-  exchangeRate: BigNumber | undefined;
+  price: BigNumber;
 
   /**
-   * @param provider    JSON-RPC endpoint.
-   * @param poolAddress Identifies pool to which this bucket belongs.
-   * @param index       Price bucket index.
+   * @param provider JSON-RPC endpoint.
+   * @param pool     Pool to which this bucket belongs.
+   * @param index    Price bucket index.
    */
-  constructor(provider: SignerOrProvider, poolAddress: Address, index: number) {
+  constructor(provider: SignerOrProvider, pool: Pool, index: number) {
     this.provider = provider;
-    this.poolAddress = poolAddress;
+    this.pool = pool;
+    this.poolContract = pool.contract;
     this.contractUtils = getPoolInfoUtilsContract(this.provider);
+
     this.index = index;
-    this.wasInitialized = false;
+    this.price = indexToPrice(index);
+    this.bucketName = `${pool.name} bucket ${this.index} (${fromWad(this.price)})`;
+  }
+
+  toString() {
+    return this.bucketName;
   }
 
   /**
-   * @notice Load bucket state from PoolInfoUtils contract
+   * enables signer to bundle transactions together atomically in a single request
+   * @param signer consumer initiating transactions
+   * @param callData array of transactions to sign and submit
+   * @returns transaction
    */
-  initialize = async () => {
-    const [bucketPrice, deposit, collateral, bucketLPs, , exchangeRate] = await bucketInfo(
+  async multicall(signer: Signer, callData: Array<CallData>) {
+    const contractPoolWithSigner = this.poolContract.connect(signer);
+    return await multicall(contractPoolWithSigner, callData);
+  }
+
+  /**
+   * retrieve current state of the bucket.
+   * @returns {@link BucketStatus}
+   */
+  async getStatus(): Promise<BucketStatus> {
+    const [, deposit, collateral, bucketLP, , exchangeRate] = await bucketInfo(
       this.contractUtils,
-      this.poolAddress,
+      this.poolContract.address,
       this.index
     );
-    this.price = bucketPrice;
-    this.deposit = deposit;
-    this.collateral = collateral;
-    this.bucketLPs = bucketLPs;
-    this.exchangeRate = exchangeRate;
-    this.wasInitialized = true;
-  };
+
+    return {
+      deposit,
+      collateral,
+      bucketLP,
+      exchangeRate,
+    };
+  }
 
   /**
-   *  @notice Calculate the amount of quote tokens in bucket for a given amount of LP Tokens.
-   *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
-   *  @return The exact amount of quote tokens that can be exchanged for the given LP Tokens, WAD units.
+   * shows a lender's position in a single bucket
+   * @returns {@link Position}
+   */
+  async getPosition(lenderAddress: Address): Promise<Position> {
+    // pool contract multicall to find pending debt and LPB
+    let data: string[] = await this.pool.ethcallProvider.all([
+      this.pool.contractMulti.debtInfo(),
+      this.pool.contractMulti.lenderInfo(this.index, lenderAddress),
+    ]);
+    const lpBalance = BigNumber.from(data[1][0]);
+
+    // info contract multicall to get htp and calculate token amounts for LPB
+    const pricesInfoCall = this.pool.contractUtilsMulti.poolPricesInfo(this.poolContract.address);
+    const lpToQuoteCall = this.pool.contractUtilsMulti.lpToQuoteTokens(
+      this.poolContract.address,
+      lpBalance,
+      this.index
+    );
+    const lpToCollateralCall = this.pool.contractUtilsMulti.lpToCollateral(
+      this.poolContract.address,
+      lpBalance,
+      this.index
+    );
+    data = await this.pool.ethcallProvider.all([pricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
+    const htpIndex = +data[0][3];
+    const lupIndex = +data[0][5];
+    const depositRedeemable = BigNumber.from(data[1]);
+    const collateralRedeemable = BigNumber.from(data[2]);
+
+    let depositWithdrawable;
+    if (this.index > lupIndex) {
+      // if withdrawing below the LUP (higher index), the withdrawal cannot affect the LUP
+      depositWithdrawable = depositRedeemable;
+    } else {
+      let liquidityBetweenLupAndHtp = toWad(0);
+      // if pool is collateralized (LUP above HTP), find debt between current LUP and HTP
+      if (lupIndex < htpIndex) {
+        data = await this.pool.ethcallProvider.all([
+          this.pool.contractMulti.depositUpToIndex(lupIndex),
+          this.pool.contractMulti.depositUpToIndex(htpIndex),
+        ]);
+        liquidityBetweenLupAndHtp = BigNumber.from(data[1]).sub(BigNumber.from(data[0]));
+      }
+      depositWithdrawable = liquidityBetweenLupAndHtp.lt(depositRedeemable)
+        ? liquidityBetweenLupAndHtp
+        : depositRedeemable;
+    }
+
+    return {
+      lpBalance,
+      depositRedeemable,
+      collateralRedeemable,
+      depositWithdrawable,
+    };
+  }
+
+  /**
+   * checks a lender's LP balance in a bucket
+   * @param lenderAddress lender
+   * @param index fenwick index of the desired bucket
+   * @returns LP balance
+   */
+  async lpBalance(lenderAddress: Address) {
+    const [lpBalance] = await lenderInfo(this.poolContract, lenderAddress, this.index);
+    return lpBalance;
+  }
+
+  /**
+   *  Calculate how much quote token could currently be exchanged for LP.
+   *  @param lpBalance amount of LP to redeem for quote token
+   *  @returns The current amount of quote tokens that can be exchanged for the given LP, WAD units.
    */
   lpToQuoteTokens = async (lpTokens: BigNumber) => {
-    return await lpToQuoteTokens(this.contractUtils, this.poolAddress, lpTokens, this.index);
+    return await lpToQuoteTokens(
+      this.contractUtils,
+      this.poolContract.address,
+      lpTokens,
+      this.index
+    );
   };
 
   /**
-   *  @notice Calculate the amount of collateral in bucket for a given amount of LP Tokens.
-   *  @param  lpTokens_    The number of lpTokens to calculate amounts for.
-   *  @return The exact amount of collateral that can be exchanged for the given LP Tokens, WAD units.
+   *  calculate how much collateral could be exchanged for LP.
+   *  @param lpBalance amount of LP to redeem for collateral
+   *  @returns The exact amount of collateral that can be exchanged for the given LP, WAD units.
    */
   lpToCollateral = async (lpTokens: BigNumber) => {
-    return await lpToCollateral(this.contractUtils, this.poolAddress, lpTokens, this.index);
+    return await lpToCollateral(
+      this.contractUtils,
+      this.poolContract.address,
+      lpTokens,
+      this.index
+    );
   };
+
+  /**
+   * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
+   * @param signer address to redeem LP
+   * @returns transaction
+   */
+  async withdrawLiquidity(signer: Signer) {
+    // get bucket details
+    const bucketStatus = await this.getStatus();
+    // determine lender's LP balance
+    const signerAddress = await signer.getAddress();
+    const [lpBalance] = await this.poolContract.lenderInfo(this.index, signerAddress);
+    // multiply by exchange rate to estimate amount of quote token they can withdraw
+    const estimatedDepositWithdrawal = wmul(lpBalance, bucketStatus.exchangeRate);
+
+    // if lender has nothing to redeem, exit
+    if (lpBalance.eq(constants.Zero)) {
+      throw new SdkError(`${signerAddress} has no LP in bucket ${this.index}`);
+    }
+
+    // if there is any quote token in the bucket, redeem LP for deposit first
+    const callData = [];
+    if (lpBalance && bucketStatus.deposit.gt(0)) {
+      callData.push({
+        methodName: 'removeQuoteToken',
+        args: [constants.MaxUint256, this.index],
+      });
+    }
+
+    // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
+    // arbitrary future block where the TX will be processed.
+    const withdrawCollateral =
+      estimatedDepositWithdrawal.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
+    if (withdrawCollateral) {
+      callData.push({
+        methodName: 'removeCollateral',
+        args: [constants.MaxUint256, this.index],
+      });
+    }
+
+    return await this.multicall(signer, callData);
+  }
 }
