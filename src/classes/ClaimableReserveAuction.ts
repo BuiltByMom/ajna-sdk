@@ -3,7 +3,9 @@ import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
 import { toWad, wmul } from '../utils/numeric';
 
-export interface CRAStats {
+export interface CRAStatus {
+  /** time a reserve auction was last kicked */
+  lastKickTime: Date;
   /** amount of Ajna token to burn in exchange of total auction reseves */
   ajnaToBurn: BigNumber;
   /** the amount of excess quote tokens */
@@ -13,7 +15,7 @@ export interface CRAStats {
   /** amount of claimable reserves which has not yet been taken */
   claimableReservesRemaining: BigNumber;
   /** current price at which `1` quote token may be purchased, denominated in `Ajna` */
-  reserveAuctionPrice: BigNumber;
+  price: BigNumber;
 }
 
 /**
@@ -69,19 +71,25 @@ export class ClaimableReserveAuction {
    * retrieves claimable reserve auction statistics
    * @returns {@link CRAStats}
    */
-  async getStats(): Promise<CRAStats> {
-    const data = await this.contractUtils.poolReservesInfo(this.poolAddress);
+  async getStatus(): Promise<CRAStatus> {
+    const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
+    const kickTimeCall = this.contract.reservesInfo();
+    const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
+      reservesInfoCall,
+      kickTimeCall,
+    ]);
+    const [reserves, claimableReserves, claimableReservesRemaining, price] = reservesInfoResponse;
+    const [, , lastKickTimestamp] = kickTimeResponse;
 
-    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data;
-
-    const ajnaToBurn = wmul(claimableReservesRemaining, auctionPrice).add(toWad(1));
+    const ajnaToBurn = wmul(claimableReservesRemaining, price).add(toWad(1));
 
     return {
+      lastKickTime: new Date(lastKickTimestamp.toNumber()),
       ajnaToBurn,
       reserves,
       claimableReserves,
       claimableReservesRemaining,
-      reserveAuctionPrice: auctionPrice,
+      price,
     };
   }
 
@@ -90,24 +98,20 @@ export class ClaimableReserveAuction {
    * @returns boolean that defines if auction is ongoing
    */
   async isTakeable() {
-    const kickTime = await this.getAuctionKickTime();
+    const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
+    const kickTimeCall = this.contract.reservesInfo();
+    const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
+      reservesInfoCall,
+      kickTimeCall,
+    ]);
+    const [, , claimableReservesRemaining, , timeRemaining] = reservesInfoResponse;
+    const [, , lastKickTimestamp] = kickTimeResponse;
+
+    const kickTime = BigNumber.from(lastKickTimestamp).mul(1000);
     const isKicked = kickTime.gt(0);
-
-    const data = await this.contractUtils.poolReservesInfo(this.poolAddress);
-
-    const [, , claimableReservesRemaining, , timeRemaining] = data;
     const reservesRemaining = claimableReservesRemaining.gt(0);
     const expired = timeRemaining.eq(0);
 
     return isKicked && reservesRemaining && !expired;
-  }
-
-  /**
-   * returns auction kick timestamp
-   * @returns auction kick timestamp
-   */
-  async getAuctionKickTime() {
-    const [, , auctionKickTime] = await this.contract.reservesInfo();
-    return BigNumber.from(auctionKickTime).mul(1000);
   }
 }

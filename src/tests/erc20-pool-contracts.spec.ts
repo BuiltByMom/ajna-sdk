@@ -8,7 +8,7 @@ import { addAccountFromKey } from '../utils/add-account';
 import { timeJump } from '../utils/ganache';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
-import { getExpiry } from '../utils/time';
+import { getBlockTime, getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
@@ -455,13 +455,9 @@ describe('ERC20 Pool', () => {
     const tokenAmount = toWad(BigNumber.from(100000));
 
     await TOKEN_Q.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
-
     await TOKEN_Q.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
-
     await TOKEN_C.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
-
     await TOKEN_C.connect(signerDeployer).transfer(signerBorrower.address, tokenAmount);
-
     await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
 
     // Deploy pool
@@ -487,7 +483,6 @@ describe('ERC20 Pool', () => {
 
     tx = await pool.quoteApprove(signerLender, allowance);
     await tx.verifyAndSubmit();
-
     tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
     await tx.verifyAndSubmit();
 
@@ -497,10 +492,8 @@ describe('ERC20 Pool', () => {
     // draw debt
     const amountToBorrow = toWad(1000);
     const collateralToPledge = toWad(100);
-
     tx = await pool.collateralApprove(signerBorrower, allowance);
     await submitAndVerifyTransaction(tx);
-
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
     await submitAndVerifyTransaction(tx);
 
@@ -510,44 +503,52 @@ describe('ERC20 Pool', () => {
 
     // check and repay debt, expected debt value around 1053
     const repayDebtAmountInQuote = toWad(1100);
-
     let stats = await pool.getStats();
     expect(stats.debt.lt(repayDebtAmountInQuote)).toBeTruthy();
-
     tx = await pool.quoteApprove(signerBorrower, allowance);
     await tx.verifyAndSubmit();
-
     tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
     await submitAndVerifyTransaction(tx);
-
-    // check debt info index
+    const repaymentTime = await getBlockTime(signerBorrower);
     stats = await pool.getStats();
     expect(stats.debt.eq(toWad(0))).toBeTruthy();
 
-    // kick auction
+    // check reserves before auction kicked
     const auction = await pool.getClaimableReserveAuction();
+    let status = await auction.getStatus();
+    expect(status.lastKickTime).toEqual(new Date(0));
+    expect(status.reserves.gt(toWad(8))).toBeTruthy();
+    expect(status.claimableReserves.lte(status.reserves)).toBeTruthy();
+    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBeTruthy();
+    expect(status.price.eq(constants.Zero)).toBeTruthy();
 
+    // kick auction
     tx = await auction.kick(signerLender);
     await submitAndVerifyTransaction(tx);
-
     const takeable = await auction.isTakeable();
     expect(takeable).toBeTruthy();
 
     // wait 32 hours
     jumpTimeSeconds = 32 * 60 * 60;
     await timeJump(provider, jumpTimeSeconds);
+    status = await auction.getStatus();
+    expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
+    expect(status.price).toBeBetween(toWad('0.20'), toWad('0.25'));
 
     // approve ajna tokens
     stats = await pool.getStats();
     const { reserveAuctionPrice, claimableReservesRemaining } = stats;
     const ajnaToBurn = wmul(claimableReservesRemaining, reserveAuctionPrice).add(toWad(1));
-
     tx = await pool.ajnaApprove(signerLender, ajnaToBurn);
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
     tx = await auction.takeAndBurn(signerLender);
     await submitAndVerifyTransaction(tx);
+    status = await auction.getStatus();
+    expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
+    expect(status.claimableReserves.eq(constants.Zero)).toBeTruthy();
+    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBeTruthy();
   });
 
   it('should use withdraw liquidity', async () => {
