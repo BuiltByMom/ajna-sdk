@@ -64,6 +64,14 @@ export async function depositIndex(contract: Contract, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
 }
 
+export async function collateralAddress(contract: Contract) {
+  return await contract.collateralAddress();
+}
+
+export async function quoteTokenAddress(contract: Contract) {
+  return await contract.quoteTokenAddress();
+}
+
 export async function kickWithDeposit(
   contract: Contract,
   index: number,

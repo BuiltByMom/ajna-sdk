@@ -18,9 +18,9 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const WETH_ADDRESS = '0x6bc99fa34d0076377731049695180e53bcdd767f';
-const TESTA_ADDRESS = '0x9b3d4d0d039cd7a32b6aa66fd88862d0f041ade8';
-const QUOTE_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
+const WETH_ADDRESS = '0x6bC99FA34D0076377731049695180e53bcdD767f';
+const TESTA_ADDRESS = '0x9B3d4D0d039Cd7A32B6aA66Fd88862D0F041adE8';
+const DAI_ADDRESS = '0xC041d30870CfDeeDfac49Da86AEFb9cFfa833d65';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
@@ -34,7 +34,7 @@ describe('ERC20 Pool', () => {
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TWETH = getErc20Contract(WETH_ADDRESS, provider);
-  const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
+  const TDAI = getErc20Contract(DAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
   let poolA: FungiblePool = {} as FungiblePool;
 
@@ -58,25 +58,25 @@ describe('ERC20 Pool', () => {
     expect(receipt.transactionHash).not.toBe('');
 
     // initialize canned pool
-    poolA = await ajna.factory.getPool(TESTA_ADDRESS, QUOTE_ADDRESS);
+    poolA = await ajna.factory.getPool(TESTA_ADDRESS, DAI_ADDRESS);
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
       WETH_ADDRESS,
-      QUOTE_ADDRESS,
+      DAI_ADDRESS,
       toWad('0.05')
     );
 
     await tx.verifyAndSubmit();
 
-    pool = await ajna.factory.getPool(WETH_ADDRESS, QUOTE_ADDRESS);
+    pool = await ajna.factory.getPool(WETH_ADDRESS, DAI_ADDRESS);
 
     expect(pool).toBeDefined();
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(WETH_ADDRESS);
-    expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+    expect(pool.quoteAddress).toBe(DAI_ADDRESS);
     expect(pool.toString()).toContain('TWETH-TDAI');
   });
 
@@ -84,13 +84,19 @@ describe('ERC20 Pool', () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
       WETH_ADDRESS,
-      QUOTE_ADDRESS,
+      DAI_ADDRESS,
       toWad('0.05')
     );
 
     await expect(async () => {
       await tx.verify();
     }).rejects.toThrow('PoolAlreadyExists()');
+  });
+
+  it('should load pool by address', async () => {
+    const poolB = await ajna.factory.getPoolByAddress('0x3bfdbb510a882eabacb42813c5551fe5deab75e5');
+    expect(poolB.quoteAddress).toBe(DAI_ADDRESS);
+    expect(poolB.toString()).toContain('TESTB-TDAI');
   });
 
   it('should use addQuoteToken successfully', async () => {
@@ -442,15 +448,12 @@ describe('ERC20 Pool', () => {
   });
 
   it('should kick and participate in claimable reserve auction', async () => {
-    const COLLATERAL_ADDRESS = '0xc041d30870cfdeedfac49da86aefb9cffa833d65';
-    const QUOTE_ADDRESS = '0x6bc99fa34d0076377731049695180e53bcdd767f';
-
     let pool: FungiblePool = {} as FungiblePool;
 
     // Mint tokens to actors
     const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
-    const TOKEN_C = getErc20Contract(COLLATERAL_ADDRESS, provider);
-    const TOKEN_Q = getErc20Contract(QUOTE_ADDRESS, provider); // TWETH
+    const TOKEN_C = getErc20Contract(DAI_ADDRESS, provider);
+    const TOKEN_Q = getErc20Contract(WETH_ADDRESS, provider); // TWETH
     const TOKEN_AJNA = getErc20Contract(Config.ajnaToken, provider);
     const tokenAmount = toWad(BigNumber.from(100000));
 
@@ -461,19 +464,14 @@ describe('ERC20 Pool', () => {
     await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
 
     // Deploy pool
-    let tx = await ajna.factory.deployPool(
-      signerLender,
-      COLLATERAL_ADDRESS,
-      QUOTE_ADDRESS,
-      toWad('0.05')
-    );
+    let tx = await ajna.factory.deployPool(signerLender, DAI_ADDRESS, WETH_ADDRESS, toWad('0.05'));
     await tx.submit();
 
-    pool = await ajna.factory.getPool(COLLATERAL_ADDRESS, QUOTE_ADDRESS);
+    pool = await ajna.factory.getPool(DAI_ADDRESS, WETH_ADDRESS);
 
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    expect(pool.collateralAddress).toBe(COLLATERAL_ADDRESS);
-    expect(pool.quoteAddress).toBe(QUOTE_ADDRESS);
+    expect(pool.collateralAddress).toBe(DAI_ADDRESS);
+    expect(pool.quoteAddress).toBe(WETH_ADDRESS);
 
     // Lender adds quote
     const quoteAmount = toWad(50000);

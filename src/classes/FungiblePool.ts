@@ -29,18 +29,10 @@ export interface LoanEstimate extends Loan {
  * models a pool with ERC-20 collateral
  */
 export class FungiblePool extends Pool {
-  constructor(
-    provider: SignerOrProvider,
-    poolAddress: Address,
-    collateralAddress: Address,
-    quoteAddress: Address,
-    ajnaAddress: Address
-  ) {
+  constructor(provider: SignerOrProvider, poolAddress: Address, ajnaAddress: Address) {
     super(
       provider,
       poolAddress,
-      collateralAddress,
-      quoteAddress,
       ajnaAddress,
       getErc20PoolContract(poolAddress, provider),
       getErc20PoolContractMulti(poolAddress)

@@ -3,12 +3,13 @@ import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
-import { BigNumber, Signer, utils } from 'ethers';
+import { BigNumber, constants, Signer, utils } from 'ethers';
+import { SdkError } from './types';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.
  */
-class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
+export class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
   }
@@ -31,7 +32,7 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
   }
 
   /**
-   * returns existing pool
+   * returns existing pool for two tokens
    * @param collateralAddress token address
    * @param quoteAddress token address
    * @returns {@link Pool} modeling desired pool
@@ -39,15 +40,15 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
   async getPool(collateralAddress: Address, quoteAddress: Address) {
     const poolAddress = await this.getPoolAddress(collateralAddress, quoteAddress);
 
-    const newPool = new FungiblePool(
-      this.getProvider(),
-      poolAddress,
-      collateralAddress,
-      quoteAddress,
-      Config.ajnaToken
-    );
-    await newPool.initialize();
+    if (poolAddress === constants.AddressZero)
+      throw new SdkError('Pool for specified tokens was not found');
 
+    return await this.getPoolByAddress(poolAddress);
+  }
+
+  async getPoolByAddress(poolAddress: Address) {
+    const newPool = new FungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
+    await newPool.initialize();
     return newPool;
   }
 
@@ -63,5 +64,3 @@ class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
     return await deployedPools(this.getProvider(), collateralAddress, quoteAddress, nonSubsetHash);
   }
 }
-
-export { FungiblePoolFactory };

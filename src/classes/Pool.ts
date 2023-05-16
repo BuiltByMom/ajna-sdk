@@ -7,11 +7,13 @@ import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
 import {
   addQuoteToken,
+  collateralAddress,
   debtInfo,
   depositIndex,
   kick,
   kickWithDeposit,
   moveQuoteToken,
+  quoteTokenAddress,
   removeQuoteToken,
 } from '../contracts/pool';
 import {
@@ -110,8 +112,6 @@ export abstract class Pool {
   constructor(
     provider: SignerOrProvider,
     poolAddress: string,
-    collateralAddress: string,
-    quoteAddress: string,
     ajnaAddress: string,
     contract: Contract,
     contractMulti: ContractMulti
@@ -121,18 +121,26 @@ export abstract class Pool {
     this.contractUtils = getPoolInfoUtilsContract(provider);
     this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
     this.utils = new PoolUtils(provider as Provider);
-    this.quoteAddress = quoteAddress;
-    this.collateralAddress = collateralAddress;
     this.ajnaAddress = ajnaAddress;
     this.name = 'pool';
     this.ethcallProvider = {} as ProviderMulti;
     this.contract = contract;
     this.contractMulti = contractMulti;
+    this.quoteAddress = constants.AddressZero;
+    this.collateralAddress = constants.AddressZero;
   }
 
   async initialize() {
     this.ethcallProvider = new ProviderMulti();
     await this.ethcallProvider.init(this.provider as Provider);
+
+    const [quoteAddressResponse, collateralAddressResponse] = await Promise.all([
+      quoteTokenAddress(this.contract),
+      collateralAddress(this.contract),
+    ]);
+    this.quoteAddress = quoteAddressResponse;
+    this.collateralAddress = collateralAddressResponse;
+
     const quoteToken = getErc20Contract(this.quoteAddress, this.provider);
     this.quoteSymbol = (await quoteToken.symbol()).replace(/"+/g, '');
   }
