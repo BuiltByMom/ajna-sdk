@@ -1,7 +1,7 @@
 {
   "name": "@ajna-finance/sdk-api",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "document": "typedoc src/index.ts",
