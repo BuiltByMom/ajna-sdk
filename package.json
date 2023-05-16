@@ -12,7 +12,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ajna-finance/sdk.git"
+    "url": "https://github.com/ajna-finance/sdk.git",
+    "directory": "packages/sdk-api"
   },
   "keywords": [],
   "author": "@ajna-finance",
@@ -23,18 +24,22 @@
     "dist"
   ],
   "dependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2",
     "@metamask/detect-provider": "^2.0.0",
-    "@metamask/providers": "^10.0.0",
+    "@metamask/providers": "^11.0.0",
     "ethcall": "^4.8.13",
     "ethers": "^5.7.2",
+    "expect": "^29.5.0",
     "mathjs": "^11.5.1",
     "typedoc": "^0.24.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.5.0",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/isomorphic-fetch": "^0.0.36",
-    "@types/jest": "^28.1.6",
-    "@types/node": "^18.6.1",
+    "@types/jest": "^28.1.3",
+    "@types/node": "^20.1.4",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "dotenv": "^16.0.3",
@@ -46,10 +51,17 @@
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "ts-jest": "^28.0.7",
+    "ts-jest": "^28.0.8",
     "ts-node": "^10.9.1",
+    "tslib": "^2.5.0",
     "typechain": "^8.1.1",
-    "typescript": "^4.8.4"
+    "typescript": "^5.0.4"
+  },
+  "resolutions": {
+    "@typescript-eslint/eslint-plugin": "5.49.0",
+    "@typescript-eslint/parser": "5.49.0",
+    "@types/react": "18.0.31",
+    "@types/react-dom": "18.0.11"
   },
   "bugs": {
     "url": "https://github.com/ajna-finance/sdk/issues"
