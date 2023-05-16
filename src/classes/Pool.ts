@@ -1,6 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { PoolInfoUtils } from 'types/contracts';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -19,7 +18,7 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, Provider, SignerOrProvider } from '../types';
+import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
@@ -95,7 +94,7 @@ export abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
   contractMulti: ContractMulti;
-  contractUtils: PoolInfoUtils;
+  poolInfoContractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
   poolAddress: Address;
   collateralAddress: Address;
@@ -104,7 +103,7 @@ export abstract class Pool {
   quoteSymbol: string | undefined;
   ajnaAddress: Address;
   name: string;
-  utils: PoolUtils;
+  poolUtils: PoolUtils;
   ethcallProvider: ProviderMulti;
 
   constructor(
@@ -118,9 +117,9 @@ export abstract class Pool {
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
-    this.contractUtils = getPoolInfoUtilsContract(provider);
+    this.poolInfoContractUtils = getPoolInfoUtilsContract(provider);
     this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
-    this.utils = new PoolUtils(provider as Provider);
+    this.poolUtils = new PoolUtils(provider as Provider);
     this.quoteAddress = quoteAddress;
     this.collateralAddress = collateralAddress;
     this.ajnaAddress = ajnaAddress;
@@ -222,7 +221,7 @@ export abstract class Pool {
    */
   async getPrices(): Promise<PriceInfo> {
     const [hpb, hpbIndex, htp, htpIndex, lup, lupIndex] = await poolPricesInfo(
-      this.contractUtils,
+      this.poolInfoContractUtils,
       this.poolAddress
     );
 
@@ -371,7 +370,7 @@ export abstract class Pool {
     return new ClaimableReserveAuction(
       this.provider,
       this.contract,
-      this.contractUtils,
+      this.poolInfoContractUtils,
       this.poolAddress
     );
   }
