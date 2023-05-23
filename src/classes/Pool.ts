@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -15,11 +15,17 @@ import {
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
-  getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
+import {
+  Address,
+  CallData,
+  Provider,
+  SignerOrProvider,
+  POOLS_CONTRACTS,
+  PoolInfoUtils,
+} from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
@@ -93,10 +99,9 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: Contract;
+  contract: POOLS_CONTRACTS;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
-  contractUtilsMulti: ContractMulti;
   poolAddress: Address;
   collateralAddress: Address;
   collateralSymbol: string | undefined;
@@ -111,13 +116,12 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: Contract,
+    contract: POOLS_CONTRACTS,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
     this.poolInfoContractUtils = getPoolInfoUtilsContract(provider);
-    this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
     this.utils = new PoolUtils(provider as Provider);
     this.ajnaAddress = ajnaAddress;
     this.name = 'pool';
@@ -191,18 +195,11 @@ export abstract class Pool {
    * @returns {@link Stats}
    */
   async getStats(): Promise<Stats> {
-    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
-    const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
-    const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
-    const data: string[] = await this.ethcallProvider.all([
-      poolLoansInfoCall,
-      poolUtilizationInfoCall,
-      poolReservesInfo,
-    ]);
-
-    const [poolSize, loansCount] = data[0];
-    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
-    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
+    const [poolSize, loansCount] = await this.poolInfoContractUtils.poolLoansInfo(this.poolAddress);
+    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] =
+      await this.poolInfoContractUtils.poolUtilizationInfo(this.poolAddress);
+    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] =
+      await this.poolInfoContractUtils.poolReservesInfo(this.poolAddress);
 
     const [debt, , liquidationDebt] = await debtInfo(this.contract);
 
@@ -287,19 +284,14 @@ export abstract class Pool {
   }
 
   async isKickable(borrowerAddress: Address) {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
+    const poolPricesInfo = await this.poolInfoContractUtils.poolPricesInfo(this.poolAddress);
+    const borrowerInfo = await this.poolInfoContractUtils.borrowerInfo(
       this.poolAddress,
       borrowerAddress
     );
 
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      poolPricesInfoCall,
-      borrowerInfoCall,
-    ]);
-
-    const [, , , , lup] = response[0];
-    const [debt, collateral] = response[1];
+    const [, , , , lup] = poolPricesInfo;
+    const [debt, collateral] = borrowerInfo;
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return lup.lte(toWad(tp));

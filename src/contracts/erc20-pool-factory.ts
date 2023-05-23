@@ -1,16 +1,16 @@
-import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
+import { WrappedTransactionClass } from '../utils/transactions';
 import { Config } from '../classes/Config';
-import { Address, SignerOrProvider, TransactionOverrides } from '../types';
+import {
+  Address,
+  ERC20PoolFactory__factory,
+  SignerOrProvider,
+  TransactionOverrides,
+} from '../types';
 import checksumAddress from '../utils/checksum-address';
-import { createTransaction } from '../utils/transactions';
-import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(
-    checksumAddress(Config.erc20PoolFactory),
-    erc20PoolFactoryAbi,
-    provider
-  );
+  return ERC20PoolFactory__factory.connect(checksumAddress(Config.erc20PoolFactory), provider);
 };
 
 export async function deployPool(
@@ -20,13 +20,15 @@ export async function deployPool(
   interestRate: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getErc20PoolFactoryContract(signer);
-
-  return await createTransaction(
-    contractInstance,
-    { methodName: 'deployPool', args: [collateralAddress, quoteAddress, interestRate] },
+  const contractInstance = getErc20PoolFactoryContract(signer);
+  const tx = await contractInstance.populateTransaction.deployPool(
+    collateralAddress,
+    quoteAddress,
+    interestRate,
     overrides
   );
+
+  return new WrappedTransactionClass(tx, contractInstance, signer);
 }
 
 export async function deployedPools(
@@ -35,7 +37,7 @@ export async function deployedPools(
   quoteAddress: Address,
   nonSubsetHash: string
 ) {
-  const contractInstance: Contract = getErc20PoolFactoryContract(provider);
+  const contractInstance = getErc20PoolFactoryContract(provider);
 
   return await contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
 }

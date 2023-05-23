@@ -1,6 +1,4 @@
-import { Contract as ContractMulti } from 'ethcall';
 import { BigNumber } from 'ethers';
-import PoolInfoUtilsAbi from '../abis/PoolInfoUtils.json';
 import { Config } from '../classes/Config';
 import { Address, SignerOrProvider, PoolInfoUtils, PoolInfoUtils__factory } from '../types';
 
@@ -8,8 +6,8 @@ export const getPoolInfoUtilsContract = (provider: SignerOrProvider) => {
   return PoolInfoUtils__factory.connect(Config.poolUtils, provider);
 };
 
-export const getPoolInfoUtilsContractMulti = () => {
-  return new ContractMulti(Config.poolUtils, PoolInfoUtilsAbi);
+export const getPoolInfoUtilsContractMulti = (provider: SignerOrProvider) => {
+  return PoolInfoUtils__factory.connect(Config.poolUtils, provider);
 };
 
 export const auctionStatus = async (

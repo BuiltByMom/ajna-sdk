@@ -13,6 +13,7 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
+import { CRAStatus } from '../classes/ClaimableReserveAuction';
 
 dotenv.config();
 
@@ -42,21 +43,21 @@ describe('ERC20 Pool', () => {
   beforeAll(async () => {
     // fund lender
     let receipt = await TDAI.connect(signerDeployer).transfer(signerLender.address, toWad('100'));
-    expect(receipt.transactionHash).not.toBe('');
-    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('1.0'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
+    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('0.5'));
+    expect(receipt.hash).not.toBe('');
 
     // fund lender2
     receipt = await TDAI.connect(signerDeployer).transfer(signerLender2.address, toWad('100'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
     receipt = await TWETH.connect(signerDeployer).transfer(signerLender2.address, toWad('0.5'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // fund borrower
     receipt = await TWETH.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
     receipt = await TDAI.connect(signerDeployer).transfer(signerBorrower.address, toWad('2'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // initialize canned pool
     poolA = await ajna.factory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
@@ -208,9 +209,9 @@ describe('ERC20 Pool', () => {
   it('should use getBucketsByPriceRange successfully', async () => {
     const buckets = poolA.getBucketsByPriceRange(toWad(0.01), toWad(0.1));
     expect(buckets.length).toBe(462);
-    expect(fromWad(buckets[0].price)).toBe('0.099834229041488465');
-    expect(fromWad(buckets[buckets.length / 2].price)).toBe('0.031544177128155871');
-    expect(fromWad(buckets[buckets.length - 1].price)).toBe('0.01001670765474992');
+    expect(fromWad(buckets[0]!.price)).toBe('0.099834229041488465');
+    expect(fromWad(buckets[buckets.length / 2]!.price)).toBe('0.031544177128155871');
+    expect(fromWad(buckets[buckets.length - 1]!.price)).toBe('0.01001670765474992');
   });
 
   it('should use getBucketByIndex successfully', async () => {
@@ -512,7 +513,7 @@ describe('ERC20 Pool', () => {
     expect(status.price.eq(constants.Zero)).toBe(true);
 
     // kick auction
-    tx = await auction.kick(signerLender);
+    tx = await auction.kick();
     await submitAndVerifyTransaction(tx);
     const takeable = await auction.isTakeable();
     expect(takeable).toBe(true);
@@ -520,7 +521,7 @@ describe('ERC20 Pool', () => {
     // wait 32 hours
     jumpTimeSeconds = 32 * 60 * 60;
     await timeJump(provider, jumpTimeSeconds);
-    status = await auction.getStatus();
+    status = (await auction.getStatus()) as CRAStatus;
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
     expect(status.price).toBeBetween(toWad('0.20'), toWad('0.25'));
 
@@ -532,9 +533,9 @@ describe('ERC20 Pool', () => {
     await tx.verifyAndSubmit();
 
     // take collateral and burn Ajna
-    tx = await auction.takeAndBurn(signerLender);
+    tx = await auction.takeAndBurn();
     await submitAndVerifyTransaction(tx);
-    status = await auction.getStatus();
+    status = (await auction.getStatus()) as CRAStatus;
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
     expect(status.claimableReserves.eq(constants.Zero)).toBe(true);
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);

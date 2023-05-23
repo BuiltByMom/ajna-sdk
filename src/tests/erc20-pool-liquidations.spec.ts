@@ -59,7 +59,7 @@ describe('Liquidations', () => {
       signerBorrower2.address,
       toWad('10')
     );
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // draw debt as borrower2
     const bucketIndex = 2001;
@@ -74,7 +74,7 @@ describe('Liquidations', () => {
 
     // check pool lup index
     let stats = await pool.getStats();
-    let lupIndex = await pool.depositIndex(stats.debt);
+    let lupIndex: any = await pool.depositIndex(stats.debt);
     expect(+lupIndex).toBe(bucketIndex);
 
     // check loan, make sure borrower2 threshold price is higher than lup price
@@ -90,7 +90,7 @@ describe('Liquidations', () => {
 
     // fund other borrower
     receipt = await TESTB.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // draw debt as another borrower to pull lup down
     amountToBorrow = toWad(10);
@@ -106,7 +106,7 @@ describe('Liquidations', () => {
     expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
     // check loan again, make sure borrower2 threshold price is lower than lup price
-    bucket = await pool.getBucketByIndex(lupIndex);
+    bucket = (await pool.getBucketByIndex(lupIndex)) as any;
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();

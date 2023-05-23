@@ -62,8 +62,8 @@ describe('Utility tests', () => {
       indexToPriceLocal(9999);
     }).toThrow('ERR_BUCKET_INDEX_OUT_OF_BOUNDS');
 
-    await expect(utils.priceToIndex(toWad('1222333444'))).rejects.toThrow('reverted');
-    await expect(utils.priceToIndex(toWad('0.00000005'))).rejects.toThrow('reverted');
+    await expect(utils.priceToIndex(toWad('1222333444'))).rejects.toThrow('revert');
+    await expect(utils.priceToIndex(toWad('0.00000005'))).rejects.toThrow('revert');
 
     expect(() => {
       priceToIndexLocal(toWad('1222333444'));

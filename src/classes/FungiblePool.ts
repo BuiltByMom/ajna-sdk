@@ -186,26 +186,23 @@ export class FungiblePool extends Pool {
    * @param borrowerAddress identifies the loan
    * @returns {@link Loan}
    */
-  async getLoan(borrowerAddress: Address): Promise<Loan> {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
-    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
-    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
+  async getLoan(borrowerAddress: Address) {
+    const poolPricesInfo = await this.poolInfoContractUtils.functions.poolPricesInfo(
+      this.poolAddress
+    );
+    const poolMomp = await this.poolInfoContractUtils.functions.momp(this.poolAddress);
+    const poolLoansInfo = await this.poolInfoContractUtils.functions.poolLoansInfo(
+      this.poolAddress
+    );
+    const borrowerInfo = await this.poolInfoContractUtils.functions.borrowerInfo(
       this.poolAddress,
       borrowerAddress
     );
 
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      poolPricesInfoCall,
-      poolMompCall,
-      poolLoansInfoCall,
-      borrowerInfoCall,
-    ]);
-
-    const [, , , , lup] = response[0];
-    const momp = BigNumber.from(response[1]);
-    const [, , , pendingInflator] = response[2];
-    const [debt, collateral, t0np] = response[3];
+    const [, , , , lup] = poolPricesInfo;
+    const momp = BigNumber.from(poolMomp);
+    const [, , , pendingInflator] = poolLoansInfo;
+    const [debt, collateral, t0np] = borrowerInfo;
     const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
@@ -277,28 +274,20 @@ export class FungiblePool extends Pool {
     debtAmount: BigNumber,
     collateralAmount: BigNumber
   ): Promise<LoanEstimate> {
-    // obtain the borrower debt, and origination fee
-    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
-      this.poolAddress,
-      borrowerAddress
-    );
-    const origFeeCall = this.contractUtilsMulti.borrowFeeRate(this.poolAddress);
-    let response: BigNumber[][] = await this.ethcallProvider.all([borrowerInfoCall, origFeeCall]);
-    const [borrowerDebt, collateral] = response[0];
-    const originationFeeRate = BigNumber.from(response[1]);
-
-    // determine pool debt
-    const [poolDebt, ,] = await debtInfo(this.contract);
+    // obtain the current borrower and pool debt
+    const [borrowerDebt, collateral] = await this.contractMulti.borrowerInfo(this.poolAddress, borrowerAddress);
+    const originationFeeRate = BigNumber.from(collateral);
+    const [pendingDebt, ,] = await debtInfo(this.contract);
 
     // add origination fee
     debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
 
     // determine where this would push the LUP, the current interest rate, and loan count
-    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.add(debtAmount));
+    const lupIndexCall = this.contractMulti.depositIndex(pendingDebt.add(debtAmount));
     const rateCall = this.contractMulti.interestRateInfo();
     const loansInfoCall = this.contractMulti.loansInfo();
     const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
-    response = await this.ethcallProvider.all([
+    const response: any[] = await this.ethcallProvider.all([
       lupIndexCall,
       rateCall,
       loansInfoCall,
@@ -320,8 +309,8 @@ export class FungiblePool extends Pool {
     const collateralization = encumbered === zero ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical MOMP and neutral price
-    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
-    const mompIndex = await depositIndex(this.contract, mompDebt);
+    const mompDebt = noOfLoans === 0 ? constants.One : pendingDebt.div(noOfLoans);
+    const mompIndex: any = await depositIndex(this.contract, mompDebt);
     const momp = indexToPrice(mompIndex);
     // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
     const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));

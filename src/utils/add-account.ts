@@ -24,7 +24,7 @@ const prompt = (msg: string) => {
   fs.writeSync(1, msg);
   let s = '';
   const stdin = fs.openSync('/dev/stdin', 'rs');
-  const buf = Buffer.alloc(1);
+  const buf: any = Buffer.alloc(1);
   while (buf[0] - 10 && buf[0] - 13) {
     s += buf;
     fs.readSync(stdin, buf, 0, 1, null);

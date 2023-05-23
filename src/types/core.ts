@@ -1,5 +1,5 @@
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { BigNumber, providers, Signer as EthersSigner } from 'ethers';
+import { BigNumber, providers, Signer as EthersSigner, ContractTransaction } from 'ethers';
 
 export type Signer = EthersSigner;
 
@@ -27,10 +27,11 @@ export interface WrappedTransaction {
   submit(confirmations?: number): Promise<TransactionReceipt>;
   submitResponse(): Promise<TransactionResponse>;
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
-  verifyAndSubmitResponse(): Promise<TransactionResponse>;
+  verifyAndSubmitResponse(): Promise<ContractTransaction>;
 }
 
 export interface CallData {
   methodName: string;
   args?: Array<any>;
+  [propName: string]: any;
 }

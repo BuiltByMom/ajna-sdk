@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Address } from 'types';
+import { Address } from '../types';
 
 dotenv.config();
 
