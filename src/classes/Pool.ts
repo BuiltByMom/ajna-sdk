@@ -1,7 +1,7 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { PoolInfoUtils } from 'types/contracts';
-import { MAX_FENWICK_INDEX } from '../constants';
+import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
@@ -21,6 +21,7 @@ import {
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
+import { burn, mint } from '../contracts/position-manager';
 import { Address, CallData, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
@@ -29,6 +30,7 @@ import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { SdkError } from './types';
+import { LPToken } from './LPToken';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -373,14 +375,24 @@ export abstract class Pool {
    * returns `Claimable Reserve Auction` (`CRA`) wrapper object
    * @returns CRA wrapper object
    */
-  async getClaimableReserveAuction() {
-    // const date = Date.now();
-    // TODO: add timestamp of creation
+  getClaimableReserveAuction() {
     return new ClaimableReserveAuction(
       this.provider,
       this.contract,
       this.contractUtils,
       this.poolAddress
     );
+  }
+
+  async mintLPToken(signer: Signer) {
+    return mint(signer, await signer.getAddress(), this.poolAddress, ERC20_NON_SUBSET_HASH);
+  }
+
+  async burnLPToken(signer: Signer, tokenId: BigNumber) {
+    return burn(signer, tokenId, this.poolAddress);
+  }
+
+  getLPToken(tokenId: BigNumber) {
+    return new LPToken(this.provider, tokenId);
   }
 }

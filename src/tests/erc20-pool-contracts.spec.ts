@@ -512,7 +512,7 @@ describe('ERC20 Pool', () => {
     expect(stats.debt.eq(toWad(0))).toBeTruthy();
 
     // check reserves before auction kicked
-    const auction = await pool.getClaimableReserveAuction();
+    const auction = pool.getClaimableReserveAuction();
     let status = await auction.getStatus();
     expect(status.lastKickTime).toEqual(new Date(0));
     expect(status.reserves.gt(toWad(8))).toBeTruthy();

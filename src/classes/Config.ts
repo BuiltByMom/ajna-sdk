@@ -10,6 +10,7 @@ class Config {
   static erc20PoolFactory: Address;
   static erc721PoolFactory: Address;
   static poolUtils: Address;
+  static positionManager: Address;
   static ajnaToken: Address;
 
   /**
@@ -23,11 +24,13 @@ class Config {
     erc20PoolFactory: Address,
     erc721PoolFactory: Address,
     poolUtils: Address,
+    positionManager: Address,
     ajnaToken: Address
   ) {
     Config.erc20PoolFactory = erc20PoolFactory;
     Config.erc721PoolFactory = erc721PoolFactory;
     Config.poolUtils = poolUtils;
+    Config.positionManager = positionManager;
     Config.ajnaToken = ajnaToken;
   }
 
@@ -39,6 +42,7 @@ class Config {
       process.env.AJNA_CONTRACT_ERC20_POOL_FACTORY || '',
       process.env.AJNA_CONTRACT_ERC721_POOL_FACTORY || '',
       process.env.AJNA_POOL_UTILS || '',
+      process.env.AJNA_POSITION_MANAGER || '',
       process.env.AJNA_TOKEN_ADDRESS || ''
     );
   }

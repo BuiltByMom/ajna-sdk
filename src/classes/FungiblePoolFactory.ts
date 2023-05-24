@@ -1,9 +1,10 @@
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
+import { ERC20_NON_SUBSET_HASH } from '../constants';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
-import { BigNumber, constants, Signer, utils } from 'ethers';
+import { BigNumber, constants, Signer } from 'ethers';
 import { SdkError } from './types';
 
 /**
@@ -59,8 +60,11 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
    * @returns address of the existing pool
    */
   async getPoolAddress(collateralAddress: Address, quoteAddress: Address) {
-    const nonSubsetHash = utils.keccak256(utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH'));
-
-    return await deployedPools(this.getProvider(), collateralAddress, quoteAddress, nonSubsetHash);
+    return await deployedPools(
+      this.getProvider(),
+      collateralAddress,
+      quoteAddress,
+      ERC20_NON_SUBSET_HASH
+    );
   }
 }

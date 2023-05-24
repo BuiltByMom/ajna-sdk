@@ -56,8 +56,7 @@ export class Liquidation {
     const kickTime = new Date(kickTimestampNumber * 1000);
     const currentTimestampNumber = await getBlockTime(this.provider);
     const isGracePeriod = currentTimestampNumber - kickTimestampNumber < 3600;
-    const isExpired = currentTimestampNumber >= kickTimestampNumber + 72 * 3600;
-    const isTakeable = !isGracePeriod && !isExpired;
+    const isTakeable = !isGracePeriod && collateral.gt(BigNumber.from(0));
 
     return {
       kickTime,
