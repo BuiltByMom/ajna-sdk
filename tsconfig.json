@@ -23,6 +23,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "allowImportingTsExtensions": true,
+    "types": ["node"],
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
