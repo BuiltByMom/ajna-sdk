@@ -1,6 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { PoolInfoUtils } from 'types/contracts';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -22,7 +21,7 @@ import {
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import { Address, CallData, Provider, SignerOrProvider } from '../types';
+import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
@@ -99,7 +98,7 @@ export abstract class Pool {
   provider: SignerOrProvider;
   contract: Contract;
   contractMulti: ContractMulti;
-  contractUtils: PoolInfoUtils;
+  poolInfoContractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
   poolAddress: Address;
   collateralAddress: Address;
@@ -120,7 +119,7 @@ export abstract class Pool {
   ) {
     this.provider = provider;
     this.poolAddress = poolAddress;
-    this.contractUtils = getPoolInfoUtilsContract(provider);
+    this.poolInfoContractUtils = getPoolInfoUtilsContract(provider);
     this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
     this.utils = new PoolUtils(provider as Provider);
     this.ajnaAddress = ajnaAddress;
@@ -232,7 +231,7 @@ export abstract class Pool {
    */
   async getPrices(): Promise<PriceInfo> {
     const [hpb, hpbIndex, htp, htpIndex, lup, lupIndex] = await poolPricesInfo(
-      this.contractUtils,
+      this.poolInfoContractUtils,
       this.poolAddress
     );
 
@@ -379,7 +378,7 @@ export abstract class Pool {
     return new ClaimableReserveAuction(
       this.provider,
       this.contract,
-      this.contractUtils,
+      this.poolInfoContractUtils,
       this.poolAddress
     );
   }
