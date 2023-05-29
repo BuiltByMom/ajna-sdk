@@ -4,7 +4,6 @@
     "lib": ["es6", "dom", "dom.iterable"],
     "alwaysStrict": true,
     "baseUrl": "src",
-    "emitDeclarationOnly": true,
     "declaration": true,
     "esModuleInterop": true,
     "importHelpers": true,
@@ -22,7 +21,6 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "allowImportingTsExtensions": true,
     "types": ["node"],
     "resolveJsonModule": true
   },
