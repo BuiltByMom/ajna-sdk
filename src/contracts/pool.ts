@@ -111,6 +111,19 @@ export async function settle(
   );
 }
 
+export async function withdrawBonds(
+  contract: Contract,
+  recipientAddress: Address,
+  maxAmount: BigNumber,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'withdrawBonds', args: [recipientAddress, maxAmount] },
+    overrides
+  );
+}
+
 export async function kickReserveAuction(contract: Contract, overrides?: TransactionOverrides) {
   return await createTransaction(contract, { methodName: 'kickReserveAuction' }, overrides);
 }

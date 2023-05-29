@@ -42,15 +42,15 @@ describe('Liquidations', () => {
     await submitAndVerifyTransaction(tx);
 
     // add 9 quote tokens to 2001 bucket
-    const higherBucketIndex = 2001;
+    const higherBucket = await pool.getBucketByIndex(2001);
     let quoteAmount = toWad(9);
-    tx = await pool.addQuoteToken(signerLender, higherBucketIndex, quoteAmount);
+    tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
     // add 10 quote tokens to 2500 bucket (price 3863)
-    const lowerBucketIndex = 2500;
+    const lowerBucket = await pool.getBucketByIndex(2500);
     quoteAmount = toWad(10);
-    tx = await pool.addQuoteToken(signerLender, lowerBucketIndex, quoteAmount);
+    tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
     // fund borrower2
@@ -138,9 +138,9 @@ describe('Liquidations', () => {
   });
 
   it('should use kickWithDeposit', async () => {
-    const bucketIndex = 2001;
+    const bucket = await pool.getBucketByIndex(2001);
 
-    const tx = await pool.kickWithDeposit(signerLender, bucketIndex);
+    const tx = await bucket.kickWithDeposit(signerLender);
     await submitAndVerifyTransaction(tx);
   });
 
@@ -162,7 +162,7 @@ describe('Liquidations', () => {
   });
 
   it('should use deposit take', async () => {
-    const bucketIndex = 2001;
+    const bucket = await pool.getBucketByIndex(2001);
     const allowance = 100000000;
     const quoteAmount = 10;
 
@@ -189,11 +189,11 @@ describe('Liquidations', () => {
     // lender adds liquidity
     tx = await pool.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
-    tx = await pool.addQuoteToken(signerLender, bucketIndex, toWad(quoteAmount));
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
 
     // take
-    tx = await liquidation.depositTake(signerLender, bucketIndex);
+    tx = await liquidation.depositTake(signerLender, bucket.index);
     await submitAndVerifyTransaction(tx);
   });
 
@@ -204,12 +204,18 @@ describe('Liquidations', () => {
     const liquidation = pool.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
-    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    const jumpTimeSeconds = 12 * 3600; // 12 hours
     await timeJump(provider, jumpTimeSeconds);
 
     // take
     tx = await liquidation.take(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    // should not be able to withdraw bond prior to settlement
+    await expect(async () => {
+      tx = await pool.withdrawBonds(signerBorrower);
+      await tx.verify();
+    }).rejects.toThrow('InsufficientLiquidity()');
   });
 
   it('should use settle', async () => {
@@ -217,22 +223,31 @@ describe('Liquidations', () => {
     await submitAndVerifyTransaction(tx);
 
     const liquidation = pool.getLiquidation(signerBorrower2.address);
-    const auctionStatus = await liquidation.getStatus();
+    let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
     expect(auctionStatus.isTakeable).toBeFalsy();
     expect(auctionStatus.isCollateralized).toBeFalsy();
 
+    // should not be able to settle yet
     await expect(async () => {
-      tx = await liquidation.settle(signerBorrower);
+      tx = await liquidation.settle(signerLender);
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait 72 hours
-    const jumpTimeSeconds = 72 * 60 * 60; // 72 hours
+    const jumpTimeSeconds = 72 * 3600; // 72 hours
     await timeJump(provider, jumpTimeSeconds);
 
-    tx = await liquidation.settle(signerBorrower);
+    tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    // withdraw liquidation bond
+    tx = await pool.withdrawBonds(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.kickTime.valueOf()).toEqual(0);
+    expect(auctionStatus.isTakeable).toBeFalsy();
   });
 });

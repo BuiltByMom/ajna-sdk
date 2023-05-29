@@ -1,6 +1,13 @@
-import { indexToPrice } from '../utils/pricing';
+import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
-import { lenderInfo } from '../contracts/pool';
+import {
+  addQuoteToken,
+  kickWithDeposit,
+  lenderInfo,
+  moveQuoteToken,
+  removeQuoteToken,
+} from '../contracts/pool';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
@@ -8,9 +15,10 @@ import {
   lpToCollateral,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { SdkError } from './types';
 import { fromWad, toWad, wmul } from '../utils/numeric';
+import { indexToPrice } from '../utils/pricing';
+import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
 
 export interface BucketStatus {
@@ -95,6 +103,61 @@ export class Bucket {
       bucketLP,
       exchangeRate,
     };
+  }
+
+  /**
+   * deposits quote token into the bucket
+   * @param signer lender
+   * @param amount amount to deposit
+   * @param ttlSeconds revert if not processed in this amount of block time
+   * @returns transaction
+   */
+  async addQuoteToken(signer: Signer, amount: BigNumber, ttlSeconds?: number) {
+    const contractPoolWithSigner = this.poolContract.connect(signer);
+
+    return await addQuoteToken(
+      contractPoolWithSigner,
+      amount,
+      this.index,
+      await getExpiry(this.provider, ttlSeconds)
+    );
+  }
+
+  /**
+   * moves quote token from current bucket to another bucket
+   * @param signer lender
+   * @param toIndex price bucket to which quote token should be deposited
+   * @param maxAmountToMove optionally limits amount to move
+   * @param ttlSeconds revert if not processed in this amount of time
+   * @returns transaction
+   */
+  async moveQuoteToken(
+    signer: Signer,
+    toIndex: number,
+    maxAmountToMove = constants.MaxUint256,
+    ttlSeconds?: number
+  ) {
+    const contractPoolWithSigner = this.poolContract.connect(signer);
+
+    return await moveQuoteToken(
+      contractPoolWithSigner,
+      maxAmountToMove,
+      this.index,
+      toIndex,
+      await getExpiry(this.provider, ttlSeconds)
+    );
+  }
+
+  /**
+   * removes quote token from the bucket
+   * @param signer lender
+   * @param maxAmount optionally limits amount to remove
+   * @returns transaction
+   */
+  async removeQuoteToken(signer: Signer, maxAmount = constants.MaxUint256) {
+    const contractPoolWithSigner = this.poolContract.connect(signer);
+
+    return await removeQuoteToken(contractPoolWithSigner, maxAmount, this.index);
   }
 
   /**
@@ -233,5 +296,11 @@ export class Bucket {
     }
 
     return await this.multicall(signer, callData);
+  }
+
+  async kickWithDeposit(signer: Signer, limitIndex: number = MAX_FENWICK_INDEX) {
+    const contractPoolWithSigner = this.poolContract.connect(signer);
+
+    return await kickWithDeposit(contractPoolWithSigner, this.index, limitIndex);
   }
 }

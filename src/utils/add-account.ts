@@ -5,11 +5,15 @@ export const addAccountFromKey = (key: string, provider: providers.Provider) => 
   return new Wallet(key, provider);
 };
 
-export const addAccountFromKeystore = (keystorePath: string, provider: providers.Provider) => {
+export const addAccountFromKeystore = (
+  keystorePath: string,
+  provider: providers.Provider,
+  password = ''
+) => {
   // read the keystore file, confirming it exists
   const jsonKeystore = fs.readFileSync(keystorePath).toString();
 
-  const pswd = prompt('Enter keystore password: ');
+  const pswd = password === '' ? prompt('Enter keystore password: ') : password;
   let wallet = Wallet.fromEncryptedJsonSync(jsonKeystore, pswd);
   wallet = wallet.connect(provider);
   return wallet;

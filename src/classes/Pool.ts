@@ -5,15 +5,12 @@ import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
 import {
-  addQuoteToken,
   collateralAddress,
   debtInfo,
   depositIndex,
   kick,
-  kickWithDeposit,
-  moveQuoteToken,
   quoteTokenAddress,
-  removeQuoteToken,
+  withdrawBonds,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -24,7 +21,6 @@ import { burn, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
-import { getExpiry } from '../utils/time';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
@@ -163,66 +159,8 @@ export abstract class Pool {
    * @returns transaction
    */
   async quoteApprove(signer: Signer, allowance: BigNumber) {
+    // TODO: denormalize allowance, assuming WAD scale
     return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
-  }
-
-  /**
-   * deposits quote token into a bucket
-   * @param signer lender
-   * @param bucketIndex identifies the price bucket
-   * @param amount amount to deposit
-   * @param ttlSeconds revert if not processed in this amount of block time
-   * @returns transaction
-   */
-  async addQuoteToken(signer: Signer, bucketIndex: number, amount: BigNumber, ttlSeconds?: number) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await addQuoteToken(
-      contractPoolWithSigner,
-      amount,
-      bucketIndex,
-      await getExpiry(this.provider, ttlSeconds)
-    );
-  }
-
-  /**
-   * moves quote token between buckets
-   * @param signer lender
-   * @param fromIndex price bucket from which quote token should be withdrawn
-   * @param toIndex price bucket to which quote token should be deposited
-   * @param maxAmountToMove optionally limits amount to move
-   * @param ttlSeconds revert if not processed in this amount of time
-   * @returns transaction
-   */
-  async moveQuoteToken(
-    signer: Signer,
-    fromIndex: number,
-    toIndex: number,
-    maxAmountToMove = constants.MaxUint256,
-    ttlSeconds?: number
-  ) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await moveQuoteToken(
-      contractPoolWithSigner,
-      maxAmountToMove,
-      fromIndex,
-      toIndex,
-      await getExpiry(this.provider, ttlSeconds)
-    );
-  }
-
-  /**
-   * removes quote token from a bucket
-   * @param signer lender
-   * @param bucketIndex identifies the price bucket
-   * @param maxAmount optionally limits amount to remove
-   * @returns transaction
-   */
-  async removeQuoteToken(signer: Signer, bucketIndex: number, maxAmount = constants.MaxUint256) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await removeQuoteToken(contractPoolWithSigner, maxAmount, bucketIndex);
   }
 
   /**
@@ -339,12 +277,6 @@ export abstract class Pool {
     return buckets;
   }
 
-  async kickWithDeposit(signer: Signer, index: number, limitIndex: number = MAX_FENWICK_INDEX) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await kickWithDeposit(contractPoolWithSigner, index, limitIndex);
-  }
-
   async kick(signer: Signer, borrowerAddress: Address, limitIndex: number = MAX_FENWICK_INDEX) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -368,6 +300,18 @@ export abstract class Pool {
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return lup.lte(toWad(tp));
+  }
+
+  /**
+   * called by kickers to withdraw liquidation bond from one or more auctions kicked
+   * @param signer kicker
+   * @param maxAmount optional amount of bond to withdraw; defaults to all
+   * @returns transaction
+   */
+  async withdrawBonds(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+    const recipient = await signer.getAddress();
+    return await withdrawBonds(contractPoolWithSigner, recipient, maxAmount);
   }
 
   /**

@@ -3,7 +3,6 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
-import { SdkError } from '../src/classes/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
@@ -11,11 +10,11 @@ import { indexToPrice, priceToIndex } from '../src/utils/pricing';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-// Use this for local testnets, where JSON keystores are unavailable.
-// const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
-// Use this for a real chain, such as Goerli or Mainnet.
-const signerBorrower = addAccountFromKeystore(process.env.BORROWER_KEYSTORE || '', provider);
-if (!signerBorrower) throw new SdkError('Wallet not unlocked');
+const signerBorrower = addAccountFromKeystore(
+  process.env.BORROWER_KEYSTORE || '',
+  provider,
+  process.env.BORROWER_PASSWORD || ''
+);
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
@@ -23,24 +22,25 @@ const collateralAddress = process.env.COLLATERAL_TOKEN || '0x0';
 const quoteAddress = process.env.QUOTE_TOKEN || '0x0';
 let pool: FungiblePool;
 
-// Looks for pool, deploying it if it doesn't already exist
-const getPool = async () => {
+// Gets instance of Pool object
+async function getPool() {
   pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
   if (pool.poolAddress === constants.AddressZero) {
     throw new Error('Pool not yet deployed; run lender script first');
   }
   return pool;
-};
+}
 
 // Gets bucket index of initial price from which debt would be drawn
-const getPriceIndex = async (): Promise<number> => {
+async function getPriceIndex(): Promise<number> {
   const prices = await pool.getPrices();
   console.log('Pool prices HPB: ', fromWad(prices.hpb), ' LUP: ', fromWad(prices.lup));
   if (prices.hpb.eq(BigNumber.from(0))) throw new Error('No liquidity in pool');
-  return prices.lup.eq(BigNumber.from(0)) ? priceToIndex(prices.hpb) : priceToIndex(prices.lup);
-};
+  return prices.lupIndex === 0 ? priceToIndex(prices.hpb) : priceToIndex(prices.lup);
+}
 
-const makeLoan = async (debtToDraw: BigNumber, collateralization: BigNumber) => {
+// Draws debt without any regard to current debt or collateral pledged
+async function makeLoan(debtToDraw: BigNumber, collateralization: BigNumber) {
   const priceIndex: number = await getPriceIndex();
   const price: BigNumber = indexToPrice(priceIndex);
   const limitIndex: number = priceIndex + 10;
@@ -48,31 +48,45 @@ const makeLoan = async (debtToDraw: BigNumber, collateralization: BigNumber) => 
 
   const collateralToPledge = wmul(wdiv(debtToDraw, price), collateralization);
   console.log(
-    fromWad(collateralToPledge),
-    ' required to draw ',
-    fromWad(debtToDraw),
-    ' debt from ',
-    fromWad(price)
+    `${fromWad(collateralToPledge)} collateral required to draw`,
+    `${fromWad(debtToDraw)} debt from ${fromWad(price)}`
   );
   let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
   await tx.verifyAndSubmit();
   tx = await pool.drawDebt(signerBorrower, debtToDraw, collateralToPledge, limitIndex);
   await tx.verifyAndSubmit();
-};
+  console.log('Drew', fromWad(debtToDraw), 'debt');
+}
 
-export const run = async () => {
+async function repayLoan(debtToRepay: BigNumber, collateralToPull: BigNumber) {
+  let tx = await pool.quoteApprove(signerBorrower, debtToRepay);
+  await tx.verifyAndSubmit();
+  tx = await pool.repayDebt(signerBorrower, debtToRepay, collateralToPull);
+  await tx.verifyAndSubmit();
+}
+
+async function run() {
   const pool = await getPool();
-  console.log('Found pool at ', pool.poolAddress);
+  console.log('Found pool at', pool.poolAddress);
   const stats = await pool.getStats();
-  console.log('Pool has ', fromWad(stats.poolSize.sub(stats.debt)), ' available to lend');
+  console.log('Pool has', fromWad(stats.poolSize.sub(stats.debt)), 'available to lend');
+  const loan = await pool.getLoan(await signerBorrower.getAddress());
+  console.log('Borrower has', fromWad(loan.debt), 'debt and', fromWad(loan.collateral), 'pledged');
 
-  // TODO: parse action 'draw' or 'repay'
+  const action = process.argv.length > 2 ? process.argv[2] : '';
 
-  const debtToDraw: BigNumber = process.argv.length > 2 ? toWad(process.argv[2]) : toWad(100);
-  const collateralization: BigNumber =
-    process.argv.length > 3 ? toWad(process.argv[3]) : toWad(1.25);
-
-  await makeLoan(debtToDraw, collateralization);
-};
+  if (action === 'draw') {
+    const debtToDraw: BigNumber = process.argv.length > 3 ? toWad(process.argv[3]) : toWad(100);
+    const collateralization = process.argv.length > 4 ? toWad(process.argv[4]) : toWad(1.25);
+    await makeLoan(debtToDraw, collateralization);
+    return;
+  }
+  if (action === 'repay') {
+    const debtToRepay = process.argv.length > 3 ? toWad(process.argv[3]) : constants.MaxUint256;
+    const pullCollateral = process.argv.length > 4 ? toWad(process.argv[4]) : loan.collateral;
+    await repayLoan(debtToRepay, pullCollateral);
+    return;
+  }
+}
 
 run();

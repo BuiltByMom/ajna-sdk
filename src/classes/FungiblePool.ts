@@ -57,6 +57,7 @@ export class FungiblePool extends Pool {
    * @returns transaction
    */
   async collateralApprove(signer: Signer, allowance: BigNumber) {
+    // TODO: denormalize allowance, assuming WAD scale
     return await approve(signer, this.poolAddress, this.collateralAddress, allowance);
   }
 

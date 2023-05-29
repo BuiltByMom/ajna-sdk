@@ -101,8 +101,8 @@ describe('ERC20 Pool', () => {
 
   it('should use addQuoteToken successfully', async () => {
     const quoteAmount = 10;
-    const bucketIndex = 2000;
     const allowance = 100000000;
+    const bucket = await pool.getBucketByIndex(2000);
 
     let tx = await pool.quoteApprove(signerLender, toWad(allowance));
     let response = await tx.verifyAndSubmitResponse();
@@ -111,7 +111,7 @@ describe('ERC20 Pool', () => {
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');
 
-    tx = await pool.addQuoteToken(signerLender, bucketIndex, toWad(quoteAmount));
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     response = await tx.verifyAndSubmitResponse();
 
     expect(response).toBeDefined();
@@ -122,7 +122,6 @@ describe('ERC20 Pool', () => {
     expect(receipt).toBeDefined();
     expect(receipt.confirmations).toBe(1);
 
-    const bucket = await pool.getBucketByIndex(bucketIndex);
     expect((await bucket.getStatus()).bucketLP.gt(0)).toBeTruthy();
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
@@ -181,16 +180,20 @@ describe('ERC20 Pool', () => {
 
   it('should use removeQuoteToken successfully', async () => {
     const quoteAmount = toWad(1);
-    const bucketIndex = 2000;
+    const bucket = await pool.getBucketByIndex(2000);
+    const lpBefore = (await bucket.getStatus()).bucketLP;
 
-    const tx = await pool.removeQuoteToken(signerLender, bucketIndex, quoteAmount);
-
+    const tx = await bucket.removeQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
+
+    const lpAfter = (await bucket.getStatus()).bucketLP;
+    expect(lpBefore.gt(lpAfter)).toBeTruthy();
   });
 
   it('should raise appropriate error if removeQuoteToken fails', async () => {
     // attempt to remove liquidity from a bucket in which lender has no LP
-    const tx = await pool.removeQuoteToken(signerLender, 4444, toWad('22.153'));
+    const bucket = await pool.getBucketByIndex(4444);
+    const tx = await bucket.removeQuoteToken(signerLender, toWad('22.153'));
 
     expect(async () => {
       await tx.verifyAndSubmit();
@@ -200,16 +203,20 @@ describe('ERC20 Pool', () => {
   it('should use moveQuoteToken successfully', async () => {
     const maxAmountToMove = toWad(5);
     const bucketIndexFrom = 2000;
+    const bucketFrom = await pool.getBucketByIndex(bucketIndexFrom);
     const bucketIndexTo = 2001;
+    const bucketTo = await pool.getBucketByIndex(bucketIndexTo);
 
-    const tx = await pool.moveQuoteToken(
-      signerLender,
-      bucketIndexFrom,
-      bucketIndexTo,
-      maxAmountToMove
-    );
+    const fromLpBefore = await bucketFrom.lpBalance(signerLender.address);
+    const toLpBefore = await bucketTo.lpBalance(signerLender.address);
 
+    const tx = await bucketFrom.moveQuoteToken(signerLender, bucketIndexTo, maxAmountToMove);
     await submitAndVerifyTransaction(tx);
+
+    const fromLpAfter = await bucketFrom.lpBalance(signerLender.address);
+    const toLpAfter = await bucketTo.lpBalance(signerLender.address);
+    expect(fromLpAfter.lt(fromLpBefore)).toBeTruthy();
+    expect(toLpAfter.gt(toLpBefore)).toBeTruthy();
   });
 
   it('should use getStats successfully', async () => {
@@ -329,10 +336,10 @@ describe('ERC20 Pool', () => {
   });
 
   it('should remove all quote token without specifying amount', async () => {
-    const bucketIndex = 2000;
+    const bucket = await pool.getBucketByIndex(2000);
 
     // remove all liquidity from bucket
-    const tx = await pool.removeQuoteToken(signerLender, bucketIndex);
+    const tx = await bucket.removeQuoteToken(signerLender);
     await submitAndVerifyTransaction(tx);
   });
 
@@ -476,15 +483,14 @@ describe('ERC20 Pool', () => {
     // Lender adds quote
     const quoteAmount = toWad(50000);
     // ETH/DAI (collateral / quote)
-    const bucketIndex = 2632; // price 2000
+    const bucket = await pool.getBucketByIndex(2632);
     const allowance = toWad(1000000);
 
     tx = await pool.quoteApprove(signerLender, allowance);
     await tx.verifyAndSubmit();
-    tx = await pool.addQuoteToken(signerLender, bucketIndex, quoteAmount);
+    tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
 
-    const bucket = await pool.getBucketByIndex(bucketIndex);
     expect((await bucket.lpBalance(signerLender.address)).gt(0)).toBeTruthy();
 
     // draw debt
@@ -551,6 +557,7 @@ describe('ERC20 Pool', () => {
 
   it('should use withdraw liquidity', async () => {
     const bucketIndex = priceToIndex(toWad(10)); // bucket 3694
+    const bucket = await poolA.getBucketByIndex(bucketIndex);
     const quoteAmount = toWad(20);
     const collateralAmount = toWad('1.5'); // worth 15 quote token
 
@@ -563,10 +570,9 @@ describe('ERC20 Pool', () => {
     // lender2 deposits quote token
     tx = await poolA.quoteApprove(signerLender2, quoteAmount);
     await tx.verifyAndSubmit();
-    tx = await poolA.addQuoteToken(signerLender2, bucketIndex, quoteAmount);
+    tx = await bucket.addQuoteToken(signerLender2, quoteAmount);
     await tx.verifyAndSubmit();
 
-    const bucket = await poolA.getBucketByIndex(bucketIndex);
     let bucketStatus = await bucket.getStatus();
 
     expect(bucketStatus.deposit.gt(0)).toBeTruthy();
