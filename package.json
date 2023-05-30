@@ -1,7 +1,7 @@
 {
   "name": "@ajna-finance/sdk-api",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.1.7-ik",
+  "version": "0.3.3-ik",
   "repository": {
     "type": "git",
     "url": "https://github.com/ajna-finance/sdk.git",
@@ -11,16 +11,12 @@
   "author": "@ajna-finance",
   "license": "MIT",
   "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "engines": {
     "node": ">=16.14"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
@@ -44,16 +40,16 @@
     "@jest/globals": "^29.5.0",
     "@typechain/ethers-v5": "^10.2.1",
     "@types/isomorphic-fetch": "^0.0.36",
-    "@types/jest": "^28.1.8",
+    "@types/jest": "~29.2.0",
     "@types/node": "^20.2.4",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
     "@typescript-eslint/parser": "^5.59.7",
     "dotenv": "^16.0.3",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-jest": "^26.9.0",
+    "eslint-plugin-jest": "^27.2.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "jest": "^29.5.0",
+    "jest": "~29.2.0",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.8",
     "rimraf": "^3.0.2",
