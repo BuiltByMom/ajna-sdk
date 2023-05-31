@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "baseUrl": "src",
+    "declaration": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
     "lib": ["es6", "dom", "dom.iterable"],
     "alwaysStrict": true,
     "baseUrl": "src",

@@ -3,7 +3,8 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { SdkError } from '../src/classes/types';
+import { AddAccount } from '../src/utils/add-account';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
@@ -14,11 +15,12 @@ dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerBorrower = addAccountFromKeystore(
-  process.env.BORROWER_KEYSTORE || '',
-  provider,
-  process.env.BORROWER_PASSWORD || ''
-);
+// Use this for local testnets, where JSON keystores are unavailable.
+// const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
+// Use this for a real chain, such as Goerli or Mainnet.
+const acct = new AddAccount(provider);
+const signerBorrower = await acct.addAccountFromKeystore(process.env.BORROWER_KEYSTORE || '');
+if (!signerBorrower) throw new SdkError('Wallet not unlocked');
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);

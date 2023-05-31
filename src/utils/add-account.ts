@@ -18,12 +18,13 @@ class AddAccount {
     return new Wallet(key, this.provider);
   };
 
-  addAccountFromKeystore = (keystorePath: string): Wallet | undefined => {
+  addAccountFromKeystore = async (keystorePath = './secrets.json') => {
     // read the keystore file, confirming it exists
     try {
-      this.jsonKeystore = fs.readFileSync(keystorePath).toString();
+      this.jsonKeystore = fs.readFileSync(keystorePath as string).toString();
     } catch (error) {
       if (!this.jsonKeystore) {
+        console.log();
         // prettier-ignore
         console.error(`Could not find the jsonKeyStore at the path ${keystorePath}. Please try again.`);
         process.exit();
@@ -102,7 +103,7 @@ class AddAccount {
     try {
       const wallet = Wallet.fromEncryptedJsonSync(this.jsonKeystore, input);
       this.wallet = wallet.connect(this.provider);
-      console.log('\n\nUnlocked Wallet!\n\n', wallet);
+      console.log('\n\nUnlocked Wallet!\n\n', wallet.address);
       this.resetInput();
       return this.wallet;
     } catch (error: any) {
