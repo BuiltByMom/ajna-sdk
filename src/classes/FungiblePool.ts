@@ -10,6 +10,7 @@ import {
   getErc20PoolContractMulti,
   repayDebt,
   getErc20PoolContract,
+  collateralScale,
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, Loan, SignerOrProvider } from '../types';
@@ -53,12 +54,14 @@ export class FungiblePool extends Pool {
   /**
    * approve this pool to manage collateral token
    * @param signer pool user
-   * @param allowance approval amount (or MaxUint256)
+   * @param allowance normalized approval amount (or MaxUint256)
    * @returns transaction
    */
   async collateralApprove(signer: Signer, allowance: BigNumber) {
-    // TODO: denormalize allowance, assuming WAD scale
-    return await approve(signer, this.poolAddress, this.collateralAddress, allowance);
+    const denormalizedAllowance = allowance.eq(constants.MaxUint256)
+      ? allowance
+      : allowance.div(await collateralScale(this.contract));
+    return await approve(signer, this.poolAddress, this.collateralAddress, denormalizedAllowance);
   }
 
   /**

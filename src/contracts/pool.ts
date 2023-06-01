@@ -72,6 +72,10 @@ export async function quoteTokenAddress(contract: Contract) {
   return await contract.quoteTokenAddress();
 }
 
+export async function quoteTokenScale(contract: Contract) {
+  return await contract.quoteTokenScale();
+}
+
 export async function kickWithDeposit(
   contract: Contract,
   index: number,

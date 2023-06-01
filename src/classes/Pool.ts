@@ -10,6 +10,7 @@ import {
   depositIndex,
   kick,
   quoteTokenAddress,
+  quoteTokenScale,
   withdrawBonds,
 } from '../contracts/pool';
 import {
@@ -155,12 +156,14 @@ export abstract class Pool {
   /**
    * approve this pool to manage quote token
    * @param signer pool user
-   * @param allowance approval amount (or MaxUint256)
+   * @param allowance normalized approval amount (or MaxUint256)
    * @returns transaction
    */
   async quoteApprove(signer: Signer, allowance: BigNumber) {
-    // TODO: denormalize allowance, assuming WAD scale
-    return await approve(signer, this.poolAddress, this.quoteAddress, allowance);
+    const denormalizedAllowance = allowance.eq(constants.MaxUint256)
+      ? allowance
+      : allowance.div(await quoteTokenScale(this.contract));
+    return await approve(signer, this.poolAddress, this.quoteAddress, denormalizedAllowance);
   }
 
   /**

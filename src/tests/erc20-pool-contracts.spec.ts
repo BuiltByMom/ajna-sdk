@@ -101,10 +101,9 @@ describe('ERC20 Pool', () => {
 
   it('should use addQuoteToken successfully', async () => {
     const quoteAmount = 10;
-    const allowance = 100000000;
     const bucket = await pool.getBucketByIndex(2000);
 
-    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    let tx = await pool.quoteApprove(signerLender, toWad(quoteAmount));
     let response = await tx.verifyAndSubmitResponse();
     await response.wait();
 
@@ -484,9 +483,8 @@ describe('ERC20 Pool', () => {
     const quoteAmount = toWad(50000);
     // ETH/DAI (collateral / quote)
     const bucket = await pool.getBucketByIndex(2632);
-    const allowance = toWad(1000000);
 
-    tx = await pool.quoteApprove(signerLender, allowance);
+    tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
@@ -496,7 +494,7 @@ describe('ERC20 Pool', () => {
     // draw debt
     const amountToBorrow = toWad(1000);
     const collateralToPledge = toWad(100);
-    tx = await pool.collateralApprove(signerBorrower, allowance);
+    tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
     await submitAndVerifyTransaction(tx);
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
     await submitAndVerifyTransaction(tx);
@@ -509,7 +507,7 @@ describe('ERC20 Pool', () => {
     const repayDebtAmountInQuote = toWad(1100);
     let stats = await pool.getStats();
     expect(stats.debt.lt(repayDebtAmountInQuote)).toBeTruthy();
-    tx = await pool.quoteApprove(signerBorrower, allowance);
+    tx = await pool.quoteApprove(signerBorrower, repayDebtAmountInQuote);
     await tx.verifyAndSubmit();
     tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
     await submitAndVerifyTransaction(tx);

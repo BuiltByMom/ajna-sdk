@@ -13,6 +13,10 @@ export const getErc20PoolContractMulti = (poolAddress: Address) => {
   return new ContractMulti(poolAddress, ERC20Pool);
 };
 
+export async function collateralScale(contract: Contract) {
+  return await contract.collateralScale();
+}
+
 export async function drawDebt(
   contract: Contract,
   borrowerAddress: Address,

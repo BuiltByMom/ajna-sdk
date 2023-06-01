@@ -23,7 +23,7 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "types": ["node"],
+    "types": ["jest", "node"],
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
