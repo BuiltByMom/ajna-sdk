@@ -178,7 +178,7 @@ export class FungiblePool extends Pool {
    * @param borrowerAddress identifies the loan
    * @returns {@link Loan}
    */
-  async getLoan(borrowerAddress: Address) {
+  async getLoan(borrowerAddress: Address): Promise<Loan> {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);

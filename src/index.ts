@@ -15,3 +15,5 @@ export * from './utils/numeric';
 export * from './utils/pricing';
 export * from './utils/time';
 export * from './utils/transactions';
+
+export * from './types/classes';
