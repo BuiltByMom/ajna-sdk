@@ -3,7 +3,7 @@ import { providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
-import { addAccountFromKey } from '../utils/add-account';
+import { addAccount } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
 import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
@@ -26,10 +26,11 @@ const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89
 describe('Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  const signerLender = addAccountFromKey(LENDER_KEY, provider);
-  const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
-  const signerBorrower2 = addAccountFromKey(BORROWER2_KEY, provider);
-  const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
+  const account = addAccount(provider);
+  const signerLender = account.addAccountFromKey(LENDER_KEY);
+  const signerBorrower = account.addAccountFromKey(BORROWER_KEY);
+  const signerBorrower2 = account.addAccountFromKey(BORROWER2_KEY);
+  const signerDeployer = account.addAccountFromKey(DEPLOYER_KEY);
   const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
   // const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
