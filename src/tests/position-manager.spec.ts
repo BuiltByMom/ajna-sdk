@@ -3,7 +3,7 @@ import { BigNumber, providers } from 'ethers';
 import { TEST_CONFIG as config } from './test-constants';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
-import { addAccountFromKey } from '../utils/add-account';
+import { addAccount } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
 
 dotenv.config();
@@ -16,7 +16,8 @@ describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   let pool: FungiblePool = {} as FungiblePool;
-  const signerLender = addAccountFromKey(LENDER_KEY, provider);
+  const acct = addAccount(provider);
+  const signerLender = acct.addAccountFromKey(LENDER_KEY);
 
   beforeAll(async () => {
     pool = await ajna.factory.getPoolByAddress(TESTA_TDAI_POOL);
