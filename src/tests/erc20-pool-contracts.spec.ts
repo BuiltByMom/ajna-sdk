@@ -64,12 +64,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
-    const tx = await ajna.factory.deployPool(
-      signerLender,
-      TWETH_ADDRESS,
-      TDAI_ADDRESS,
-      toWad('0.05')
-    );
+    const tx = await ajna.factory.deployPool(TWETH_ADDRESS, TDAI_ADDRESS, toWad('0.05'));
     await tx.verifyAndSubmit();
     pool = await ajna.factory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
     expect(pool).toBeDefined();
@@ -80,12 +75,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should not allow to create existing pool', async () => {
-    const tx = await ajna.factory.deployPool(
-      signerLender,
-      TESTA_ADDRESS,
-      TDAI_ADDRESS,
-      toWad('0.05')
-    );
+    const tx = await ajna.factory.deployPool(TESTA_ADDRESS, TDAI_ADDRESS, toWad('0.05'));
 
     await expect(async () => {
       await tx.verify();

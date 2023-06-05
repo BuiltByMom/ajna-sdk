@@ -1,17 +1,12 @@
-import { SdkError } from '../classes/types';
-import { GAS_MULTIPLIER } from '../constants';
 import {
   CallData,
   ERC20Pool,
   ERC721Pool,
-  AJNA_CONTRACTS,
-  SignerOrProvider,
   TransactionOverrides,
-  WrappedTransaction,
-  TOKEN_CONTRACTS,
+  POOL_CONTRACT,
+  PoolInfoUtils,
 } from '../types';
-import { BigNumber, PopulatedTransaction } from 'ethers';
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { ContractTransaction, PopulatedTransaction } from 'ethers';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -22,33 +17,34 @@ import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
  * @returns The wrapped transaction object.
  */
 export async function createTransaction(
-  contract: AJNA_CONTRACTS,
+  contract: POOL_CONTRACT,
   callData: CallData,
   overrides?: TransactionOverrides
-): Promise<WrappedTransactionClass> {
+): Promise<ContractTransaction> {
   const { methodName, args = [] } = callData;
 
-  const argsFiltered = args.filter(a => a !== undefined);
+  const definedArgs = args.filter(a => a !== undefined);
   let c;
   if ('contractName' in contract) {
     if (contract.contractName === 'ERC20Pool') {
       c = contract as ERC20Pool;
-    } else {
+    } else if (contract.contractName === 'ERC721Pool') {
       c = contract as ERC721Pool;
+    } else if (contract.contractName === 'PoolInfoUtils') {
+      c = contract as PoolInfoUtils;
     }
   } else {
-    c = contract as AJNA_CONTRACTS;
+    throw new Error(`Invalid POOL_CONTRACT: ${contract}`);
   }
 
-  const tx = await c.populateTransaction[methodName]([
-    ...argsFiltered,
+  // @ts-ignore
+  return c.populateTransaction[methodName]([
+    ...definedArgs,
     {
       ...overrides,
-      from: await c.signer.getAddress(),
+      from: await c?.signer.getAddress(),
     },
   ]);
-
-  return new WrappedTransactionClass(tx, c, c.signer);
 }
 
 /**
@@ -62,7 +58,7 @@ class WrappedTransactionClass implements WrappedTransaction {
   /**
    * The ethers.js contract instance.
    */
-  readonly _contract: TOKEN_CONTRACTS;
+  readonly _contract?: POOL_CONTRACT;
   signer: SignerOrProvider;
 
   /**
@@ -72,11 +68,11 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   constructor(
     transaction: PopulatedTransaction,
-    contract: TOKEN_CONTRACTS,
+    contract: POOL_CONTRACT,
     signerOrProvider: SignerOrProvider
   ) {
     this._transaction = transaction;
-    this._contract = contract;
+    this._contract = getPoolContract(contract);
     this.signer = signerOrProvider;
   }
 
@@ -88,12 +84,15 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   async verify() {
     try {
-      return await this._contract.provider.estimateGas(this._transaction);
-    } catch (error: unknown) {
-      console.log(`error:`, error);
-      const reason = this.parseNodeError(this._contract, error);
-      throw new SdkError(reason, error);
+      return await this._contract?.provider.estimateGas(this._transaction);
+    } catch (error: any) {
+      console.error(`error:`, error);
+      if (this._contract) {
+        const reason = this.parseNodeError(this._contract, error);
+        throw new SdkError(reason, error);
+      }
     }
+    return BigNumber.from(0);
   }
 
   /**
@@ -105,7 +104,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       ...this._transaction,
       gasLimit: BigNumber.from(this._transaction.gasPrice).mul(GAS_MULTIPLIER),
     };
-    return await this._contract.signer.sendTransaction(txWithAdjustedGas);
+    return await this._contract?.sendTransaction(txWithAdjustedGas);
   }
 
   /**
@@ -124,7 +123,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns TransactionResponse
    */
-  async verifyAndSubmitResponse(contract?: TOKEN_CONTRACTS) {
+  async verifyAndSubmitResponse(contract?: POOL_CONTRACT) {
     const estimatedGas = await this.verify();
     const txWithAdjustedGas = {
       ...this._transaction,
@@ -174,13 +173,13 @@ class WrappedTransactionClass implements WrappedTransaction {
     return 'Revert reason unknown';
   }
 
-  /**
-   * Matches error hash from node with custom errors in contract.
-   * @param contract Instance of contract with interface prepared from ABI.
-   * @param errorData Error hash string parsed from exception raised by node.
-   * @returns Human-readable reason explaining why transaction would revert.
-   */
-  getCustomErrorFromHash(contract: TOKEN_CONTRACTS, errorData: string) {
+  //   /**
+  //    * Matches error hash from node with custom errors in contract.
+  //    * @param contract Instance of contract with interface prepared from ABI.
+  //    * @param errorData Error hash string parsed from exception raised by node.
+  //    * @returns Human-readable reason explaining why transaction would revert.
+  //    */
+  getCustomErrorFromHash(contract: POOL_CONTRACT, errorData: string) {
     // retrieve the list of custom errors available to the contract
     const customErrorNames = Object.keys(contract.interface.errors);
 

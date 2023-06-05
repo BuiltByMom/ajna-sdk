@@ -13,18 +13,15 @@ import {
   quoteTokenScale,
   withdrawBonds,
 } from '../contracts/pool';
-import {
-  getPoolInfoUtilsContract,
-  poolPricesInfo,
-} from '../contracts/pool-info-utils';
+import { getPoolInfoUtilsContract, poolPricesInfo } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
 import {
   Address,
   CallData,
   Provider,
   SignerOrProvider,
-  POOLS_CONTRACTS,
   PoolInfoUtils,
+  TOKEN_POOL_CONTRACT,
 } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
@@ -99,7 +96,7 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: POOLS_CONTRACTS;
+  contract: TOKEN_POOL_CONTRACT;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
   poolAddress: Address;
@@ -116,7 +113,7 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: POOLS_CONTRACTS,
+    contract: TOKEN_POOL_CONTRACT,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;

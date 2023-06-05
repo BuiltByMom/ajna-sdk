@@ -1,4 +1,4 @@
-import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
+import { deployedPools } from '../contracts/erc20-pool-factory';
 import { ERC20_NON_SUBSET_HASH } from '../constants';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
@@ -6,30 +6,28 @@ import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 import { BigNumber, constants, Signer } from 'ethers';
 import { SdkError } from './types';
+import { dryRunDeployPool } from 'tests/commands';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.
  */
 export class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
+  readonly signer: SignerOrProvider;
+
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
+    this.signer = signerOrProvider;
   }
 
   /**
    * creates a new pool
-   * @param signer pool creator
    * @param collateralAddress address of the ERC20 collateral token
    * @param quoteAddress address of the ERC20 quote token
    * @param interestRate initial interest rate, between 1%-10%, as WAD
    * @returns transaction
    */
-  async deployPool(
-    signer: Signer,
-    collateralAddress: Address,
-    quoteAddress: Address,
-    interestRate: BigNumber
-  ) {
-    return await deployPool(signer, collateralAddress, quoteAddress, interestRate);
+  async deployPool(collateralAddress: Address, quoteAddress: Address, interestRate: BigNumber) {
+    return dryRunDeployPool(this.signer as Signer, [collateralAddress, quoteAddress, interestRate]);
   }
 
   /**

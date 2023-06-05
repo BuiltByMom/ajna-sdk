@@ -275,7 +275,10 @@ export class FungiblePool extends Pool {
     collateralAmount: BigNumber
   ): Promise<LoanEstimate> {
     // obtain the current borrower and pool debt
-    const [borrowerDebt, collateral] = await this.contractMulti.borrowerInfo(this.poolAddress, borrowerAddress);
+    const [borrowerDebt, collateral] = await this.contractMulti.borrowerInfo(
+      this.poolAddress,
+      borrowerAddress
+    );
     const originationFeeRate = BigNumber.from(collateral);
     const [pendingDebt, ,] = await debtInfo(this.contract);
 

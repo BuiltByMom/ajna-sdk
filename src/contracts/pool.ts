@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers';
-import { Address, TransactionOverrides, POOLS_CONTRACTS } from '../types';
+import { Address, TOKEN_POOL_CONTRACT, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 
 export async function addQuoteToken(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   amount: BigNumber,
   bucketIndex: number,
   expiry: number,
@@ -17,7 +17,7 @@ export async function addQuoteToken(
 }
 
 export async function moveQuoteToken(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   maxAmountToMove: BigNumber,
   fromIndex: number,
   toIndex: number,
@@ -32,7 +32,7 @@ export async function moveQuoteToken(
 }
 
 export async function removeQuoteToken(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   maxAmount: BigNumber,
   bucketIndex: number,
   overrides?: TransactionOverrides
@@ -45,41 +45,41 @@ export async function removeQuoteToken(
 }
 
 export async function lenderInfo(
-  contract: any,
+  contract: TOKEN_POOL_CONTRACT,
   lenderAddress: Address,
   index: number
 ): Promise<[BigNumber, BigNumber]> {
   return await contract.lenderInfo(index, lenderAddress);
 }
 
-export async function debtInfo(contract: POOLS_CONTRACTS) {
+export async function debtInfo(contract: TOKEN_POOL_CONTRACT) {
   return await contract.debtInfo();
 }
 
 export async function loansInfo(
-  contract: POOLS_CONTRACTS
+  contract: TOKEN_POOL_CONTRACT
 ): Promise<[Address, BigNumber, BigNumber]> {
   return await contract.loansInfo();
 }
 
-export async function depositIndex(contract: POOLS_CONTRACTS, debtAmount: BigNumber) {
+export async function depositIndex(contract: TOKEN_POOL_CONTRACT, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
 }
 
-export async function collateralAddress(contract: POOLS_CONTRACTS) {
+export async function collateralAddress(contract: TOKEN_POOL_CONTRACT) {
   return await contract.collateralAddress();
 }
 
-export async function quoteTokenAddress(contract: POOLS_CONTRACTS) {
+export async function quoteTokenAddress(contract: TOKEN_POOL_CONTRACT) {
   return await contract.quoteTokenAddress();
 }
 
-export async function quoteTokenScale(contract: POOLS_CONTRACTS) {
+export async function quoteTokenScale(contract: TOKEN_POOL_CONTRACT) {
   return await contract.quoteTokenScale();
 }
 
 export async function kickWithDeposit(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   index: number,
   limitIndex: number,
   overrides?: TransactionOverrides
@@ -92,7 +92,7 @@ export async function kickWithDeposit(
 }
 
 export async function kick(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   borrowerAddress: Address,
   limitIndex: number,
   overrides?: TransactionOverrides
@@ -105,7 +105,7 @@ export async function kick(
 }
 
 export async function settle(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   borrowerAddress: Address,
   maxDepth: number,
   overrides?: TransactionOverrides
@@ -118,7 +118,7 @@ export async function settle(
 }
 
 export async function withdrawBonds(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   recipientAddress: Address,
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
@@ -131,7 +131,7 @@ export async function withdrawBonds(
 }
 
 export async function kickReserveAuction(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(contract, { methodName: 'kickReserveAuction' }, overrides);
@@ -139,7 +139,7 @@ export async function kickReserveAuction(
 
 // TODO: this method returns value and needs transaction return value support
 export async function takeReserves(
-  contract: POOLS_CONTRACTS,
+  contract: TOKEN_POOL_CONTRACT,
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
 ) {

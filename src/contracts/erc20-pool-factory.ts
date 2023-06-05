@@ -1,4 +1,3 @@
-import { WrappedTransactionClass } from '../utils/transactions';
 import { Config } from '../classes/Config';
 import {
   Address,
@@ -21,14 +20,16 @@ export async function deployPool(
   overrides?: TransactionOverrides
 ) {
   const contractInstance = getErc20PoolFactoryContract(signer);
-  const tx = await contractInstance.populateTransaction.deployPool(
+  const tx = await contractInstance.deployPool(
     collateralAddress,
     quoteAddress,
     interestRate,
     overrides
   );
 
-  return new WrappedTransactionClass(tx, contractInstance, signer);
+  console.log(`tx:`, tx);
+
+  return tx;
 }
 
 export async function deployedPools(

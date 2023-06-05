@@ -1,6 +1,6 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Signer, constants } from 'ethers';
-import { POOLS_CONTRACTS, Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
+import { POOL_CONTRACT, Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
 import { settle } from '../contracts/pool';
@@ -28,7 +28,7 @@ export interface AuctionStatus {
  */
 export class Liquidation {
   provider: SignerOrProvider;
-  poolContract: POOLS_CONTRACTS;
+  poolContract: POOL_CONTRACT;
   utilsContract: PoolInfoUtils;
   borrowerAddress: Address;
 
@@ -37,7 +37,7 @@ export class Liquidation {
    * @param pool            Identifies pool to which this bucket belongs.
    * @param borrowerAddress Identifies the loan being liquidated.
    */
-  constructor(provider: SignerOrProvider, pool: POOLS_CONTRACTS, borrowerAddress: Address) {
+  constructor(provider: SignerOrProvider, pool: POOL_CONTRACT, borrowerAddress: Address) {
     this.provider = provider;
     this.poolContract = pool;
     this.utilsContract = getPoolInfoUtilsContract(this.provider);

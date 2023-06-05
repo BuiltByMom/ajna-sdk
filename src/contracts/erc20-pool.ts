@@ -2,15 +2,15 @@ import ERC20PoolABI from '../abis/ERC20Pool.json';
 import {
   Address,
   CallData,
+  ERC20Pool,
   ERC20Pool__factory,
   SignerOrProvider,
   TransactionOverrides,
 } from '../types';
 import { createTransaction } from '../utils/transactions';
-import { getErc20Contract } from './erc20';
 import { BigNumber, Signer } from 'ethers';
 import { Contract as ContractMulti } from 'ethcall';
-import { POOLS_CONTRACTS } from '../types/type-chain';
+import { POOL_CONTRACT } from '../types/type-chain';
 
 export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
   return ERC20Pool__factory.connect(poolAddress, provider);
@@ -20,12 +20,12 @@ export const getErc20PoolContractMulti = (poolAddress: Address) => {
   return new ContractMulti(poolAddress, ERC20PoolABI);
 };
 
-export async function collateralScale(contract: Contract) {
+export async function collateralScale(contract: ERC20Pool) {
   return await contract.collateralScale();
 }
 
 export async function drawDebt(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   borrowerAddress: Address,
   amountToBorrow: BigNumber,
   limitIndex: number,
@@ -43,7 +43,7 @@ export async function drawDebt(
 }
 
 export async function repayDebt(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   borrowerAddress: Address,
   maxQuoteTokenAmountToRepay: BigNumber,
   collateralAmountToPull: BigNumber,
@@ -68,7 +68,7 @@ export async function repayDebt(
 }
 
 export async function addCollateral(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   amountToAdd: BigNumber,
   bucketIndex: number,
   expiry?: number,
@@ -82,7 +82,7 @@ export async function addCollateral(
 }
 
 export async function removeCollateral(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   bucketIndex: number,
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
@@ -101,7 +101,7 @@ export async function approve(
   allowance: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contract = getErc20Contract(tokenAddress, signer);
+  const contract = getErc20PoolContract(poolAddress, signer);
 
   return await createTransaction(
     contract,
@@ -111,7 +111,7 @@ export async function approve(
 }
 
 export async function bucketTake(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   borrowerAddress: Address,
   depositTake: boolean,
   bucketIndex: number,
@@ -125,7 +125,7 @@ export async function bucketTake(
 }
 
 export async function take(
-  contract: POOLS_CONTRACTS,
+  contract: POOL_CONTRACT,
   borrowerAddress: Address,
   maxAmount: BigNumber,
   callee: Address,
@@ -133,8 +133,9 @@ export async function take(
   overrides?: TransactionOverrides
 ) {
   const encodedCallData =
-    callData?.args && callData.methodName
-      ? contract.interface.encodeFunctionData[callData.methodName](...callData.args)
+    callData?.args && callData?.methodName
+      ? // @ts-ignore
+        contract.interface.encodeFunctionData[callData.methodName](...callData.args)
       : [];
 
   return await createTransaction(
