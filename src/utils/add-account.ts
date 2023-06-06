@@ -18,18 +18,21 @@ class AddAccount {
     return new Wallet(key, this.provider);
   };
 
-  addAccountFromKeystore = async (keystorePath = './secrets.json') => {
+  addAccountFromKeystore = async (keystorePath = '') => {
     // read the keystore file, confirming it exists
     try {
       this.jsonKeystore = fs.readFileSync(keystorePath as string).toString();
     } catch (error) {
-      if (!this.jsonKeystore) {
-        console.log();
-        // prettier-ignore
-        console.error(`Could not find the jsonKeyStore at the path ${keystorePath}. Please try again.`);
-        process.exit();
-      }
+      console.log(`error while trying to stringify keystore path -- ${keystorePath}:`, error);
     }
+
+    if (keystorePath === '') {
+      console.log(`Could not find the jsonKeyStore at the path ${keystorePath}.`);
+    }
+
+    // if (!this.jsonKeystore) {
+    //   process.exit();
+    // }
 
     stdout.write('Enter keystore password: ');
     stdin.setRawMode(true);

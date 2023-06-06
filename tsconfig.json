@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "baseUrl": "src",
