@@ -25,7 +25,8 @@
     "test": "jest --silent=false --runInBand",
     "test:dev": "jest --watchAll",
     "typechain-abis": "typechain --target ethers-v5 --discriminate-types --out-dir src/types/contracts './src/abis/*.json'",
-    "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'"
+    "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'",
+    "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\""
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
@@ -55,6 +56,7 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
+    "tsc-watch": "^6.0.4",
     "tslib": "^2.5.2",
     "typechain": "^8.2.0",
     "typescript": "^5.0.4"
