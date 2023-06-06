@@ -1,3 +1,4 @@
+import { getErc20PoolFactoryContract } from 'contracts/erc20-pool-factory';
 import {
   CallData,
   ERC20Pool,
@@ -20,31 +21,51 @@ export async function createTransaction(
   contract: POOL_CONTRACT,
   callData: CallData,
   overrides?: TransactionOverrides
-): Promise<ContractTransaction> {
+): Promise<ContractTransaction | undefined> {
   const { methodName, args = [] } = callData;
+  const [collateralAddress, quoteAddress, interestRate] = args;
+  const signer = contract.signer;
+  console.log(`signer:`, signer);
+  console.log(`collateralAddress:`, collateralAddress);
+  console.log(`quoteAddress:`, quoteAddress);
+  console.log(`interestRate:`, interestRate);
+  console.log(`overrides:`, overrides);
 
-  const definedArgs = args.filter(a => a !== undefined);
-  let c;
-  if ('contractName' in contract) {
-    if (contract.contractName === 'ERC20Pool') {
-      c = contract as ERC20Pool;
-    } else if (contract.contractName === 'ERC721Pool') {
-      c = contract as ERC721Pool;
-    } else if (contract.contractName === 'PoolInfoUtils') {
-      c = contract as PoolInfoUtils;
+  const erc20PoolFactory = getErc20PoolFactoryContract(signer);
+  try {
+    const gasEstimation = await erc20PoolFactory.estimateGas.deployPool(
+      collateralAddress,
+      quoteAddress,
+      interestRate,
+      {
+        from: await signer.getAddress(),
+        ...overrides,
+      }
+    );
+
+    const definedArgs = args.filter(a => a !== undefined);
+    let c;
+    if ('contractName' in contract) {
+      if (contract.contractName === 'ERC20Pool') {
+        c = contract as ERC20Pool;
+      } else if (contract.contractName === 'ERC721Pool') {
+        c = contract as ERC721Pool;
+      } else if (contract.contractName === 'PoolInfoUtils') {
+        c = contract as PoolInfoUtils;
+      }
+    } else {
+      throw new Error(`Invalid POOL_CONTRACT: ${contract}`);
     }
-  } else {
-    throw new Error(`Invalid POOL_CONTRACT: ${contract}`);
-  }
 
-  // @ts-ignore
-  return c.populateTransaction[methodName]([
-    ...definedArgs,
-    {
-      ...overrides,
-      from: await c?.signer.getAddress(),
-    },
-  ]);
+    // @ts-ignore
+    return c.populateTransaction[methodName]([
+      ...definedArgs,
+      {
+        ...overrides,
+        from: await c?.signer.getAddress(),
+      },
+    ]);
+  } catch {}
 }
 
 /**
