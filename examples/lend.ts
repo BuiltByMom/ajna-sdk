@@ -6,7 +6,6 @@ import { FungiblePool } from '../src/classes/FungiblePool';
 import { Address } from '../src/types';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad } from '../src/utils/numeric';
-import { priceToIndex } from '../src/utils/pricing';
 import { BigNumber, constants, providers } from 'ethers';
 
 // Configure from environment

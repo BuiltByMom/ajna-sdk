@@ -174,11 +174,19 @@ export class FungiblePool extends Pool {
   }
 
   /**
+    retrieves origination fee rate for this pool; multiply by new debt to get fee
+    @returns origination fee rate, in WAD precision
+   */
+  async getOriginationFeeRate() {
+    return await this.poolInfoContractUtils.borrowFeeRate(this.poolAddress);
+  }
+
+  /**
    * retrieve information for a specific loan
    * @param borrowerAddress identifies the loan
    * @returns {@link Loan}
    */
-  async getLoan(borrowerAddress: Address) {
+  async getLoan(borrowerAddress: Address): Promise<Loan> {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
@@ -224,41 +232,50 @@ export class FungiblePool extends Pool {
     debtAmount: BigNumber,
     collateralAmount: BigNumber
   ): Promise<LoanEstimate> {
-    // obtain the current borrower and pool debt
-    const borrowerInfo = await this.poolInfoContractUtils.borrowerInfo(
+    // obtain the borrower debt, and origination fee
+    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
       borrowerAddress
     );
-    const [pendingDebt, ,] = await debtInfo(this.contract);
+    const origFeeCall = this.contractUtilsMulti.borrowFeeRate(this.poolAddress);
+    let response: BigNumber[][] = await this.ethcallProvider.all([borrowerInfoCall, origFeeCall]);
+    const [borrowerDebt, collateral] = response[0];
+    const originationFeeRate = BigNumber.from(response[1]);
+
+    // determine pool debt
+    const [poolDebt, ,] = await debtInfo(this.contract);
+
+    // add origination fee
+    debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
 
     // determine where this would push the LUP, the current interest rate, and loan count
-    const lupIndexCall = this.contractMulti.depositIndex(pendingDebt.add(debtAmount));
+    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.add(debtAmount));
     const rateCall = this.contractMulti.interestRateInfo();
     const loansInfoCall = this.contractMulti.loansInfo();
     const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
-    const data: string[] = await this.ethcallProvider.all([
+    response = await this.ethcallProvider.all([
       lupIndexCall,
       rateCall,
       loansInfoCall,
       totalAuctionsInPoolCall,
     ]);
-    const lupIndex: number = +data[0];
-    const rate = BigNumber.from(data[1][0]);
-    let noOfLoans = +data[2][2];
-    const noOfAuctions = +data[3];
+    const lupIndex: number = +response[0];
+    const rate = BigNumber.from(response[1][0]);
+    let noOfLoans = +response[2][2];
+    const noOfAuctions = +response[3];
     noOfLoans += noOfAuctions;
     const lup = indexToPrice(lupIndex);
 
     // calculate the new amount of debt and collateralization
-    const newDebt = borrowerInfo.debt_.add(debtAmount);
-    const newCollateral = borrowerInfo.collateral_.add(collateralAmount);
+    const newDebt = borrowerDebt.add(debtAmount);
+    const newCollateral = collateral.add(collateralAmount);
     const thresholdPrice = wdiv(newDebt, newCollateral);
     const zero = constants.Zero;
     const encumbered = lup === zero || newDebt === zero ? zero : wdiv(newDebt, lup);
     const collateralization = encumbered === zero ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical MOMP and neutral price
-    const mompDebt = noOfLoans === 0 ? constants.One : pendingDebt.div(noOfLoans);
+    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
     const mompIndex = await depositIndex(this.contract, mompDebt);
     const momp = indexToPrice(mompIndex);
     // neutralPrice = (1 + rate) * momp * thresholdPrice/lup

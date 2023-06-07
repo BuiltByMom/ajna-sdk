@@ -7,6 +7,7 @@ import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
+import { Stats } from '../src/classes/Pool';
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -31,25 +32,28 @@ async function getPool() {
   return pool;
 }
 
-// Gets bucket index of initial price from which debt would be drawn
-async function getPriceIndex(): Promise<number> {
-  const prices = await pool.getPrices();
-  console.log('Pool prices HPB: ', fromWad(prices.hpb), ' LUP: ', fromWad(prices.lup));
-  if (prices.hpb.eq(BigNumber.from(0))) throw new Error('No liquidity in pool');
-  return prices.lupIndex === 0 ? priceToIndex(prices.hpb) : priceToIndex(prices.lup);
+// Estimates where LUP will be after debt has been drawn
+async function estimateNewLup(existingPoolDebt: BigNumber, newDebt: BigNumber): Promise<BigNumber> {
+  const newLup = indexToPrice(await pool.depositIndex(existingPoolDebt.add(newDebt)));
+  console.log('Drawing', fromWad(newDebt), 'would push LUP down to', fromWad(newLup));
+  return newLup;
 }
 
 // Draws debt without any regard to current debt or collateral pledged
-async function makeLoan(debtToDraw: BigNumber, collateralization: BigNumber) {
-  const priceIndex: number = await getPriceIndex();
-  const price: BigNumber = indexToPrice(priceIndex);
-  const limitIndex: number = priceIndex + 10;
+async function makeLoan(poolStats: Stats, debtToDraw: BigNumber, collateralization: BigNumber) {
+  // add the origination fee
+  const originationFeeRate = await pool.getOriginationFeeRate();
+  debtToDraw = debtToDraw.add(wmul(debtToDraw, originationFeeRate));
+
+  // estimate where the LUP would be with additional debt
+  const price: BigNumber = await estimateNewLup(poolStats.debt, debtToDraw);
+  // revert if LUP drops more than 10 buckets below our estimate before TX processed
+  const limitIndex: number = priceToIndex(price) + 10;
   console.log('TX will revert if LUP has dropped below', fromWad(indexToPrice(limitIndex)));
 
   const collateralToPledge = wmul(wdiv(debtToDraw, price), collateralization);
   console.log(
-    `${fromWad(collateralToPledge)} collateral required to draw`,
-    `${fromWad(debtToDraw)} debt from ${fromWad(price)}`
+    `${fromWad(collateralToPledge)} collateral required to draw ${fromWad(debtToDraw)} debt`
   );
   let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
   await tx.verifyAndSubmit();
@@ -71,14 +75,17 @@ async function run() {
   const stats = await pool.getStats();
   console.log('Pool has', fromWad(stats.poolSize.sub(stats.debt)), 'available to lend');
   const loan = await pool.getLoan(await signerBorrower.getAddress());
-  console.log('Borrower has', fromWad(loan.debt), 'debt and', fromWad(loan.collateral), 'pledged');
+  console.log(
+    `Borrower has ${fromWad(loan.debt)} debt and ${fromWad(loan.collateral)} pledged `,
+    `and is ${fromWad(loan.collateralization)} collateralized`
+  );
 
   const action = process.argv.length > 2 ? process.argv[2] : '';
 
   if (action === 'draw') {
     const debtToDraw: BigNumber = process.argv.length > 3 ? toWad(process.argv[3]) : toWad(100);
     const collateralization = process.argv.length > 4 ? toWad(process.argv[4]) : toWad(1.25);
-    await makeLoan(debtToDraw, collateralization);
+    await makeLoan(stats, debtToDraw, collateralization);
     return;
   }
   if (action === 'repay') {

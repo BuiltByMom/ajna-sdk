@@ -127,17 +127,19 @@ describe('ERC20 Pool', () => {
     expect(lpBalance?.gt(0)).toBeTruthy();
   });
 
+  it('should get origination fee rate', async () => {
+    const feeRate = await pool.getOriginationFeeRate();
+    expect(feeRate).toBeBetween(constants.Zero, toWad('0.01'));
+  });
+
   it('should use drawDebt successfully', async () => {
     const amountToBorrow = toWad(1.0);
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
     let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-
     await tx.verifyAndSubmit();
-
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
-
     await submitAndVerifyTransaction(tx);
   });
 
