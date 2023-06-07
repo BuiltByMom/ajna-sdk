@@ -58,6 +58,14 @@ async function run() {
 
   const action = process.argv.length > 2 ? process.argv[2] : '';
 
+  if (action === 'kick') {
+    if (process.argv.length <= 3) throw new Error('Please identify loan to kick');
+    const borrowerAddress = process.argv[3];
+    const tx = await pool.kick(signerLender, borrowerAddress);
+    await tx.verifyAndSubmit();
+    console.log('Kicked loan', borrowerAddress);
+    return;
+  }
   if (action === 'kickWithDeposit') {
     if (process.argv.length <= 3)
       throw new Error('Please provide price of bucket to withdraw and kick');
