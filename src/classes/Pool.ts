@@ -30,6 +30,7 @@ import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { SdkError } from './types';
 import { LPToken } from './LPToken';
+import { Interface } from 'ethersv6';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -108,6 +109,8 @@ export abstract class Pool {
   name: string;
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
+  contractName: string;
+  interface: Interface;
 
   constructor(
     provider: SignerOrProvider,
@@ -127,6 +130,8 @@ export abstract class Pool {
     this.contractMulti = contractMulti;
     this.quoteAddress = constants.AddressZero;
     this.collateralAddress = constants.AddressZero;
+    this.contractName = contract.contractName;
+    this.interface = new Interface(contract.interface.fragments);
   }
 
   async initialize() {
