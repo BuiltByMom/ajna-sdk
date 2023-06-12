@@ -10,6 +10,7 @@ import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { getBlockTime } from '../utils/time';
+import { AuctionStatus } from '../classes/Liquidation';
 
 dotenv.config();
 
@@ -159,6 +160,18 @@ describe('Liquidations', () => {
     // take
     tx = await liquidation.arbTake(signerLender, bucketIndex);
     await submitAndVerifyTransaction(tx);
+
+    const statuses = await pool.getLiquidationStatuses([signerBorrower2.address]);
+    expect(statuses.size).toEqual(1);
+    const auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
+    const blockTime = await getBlockTime(signerBorrower2);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
+    expect(auctionStatus.collateral).toEqual(toWad(0));
+    expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
+    expect(auctionStatus.isTakeable).toBeFalsy();
+    expect(auctionStatus.isCollateralized).toBeFalsy();
+    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
   });
 
   it('should use deposit take', async () => {

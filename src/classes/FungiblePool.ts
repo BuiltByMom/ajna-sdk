@@ -1,5 +1,5 @@
 import { BigNumber, Signer, constants } from 'ethers';
-import { getExpiry } from '../utils/time';
+import { getBlockTime, getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
@@ -14,7 +14,7 @@ import {
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, Loan, SignerOrProvider } from '../types';
-import { Liquidation } from './Liquidation';
+import { AuctionStatus, Liquidation } from './Liquidation';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
@@ -301,5 +301,45 @@ export class FungiblePool extends Pool {
    */
   getLiquidation(borrowerAddress: Address) {
     return new Liquidation(this.provider, this.contract, borrowerAddress);
+  }
+
+  /**
+   * retrieve statuses for multiple liquidations
+   * @param borrowerAddresses identifies loans under liquidation
+   * @returns map of AuctionStatuses, indexed by borrower address
+   */
+  async getLiquidationStatuses(
+    borrowerAddresses: Array<Address>
+  ): Promise<Map<Address, AuctionStatus>> {
+    // assemble calldata for requests
+    const calls = [];
+    for (const loan of borrowerAddresses) {
+      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
+    }
+
+    // perform the multicall
+    const response: any[][] = await this.ethcallProvider.all(calls);
+
+    // prepare return value
+    const retval = new Map<Address, AuctionStatus>();
+    for (let i = 0; i < response.length; ++i) {
+      const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
+        response[i];
+      const kickTimestampNumber = kickTimestamp.toNumber();
+      const kickTime = new Date(kickTimestampNumber * 1000);
+      const currentTimestampNumber = await getBlockTime(this.provider);
+      const isGracePeriod = currentTimestampNumber - kickTimestampNumber < 3600;
+      const isTakeable = !isGracePeriod && collateral.gt(BigNumber.from(0));
+      retval.set(borrowerAddresses[i], {
+        kickTime,
+        collateral,
+        debtToCover,
+        isTakeable,
+        isCollateralized,
+        price,
+        neutralPrice,
+      });
+    }
+    return retval;
   }
 }
