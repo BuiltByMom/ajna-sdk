@@ -220,6 +220,11 @@ export class FungiblePool extends Pool {
     };
   }
 
+  /**
+   * retrieve information for a list of loans
+   * @param borrowerAddresses identifies the loans
+   * @returns map of Loans, indexed by borrowerAddress
+   */
   async getLoans(borrowerAddresses: Array<Address>): Promise<Map<Address, Loan>> {
     const calls = [];
     // push 3 pool-level requests followed by request for each loan
