@@ -1892,19 +1892,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'quoteTokenDust',
-    constant: true,
-    stateMutability: 'pure',
-    payable: false,
-    inputs: [],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
     name: 'quoteTokenScale',
     constant: true,
     stateMutability: 'pure',

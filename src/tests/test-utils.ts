@@ -5,6 +5,8 @@ import type { MatcherFunction } from 'expect';
 
 export const submitAndVerifyTransaction = async (tx: WrappedTransaction) => {
   const receipt = await tx.verifyAndSubmit();
+  expect(receipt).toBeDefined();
+  expect(receipt.confirmations).toBeGreaterThanOrEqual(1);
   expect(receipt.transactionHash).not.toBe('');
 };
 

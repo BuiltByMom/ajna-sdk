@@ -166,6 +166,25 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'availableQuoteTokenAmount',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'ajnaPool_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'amount_',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'borrowFeeRate',
     constant: true,
     stateMutability: 'view',

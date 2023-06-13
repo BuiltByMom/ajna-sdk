@@ -23,7 +23,7 @@ export async function mint(
 
   return await createTransaction(
     contractInstance,
-    { methodName: 'mint', args: [{ recipient, pool, poolSubsetHash }] },
+    { methodName: 'mint', args: [pool, recipient, poolSubsetHash] },
     overrides
   );
 }
@@ -38,7 +38,7 @@ export async function burn(
 
   return await createTransaction(
     contractInstance,
-    { methodName: 'burn', args: [{ tokenId, pool }] },
+    { methodName: 'burn', args: [pool, tokenId] },
     overrides
   );
 }

@@ -10,6 +10,7 @@ dotenv.config();
 jest.setTimeout(1200000);
 
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
+const TESTA_TDAI_POOL = '0x9b77d3c37fedb8d1d8cf5174708ed56163ad8fe4';
 
 describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -18,7 +19,7 @@ describe('LP Token and PositionManager', () => {
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
 
   beforeAll(async () => {
-    pool = await ajna.factory.getPoolByAddress('0x097ad5d3c68dad8da717091bd17eaafa75b61d6f');
+    pool = await ajna.factory.getPoolByAddress(TESTA_TDAI_POOL);
   });
 
   it('should mint and burn LP token', async () => {

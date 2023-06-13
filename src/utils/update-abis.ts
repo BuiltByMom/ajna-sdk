@@ -44,6 +44,7 @@ const abisWeCareAbout = new Set([
   'ERC721.json',
   'ERC721Pool.json',
   'ERC721PoolFactory.json',
+  'GrantFund.json',
   'PoolInfoUtils.json',
   'PositionManager.json',
   'RewardsManager.json',

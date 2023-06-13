@@ -29,24 +29,26 @@ export interface PositionManagerInterface extends utils.Interface {
     'PERMIT_TYPEHASH()': FunctionFragment;
     'approve(address,uint256)': FunctionFragment;
     'balanceOf(address)': FunctionFragment;
-    'burn((uint256,address))': FunctionFragment;
+    'burn(address,uint256)': FunctionFragment;
     'getApproved(uint256)': FunctionFragment;
     'getLP(uint256,uint256)': FunctionFragment;
     'getPositionIndexes(uint256)': FunctionFragment;
     'getPositionIndexesFiltered(uint256)': FunctionFragment;
     'getPositionInfo(uint256,uint256)': FunctionFragment;
+    'isAjnaPool(address,bytes32)': FunctionFragment;
     'isApprovedForAll(address,address)': FunctionFragment;
     'isIndexInPosition(uint256,uint256)': FunctionFragment;
     'isPositionBucketBankrupt(uint256,uint256)': FunctionFragment;
-    'memorializePositions((uint256,uint256[]))': FunctionFragment;
-    'mint((address,address,bytes32))': FunctionFragment;
-    'moveLiquidity((uint256,address,uint256,uint256,uint256))': FunctionFragment;
+    'memorializePositions(address,uint256,uint256[])': FunctionFragment;
+    'mint(address,address,bytes32)': FunctionFragment;
+    'moveLiquidity(address,uint256,uint256,uint256,uint256)': FunctionFragment;
     'multicall(bytes[])': FunctionFragment;
     'name()': FunctionFragment;
+    'nonces(uint256)': FunctionFragment;
     'ownerOf(uint256)': FunctionFragment;
-    'permit(address,uint256,uint256,uint8,bytes32,bytes32)': FunctionFragment;
+    'permit(address,uint256,uint256,bytes)': FunctionFragment;
     'poolKey(uint256)': FunctionFragment;
-    'reedemPositions((uint256,address,uint256[]))': FunctionFragment;
+    'redeemPositions(address,uint256,uint256[])': FunctionFragment;
     'safeTransferFrom(address,address,uint256)': FunctionFragment;
     'safeTransferFrom(address,address,uint256,bytes)': FunctionFragment;
     'setApprovalForAll(address,bool)': FunctionFragment;
@@ -68,6 +70,7 @@ export interface PositionManagerInterface extends utils.Interface {
       | 'getPositionIndexes'
       | 'getPositionIndexesFiltered'
       | 'getPositionInfo'
+      | 'isAjnaPool'
       | 'isApprovedForAll'
       | 'isIndexInPosition'
       | 'isPositionBucketBankrupt'
@@ -76,10 +79,11 @@ export interface PositionManagerInterface extends utils.Interface {
       | 'moveLiquidity'
       | 'multicall'
       | 'name'
+      | 'nonces'
       | 'ownerOf'
       | 'permit'
       | 'poolKey'
-      | 'reedemPositions'
+      | 'redeemPositions'
       | 'safeTransferFrom(address,address,uint256)'
       | 'safeTransferFrom(address,address,uint256,bytes)'
       | 'setApprovalForAll'
@@ -98,7 +102,7 @@ export interface PositionManagerInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'balanceOf', values: [PromiseOrValue<string>]): string;
   encodeFunctionData(
     functionFragment: 'burn',
-    values: [{ tokenId: PromiseOrValue<BigNumberish>; pool: PromiseOrValue<string> }]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: 'getApproved',
@@ -121,6 +125,10 @@ export interface PositionManagerInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: 'isAjnaPool',
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: 'isApprovedForAll',
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
@@ -134,37 +142,25 @@ export interface PositionManagerInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: 'memorializePositions',
-    values: [
-      {
-        tokenId: PromiseOrValue<BigNumberish>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      }
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
     functionFragment: 'mint',
-    values: [
-      {
-        recipient: PromiseOrValue<string>;
-        pool: PromiseOrValue<string>;
-        poolSubsetHash: PromiseOrValue<BytesLike>;
-      }
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: 'moveLiquidity',
     values: [
-      {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        fromIndex: PromiseOrValue<BigNumberish>;
-        toIndex: PromiseOrValue<BigNumberish>;
-        expiry: PromiseOrValue<BigNumberish>;
-      }
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(functionFragment: 'multicall', values: [PromiseOrValue<BytesLike>[]]): string;
   encodeFunctionData(functionFragment: 'name', values?: undefined): string;
+  encodeFunctionData(functionFragment: 'nonces', values: [PromiseOrValue<BigNumberish>]): string;
   encodeFunctionData(functionFragment: 'ownerOf', values: [PromiseOrValue<BigNumberish>]): string;
   encodeFunctionData(
     functionFragment: 'permit',
@@ -172,21 +168,13 @@ export interface PositionManagerInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>
     ]
   ): string;
   encodeFunctionData(functionFragment: 'poolKey', values: [PromiseOrValue<BigNumberish>]): string;
   encodeFunctionData(
-    functionFragment: 'reedemPositions',
-    values: [
-      {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      }
-    ]
+    functionFragment: 'redeemPositions',
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
     functionFragment: 'safeTransferFrom(address,address,uint256)',
@@ -226,6 +214,7 @@ export interface PositionManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'getPositionIndexes', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPositionIndexesFiltered', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPositionInfo', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'isAjnaPool', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isApprovedForAll', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isIndexInPosition', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isPositionBucketBankrupt', data: BytesLike): Result;
@@ -234,10 +223,11 @@ export interface PositionManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'moveLiquidity', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'multicall', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'nonces', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'ownerOf', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'permit', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'poolKey', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'reedemPositions', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'redeemPositions', data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: 'safeTransferFrom(address,address,uint256)',
     data: BytesLike
@@ -396,10 +386,8 @@ export interface PositionManager extends BaseContract {
     balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     burn(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -430,6 +418,12 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
+    isAjnaPool(
+      pool_: PromiseOrValue<string>,
+      subsetHash_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -449,30 +443,25 @@ export interface PositionManager extends BaseContract {
     ): Promise<[boolean]>;
 
     memorializePositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     mint(
-      params_: {
-        recipient: PromiseOrValue<string>;
-        pool: PromiseOrValue<string>;
-        poolSubsetHash: PromiseOrValue<BytesLike>;
-      },
+      pool_: PromiseOrValue<string>,
+      recipient_: PromiseOrValue<string>,
+      poolSubsetHash_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     moveLiquidity(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        fromIndex: PromiseOrValue<BigNumberish>;
-        toIndex: PromiseOrValue<BigNumberish>;
-        expiry: PromiseOrValue<BigNumberish>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      fromIndex_: PromiseOrValue<BigNumberish>,
+      toIndex_: PromiseOrValue<BigNumberish>,
+      expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -483,26 +472,24 @@ export interface PositionManager extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
+    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[BigNumber]>;
+
     ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
 
     permit(
       spender_: PromiseOrValue<string>,
       tokenId_: PromiseOrValue<BigNumberish>,
       deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    poolKey(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
+    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
 
-    reedemPositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+    redeemPositions(
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -557,10 +544,8 @@ export interface PositionManager extends BaseContract {
   balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    params_: {
-      tokenId: PromiseOrValue<BigNumberish>;
-      pool: PromiseOrValue<string>;
-    },
+    pool_: PromiseOrValue<string>,
+    tokenId_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -588,6 +573,12 @@ export interface PositionManager extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber]>;
 
+  isAjnaPool(
+    pool_: PromiseOrValue<string>,
+    subsetHash_: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
@@ -607,30 +598,25 @@ export interface PositionManager extends BaseContract {
   ): Promise<boolean>;
 
   memorializePositions(
-    params_: {
-      tokenId: PromiseOrValue<BigNumberish>;
-      indexes: PromiseOrValue<BigNumberish>[];
-    },
+    pool_: PromiseOrValue<string>,
+    tokenId_: PromiseOrValue<BigNumberish>,
+    indexes_: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   mint(
-    params_: {
-      recipient: PromiseOrValue<string>;
-      pool: PromiseOrValue<string>;
-      poolSubsetHash: PromiseOrValue<BytesLike>;
-    },
+    pool_: PromiseOrValue<string>,
+    recipient_: PromiseOrValue<string>,
+    poolSubsetHash_: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   moveLiquidity(
-    params_: {
-      tokenId: PromiseOrValue<BigNumberish>;
-      pool: PromiseOrValue<string>;
-      fromIndex: PromiseOrValue<BigNumberish>;
-      toIndex: PromiseOrValue<BigNumberish>;
-      expiry: PromiseOrValue<BigNumberish>;
-    },
+    pool_: PromiseOrValue<string>,
+    tokenId_: PromiseOrValue<BigNumberish>,
+    fromIndex_: PromiseOrValue<BigNumberish>,
+    toIndex_: PromiseOrValue<BigNumberish>,
+    expiry_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -641,26 +627,24 @@ export interface PositionManager extends BaseContract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
+  nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+
   ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
   permit(
     spender_: PromiseOrValue<string>,
     tokenId_: PromiseOrValue<BigNumberish>,
     deadline_: PromiseOrValue<BigNumberish>,
-    v_: PromiseOrValue<BigNumberish>,
-    r_: PromiseOrValue<BytesLike>,
-    s_: PromiseOrValue<BytesLike>,
+    signature_: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  poolKey(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
-  reedemPositions(
-    params_: {
-      tokenId: PromiseOrValue<BigNumberish>;
-      pool: PromiseOrValue<string>;
-      indexes: PromiseOrValue<BigNumberish>[];
-    },
+  redeemPositions(
+    pool_: PromiseOrValue<string>,
+    tokenId_: PromiseOrValue<BigNumberish>,
+    indexes_: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -715,10 +699,8 @@ export interface PositionManager extends BaseContract {
     balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -746,6 +728,12 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
+    isAjnaPool(
+      pool_: PromiseOrValue<string>,
+      subsetHash_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -765,30 +753,25 @@ export interface PositionManager extends BaseContract {
     ): Promise<boolean>;
 
     memorializePositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     mint(
-      params_: {
-        recipient: PromiseOrValue<string>;
-        pool: PromiseOrValue<string>;
-        poolSubsetHash: PromiseOrValue<BytesLike>;
-      },
+      pool_: PromiseOrValue<string>,
+      recipient_: PromiseOrValue<string>,
+      poolSubsetHash_: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     moveLiquidity(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        fromIndex: PromiseOrValue<BigNumberish>;
-        toIndex: PromiseOrValue<BigNumberish>;
-        expiry: PromiseOrValue<BigNumberish>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      fromIndex_: PromiseOrValue<BigNumberish>,
+      toIndex_: PromiseOrValue<BigNumberish>,
+      expiry_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -796,26 +779,24 @@ export interface PositionManager extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
+    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+
     ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
     permit(
       spender_: PromiseOrValue<string>,
       tokenId_: PromiseOrValue<BigNumberish>,
       deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    poolKey(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
 
-    reedemPositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+    redeemPositions(
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -965,10 +946,8 @@ export interface PositionManager extends BaseContract {
     balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -999,6 +978,12 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isAjnaPool(
+      pool_: PromiseOrValue<string>,
+      subsetHash_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -1018,30 +1003,25 @@ export interface PositionManager extends BaseContract {
     ): Promise<BigNumber>;
 
     memorializePositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     mint(
-      params_: {
-        recipient: PromiseOrValue<string>;
-        pool: PromiseOrValue<string>;
-        poolSubsetHash: PromiseOrValue<BytesLike>;
-      },
+      pool_: PromiseOrValue<string>,
+      recipient_: PromiseOrValue<string>,
+      poolSubsetHash_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     moveLiquidity(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        fromIndex: PromiseOrValue<BigNumberish>;
-        toIndex: PromiseOrValue<BigNumberish>;
-        expiry: PromiseOrValue<BigNumberish>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      fromIndex_: PromiseOrValue<BigNumberish>,
+      toIndex_: PromiseOrValue<BigNumberish>,
+      expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1052,26 +1032,24 @@ export interface PositionManager extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
+    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+
     ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
 
     permit(
       spender_: PromiseOrValue<string>,
       tokenId_: PromiseOrValue<BigNumberish>,
       deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    poolKey(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
 
-    reedemPositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+    redeemPositions(
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1130,10 +1108,8 @@ export interface PositionManager extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     burn(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1164,6 +1140,12 @@ export interface PositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isAjnaPool(
+      pool_: PromiseOrValue<string>,
+      subsetHash_: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -1183,30 +1165,25 @@ export interface PositionManager extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     memorializePositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     mint(
-      params_: {
-        recipient: PromiseOrValue<string>;
-        pool: PromiseOrValue<string>;
-        poolSubsetHash: PromiseOrValue<BytesLike>;
-      },
+      pool_: PromiseOrValue<string>,
+      recipient_: PromiseOrValue<string>,
+      poolSubsetHash_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     moveLiquidity(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        fromIndex: PromiseOrValue<BigNumberish>;
-        toIndex: PromiseOrValue<BigNumberish>;
-        expiry: PromiseOrValue<BigNumberish>;
-      },
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      fromIndex_: PromiseOrValue<BigNumberish>,
+      toIndex_: PromiseOrValue<BigNumberish>,
+      expiry_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1217,6 +1194,11 @@ export interface PositionManager extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    nonces(
+      tokenId_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1226,23 +1208,19 @@ export interface PositionManager extends BaseContract {
       spender_: PromiseOrValue<string>,
       tokenId_: PromiseOrValue<BigNumberish>,
       deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
+      signature_: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     poolKey(
-      arg0: PromiseOrValue<BigNumberish>,
+      tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    reedemPositions(
-      params_: {
-        tokenId: PromiseOrValue<BigNumberish>;
-        pool: PromiseOrValue<string>;
-        indexes: PromiseOrValue<BigNumberish>[];
-      },
+    redeemPositions(
+      pool_: PromiseOrValue<string>,
+      tokenId_: PromiseOrValue<BigNumberish>,
+      indexes_: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

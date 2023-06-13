@@ -1,10 +1,15 @@
 [
   { "type": "constructor", "payable": false, "inputs": [{ "type": "address", "name": "ajna_" }] },
   { "type": "error", "name": "CreateFail", "inputs": [] },
+  { "type": "error", "name": "DecimalsNotCompliant", "inputs": [] },
   { "type": "error", "name": "DeployQuoteCollateralSameToken", "inputs": [] },
   { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
   { "type": "error", "name": "NFTNotSupported", "inputs": [] },
-  { "type": "error", "name": "PoolAlreadyExists", "inputs": [] },
+  {
+    "type": "error",
+    "name": "PoolAlreadyExists",
+    "inputs": [{ "type": "address", "name": "pool_" }]
+  },
   { "type": "error", "name": "PoolInterestRateInvalid", "inputs": [] },
   { "type": "error", "name": "TokenIdSubsetInvalid", "inputs": [] },
   {
@@ -48,6 +53,18 @@
     "payable": false,
     "inputs": [],
     "outputs": [{ "type": "address" }]
+  },
+  {
+    "type": "function",
+    "name": "deployPool",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "collateral_" },
+      { "type": "address", "name": "quote_" },
+      { "type": "uint256", "name": "interestRate_" }
+    ],
+    "outputs": [{ "type": "address", "name": "pool_" }]
   },
   {
     "type": "function",

@@ -68,7 +68,6 @@ export interface ERC20PoolInterface extends utils.Interface {
     'pledgedCollateral()': FunctionFragment;
     'poolType()': FunctionFragment;
     'quoteTokenAddress()': FunctionFragment;
-    'quoteTokenDust()': FunctionFragment;
     'quoteTokenScale()': FunctionFragment;
     'removeCollateral(uint256,uint256)': FunctionFragment;
     'removeQuoteToken(uint256,uint256)': FunctionFragment;
@@ -133,7 +132,6 @@ export interface ERC20PoolInterface extends utils.Interface {
       | 'pledgedCollateral'
       | 'poolType'
       | 'quoteTokenAddress'
-      | 'quoteTokenDust'
       | 'quoteTokenScale'
       | 'removeCollateral'
       | 'removeQuoteToken'
@@ -285,7 +283,6 @@ export interface ERC20PoolInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'pledgedCollateral', values?: undefined): string;
   encodeFunctionData(functionFragment: 'poolType', values?: undefined): string;
   encodeFunctionData(functionFragment: 'quoteTokenAddress', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'quoteTokenDust', values?: undefined): string;
   encodeFunctionData(functionFragment: 'quoteTokenScale', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'removeCollateral',
@@ -388,7 +385,6 @@ export interface ERC20PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'pledgedCollateral', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'poolType', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'quoteTokenAddress', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'quoteTokenDust', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'quoteTokenScale', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'removeCollateral', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'removeQuoteToken', data: BytesLike): Result;
@@ -1054,8 +1050,6 @@ export interface ERC20Pool extends BaseContract {
 
     quoteTokenAddress(overrides?: CallOverrides): Promise<[string]>;
 
-    quoteTokenDust(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     quoteTokenScale(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     removeCollateral(
@@ -1354,8 +1348,6 @@ export interface ERC20Pool extends BaseContract {
   poolType(overrides?: CallOverrides): Promise<number>;
 
   quoteTokenAddress(overrides?: CallOverrides): Promise<string>;
-
-  quoteTokenDust(overrides?: CallOverrides): Promise<BigNumber>;
 
   quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1664,8 +1656,6 @@ export interface ERC20Pool extends BaseContract {
     poolType(overrides?: CallOverrides): Promise<number>;
 
     quoteTokenAddress(overrides?: CallOverrides): Promise<string>;
-
-    quoteTokenDust(overrides?: CallOverrides): Promise<BigNumber>;
 
     quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2260,8 +2250,6 @@ export interface ERC20Pool extends BaseContract {
 
     quoteTokenAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    quoteTokenDust(overrides?: CallOverrides): Promise<BigNumber>;
-
     quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeCollateral(
@@ -2542,8 +2530,6 @@ export interface ERC20Pool extends BaseContract {
     poolType(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     quoteTokenAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    quoteTokenDust(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     quoteTokenScale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
