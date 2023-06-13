@@ -121,6 +121,30 @@ describe('Liquidations', () => {
     snapshotId = await takeSnapshot(provider);
   });
 
+  it('should get multiple loans', async () => {
+    const loan1 = await pool.getLoan(signerBorrower.address);
+    const loan2 = await pool.getLoan(signerBorrower2.address);
+
+    const loans = await pool.getLoans([signerBorrower.address, signerBorrower2.address]);
+    expect(loans.size).toEqual(2);
+
+    const loan1multi = loans.get(signerBorrower.address)!;
+    expect(loan1multi.collateralization.eq(loan1.collateralization)).toBe(true);
+    expect(loan1multi.debt.eq(loan1.debt)).toBe(true);
+    expect(loan1multi.collateral.eq(loan1.collateral)).toBe(true);
+    expect(loan1multi.thresholdPrice.eq(loan1.thresholdPrice)).toBe(true);
+    expect(loan1multi.neutralPrice.eq(loan1.neutralPrice)).toBe(true);
+    expect(loan1multi.liquidationBond.eq(loan1.liquidationBond)).toBe(true);
+
+    const loan2multi = loans.get(signerBorrower2.address)!;
+    expect(loan2multi.collateralization.eq(loan2.collateralization)).toBe(true);
+    expect(loan2multi.debt.eq(loan2.debt)).toBe(true);
+    expect(loan2multi.collateral.eq(loan2.collateral)).toBe(true);
+    expect(loan2multi.thresholdPrice.eq(loan2.thresholdPrice)).toBe(true);
+    expect(loan2multi.neutralPrice.eq(loan2.neutralPrice)).toBe(true);
+    expect(loan2multi.liquidationBond.eq(loan2.liquidationBond)).toBe(true);
+  });
+
   it('should use kick and isKickable', async () => {
     let isKickable = await pool.isKickable(signerBorrower.address);
     expect(isKickable).toBeFalsy();
