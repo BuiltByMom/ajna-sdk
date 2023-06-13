@@ -1,5 +1,5 @@
 import { BigNumber, constants } from 'ethers';
-import { Address, PoolInfoUtils, SignerOrProvider, TOKEN_POOL_CONTRACT } from '../types';
+import { Address, PoolInfoUtils, SignerOrProvider, TOKEN_POOL } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
 import { toWad, wmul } from '../utils/numeric';
 
@@ -23,7 +23,7 @@ export interface CRAStatus {
  */
 export class ClaimableReserveAuction {
   provider: SignerOrProvider;
-  contract: TOKEN_POOL_CONTRACT;
+  contract: TOKEN_POOL;
   contractUtils: PoolInfoUtils;
   poolAddress: Address;
 
@@ -35,7 +35,7 @@ export class ClaimableReserveAuction {
    */
   constructor(
     provider: SignerOrProvider,
-    contract: TOKEN_POOL_CONTRACT,
+    contract: TOKEN_POOL,
     contractUtils: PoolInfoUtils,
     poolAddress: Address
   ) {
@@ -69,7 +69,7 @@ export class ClaimableReserveAuction {
    */
   async getStatus(): Promise<CRAStatus> {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
-    const kickTimeCall = (this.contract as TOKEN_POOL_CONTRACT).reservesInfo();
+    const kickTimeCall = (this.contract as TOKEN_POOL).reservesInfo();
     const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
       reservesInfoCall,
       kickTimeCall,
@@ -95,7 +95,7 @@ export class ClaimableReserveAuction {
    */
   async isTakeable() {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
-    const kickTimeCall = (this.contract as TOKEN_POOL_CONTRACT).reservesInfo();
+    const kickTimeCall = (this.contract as TOKEN_POOL).reservesInfo();
     const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
       reservesInfoCall,
       kickTimeCall,

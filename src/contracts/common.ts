@@ -1,13 +1,12 @@
-import { Contract } from 'ethers';
-import { CallData, TransactionOverrides } from '../types';
+import { CallData, TOKEN_POOL, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 
 export async function multicall(
-  contract: Contract,
+  contract: TOKEN_POOL,
   callData: Array<CallData>,
   overrides?: TransactionOverrides
 ) {
-  const multicallData = callData.map(callData =>
+  const multicallData = callData.map((callData: Omit<CallData, 'withdrawBonds'>) =>
     contract.interface.encodeFunctionData(callData.methodName, callData.args)
   );
 

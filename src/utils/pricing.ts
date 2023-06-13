@@ -21,7 +21,10 @@ const PRICE_STEP = mbn('1.005');
  *          MIN_PRICE : bucket index -3232, fenwick index 7388: 7388-7388-3232=-3232.
  *  @dev    V3 (final): x^y = 2^(y*log_2(x))
  */
-export const indexToPrice = (index: number) => {
+export const indexToPrice = (index: number | BigNumber) => {
+  if (BigNumber.isBigNumber(index)) {
+    index = index.toNumber();
+  }
   const bucketIndex = MAX_BUCKET_INDEX - index;
   if (bucketIndex < MIN_BUCKET_INDEX || bucketIndex > MAX_BUCKET_INDEX) {
     throw new SdkError('ERR_BUCKET_INDEX_OUT_OF_BOUNDS');

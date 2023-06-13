@@ -13,7 +13,7 @@ import {
   collateralScale,
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
-import { Address, Loan, SignerOrProvider } from '../types';
+import { Address, ERC20Pool, Loan, SignerOrProvider } from '../types';
 import { AuctionStatus, Liquidation } from './Liquidation';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
@@ -60,7 +60,7 @@ export class FungiblePool extends Pool {
   async collateralApprove(signer: Signer, allowance: BigNumber) {
     const denormalizedAllowance = allowance.eq(constants.MaxUint256)
       ? allowance
-      : allowance.div(await collateralScale(this.contract));
+      : allowance.div(await collateralScale(this.contract as ERC20Pool));
     return await approve(signer, this.poolAddress, this.collateralAddress, denormalizedAllowance);
   }
 

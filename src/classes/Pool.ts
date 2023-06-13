@@ -15,14 +15,7 @@ import {
 } from '../contracts/pool';
 import { getPoolInfoUtilsContract, poolPricesInfo } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import {
-  Address,
-  CallData,
-  Provider,
-  SignerOrProvider,
-  PoolInfoUtils,
-  TOKEN_POOL_CONTRACT,
-} from '../types';
+import { Address, CallData, Provider, SignerOrProvider, PoolInfoUtils, TOKEN_POOL } from '../types';
 import { toWad } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
@@ -97,7 +90,7 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: TOKEN_POOL_CONTRACT;
+  contract: TOKEN_POOL;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
   poolAddress: Address;
@@ -116,7 +109,7 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: TOKEN_POOL_CONTRACT,
+    contract: TOKEN_POOL,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;

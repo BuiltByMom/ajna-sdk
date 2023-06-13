@@ -1,4 +1,4 @@
-import { Address, SignerOrProvider } from '../types/core';
+import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
 import { FungiblePool } from '../classes/FungiblePool';
 import { BigNumber, Signer } from 'ethers';
 
@@ -7,10 +7,11 @@ export interface IERC20PoolFactory {
    * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
    */
   deployPool(
+    signer: Signer,
     collateralAddress: Address,
     quoteAddress: Address,
     interestRate: BigNumber
-  ): Promise<any>;
+  ): Promise<WrappedTransaction>;
   /**
    * Returns pool instance for the given collateral and quote tokens addresses.
    */
@@ -18,7 +19,7 @@ export interface IERC20PoolFactory {
   /**
    * Returns pool address for the given collateral and quote tokens addresses.
    */
-  getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address>;
+  getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address[]>;
 }
 
 export interface IBaseContract {

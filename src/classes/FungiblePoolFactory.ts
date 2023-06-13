@@ -1,4 +1,4 @@
-import { deployedPools } from '../contracts/erc20-pool-factory';
+import { deployPool, deployedPools } from '../contracts/erc20-pool-factory';
 import { ERC20_NON_SUBSET_HASH } from '../constants';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
@@ -6,28 +6,30 @@ import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 import { BigNumber, constants, Signer } from 'ethers';
 import { SdkError } from './types';
-import { dryRunDeployPool } from 'tests/commands';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.
  */
 export class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
-  readonly signer: SignerOrProvider;
-
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
-    this.signer = signerOrProvider;
   }
 
   /**
    * creates a new pool
+   * @param signer pool creator
    * @param collateralAddress address of the ERC20 collateral token
    * @param quoteAddress address of the ERC20 quote token
    * @param interestRate initial interest rate, between 1%-10%, as WAD
    * @returns transaction
    */
-  async deployPool(collateralAddress: Address, quoteAddress: Address, interestRate: BigNumber) {
-    return dryRunDeployPool(this.signer as Signer, [collateralAddress, quoteAddress, interestRate]);
+  async deployPool(
+    signer: Signer,
+    collateralAddress: Address,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ) {
+    return await deployPool(signer, collateralAddress, quoteAddress, interestRate);
   }
 
   /**
@@ -39,15 +41,18 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
   async getPool(collateralAddress: Address, quoteAddress: Address) {
     const poolAddress = await this.getPoolAddress(collateralAddress, quoteAddress);
 
-    if (poolAddress === constants.AddressZero)
+    if (poolAddress[0] === constants.AddressZero) {
       throw new SdkError('Pool for specified tokens was not found');
+    }
 
-    return await this.getPoolByAddress(poolAddress);
+    return await this.getPoolByAddress(poolAddress[0]);
   }
 
   async getPoolByAddress(poolAddress: Address) {
     const newPool = new FungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
+    console.log(`newPool:`, newPool);
     await newPool.initialize();
+    console.log(`newPool:`, newPool);
     return newPool;
   }
 

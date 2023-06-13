@@ -14,7 +14,7 @@ import {
   lpToQuoteTokens,
   lpToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
+import { Address, CallData, PoolInfoUtils, SignerOrProvider, TOKEN_POOL } from '../types';
 import { SdkError } from './types';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
@@ -49,7 +49,7 @@ export interface Position {
 export class Bucket {
   provider: SignerOrProvider;
   contractUtils: PoolInfoUtils;
-  poolContract: Contract;
+  poolContract: TOKEN_POOL;
   pool: Pool;
   bucketName: string;
   index: number;

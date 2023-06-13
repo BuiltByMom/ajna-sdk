@@ -1,17 +1,11 @@
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { BigNumber, providers, Signer as EthersSigner, ContractTransaction } from 'ethers';
-
-export type Signer = EthersSigner;
-
-export type SignerOrProvider = Signer | providers.Provider;
+import { BigNumber, providers, Signer, ContractTransaction } from 'ethers';
 
 export type Provider = providers.Provider;
 
+export type SignerOrProvider = Signer | Provider;
+
 export type Address = string;
-
-export type CollateralAddress = Address;
-
-export type QuoteAddress = Address;
 
 export interface TransactionOverrides {
   to?: string;
@@ -32,6 +26,22 @@ export interface WrappedTransaction {
 
 export interface CallData {
   methodName: string;
-  args?: Array<any>;
+  args: Array<any>;
   [propName: string]: any;
+}
+
+export enum TokenContract {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+}
+
+export enum PoolContracts {
+  ERC20Pool = 'ERC20Pool',
+  ERC721Pool = 'ERC721Pool',
+  ERC20PoolFactory = 'ERC20PoolFactory',
+  ERC721PoolFactory = 'ERC721PoolFactory',
+}
+
+export interface ContractFunction {
+  [key: string]: any;
 }
