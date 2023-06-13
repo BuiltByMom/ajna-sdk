@@ -13,7 +13,11 @@ import {
   quoteTokenScale,
   withdrawBonds,
 } from '../contracts/pool';
-import { getPoolInfoUtilsContract, poolPricesInfo } from '../contracts/pool-info-utils';
+import {
+  getPoolInfoUtilsContract,
+  getPoolInfoUtilsContractMulti,
+  poolPricesInfo,
+} from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
 import { Address, CallData, Provider, SignerOrProvider, PoolInfoUtils, TOKEN_POOL } from '../types';
 import { toWad } from '../utils/numeric';
@@ -23,7 +27,6 @@ import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { SdkError } from './types';
 import { LPToken } from './LPToken';
-import { Interface } from 'ethersv6';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -93,6 +96,7 @@ export abstract class Pool {
   contract: TOKEN_POOL;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
+  contractUtilsMulti: ContractMulti;
   poolAddress: Address;
   collateralAddress: Address;
   collateralSymbol: string | undefined;
@@ -103,7 +107,6 @@ export abstract class Pool {
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
   contractName: string;
-  interface: Interface;
 
   constructor(
     provider: SignerOrProvider,
@@ -115,6 +118,7 @@ export abstract class Pool {
     this.provider = provider;
     this.poolAddress = poolAddress;
     this.poolInfoContractUtils = getPoolInfoUtilsContract(provider);
+    this.contractUtilsMulti = getPoolInfoUtilsContractMulti();
     this.utils = new PoolUtils(provider as Provider);
     this.ajnaAddress = ajnaAddress;
     this.name = 'pool';
@@ -124,7 +128,6 @@ export abstract class Pool {
     this.quoteAddress = constants.AddressZero;
     this.collateralAddress = constants.AddressZero;
     this.contractName = contract.contractName;
-    this.interface = new Interface(contract.interface.fragments);
   }
 
   async initialize() {

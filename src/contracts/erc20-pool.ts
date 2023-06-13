@@ -10,10 +10,15 @@ import {
 import { createTransaction } from '../utils/transactions';
 import { BigNumber, Signer } from 'ethers';
 import { Contract as ContractMulti } from 'ethcall';
-import { POOL_CONTRACT } from '../types/type-chain';
+import { TOKEN_POOL } from '../types/type-chain';
+import { getErc20Contract } from './erc20';
 
 export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
   return ERC20Pool__factory.connect(poolAddress, provider);
+};
+
+export const getErc20PoolInterface = () => {
+  return ERC20Pool__factory.createInterface();
 };
 
 export const getErc20PoolContractMulti = (poolAddress: Address) => {
@@ -25,7 +30,7 @@ export async function collateralScale(contract: ERC20Pool) {
 }
 
 export async function drawDebt(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   borrowerAddress: Address,
   amountToBorrow: BigNumber,
   limitIndex: number,
@@ -43,7 +48,7 @@ export async function drawDebt(
 }
 
 export async function repayDebt(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   borrowerAddress: Address,
   maxQuoteTokenAmountToRepay: BigNumber,
   collateralAmountToPull: BigNumber,
@@ -68,7 +73,7 @@ export async function repayDebt(
 }
 
 export async function addCollateral(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   amountToAdd: BigNumber,
   bucketIndex: number,
   expiry?: number,
@@ -82,7 +87,7 @@ export async function addCollateral(
 }
 
 export async function removeCollateral(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   bucketIndex: number,
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
@@ -101,17 +106,17 @@ export async function approve(
   allowance: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contract = getErc20PoolContract(poolAddress, signer);
+  const erc20 = getErc20Contract(tokenAddress, signer);
 
   return await createTransaction(
-    contract,
+    erc20,
     { methodName: 'approve', args: [poolAddress, allowance] },
     overrides
   );
 }
 
 export async function bucketTake(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   borrowerAddress: Address,
   depositTake: boolean,
   bucketIndex: number,
@@ -125,18 +130,17 @@ export async function bucketTake(
 }
 
 export async function take(
-  contract: POOL_CONTRACT,
+  contract: TOKEN_POOL,
   borrowerAddress: Address,
   maxAmount: BigNumber,
   callee: Address,
   callData?: CallData,
   overrides?: TransactionOverrides
 ) {
-  const encodedCallData =
-    callData?.args && callData?.methodName
-      ? // @ts-ignore
-        contract.interface.encodeFunctionData[callData.methodName](...callData.args)
-      : [];
+  const encodedCallData = callData
+    ? // @ts-ignore
+      contract.interface.encodeFunctionData(callData.methodName, callData.args)
+    : [];
 
   return await createTransaction(
     contract,

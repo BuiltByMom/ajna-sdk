@@ -1,5 +1,5 @@
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { BigNumber, providers, Signer, ContractTransaction } from 'ethers';
+import { BigNumber, providers, Signer, ContractTransaction, ContractReceipt } from 'ethers';
 
 export type Provider = providers.Provider;
 
@@ -18,15 +18,15 @@ export interface TransactionOverrides {
 
 export interface WrappedTransaction {
   verify(): Promise<BigNumber>;
-  submit(confirmations?: number): Promise<TransactionReceipt>;
-  submitResponse(): Promise<TransactionResponse>;
-  verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
-  verifyAndSubmitResponse(): Promise<ContractTransaction>;
+  submit(confirmations?: number): Promise<ContractReceipt>;
+  submitResponse(): Promise<ContractTransaction>;
+  verifyAndSubmit(confirmations?: number): Promise<ContractReceipt>;
+  submitAndVerifyTransaction(): Promise<ContractTransaction>;
 }
 
 export interface CallData {
   methodName: string;
-  args: Array<any>;
+  args?: Array<any>;
   [propName: string]: any;
 }
 
@@ -41,6 +41,13 @@ export enum PoolContracts {
   ERC20PoolFactory = 'ERC20PoolFactory',
   ERC721PoolFactory = 'ERC721PoolFactory',
 }
+
+export enum ManagerContracts {
+  PositionManager = 'PositionManager',
+  RewardsManager = 'RewardsManager',
+}
+
+export type AllContracts = TokenContract & PoolContracts & ManagerContracts;
 
 export interface ContractFunction {
   [key: string]: any;

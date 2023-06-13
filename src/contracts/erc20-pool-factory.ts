@@ -1,3 +1,4 @@
+import { createTransaction } from '../utils';
 import { Config } from '../classes/Config';
 import {
   Address,
@@ -19,17 +20,12 @@ export async function deployPool(
   interestRate: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance = getErc20PoolFactoryContract(signer);
-  const tx = await contractInstance.deployPool(
-    collateralAddress,
-    quoteAddress,
-    interestRate,
-    overrides
-  );
-
-  console.log(`tx:`, tx);
-
-  return tx;
+  const erc20PoolFactory = getErc20PoolFactoryContract(signer);
+  return createTransaction(erc20PoolFactory, {
+    methodName: 'deployPool',
+    args: [collateralAddress, quoteAddress, interestRate],
+    overrides,
+  });
 }
 
 export async function deployedPools(
@@ -38,7 +34,11 @@ export async function deployedPools(
   quoteAddress: Address,
   nonSubsetHash: string
 ) {
-  const contractInstance = getErc20PoolFactoryContract(provider);
+  const erc20PoolFactory = getErc20PoolFactoryContract(provider);
 
-  return await contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
+  return await erc20PoolFactory.functions.deployedPools(
+    nonSubsetHash,
+    collateralAddress,
+    quoteAddress
+  );
 }

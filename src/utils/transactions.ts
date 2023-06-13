@@ -1,20 +1,23 @@
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { getErc20PoolFactoryContract } from '../contracts/erc20-pool-factory';
 import {
   CallData,
-  ERC20Pool,
-  ERC721Pool,
-  TransactionOverrides,
-  SignerOrProvider,
   WrappedTransaction,
-  PoolContracts,
-  TOKEN_POOL_CONTRACTS,
+  TOKEN_POOL_CONTRACT,
+  POOL_CONTRACT,
+  ALL_CONTRACTS,
+  MANAGER_CONTRACT,
 } from '../types';
-import { BigNumber, ContractTransaction, PopulatedTransaction } from 'ethers';
-import { SdkError } from './errors';
-import { getPoolContract } from '../tests/examples.spec';
+import {
+  BigNumber,
+  PopulatedTransaction,
+  Overrides,
+  ContractTransaction,
+  ContractReceipt,
+} from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
 import { Pool } from '../classes/Pool';
+import { SdkError } from '../classes/types';
+import { getNamedContract, getPoolContract } from './helpers';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -25,59 +28,25 @@ import { Pool } from '../classes/Pool';
  * @returns The wrapped transaction object.
  */
 export async function createTransaction(
-  contract: TOKEN_POOL_CONTRACTS,
+  contract: ALL_CONTRACTS,
   callData: CallData,
-  overrides?: TransactionOverrides
-): Promise<any> {
+  overrides?: Overrides
+): Promise<WrappedTransactionClass> {
   const { methodName, args = [] } = callData;
-  const [collateralAddress, quoteAddress, interestRate] = args;
-  const signer = contract.signer;
-  console.log(`signer:`, signer);
-  console.log(`collateralAddress:`, collateralAddress);
-  console.log(`quoteAddress:`, quoteAddress);
-  console.log(`interestRate:`, interestRate);
-  console.log(`overrides:`, overrides);
+  const definedArgs = args.filter(a => a !== undefined);
 
-  const erc20PoolFactory = getErc20PoolFactoryContract(signer);
-  try {
-    const deployPoolEstimation = await erc20PoolFactory.estimateGas.deployPool(
-      collateralAddress,
-      quoteAddress,
-      interestRate,
-      {
-        from: await signer.getAddress(),
-        ...overrides,
-      }
-    );
-    const gasEstimation = await (erc20PoolFactory.estimateGas as any)[methodName](...args, {
-      from: await signer.getAddress(),
-      ...overrides,
-    });
+  const txArgs = overrides ? [...definedArgs, overrides] : [...definedArgs];
+  const populatedTx = (contract.populateTransaction as any)[methodName](
+    ...txArgs
+  ) as PopulatedTransaction;
 
-    console.log(`gasEstimation:`, gasEstimation);
+  const namedContract = contract.contractName.includes('Pool')
+    ? getPoolContract(contract as POOL_CONTRACT)
+    : contract.contractName.includes('Manager')
+    ? getNamedContract(contract as MANAGER_CONTRACT)
+    : getNamedContract(contract as ALL_CONTRACTS);
 
-    const definedArgs = args.filter(a => a !== undefined);
-    let c;
-    if ('contractName' in contract) {
-      if (contract.contractName === PoolContracts.ERC20Pool) {
-        c = contract as ERC20Pool;
-      } else if (contract.contractName === PoolContracts.ERC721Pool) {
-        c = contract as ERC721Pool;
-      }
-    } else {
-      throw new Error(`Invalid TOKEN_POOL: ${contract}`);
-    }
-
-    return (c as any).populateTransaction[methodName]([
-      ...definedArgs,
-      {
-        ...overrides,
-        from: await c?.signer.getAddress(),
-      },
-    ]);
-  } catch (error: any) {
-    console.log(`error:`, error);
-  }
+  return new WrappedTransactionClass(populatedTx, namedContract, methodName, txArgs);
 }
 
 /**
@@ -91,8 +60,9 @@ class WrappedTransactionClass implements WrappedTransaction {
   /**
    * The ethers.js contract instance.
    */
-  readonly _contract?: TOKEN_POOL_CONTRACTS;
-  signer: SignerOrProvider;
+  _contract: ALL_CONTRACTS;
+  readonly _methodName: string;
+  readonly _txArgs: any[];
 
   /**
    * Creates a new wrapped transaction instance.
@@ -101,12 +71,14 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   constructor(
     transaction: PopulatedTransaction,
-    contract: TOKEN_POOL_CONTRACTS,
-    signerOrProvider: SignerOrProvider
+    contract: ALL_CONTRACTS,
+    methodName: string,
+    txArgs: any[]
   ) {
     this._transaction = transaction;
-    this._contract = getPoolContract(contract);
-    this.signer = signerOrProvider;
+    this._contract = contract;
+    this._methodName = methodName;
+    this._txArgs = txArgs;
   }
 
   /**
@@ -115,47 +87,39 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} An SDK error if the transaction execution failed and the error reason can be identified.
    * @throws The original error if the transaction execution failed and the error reason cannot be identified.
    */
-  async verify() {
+  async verify(): Promise<BigNumber> {
     try {
-      const gasEstimate = await this._contract?.provider.estimateGas(this._transaction);
-      console.log(`gasEstimate:`, gasEstimate);
-      if (!gasEstimate) {
-        throw new SdkError('Gas estimate is undefined');
-      }
-      return gasEstimate;
+      return await this._contract.provider.estimateGas(this._transaction);
+      // // @ts-ignore
+      // const gasEstimate: BigNumber = await this._contract.estimateGas[this._methodName][
+      //   this._txArgs
+      // ];
+      // console.log(`gasEstimate:`, gasEstimate);
+      // if (!gasEstimate) {
+      //   throw new SdkError('Gas estimate is undefined');
+      // }
+      // return gasEstimate;
     } catch (error: any) {
-      console.error(`error:`, error);
-      if (this._contract) {
-        const reason = this.parseNodeError(this._contract, error);
-        throw new SdkError(reason, error);
-      }
+      const reason = this.parseNodeError(this._contract, error);
+      throw new SdkError(reason, error);
     }
-    return BigNumber.from(0);
   }
 
   /**
    * Submits the transaction to the blockchain using the signer.
-   * @returns The transaction receipt.
+   * @returns The contract transaction.
    */
-  async submitResponse() {
-    const txWithAdjustedGas = {
-      ...this._transaction,
-      gasLimit: BigNumber.from(this._transaction.gasPrice).mul(GAS_MULTIPLIER),
-    };
-    const tx = await this._contract?.signer.sendTransaction(txWithAdjustedGas);
-    console.log(`tx:`, tx);
-    if (!tx) {
-      throw new SdkError('Transaction response is undefined');
-    }
-    return tx;
+  async submitResponse(): Promise<ContractTransaction> {
+    // @ts-ignore
+    return this._contract[this._methodName](...this._txArgs);
   }
 
   /**
    * Submits the transaction to the blockchain and waits for it to be mined.
    * @param confirmations The number of confirmations to wait for (default is 1).
-   * @returns A Promise that resolves to the transaction receipt.
+   * @returns A Promise that resolves to the contract transaction receipt.
    */
-  async submit(confirmations?: number) {
+  async submit(confirmations?: number): Promise<ContractReceipt> {
     const response = await this.submitResponse();
     return await response.wait(confirmations);
   }
@@ -164,20 +128,21 @@ class WrappedTransactionClass implements WrappedTransaction {
    * Estimates gas, submits a transaction with gas estimate, and waits for the
    * node to acknowledge the transaction is pending.
    * @throws {@link SdkError} if transaction will fail at current block height.
-   * @returns TransactionResponse
+   * @returns ContractTransaction
    */
-  async verifyAndSubmitResponse(contract?: TOKEN_POOL_CONTRACTS) {
+  async submitAndVerifyTransaction(): Promise<ContractTransaction> {
     const estimatedGas = await this.verify();
     const txWithAdjustedGas = {
       ...this._transaction,
       gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
     };
-    const c = contract || this._contract;
-    const tx = await c?.signer.sendTransaction(txWithAdjustedGas);
-    if (!tx) {
-      throw new SdkError(`Transaction response is undefined`);
-    }
-    return this.submitResponse();
+    // @ts-ignore
+    const tx: ContractTransaction = await this._contract[this._methodName](
+      ...this._txArgs,
+      txWithAdjustedGas
+    );
+    console.log(`tx:`, tx);
+    return tx;
   }
 
   /**
@@ -188,8 +153,8 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns TransactionReceipt
    */
   async verifyAndSubmit(confirmations?: number) {
-    const response = await this.verifyAndSubmitResponse();
-    return await response.wait(confirmations);
+    const tx = await this.submitAndVerifyTransaction();
+    return await tx.wait(confirmations);
   }
 
   /**
@@ -197,7 +162,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @param error Error thrown by Ethers in response to an estimateGas failure.
    * @returns string
    */
-  parseNodeError(contract: TOKEN_POOL_CONTRACTS, error: any) {
+  parseNodeError(contract: ALL_CONTRACTS, error: any) {
     if (error?.error?.error) {
       const innerError = error.error.error;
       // works on mainnet-forked Ganache local testnet
@@ -222,7 +187,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @param errorData Error hash string parsed from exception raised by node.
    * @returns Human-readable reason explaining why transaction would revert.
    */
-  getCustomErrorFromHash(contract: TOKEN_POOL_CONTRACTS, errorData: string) {
+  getCustomErrorFromHash(contract: ALL_CONTRACTS, errorData: string) {
     // retrieve the list of custom errors available to the contract
     const customErrorNames = Object.keys(contract.interface.errors);
 

@@ -12,8 +12,9 @@ import { getBlockTime, getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
-import { Config } from '../constants';
+import { Config, ERC20_NON_SUBSET_HASH } from '../constants';
 import { CRAStatus } from '../classes/ClaimableReserveAuction';
+import { deployedPools } from '../contracts';
 
 dotenv.config();
 
@@ -64,7 +65,12 @@ describe('ERC20 Pool', () => {
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
-    const tx = await ajna.factory.deployPool(TWETH_ADDRESS, TDAI_ADDRESS, toWad('0.05'));
+    const tx = await ajna.factory.deployPool(
+      signerLender,
+      TWETH_ADDRESS,
+      TDAI_ADDRESS,
+      toWad('0.05')
+    );
     await tx.verifyAndSubmit();
     pool = await ajna.factory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
     expect(pool).toBeDefined();
@@ -72,10 +78,36 @@ describe('ERC20 Pool', () => {
     expect(pool.collateralAddress).toBe(TWETH_ADDRESS);
     expect(pool.quoteAddress).toBe(TDAI_ADDRESS);
     expect(pool.toString()).toContain('TWETH-TDAI');
+
+    const pools = await deployedPools(
+      signerLender,
+      TWETH_ADDRESS,
+      TDAI_ADDRESS,
+      ERC20_NON_SUBSET_HASH
+    );
+    console.log(`pools:`, pools);
+
+    expect(pools).not.toBe(constants.AddressZero);
+    // const tx = await ajna.factory.deployPool(WETH_ADDRESS, DAI_ADDRESS, toWad('0.05'));
+
+    // await tx.verifyAndSubmit();
+
+    // pool = await ajna.factory.getPool(WETH_ADDRESS, DAI_ADDRESS);
+
+    // expect(pool).toBeDefined();
+    // expect(pool.poolAddress).not.toBe(constants.AddressZero);
+    // expect(pool.collateralAddress).toBe(WETH_ADDRESS);
+    // expect(pool.quoteAddress).toBe(DAI_ADDRESS);
+    // expect(pool.toString()).toContain('TWETH-TDAI');
   });
 
   it('should not allow to create existing pool', async () => {
-    const tx = await ajna.factory.deployPool(TESTA_ADDRESS, TDAI_ADDRESS, toWad('0.05'));
+    const tx = await ajna.factory.deployPool(
+      signerLender,
+      TESTA_ADDRESS,
+      TDAI_ADDRESS,
+      toWad('0.05')
+    );
 
     await expect(async () => {
       await tx.verify();
@@ -333,7 +365,7 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus2.deposit.eq(0)).toBe(true);
 
     let tx = await pool.quoteApprove(signerLender, toWad(allowance));
-    let response = await tx.verifyAndSubmitResponse();
+    let response = await tx.submitAndVerifyTransaction();
     await response.wait();
 
     expect(response).toBeDefined();
@@ -349,7 +381,7 @@ describe('ERC20 Pool', () => {
         args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider)],
       },
     ]);
-    response = await tx.verifyAndSubmitResponse();
+    response = await tx.submitAndVerifyTransaction();
 
     expect(response).toBeDefined();
     expect(response.hash).not.toBe('');

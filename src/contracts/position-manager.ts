@@ -19,7 +19,7 @@ export async function mint(
   poolSubsetHash: string, // TODO: convert to bytes32
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
+  const contractInstance = getPositionManagerContract(signer);
 
   return await createTransaction(
     contractInstance,
@@ -34,7 +34,7 @@ export async function burn(
   pool: Address,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
+  const contractInstance = getPositionManagerContract(signer);
 
   return await createTransaction(
     contractInstance,

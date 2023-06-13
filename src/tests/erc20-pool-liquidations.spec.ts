@@ -11,15 +11,8 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { getBlockTime } from '../utils/time';
 import { AuctionStatus } from '../classes/Liquidation';
-import {
-  AJNA_CONTRACTS,
-  POOL_CONTRACT,
-  POOL_CONTRACTS,
-  TOKEN_CONTRACTS,
-  TOKEN_POOL_CONTRACT,
-} from '../types/type-chain';
 import { Pool } from '../classes/Pool';
-import { getPoolContract, getTokenPoolContract } from './examples.spec';
+import { TOKEN_POOL } from '../types';
 
 dotenv.config();
 
@@ -41,13 +34,12 @@ describe.skip('Liquidations', () => {
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
   // const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
-  let pool: TOKEN_POOL_CONTRACT;
+  let pool: Pool | TOKEN_POOL | any;
   let snapshotId: number;
 
   beforeAll(async () => {
-    pool = getTokenPoolContract();
-    // pool = (provider, TESTB_ADDRESS, AJNA_ADDRESS, TESTB, );
-
+    pool = await ajna.factory.getPool(TESTB_ADDRESS, QUOTE_ADDRESS);
+    // pool = getTokenPoolContract(pool as TOKEN_POOL);
     // approve
     let tx = await pool.quoteApprove(signerLender, toWad(40));
     await submitAndVerifyTransaction(tx);

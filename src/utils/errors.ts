@@ -1,5 +1,5 @@
 import { getErc20PoolInterface } from '../contracts/erc20-pool';
-import { Interface } from 'ethersv6';
+// import { Interface } from 'ethersv6';
 /**
  * Error locally raised by SDK.  Does not wrap Ethers.js errors.
  */
@@ -24,9 +24,10 @@ export async function handleProviderError(error: any) {
   }
 
   console.log(`error:`, error);
-  const iFace = new Interface(getErc20PoolInterface().fragments);
-  const decodedErrorResult = iFace.decodeErrorResult('deployPool', error);
-  console.log(`decodedErrorResult:`, decodedErrorResult);
+
+  // const iFace = new Interface(getErc20PoolInterface().fragments);
+  // const decodedErrorResult = iFace.decodeErrorResult('deployPool', error);
+  // console.log(`decodedErrorResult:`, decodedErrorResult);
 
   throw new SdkError(error.message, error);
 }
