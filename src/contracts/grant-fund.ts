@@ -1,4 +1,5 @@
 import grantsFundAbi from '../abis/GrantFund.json';
+import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
 import { Address, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
@@ -9,11 +10,15 @@ export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
 };
 
+export const getAjnaTokenContract = (provider: SignerOrProvider) => {
+  return new ethers.Contract(checksumAddress(Config.ajnaToken), ajnaTokenAbi, provider);
+};
+
 export async function delegateVote(signer: Signer, delegatee: Address) {
-  const contractInstance: Contract = getGrantsFundContract(signer);
+  const contractInstance: Contract = getAjnaTokenContract(signer);
   // this will fail since this method doesn't exist on the ABI
   return await createTransaction(contractInstance, {
-    methodName: 'delegateVote',
+    methodName: 'delegate',
     args: [delegatee],
   });
 }
