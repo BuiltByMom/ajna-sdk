@@ -21,9 +21,9 @@ export class GrantFund extends ContractBase implements IGrantFund {
    */
   async delegateVote(
     signer: Signer,
-    delegateToAddress: Address,
+    delegatee: Address,
   ) {
-    return await delegateVote(signer, delegateToAddress);
+    return await delegateVote(signer, delegatee);
   }
 
 }

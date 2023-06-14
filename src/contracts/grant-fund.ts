@@ -15,12 +15,12 @@ export const getGrantsFundContract = (provider: SignerOrProvider) => {
 
 export async function delegateVote(
   signer: Signer,
-  delegateToAddress: Address,
+  delegatee: Address,
 ) {
   const contractInstance: Contract = getGrantsFundContract(signer);
   // this will fail since this method doesn't exist on the ABI
   return await createTransaction(
     contractInstance,
-    { methodName: 'delegateVote', args: [delegateToAddress] }
+    { methodName: 'delegateVote', args: [delegatee] }
   );
 }
