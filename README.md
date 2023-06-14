@@ -39,12 +39,6 @@ Example scripts are provided in the `examples/` directory.
 
 To build documentation, run `yarn document`. HTML will be generated in the `sdk-api/docs` directory.
 
-## Development
-
-### Documentation
-
-To build documentation, run `yarn document`. HTML will be generated in the `sdk-api/docs` directory.
-
 ### Unit testing
 
 Unit tests run against a dockerized Ajna testnet.

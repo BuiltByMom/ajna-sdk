@@ -20,13 +20,13 @@
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
+    "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\"",
     "prepublishOnly": "yarn build",
     "document": "typedoc src/index.ts",
     "test": "jest --silent=false --runInBand",
-    "test:dev": "jest --watchAll",
+    "test:dev": "yarn test --watchAll",
     "typechain-abis": "typechain --target ethers-v5 --discriminate-types --out-dir src/types/contracts './src/abis/*.json'",
-    "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'",
-    "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\""
+    "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",

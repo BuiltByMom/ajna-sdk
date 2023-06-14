@@ -8,6 +8,9 @@ import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wmul } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { BigNumber, constants, providers } from 'ethers';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
