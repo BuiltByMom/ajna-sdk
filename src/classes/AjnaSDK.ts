@@ -6,7 +6,7 @@ class AjnaSDK {
   provider: Provider;
   // TODO: SDK should offer both factories, with addresses loaded from configuration, not as args.
   factory: FungiblePoolFactory;
-  grants: GrantFund
+  grants: GrantFund;
 
   constructor(provider: Provider) {
     this.provider = provider;

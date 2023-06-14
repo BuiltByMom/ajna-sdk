@@ -6,21 +6,14 @@ import { createTransaction } from '../utils/transactions';
 import { Contract, Signer, ethers } from 'ethers';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(
-    checksumAddress(Config.grantFund),
-    grantsFundAbi,
-    provider
-  );
+  return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
 };
 
-export async function delegateVote(
-  signer: Signer,
-  delegatee: Address,
-) {
+export async function delegateVote(signer: Signer, delegatee: Address) {
   const contractInstance: Contract = getGrantsFundContract(signer);
   // this will fail since this method doesn't exist on the ABI
-  return await createTransaction(
-    contractInstance,
-    { methodName: 'delegateVote', args: [delegatee] }
-  );
+  return await createTransaction(contractInstance, {
+    methodName: 'delegateVote',
+    args: [delegatee],
+  });
 }

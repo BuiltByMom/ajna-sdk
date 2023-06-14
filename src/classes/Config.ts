@@ -28,7 +28,7 @@ class Config {
     poolUtils: Address,
     positionManager: Address,
     ajnaToken: Address,
-    grantFund: Address,
+    grantFund: Address
   ) {
     Config.erc20PoolFactory = erc20PoolFactory;
     Config.erc721PoolFactory = erc721PoolFactory;

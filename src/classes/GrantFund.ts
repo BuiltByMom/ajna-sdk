@@ -19,11 +19,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * @param interestRate initial interest rate, between 1%-10%, as WAD
    * @returns transaction
    */
-  async delegateVote(
-    signer: Signer,
-    delegatee: Address,
-  ) {
+  async delegateVote(signer: Signer, delegatee: Address) {
     return await delegateVote(signer, delegatee);
   }
-
 }

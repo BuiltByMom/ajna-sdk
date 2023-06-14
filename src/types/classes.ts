@@ -52,8 +52,5 @@ export interface IGrantFund {
   /**
    * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
    */
-    delegateVote(
-        signer: Signer,
-        delegateToAdress: Address
-    ): Promise<WrappedTransaction>
+  delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
 }
