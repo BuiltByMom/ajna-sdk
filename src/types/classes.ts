@@ -50,7 +50,8 @@ export interface Loan {
 
 export interface IGrantFund {
   /**
-   * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
+   * Handles grant fund distribution cycle, proposals and voting
    */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
+  getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
 }

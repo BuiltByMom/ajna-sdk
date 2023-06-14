@@ -21,3 +21,8 @@ export async function delegateVote(signer: Signer, delegatee: Address) {
     args: [delegatee],
   });
 }
+
+export async function getVotingPower(signer: Signer, account: Address) {
+  const contractInstance: Contract = getAjnaTokenContract(signer);
+  return await contractInstance.getVotes(account);
+}

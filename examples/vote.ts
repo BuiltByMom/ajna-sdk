@@ -5,6 +5,7 @@ import { Config } from '../src/classes/Config';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { providers } from 'ethers';
 import dotenv from 'dotenv';
+import { fromWad } from '../src/utils/numeric';
 
 async function run() {
   dotenv.config();
@@ -24,8 +25,13 @@ async function run() {
     await tx.verifyAndSubmit();
   }
 
-  await delegateVote();
-  console.log('voted delegated to delegatee ', delegateeAddress);
+  const votingPower = await ajna.grants.getVotingPower(voter);
+  console.log('Voter voting power is ', fromWad(votingPower));
+
+  if (!votingPower.isZero()) {
+    await delegateVote();
+    console.log('voted delegated to delegatee ', delegateeAddress);
+  }
 }
 
 run();
