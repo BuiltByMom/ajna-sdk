@@ -236,7 +236,7 @@ export class FungiblePool extends Pool {
     }
 
     // perform the multicall
-    const response: BigNumber[][] = await this.ethcallProvider.all(calls);
+    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all(calls);
 
     // since loan details depend upon pool-level data, parse pool data first
     const retval = new Map<Address, Loan>();
