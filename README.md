@@ -33,6 +33,10 @@ Price buckets in Ajna are identified by an integer bucket index, between 1 (high
 
 Example scripts are provided in the `examples/` directory.
 
+### JSON Keystore Scripts
+
+Wallet-generating scripts are provided in the `src/scripts/` directory to create JSON keystores
+
 ## Development
 
 ### Documentation

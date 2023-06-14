@@ -23,6 +23,7 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "target": "es6",
     "types": ["jest", "node"],
     "resolveJsonModule": true
   },

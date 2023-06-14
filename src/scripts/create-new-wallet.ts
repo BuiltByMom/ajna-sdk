@@ -1,14 +1,15 @@
+#!/usr/bin/env ts-node
+
 import { Wallet } from 'ethers';
 import fs from 'fs';
 import prettier from 'prettier';
-import { addAccount } from '../utils/add-account';
-import { EOL } from 'os';
+import { spaceLog } from './helpers';
 
-export async function createNewWallet(pw: string, path = './secrets.json') {
+export async function createNewWallet(pw: string, path: string) {
   const wallet = Wallet.createRandom();
 
-  console.log(EOL, `Creating new wallet:`, wallet.address);
-  console.log(EOL, `Encrypting wallet...`, EOL);
+  spaceLog('Creating new wallet:', wallet.address);
+  spaceLog(`Encrypting wallet...`);
 
   let lastTenth = '0';
   const encrypted = await wallet.encrypt(pw, (progress: number) => {
@@ -22,34 +23,26 @@ export async function createNewWallet(pw: string, path = './secrets.json') {
   const formatted = prettier.format(encrypted, { parser: 'json' });
   fs.writeFileSync(path, formatted);
 
-  console.log(EOL, `Created new wallet:`, path, EOL);
+  spaceLog(`Created new wallet:`, path);
   return wallet;
 }
 
 export async function run() {
-  if (process.argv.length >= 3) {
-    // run script using util
-    const [, , pw, keyPath] = process.argv;
-    // TODO: use commander.js to conceal user inputs
-    const wallet = await createNewWallet(pw, keyPath);
-    console.log(`wallet:`, wallet, EOL);
-  } else {
-    try {
-      const acct = addAccount();
-      const wallet = await acct.addAccountFromKeystore();
-      if (wallet) {
-        console.log(EOL, `wallet:`, wallet?.getAddress(), EOL);
-      }
-
-      if (!wallet) {
-        console.log(`Please try again with syntax: \`yarn acct:add [password] [path.json]\``, EOL);
-      }
-    } catch (error: any) {
-      console.error('ERROR:', error);
-    }
+  // run script using util
+  const [, , pw, keyPath] = process.argv;
+  if (!keyPath.endsWith('.json')) {
+    spaceLog(`Please provide a path with a .json extension`);
+    process.exit();
   }
+
+  const wallet = await createNewWallet(pw, keyPath);
+  spaceLog(`wallet:`, wallet);
 }
 
-if (process.argv.length > 2) {
+if (process.argv.length === 4) {
   run();
+} else {
+  spaceLog(
+    `Please try again with syntax: \`ts-node ./src/scripts/create-new-wallet.ts [password] [path.json]\``
+  );
 }

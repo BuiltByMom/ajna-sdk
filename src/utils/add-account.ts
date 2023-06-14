@@ -1,5 +1,8 @@
+#!/usr/bin/env ts-node
+
 import { Wallet, providers } from 'ethers';
 import fs from 'fs';
+import { spaceLog } from '../scripts/helpers';
 
 const stdout = process.stdout;
 const stdin = process.stdin;
@@ -18,23 +21,27 @@ class AddAccount {
     return new Wallet(key, this.provider);
   };
 
-  addAccountFromKeystore = async (keystorePath = '') => {
+  addAccountFromKeystore = async (keystorePath: string) => {
+    if (!keystorePath.endsWith('.json')) {
+      spaceLog(`Please provide a path with a .json extension`);
+      process.exit();
+    }
     // read the keystore file, confirming it exists
     try {
       this.jsonKeystore = fs.readFileSync(keystorePath as string).toString();
     } catch (error) {
-      console.log(`error while trying to stringify keystore path -- ${keystorePath}:`, error);
+      spaceLog(`error while trying to stringify keystore path -- ${keystorePath}:`, error);
     }
 
     if (keystorePath === '') {
-      console.log(`Could not find the jsonKeyStore at the path ${keystorePath}.`);
+      spaceLog(`Could not find the jsonKeyStore at the path ${keystorePath}.`);
     }
 
     if (!this.jsonKeystore) {
       process.exit();
     }
 
-    stdout.write('Enter keystore password: ');
+    stdout.write('\nEnter keystore password: \n');
     stdin.setRawMode(true);
     stdin.resume();
     stdin.setEncoding('utf-8');
@@ -106,7 +113,7 @@ class AddAccount {
     try {
       const wallet = Wallet.fromEncryptedJsonSync(this.jsonKeystore, input);
       this.wallet = wallet.connect(this.provider);
-      console.log('\n\nUnlocked Wallet!\n\n', wallet.address);
+      spaceLog('\nUnlocked Wallet:', wallet.address);
       this.resetInput();
       return this.wallet;
     } catch (error: any) {
