@@ -30,9 +30,9 @@ class AddAccount {
       console.log(`Could not find the jsonKeyStore at the path ${keystorePath}.`);
     }
 
-    // if (!this.jsonKeystore) {
-    //   process.exit();
-    // }
+    if (!this.jsonKeystore) {
+      process.exit();
+    }
 
     stdout.write('Enter keystore password: ');
     stdin.setRawMode(true);
