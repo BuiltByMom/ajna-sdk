@@ -47,3 +47,13 @@ export interface Loan {
   /** estimated bond kicker must post to liquidate */
   liquidationBond: BigNumber;
 }
+
+export interface IGrantsFund {
+  /**
+   * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
+   */
+    delegateVote(
+        signer: Signer,
+        delegateToAdress: Address
+    ): Promise<WrappedTransaction>
+}
