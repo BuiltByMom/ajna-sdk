@@ -1,5 +1,11 @@
-import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { BigNumber, providers, Signer, ContractTransaction, ContractReceipt } from 'ethers';
+import {
+  BigNumber,
+  providers,
+  Signer,
+  ContractTransaction,
+  ContractReceipt,
+  Overrides,
+} from 'ethers';
 
 export type Provider = providers.Provider;
 
@@ -7,14 +13,14 @@ export type SignerOrProvider = Signer | Provider;
 
 export type Address = string;
 
-export interface TransactionOverrides {
+export type TransactionOverrides = Overrides & {
   to?: string;
   from?: string;
   value?: string;
   gasLimit?: number;
   gasPrice?: string;
   nonce?: string;
-}
+};
 
 export interface WrappedTransaction {
   verify(): Promise<BigNumber>;

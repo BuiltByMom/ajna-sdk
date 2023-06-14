@@ -30,6 +30,8 @@ export interface LoanEstimate extends Loan {
  * models a pool with ERC-20 collateral
  */
 export class FungiblePool extends Pool {
+  contractName = 'ERC20Pool';
+
   constructor(provider: SignerOrProvider, poolAddress: Address, ajnaAddress: Address) {
     super(
       provider,
@@ -82,7 +84,7 @@ export class FungiblePool extends Pool {
     const borrowerAddress = await signer.getAddress();
 
     return await drawDebt(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       borrowerAddress,
       amountToBorrow,
       limitIndex ?? MAX_FENWICK_INDEX,
@@ -108,7 +110,7 @@ export class FungiblePool extends Pool {
 
     const sender = await signer.getAddress();
     return await repayDebt(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       sender,
       maxQuoteTokenAmountToRepay,
       collateralAmountToPull,
@@ -134,7 +136,7 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addCollateral(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       collateralAmountToAdd,
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)

@@ -12,6 +12,9 @@ import { BigNumber, Signer } from 'ethers';
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
   return ERC20PoolFactory__factory.connect(checksumAddress(Config.erc20PoolFactory), provider);
 };
+export const getErc20PoolFactoryInterface = () => {
+  return ERC20PoolFactory__factory.createInterface();
+};
 
 export async function deployPool(
   signer: Signer,

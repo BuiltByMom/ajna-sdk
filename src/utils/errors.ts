@@ -1,33 +1,29 @@
-import { getErc20PoolInterface } from '../contracts/erc20-pool';
-// import { Interface } from 'ethersv6';
-/**
- * Error locally raised by SDK.  Does not wrap Ethers.js errors.
- */
-export class SdkError extends Error {
-  readonly _innerException: any;
+import { ALL_CONTRACTS } from '../types';
+import { getErc20PoolFactoryInterface } from '../contracts';
 
-  constructor(message: string, innerException?: any) {
-    super(message);
-    this._innerException = innerException;
+export function getCustomErrorMessage(contract: ALL_CONTRACTS, errorDataResult: string) {
+  // retrieve the list of custom errors available to the contract
+  const customErrorNames = Object.keys(contract.interface.errors);
+
+  // index the contract's errors by the first 8 bytes of their hash
+  const errorsByHash = customErrorNames.reduce((acc: any, name: string) => {
+    return {
+      ...acc,
+      [contract.interface.getSighash(name)]: name,
+    };
+  }, {});
+
+  // Get the first 8 bytes of the error hash
+  const errorSigHash = errorDataResult.slice(0, 10);
+
+  if (errorSigHash in errorsByHash) {
+    return errorsByHash[errorSigHash];
+  } else {
+    return undefined;
   }
 }
 
-export async function handleProviderError(error: any) {
-  if (error?.error && error.error.code === '-32000') {
-    // https://docs.alchemy.com/reference/error-reference#json-rpc-error-codes
-    // This generally means the transaction already posted and is on the node in a pending state.
-    // Sometimes this error occurs when transactions fail at first but are retried when the node already knows of them
-    throw new SdkError(
-      'This generally means the transaction already posted and is on the node in a pending state',
-      error
-    );
-  }
-
-  console.log(`error:`, error);
-
-  // const iFace = new Interface(getErc20PoolInterface().fragments);
-  // const decodedErrorResult = iFace.decodeErrorResult('deployPool', error);
-  // console.log(`decodedErrorResult:`, decodedErrorResult);
-
-  throw new SdkError(error.message, error);
+export function parseSdkError(error: any) {
+  const iFace = getErc20PoolFactoryInterface();
+  return iFace.parseError(error._innerException.error.data.result);
 }

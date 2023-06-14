@@ -1,23 +1,18 @@
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import {
   CallData,
   WrappedTransaction,
-  TOKEN_POOL_CONTRACT,
   POOL_CONTRACT,
   ALL_CONTRACTS,
   MANAGER_CONTRACT,
+  CustomContractTypes,
+  TransactionOverrides,
 } from '../types';
-import {
-  BigNumber,
-  PopulatedTransaction,
-  Overrides,
-  ContractTransaction,
-  ContractReceipt,
-} from 'ethers';
+import { BigNumber, PopulatedTransaction, ContractReceipt, ContractTransaction } from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
 import { Pool } from '../classes/Pool';
 import { SdkError } from '../classes/types';
 import { getNamedContract, getPoolContract } from './helpers';
+import { getCustomErrorMessage } from './errors';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -28,21 +23,19 @@ import { getNamedContract, getPoolContract } from './helpers';
  * @returns The wrapped transaction object.
  */
 export async function createTransaction(
-  contract: ALL_CONTRACTS,
+  contract: ALL_CONTRACTS & CustomContractTypes,
   callData: CallData,
-  overrides?: Overrides
+  overrides?: TransactionOverrides
 ): Promise<WrappedTransactionClass> {
   const { methodName, args = [] } = callData;
   const definedArgs = args.filter(a => a !== undefined);
 
   const txArgs = overrides ? [...definedArgs, overrides] : [...definedArgs];
-  const populatedTx = (contract.populateTransaction as any)[methodName](
-    ...txArgs
-  ) as PopulatedTransaction;
+  const populatedTx = await contract.populateTransaction[methodName](...txArgs);
 
-  const namedContract = contract.contractName.includes('Pool')
-    ? getPoolContract(contract as POOL_CONTRACT)
-    : contract.contractName.includes('Manager')
+  const namedContract = contract.contractName?.includes('Pool')
+    ? (getPoolContract(contract as POOL_CONTRACT) as POOL_CONTRACT)
+    : contract.contractName?.includes('Manager')
     ? getNamedContract(contract as MANAGER_CONTRACT)
     : getNamedContract(contract as ALL_CONTRACTS);
 
@@ -60,7 +53,7 @@ class WrappedTransactionClass implements WrappedTransaction {
   /**
    * The ethers.js contract instance.
    */
-  _contract: ALL_CONTRACTS;
+  _contract: ALL_CONTRACTS & CustomContractTypes;
   readonly _methodName: string;
   readonly _txArgs: any[];
 
@@ -71,7 +64,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   constructor(
     transaction: PopulatedTransaction,
-    contract: ALL_CONTRACTS,
+    contract: ALL_CONTRACTS & CustomContractTypes,
     methodName: string,
     txArgs: any[]
   ) {
@@ -89,19 +82,10 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   async verify(): Promise<BigNumber> {
     try {
-      return await this._contract.provider.estimateGas(this._transaction);
-      // // @ts-ignore
-      // const gasEstimate: BigNumber = await this._contract.estimateGas[this._methodName][
-      //   this._txArgs
-      // ];
-      // console.log(`gasEstimate:`, gasEstimate);
-      // if (!gasEstimate) {
-      //   throw new SdkError('Gas estimate is undefined');
-      // }
-      // return gasEstimate;
+      return await this._contract.estimateGas[this._methodName](...this._txArgs);
     } catch (error: any) {
-      const reason = this.parseNodeError(this._contract, error);
-      throw new SdkError(reason, error);
+      const parsed = this.parseNodeError(this._contract, error);
+      throw new SdkError(parsed.message, error.error, parsed.innerErrorData);
     }
   }
 
@@ -110,8 +94,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns The contract transaction.
    */
   async submitResponse(): Promise<ContractTransaction> {
-    // @ts-ignore
-    return this._contract[this._methodName](...this._txArgs);
+    return await this._contract.functions[this._methodName](...this._txArgs);
   }
 
   /**
@@ -132,17 +115,9 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   async submitAndVerifyTransaction(): Promise<ContractTransaction> {
     const estimatedGas = await this.verify();
-    const txWithAdjustedGas = {
-      ...this._transaction,
+    return await this._contract[this._methodName](...this._txArgs, {
       gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
-    };
-    // @ts-ignore
-    const tx: ContractTransaction = await this._contract[this._methodName](
-      ...this._txArgs,
-      txWithAdjustedGas
-    );
-    console.log(`tx:`, tx);
-    return tx;
+    });
   }
 
   /**
@@ -166,10 +141,10 @@ class WrappedTransactionClass implements WrappedTransaction {
     if (error?.error?.error) {
       const innerError = error.error.error;
       // works on mainnet-forked Ganache local testnet
-      if (innerError.data?.reason) return innerError.data.reason;
+      // if (innerError.data?.reason) return innerError.data.reason;
       if (innerError.data?.result) {
-        const errorHash = innerError.data.result;
-        return this.getCustomErrorFromHash(contract, errorHash);
+        const errorDataResult = innerError.data.result;
+        return this.getCustomErrorFromHash(contract, errorDataResult);
       }
       // works with Alchemy node on Goerli
       if (innerError.code === 3) {
@@ -178,7 +153,7 @@ class WrappedTransactionClass implements WrappedTransaction {
         return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
       }
     }
-    return 'Revert reason unknown';
+    return { message: 'Revert reason unknown', innerErrorData: undefined };
   }
 
   /**
@@ -187,23 +162,16 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @param errorData Error hash string parsed from exception raised by node.
    * @returns Human-readable reason explaining why transaction would revert.
    */
-  getCustomErrorFromHash(contract: ALL_CONTRACTS, errorData: string) {
-    // retrieve the list of custom errors available to the contract
-    const customErrorNames = Object.keys(contract.interface.errors);
-
-    // index the contract's errors by the first 8 bytes of their hash
-    const errorsByHash = customErrorNames.reduce((acc: any, name: string) => {
-      return {
-        ...acc,
-        [contract.interface.getSighash(name)]: name,
-      };
-    }, {});
-
-    if (errorData in errorsByHash) {
-      return errorsByHash[errorData];
-    } else {
-      return undefined;
+  getCustomErrorFromHash(contract: ALL_CONTRACTS, errorDataResult: string) {
+    // if the error data contains an address, return it
+    let errorDataResultAddress;
+    if (errorDataResult.length > 10) {
+      errorDataResultAddress = `0x${errorDataResult.slice(-40)}`;
     }
+    return {
+      message: getCustomErrorMessage(contract, errorDataResult),
+      innerErrorData: errorDataResultAddress,
+    };
   }
 }
 

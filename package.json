@@ -34,7 +34,6 @@
     "@ethersproject/providers": "^5.7.2",
     "ethcall": "^4.8.13",
     "ethers": "^5.7.2",
-    "ethersv6": "npm:ethers",
     "expect": "^29.5.0",
     "mathjs": "^11.8.1",
     "typedoc": "^0.24.8"

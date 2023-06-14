@@ -1,7 +1,7 @@
 import { SdkError } from '../classes/types';
 import { DEFAULT_TTL } from '../constants';
 import { Provider, SignerOrProvider } from '../types';
-import { Signer } from 'ethers';
+import { Signer, providers } from 'ethers';
 
 // calculates expiration time based on current block timestamp
 export const getExpiry = async (signer: SignerOrProvider, ttlSeconds: number = DEFAULT_TTL) => {
@@ -11,7 +11,7 @@ export const getExpiry = async (signer: SignerOrProvider, ttlSeconds: number = D
   return (await getBlockTime(signer)) + ttlSeconds;
 };
 
-export const getBlock = async (signer: SignerOrProvider): Promise<any> => {
+export const getBlock = async (signer: SignerOrProvider): Promise<providers.Block> => {
   const provider = getProvider(signer);
   let blockNumber = await provider.getBlockNumber();
   let block = await provider.getBlock(blockNumber);

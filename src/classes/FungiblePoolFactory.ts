@@ -11,6 +11,8 @@ import { SdkError } from './types';
  * Factory used to find or create pools with ERC20 collateral.
  */
 export class FungiblePoolFactory extends ContractBase implements IERC20PoolFactory {
+  contractName = 'ERC20PoolFactory';
+
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
   }
@@ -50,9 +52,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
 
   async getPoolByAddress(poolAddress: Address) {
     const newPool = new FungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
-    console.log(`newPool:`, newPool);
     await newPool.initialize();
-    console.log(`newPool:`, newPool);
     return newPool;
   }
 

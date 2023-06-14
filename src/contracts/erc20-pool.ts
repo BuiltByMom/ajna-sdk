@@ -30,7 +30,7 @@ export async function collateralScale(contract: ERC20Pool) {
 }
 
 export async function drawDebt(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   borrowerAddress: Address,
   amountToBorrow: BigNumber,
   limitIndex: number,
@@ -48,7 +48,7 @@ export async function drawDebt(
 }
 
 export async function repayDebt(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   borrowerAddress: Address,
   maxQuoteTokenAmountToRepay: BigNumber,
   collateralAmountToPull: BigNumber,
@@ -73,7 +73,7 @@ export async function repayDebt(
 }
 
 export async function addCollateral(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   amountToAdd: BigNumber,
   bucketIndex: number,
   expiry?: number,
@@ -116,7 +116,7 @@ export async function approve(
 }
 
 export async function bucketTake(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   borrowerAddress: Address,
   depositTake: boolean,
   bucketIndex: number,
@@ -130,16 +130,16 @@ export async function bucketTake(
 }
 
 export async function take(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   borrowerAddress: Address,
   maxAmount: BigNumber,
   callee: Address,
   callData?: CallData,
   overrides?: TransactionOverrides
 ) {
+  const erc20Pool = getErc20PoolContract(contract.address, contract.provider);
   const encodedCallData = callData
-    ? // @ts-ignore
-      contract.interface.encodeFunctionData(callData.methodName, callData.args)
+    ? erc20Pool.interface.encodeFunctionData('take' as any, callData.args as any)
     : [];
 
   return await createTransaction(

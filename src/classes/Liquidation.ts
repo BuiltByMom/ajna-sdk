@@ -1,6 +1,13 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Signer, constants } from 'ethers';
-import { Address, CallData, PoolInfoUtils, SignerOrProvider, TOKEN_POOL } from '../types';
+import {
+  Address,
+  CallData,
+  ERC20Pool,
+  PoolInfoUtils,
+  SignerOrProvider,
+  TOKEN_POOL,
+} from '../types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
 import { settle } from '../contracts/pool';
@@ -78,7 +85,12 @@ export class Liquidation {
   async arbTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, false, bucketIndex);
+    return await bucketTake(
+      contractPoolWithSigner as ERC20Pool,
+      this.borrowerAddress,
+      false,
+      bucketIndex
+    );
   }
 
   /**
@@ -90,7 +102,12 @@ export class Liquidation {
   async depositTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, true, bucketIndex);
+    return await bucketTake(
+      contractPoolWithSigner as ERC20Pool,
+      this.borrowerAddress,
+      true,
+      bucketIndex
+    );
   }
 
   /**
@@ -103,7 +120,7 @@ export class Liquidation {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
     return await take(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       this.borrowerAddress,
       maxAmount,
       await signer.getAddress()
@@ -124,7 +141,13 @@ export class Liquidation {
   async takeWithCall(signer: Signer, maxAmount: BigNumber, callee: Address, callData?: CallData) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await take(contractPoolWithSigner, this.borrowerAddress, maxAmount, callee, callData);
+    return await take(
+      contractPoolWithSigner as ERC20Pool,
+      this.borrowerAddress,
+      maxAmount,
+      callee,
+      callData
+    );
   }
 
   /**

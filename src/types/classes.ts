@@ -1,6 +1,7 @@
-import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
+import { Address, SignerOrProvider } from '../types/core';
 import { FungiblePool } from '../classes/FungiblePool';
 import { BigNumber, Signer } from 'ethers';
+import { WrappedTransactionClass } from '../utils';
 
 export interface IERC20PoolFactory {
   /**
@@ -11,7 +12,7 @@ export interface IERC20PoolFactory {
     collateralAddress: Address,
     quoteAddress: Address,
     interestRate: BigNumber
-  ): Promise<WrappedTransaction>;
+  ): Promise<WrappedTransactionClass>;
   /**
    * Returns pool instance for the given collateral and quote tokens addresses.
    */

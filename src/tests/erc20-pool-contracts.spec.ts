@@ -15,6 +15,7 @@ import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config, ERC20_NON_SUBSET_HASH } from '../constants';
 import { CRAStatus } from '../classes/ClaimableReserveAuction';
 import { deployedPools } from '../contracts';
+import { parseSdkError } from '../utils/errors';
 
 dotenv.config();
 
@@ -87,18 +88,7 @@ describe('ERC20 Pool', () => {
     );
     console.log(`pools:`, pools);
 
-    expect(pools).not.toBe(constants.AddressZero);
-    // const tx = await ajna.factory.deployPool(WETH_ADDRESS, DAI_ADDRESS, toWad('0.05'));
-
-    // await tx.verifyAndSubmit();
-
-    // pool = await ajna.factory.getPool(WETH_ADDRESS, DAI_ADDRESS);
-
-    // expect(pool).toBeDefined();
-    // expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    // expect(pool.collateralAddress).toBe(WETH_ADDRESS);
-    // expect(pool.quoteAddress).toBe(DAI_ADDRESS);
-    // expect(pool.toString()).toContain('TWETH-TDAI');
+    expect(pools[0]).not.toBe(constants.AddressZero);
   });
 
   it('should not allow to create existing pool', async () => {
@@ -112,6 +102,13 @@ describe('ERC20 Pool', () => {
     await expect(async () => {
       await tx.verify();
     }).rejects.toThrow('PoolAlreadyExists(address)');
+
+    try {
+      await tx.verify();
+    } catch (error: any) {
+      const parsed = parseSdkError(error);
+      console.log(`parsed:`, parsed);
+    }
   });
 
   it('should load pool by address', async () => {
