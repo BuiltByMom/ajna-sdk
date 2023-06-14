@@ -12,11 +12,9 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * creates a new pool
-   * @param signer pool creator
-   * @param collateralAddress address of the ERC20 collateral token
-   * @param quoteAddress address of the ERC20 quote token
-   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   * delegates vote to the given delegatee
+   * @param signer vote delegator
+   * @param delegatee address of the delegateee
    * @returns transaction
    */
   async delegateVote(signer: Signer, delegatee: Address) {

@@ -16,7 +16,6 @@ export const getAjnaTokenContract = (provider: SignerOrProvider) => {
 
 export async function delegateVote(signer: Signer, delegatee: Address) {
   const contractInstance: Contract = getAjnaTokenContract(signer);
-  // this will fail since this method doesn't exist on the ABI
   return await createTransaction(contractInstance, {
     methodName: 'delegate',
     args: [delegatee],
