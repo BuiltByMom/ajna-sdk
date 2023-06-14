@@ -25,7 +25,7 @@ const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe.skip('Liquidations', () => {
+describe('Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
@@ -76,7 +76,7 @@ describe.skip('Liquidations', () => {
 
     // check pool lup index
     let stats = await pool.getStats();
-    let lupIndex: any = await pool.depositIndex(stats.debt);
+    let lupIndex = await pool.depositIndex(stats.debt);
     expect(+lupIndex).toBe(bucketIndex);
 
     // check loan, make sure borrower2 threshold price is higher than lup price
@@ -108,7 +108,7 @@ describe.skip('Liquidations', () => {
     expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
     // check loan again, make sure borrower2 threshold price is lower than lup price
-    bucket = (await pool.getBucketByIndex(lupIndex)) as any;
+    bucket = await pool.getBucketByIndex(lupIndex);
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();

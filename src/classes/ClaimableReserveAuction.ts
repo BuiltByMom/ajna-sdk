@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { Address, PoolInfoUtils, SignerOrProvider, TOKEN_POOL } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
 import { toWad, wmul } from '../utils/numeric';
@@ -50,8 +50,8 @@ export class ClaimableReserveAuction {
    *  @param maxAmount maximum amount of quote token to purchase at the current auction price
    *  @return actual amount of reserves taken.
    */
-  async takeAndBurn(maxAmount: BigNumber = constants.MaxUint256) {
-    return await takeReserves(this.contract, maxAmount);
+  async takeAndBurn(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
+    return await takeReserves(this.contract.connect(signer), maxAmount);
   }
 
   /**
@@ -59,8 +59,8 @@ export class ClaimableReserveAuction {
    *  @param signer auction initiator
    *  @return transaction
    */
-  async kick() {
-    return await kickReserveAuction(this.contract);
+  async kick(signer: Signer) {
+    return await kickReserveAuction(this.contract.connect(signer));
   }
 
   /**
@@ -69,7 +69,7 @@ export class ClaimableReserveAuction {
    */
   async getStatus(): Promise<CRAStatus> {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
-    const kickTimeCall = (this.contract as TOKEN_POOL).reservesInfo();
+    const kickTimeCall = this.contract.reservesInfo();
     const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
       reservesInfoCall,
       kickTimeCall,
@@ -95,7 +95,7 @@ export class ClaimableReserveAuction {
    */
   async isTakeable() {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
-    const kickTimeCall = (this.contract as TOKEN_POOL).reservesInfo();
+    const kickTimeCall = this.contract.reservesInfo();
     const [reservesInfoResponse, kickTimeResponse] = await Promise.all([
       reservesInfoCall,
       kickTimeCall,

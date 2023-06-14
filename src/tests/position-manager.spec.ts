@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber, constants, providers } from 'ethers';
 import { TEST_CONFIG as config } from './test-constants';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { addAccountFromKey } from '../utils/add-account';
-import { submitAndVerifyTransaction } from './test-utils';
+import { parseTxEvents } from './test-utils';
 
 dotenv.config();
 jest.setTimeout(1200000);
@@ -24,15 +24,22 @@ describe('LP Token and PositionManager', () => {
 
   it('should mint and burn LP token', async () => {
     let tx = await pool.mintLPToken(signerLender);
-    await submitAndVerifyTransaction(tx);
+    const res = await tx.verifyAndSubmit();
+    let parsed = parseTxEvents(res);
 
-    // TODO: get the tokenID from previous transaction
     const tokenId = BigNumber.from(1);
     const lpToken = pool.getLPToken(tokenId);
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
+    expect(parsed.Mint.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
+    expect(parsed.Transfer.parsedArgs.from).toBe(constants.AddressZero);
+    expect(parsed.Transfer.parsedArgs.to).toBe(signerLender.address);
 
     tx = await pool.burnLPToken(signerLender, tokenId);
-    await submitAndVerifyTransaction(tx);
+    const res2 = await tx.verifyAndSubmit();
+    parsed = parseTxEvents(res2);
+
+    expect(parsed.Burn.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
+    expect(parsed.Burn.parsedArgs.lender).toBe(signerLender.address);
   });
 });

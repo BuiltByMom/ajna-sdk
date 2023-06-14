@@ -1,7 +1,8 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, ContractReceipt, Event } from 'ethers';
 import { WrappedTransaction } from '../types/core';
 import { expect } from '@jest/globals';
 import type { MatcherFunction } from 'expect';
+import { formatLogArgs } from '../utils';
 
 export const submitAndVerifyTransaction = async (tx: WrappedTransaction) => {
   const receipt = await tx.verifyAndSubmit();
@@ -38,4 +39,39 @@ declare module 'expect' {
   interface Matchers<R> {
     toBeBetween(smaller: BigNumber, larger: BigNumber): R;
   }
+}
+
+interface ContractEventDetails {
+  event: string;
+  args: any[];
+  parsedArgs: {
+    [arg: string]: any;
+  };
+  data: string;
+  address: string;
+  topics: string[];
+  eventSignature: string;
+}
+
+interface ParsedTxResults {
+  [event: string]: ContractEventDetails;
+}
+
+export function parseTxEvents(txReceipt: ContractReceipt) {
+  const { events } = txReceipt;
+  const parsedEvents: ParsedTxResults = events?.reduce((acc: any, e: Event) => {
+    const { data, args, address, topics, eventSignature, event } = e;
+    if (event && eventSignature) {
+      const parsedArgs = args?.length ? formatLogArgs(args as string[]) : undefined;
+      console.log(`parsedArgs:`, parsedArgs);
+      return {
+        ...acc,
+        [event as string]: { event, args, parsedArgs, data, address, topics, eventSignature },
+      } as ContractEventDetails;
+    }
+    return acc;
+  }, {});
+
+  console.log(`parsed events:`, parsedEvents);
+  return parsedEvents;
 }

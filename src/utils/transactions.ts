@@ -53,7 +53,7 @@ class WrappedTransactionClass implements WrappedTransaction {
   /**
    * The ethers.js contract instance.
    */
-  _contract: ALL_CONTRACTS & CustomContractTypes;
+  readonly _contract: ALL_CONTRACTS & CustomContractTypes;
   readonly _methodName: string;
   readonly _txArgs: any[];
 
@@ -85,7 +85,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       return await this._contract.estimateGas[this._methodName](...this._txArgs);
     } catch (error: any) {
       const parsed = this.parseNodeError(this._contract, error);
-      throw new SdkError(parsed.message, error.error, parsed.innerErrorData);
+      throw new SdkError(parsed.message, error.error, parsed._innerErrorData);
     }
   }
 
@@ -113,7 +113,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns ContractTransaction
    */
-  async submitAndVerifyTransaction(): Promise<ContractTransaction> {
+  async verifyAndSubmitResponse(): Promise<ContractTransaction> {
     const estimatedGas = await this.verify();
     return await this._contract[this._methodName](...this._txArgs, {
       gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
@@ -128,7 +128,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns TransactionReceipt
    */
   async verifyAndSubmit(confirmations?: number) {
-    const tx = await this.submitAndVerifyTransaction();
+    const tx = await this.verifyAndSubmitResponse();
     return await tx.wait(confirmations);
   }
 
@@ -153,7 +153,7 @@ class WrappedTransactionClass implements WrappedTransaction {
         return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
       }
     }
-    return { message: 'Revert reason unknown', innerErrorData: undefined };
+    return { message: 'Revert reason unknown', _innerErrorData: undefined };
   }
 
   /**
@@ -170,7 +170,7 @@ class WrappedTransactionClass implements WrappedTransaction {
     }
     return {
       message: getCustomErrorMessage(contract, errorDataResult),
-      innerErrorData: errorDataResultAddress,
+      _innerErrorData: errorDataResultAddress,
     };
   }
 }

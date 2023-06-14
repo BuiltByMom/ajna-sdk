@@ -74,3 +74,19 @@ export function getNamedContract(contract: ALL_CONTRACTS & CustomContractTypes) 
     }
   }
 }
+
+// Filter and format event args
+export function formatLogArgs(args: string[]): any {
+  const formatted = Object.keys(args).reduce((acc: any, arg: string) => {
+    // Filter numerical keys
+    if (Number.isInteger(parseInt(arg)) || arg === 'log') {
+      return acc;
+    }
+
+    return {
+      ...acc,
+      [arg]: args[arg as keyof typeof args],
+    };
+  }, {});
+  return formatted;
+}

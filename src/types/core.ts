@@ -27,7 +27,7 @@ export interface WrappedTransaction {
   submit(confirmations?: number): Promise<ContractReceipt>;
   submitResponse(): Promise<ContractTransaction>;
   verifyAndSubmit(confirmations?: number): Promise<ContractReceipt>;
-  submitAndVerifyTransaction(): Promise<ContractTransaction>;
+  verifyAndSubmitResponse(): Promise<ContractTransaction>;
 }
 
 export interface CallData {

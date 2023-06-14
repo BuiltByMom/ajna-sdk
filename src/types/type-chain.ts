@@ -33,6 +33,7 @@ export interface CustomContractTypes {
   functions: {
     [key: string]: (...args: any[]) => Promise<any>;
   };
+  contractName: string;
   [key: string]: any;
 }
 
@@ -50,14 +51,3 @@ export type ALL_CONTRACTS =
   | TOKEN_POOL_CONTRACT
   | MANAGER_CONTRACT
   | (PoolInfoUtils & CustomContractTypes);
-
-// Interfaces
-export type TOKEN_CONTRACT_IFACE = ERC20Interface | ERC721Interface;
-export type TOKEN_POOL_IFACE = ERC20PoolInterface | ERC721PoolInterface;
-export type POOL_FACTORY_IFACE = ERC20PoolFactoryInterface | ERC721PoolFactoryInterface;
-export type POOL_CONTRACT_IFACE = TOKEN_POOL_IFACE | POOL_FACTORY_IFACE;
-export type TOKEN_POOL_CONTRACT_IFACE = TOKEN_CONTRACT_IFACE | POOL_FACTORY_IFACE;
-
-export type MANAGER_IFACE = PositionManagerInterface | RewardsManagerInterface;
-
-export type ALL_IFACES = TOKEN_POOL_CONTRACT_IFACE | MANAGER_IFACE | PoolInfoUtilsInterface;

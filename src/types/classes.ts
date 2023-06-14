@@ -20,7 +20,7 @@ export interface IERC20PoolFactory {
   /**
    * Returns pool address for the given collateral and quote tokens addresses.
    */
-  getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address[]>;
+  getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Array<Address>>;
 }
 
 export interface IBaseContract {

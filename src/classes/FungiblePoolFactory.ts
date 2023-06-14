@@ -1,4 +1,8 @@
-import { deployPool, deployedPools } from '../contracts/erc20-pool-factory';
+import {
+  deployPool,
+  deployedPools,
+  getErc20PoolFactoryContract,
+} from '../contracts/erc20-pool-factory';
 import { ERC20_NON_SUBSET_HASH } from '../constants';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
@@ -69,5 +73,10 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
       quoteAddress,
       ERC20_NON_SUBSET_HASH
     );
+  }
+
+  async getDeployedPools() {
+    const poolFactory = getErc20PoolFactoryContract(this.getProvider());
+    return await poolFactory.getDeployedPoolsList();
   }
 }
