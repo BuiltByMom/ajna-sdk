@@ -38,5 +38,5 @@ function getProvider(signer: SignerOrProvider): Provider {
 }
 
 export const wait = async (t: number) => {
-  return new Promise(resolve => setTimeout(() => resolve(null), t));
+  return new Promise(resolve => setTimeout(resolve, t));
 };
