@@ -8,6 +8,9 @@ import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
 import { Stats } from '../src/classes/Pool';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
