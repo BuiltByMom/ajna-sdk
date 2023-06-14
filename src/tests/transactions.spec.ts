@@ -3,14 +3,6 @@ import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { constants, providers } from 'ethers';
 import dotenv from 'dotenv';
-import {
-  deployPool,
-  deployedPools,
-  getErc20PoolFactoryContract,
-} from '../contracts/erc20-pool-factory';
-import { getErc20PoolContract } from '../contracts/erc20-pool';
-import { ERC20_NON_SUBSET_HASH } from '../constants';
-import { WrappedTransactionClass } from '../utils';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { getErc20Contract } from '../contracts';
 import { FungiblePool } from '../classes/FungiblePool';
@@ -41,7 +33,7 @@ describe('Transaction utils tests', () => {
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TWETH = getErc20Contract(TWETH_ADDRESS, provider);
   const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
-  let pool: FungiblePool = {} as FungiblePool;
+  const pool: FungiblePool = {} as FungiblePool;
   let poolA: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
