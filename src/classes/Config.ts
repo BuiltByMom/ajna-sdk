@@ -12,7 +12,7 @@ class Config {
   static poolUtils: Address;
   static positionManager: Address;
   static ajnaToken: Address;
-  static grantsFund: Address;
+  static grantFund: Address;
 
   /**
    * allows consumer to configure with their own addresses
@@ -20,7 +20,7 @@ class Config {
    * @param erc721PoolFactory address of the factory contract which creates NFT pools
    * @param poolUtils address of the readonly utility contract
    * @param ajnaToken address of the Ajna token contract
-   * @param grantsFund address of the Ajna token contract
+   * @param grantFund address of the Ajna token contract
    */
   constructor(
     erc20PoolFactory: Address,
@@ -28,14 +28,14 @@ class Config {
     poolUtils: Address,
     positionManager: Address,
     ajnaToken: Address,
-    grantsFund: Address,
+    grantFund: Address,
   ) {
     Config.erc20PoolFactory = erc20PoolFactory;
     Config.erc721PoolFactory = erc721PoolFactory;
     Config.poolUtils = poolUtils;
     Config.positionManager = positionManager;
     Config.ajnaToken = ajnaToken;
-    Config.grantsFund = grantsFund;
+    Config.grantFund = grantFund;
   }
 
   /**
@@ -48,7 +48,7 @@ class Config {
       process.env.AJNA_POOL_UTILS || '',
       process.env.AJNA_POSITION_MANAGER || '',
       process.env.AJNA_TOKEN_ADDRESS || '',
-      process.env.AJNA_CONTRACT_GRANTS_FUND || ''
+      process.env.AJNA_CONTRACT_GRANT_FUND || ''
     );
   }
 }

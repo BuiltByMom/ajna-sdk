@@ -7,7 +7,7 @@ import { Contract, Signer, ethers } from 'ethers';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(
-    checksumAddress(Config.grantsFund),
+    checksumAddress(Config.grantFund),
     grantsFundAbi,
     provider
   );

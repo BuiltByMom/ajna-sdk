@@ -1,12 +1,12 @@
-import { delegateVote } from '../contracts/grants-fund';
-import { Address, IGrantsFund, SignerOrProvider } from '../types';
+import { delegateVote } from '../contracts/grant-fund';
+import { Address, IGrantFund, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
 
 /**
  * Class used to iteract with grants fund contract.
  */
-export class GrantsFund extends ContractBase implements IGrantsFund {
+export class GrantFund extends ContractBase implements IGrantFund {
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
   }

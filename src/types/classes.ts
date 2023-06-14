@@ -48,7 +48,7 @@ export interface Loan {
   liquidationBond: BigNumber;
 }
 
-export interface IGrantsFund {
+export interface IGrantFund {
   /**
    * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
    */
