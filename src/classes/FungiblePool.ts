@@ -30,7 +30,8 @@ export interface LoanEstimate extends Loan {
  * models a pool with ERC-20 collateral
  */
 export class FungiblePool extends Pool {
-  contractName = 'ERC20Pool';
+  readonly contractName = 'ERC20Pool';
+  readonly contract: ERC20Pool;
 
   constructor(provider: SignerOrProvider, poolAddress: Address, ajnaAddress: Address) {
     super(
@@ -40,6 +41,7 @@ export class FungiblePool extends Pool {
       getErc20PoolContract(poolAddress, provider),
       getErc20PoolContractMulti(poolAddress)
     );
+    this.contract = getErc20PoolContract(poolAddress, provider);
   }
 
   async initialize() {
@@ -62,7 +64,7 @@ export class FungiblePool extends Pool {
   async collateralApprove(signer: Signer, allowance: BigNumber) {
     const denormalizedAllowance = allowance.eq(constants.MaxUint256)
       ? allowance
-      : allowance.div(await collateralScale(this.contract as ERC20Pool));
+      : allowance.div(await collateralScale(this.contract));
     return await approve(signer, this.poolAddress, this.collateralAddress, denormalizedAllowance);
   }
 
@@ -84,7 +86,7 @@ export class FungiblePool extends Pool {
     const borrowerAddress = await signer.getAddress();
 
     return await drawDebt(
-      contractPoolWithSigner as ERC20Pool,
+      contractPoolWithSigner,
       borrowerAddress,
       amountToBorrow,
       limitIndex ?? MAX_FENWICK_INDEX,
@@ -110,7 +112,7 @@ export class FungiblePool extends Pool {
 
     const sender = await signer.getAddress();
     return await repayDebt(
-      contractPoolWithSigner as ERC20Pool,
+      contractPoolWithSigner,
       sender,
       maxQuoteTokenAmountToRepay,
       collateralAmountToPull,
@@ -136,7 +138,7 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addCollateral(
-      contractPoolWithSigner as ERC20Pool,
+      contractPoolWithSigner,
       collateralAmountToAdd,
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
