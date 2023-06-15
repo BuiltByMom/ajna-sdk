@@ -53,8 +53,6 @@ export enum ManagerContracts {
   RewardsManager = 'RewardsManager',
 }
 
-export type AllContracts = TokenContract & PoolContracts & ManagerContracts;
-
 export interface ContractFunction {
   [key: string]: any;
 }

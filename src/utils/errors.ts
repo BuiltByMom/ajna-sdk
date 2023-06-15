@@ -18,8 +18,6 @@ export function getCustomError(contract: ALL_CONTRACTS, errorDataResult: string)
 
   if (errorSigHash in errorsByHash) {
     return errorsByHash[errorSigHash];
-  } else {
-    return undefined;
   }
 }
 

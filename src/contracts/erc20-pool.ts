@@ -125,7 +125,7 @@ export async function take(
 ) {
   const erc20Pool = getErc20PoolContract(contract.address, contract.provider);
   const encodedCallData = callData
-    ? erc20Pool.interface.encodeFunctionData('take' as any, callData.args as any)
+    ? erc20Pool.interface.encodeFunctionData('take', callData.args as any)
     : [];
 
   return await createTransaction(
