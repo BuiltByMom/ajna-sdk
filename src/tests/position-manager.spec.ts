@@ -25,22 +25,22 @@ describe('LP Token and PositionManager', () => {
   it('should mint and burn LP token', async () => {
     let tx = await pool.mintLPToken(signerLender);
     const res = await tx.verifyAndSubmit();
+    const parsed = parseTxEvents(res);
 
     const tokenId = BigNumber.from(1);
     const lpToken = pool.getLPToken(tokenId);
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
 
-    let parsed = parseTxEvents(res);
-    expect(parsed.Mint.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
-    expect(parsed.Transfer.parsedArgs.from).toBe(constants.AddressZero);
-    expect(parsed.Transfer.parsedArgs.to).toBe(signerLender.address);
+    expect(parsed.Mint?.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
+    expect(parsed.Transfer?.parsedArgs.from).toBe(constants.AddressZero);
+    expect(parsed.Transfer?.parsedArgs.to).toBe(signerLender.address);
 
     tx = await pool.burnLPToken(signerLender, tokenId);
     const res2 = await tx.verifyAndSubmit();
-    parsed = parseTxEvents(res2);
+    const parsed2 = parseTxEvents(res2);
 
-    expect(parsed.Burn.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
-    expect(parsed.Burn.parsedArgs.lender).toBe(signerLender.address);
+    expect(parsed2.Burn?.parsedArgs.tokenId.toString()).toBe(tokenId.toString());
+    expect(parsed2.Burn?.parsedArgs.lender).toBe(signerLender.address);
   });
 });
