@@ -48,7 +48,7 @@ class Config {
       process.env.AJNA_POOL_UTILS || '',
       process.env.AJNA_POSITION_MANAGER || '',
       process.env.AJNA_TOKEN_ADDRESS || '',
-      process.env.AJNA_CONTRACT_GRANT_FUND || ''
+      process.env.AJNA_GRANT_FUND || ''
     );
   }
 }

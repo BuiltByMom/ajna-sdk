@@ -27,7 +27,7 @@ BORROWER_ADDRESS=0x123...
 BORROWER_KEYSTORE=/path/to/borrower-keystore.json
 BORROWER_PASSWORD=<key password>
 VOTER_ADDRESS=0xAbc...
-VOTER_KEYSTORE=/path/to/lender-keystore.json
+VOTER_KEYSTORE=/path/to/voter-keystore.json
 VOTER_PASSWORD=<key password>
 
 COLLATERAL_TOKEN=0x9c09FE6b19174D838CAe2C4Fb5A4A311c4008441
