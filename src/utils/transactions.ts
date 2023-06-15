@@ -33,7 +33,7 @@ export async function createTransaction(
   const populatedTx = await contract.populateTransaction[methodName](...txArgs);
 
   const namedContract = contract.contractName?.includes('Pool')
-    ? (getPoolContract(contract as POOL_CONTRACT) as POOL_CONTRACT)
+    ? getPoolContract(contract as POOL_CONTRACT)
     : contract.contractName?.includes('Manager')
     ? getNamedContract(contract as MANAGER_CONTRACT)
     : getNamedContract(contract as ALL_CONTRACTS);
