@@ -226,7 +226,7 @@ describe('ERC20 Pool', () => {
     // CAUTION: rate coming back as 1.000000000000000001
     expect(
       bucketStatus.exchangeRate.eq(toWad(1)) ||
-      bucketStatus.exchangeRate.eq(toWad('1.000000000000000001'))
+        bucketStatus.exchangeRate.eq(toWad('1.000000000000000001'))
     ).toBe(true);
   });
 
