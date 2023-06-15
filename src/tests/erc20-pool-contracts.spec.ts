@@ -12,7 +12,7 @@ import { getBlockTime, getExpiry } from '../utils/time';
 import { parseTxEvents, submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
-import { Config, ERC20_NON_SUBSET_HASH } from '../constants';
+import { Config } from '../constants';
 import { CRAStatus } from '../classes/ClaimableReserveAuction';
 import { parseSdkError } from '../utils/errors';
 
@@ -103,8 +103,8 @@ describe('ERC20 Pool', () => {
     try {
       await tx.verify();
     } catch (error: any) {
-      const parsed = parseSdkError(error);
-      console.log(`parsed error:`, parsed);
+      const parsed = parseSdkError(tx._contract, error);
+      console.log(`parsed sdk error:`, parsed);
     }
   });
 
@@ -194,7 +194,9 @@ describe('ERC20 Pool', () => {
 
     const tx = await bucket.removeQuoteToken(signerLender, quoteAmount);
     const res = await tx.verifyAndSubmit();
-    parseTxEvents(res);
+    const parsed = parseTxEvents(res);
+    expect(parsed.RemoveQuoteToken?.parsedArgs.index.toNumber()).toBe(2000);
+
     const lpAfter = (await bucket.getStatus()).bucketLP;
     expect(lpBefore.gt(lpAfter)).toBe(true);
   });
@@ -286,12 +288,9 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use getPosition successfully', async () => {
-    const pools = await ajna.factory.getDeployedPools();
-    console.log(`deployed pools:`, pools);
     // getPosition on bucket where lender has no LPB
     let bucket = await poolA.getBucketByIndex(4321);
     let position = await bucket.getPosition(signerLender.address);
-    console.log(`position:`, position);
     expect(position.lpBalance).toEqual(toWad(0));
     expect(position.depositRedeemable).toEqual(toWad(0));
     expect(position.collateralRedeemable).toEqual(toWad(0));
@@ -300,16 +299,13 @@ describe('ERC20 Pool', () => {
     // getPosition on bucket with collateral
     bucket = await poolA.getBucketByIndex(3220);
     position = await bucket.getPosition(signerLender.address);
-    console.log(`position1:`, position);
-    expect(position.lpBalance).toEqual(toWad(330.214012115583477633));
+    expect(position.lpBalance).toEqual(toWad('330.214012115583477633'));
     expect(position.depositRedeemable).toEqual(toWad(0));
     expect(position.collateralRedeemable).toEqual(toWad('3.1'));
     expect(position.depositWithdrawable).toEqual(toWad(0));
-
     // getPosition on bucket below LUP
     bucket = await poolA.getBucketByIndex(3261);
     position = await bucket.getPosition(signerLender.address);
-    console.log(`position2:`, position);
     expect(position.lpBalance).toEqual(toWad(5000));
     expect(position.depositRedeemable).toEqual(toWad(5000));
     expect(position.collateralRedeemable).toEqual(toWad(0));
@@ -318,7 +314,6 @@ describe('ERC20 Pool', () => {
     // getPosition on bucket above LUP
     bucket = await poolA.getBucketByIndex(3242);
     position = await bucket.getPosition(signerLender.address);
-    console.log(`position3:`, position);
     expect(position.lpBalance).toEqual(toWad(12000));
     expect(position.depositRedeemable).toEqual(toWad(12000));
     expect(position.collateralRedeemable).toEqual(toWad(0));
@@ -327,7 +322,6 @@ describe('ERC20 Pool', () => {
 
   it('should use getLoan successfully', async () => {
     const loan = await poolA.getLoan(await signerBorrower.getAddress());
-    console.log(`loan:`, loan);
     expect(loan.collateralization).toBeBetween(toWad(1.23), toWad(1.24));
     expect(loan.debt).toBeBetween(toWad(10000), toWad(10000).mul(2));
     expect(loan.collateral).toEqual(toWad(130));
@@ -338,9 +332,7 @@ describe('ERC20 Pool', () => {
 
   it('should use estimateLoan successfully', async () => {
     const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
-    console.log(`loanEstimate:`, loanEstimate);
     const prices = await poolA.getPrices();
-    console.log(`prices:`, prices);
     expect(loanEstimate.collateralization).toBeBetween(toWad(1.25), toWad(1.26));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
@@ -430,7 +422,8 @@ describe('ERC20 Pool', () => {
     const bucketIndex = 1234;
 
     let tx = await pool.collateralApprove(signerLender, collateralAmount);
-    await tx.verifyAndSubmit();
+    const res = await tx.verifyAndSubmit();
+    parseTxEvents(res);
 
     tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount, -1);
 
@@ -492,7 +485,9 @@ describe('ERC20 Pool', () => {
       TWETH_ADDRESS,
       toWad('0.05')
     );
-    let res = await tx.submit();
+    let res = await tx.verifyAndSubmit();
+    const parsed = parseTxEvents(res);
+    console.log(`parsed:`, parsed);
 
     pool = await ajna.factory.getPool(TDAI_ADDRESS, TWETH_ADDRESS);
 
@@ -500,8 +495,7 @@ describe('ERC20 Pool', () => {
     expect(pool.collateralAddress).toBe(TDAI_ADDRESS);
     expect(pool.quoteAddress).toBe(TWETH_ADDRESS);
 
-    let parsed = parseTxEvents(res);
-    expect(parsed.PoolCreated.parsedArgs.pool_).toBe(pool.poolAddress);
+    expect(parsed.PoolCreated?.parsedArgs.pool_).toBe(pool.poolAddress);
 
     // Lender adds quote
     const quoteAmount = toWad(50000);
@@ -552,7 +546,8 @@ describe('ERC20 Pool', () => {
     // kick auction
     tx = await auction.kick(signerLender);
     res = await tx.verifyAndSubmit();
-    parseTxEvents(res);
+    const parsed1 = parseTxEvents(res);
+    expect(parsed1.KickReserveAuction?.parsedArgs.currentBurnEpoch.toString()).toBe('1');
     const takeable = await auction.isTakeable();
     expect(takeable).toBe(true);
 
@@ -573,8 +568,9 @@ describe('ERC20 Pool', () => {
     // take collateral and burn Ajna
     tx = await auction.takeAndBurn(signerLender);
     res = await tx.verifyAndSubmit();
-    parsed = parseTxEvents(res);
-    expect(parsed.KickReserveAuction.parsedArgs.currentBurnEpoch.toString()).toBe('1');
+    const parsed2 = parseTxEvents(res);
+    expect(parsed2.ReserveAuction?.parsedArgs.currentBurnEpoch.toString()).toBe('1');
+    expect(parsed2.ReserveAuction?.parsedArgs.claimableReservesRemaining.toString()).toBe('0');
 
     status = (await auction.getStatus()) as CRAStatus;
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);

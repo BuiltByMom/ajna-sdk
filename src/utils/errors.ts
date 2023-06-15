@@ -1,7 +1,7 @@
 import { ALL_CONTRACTS } from '../types';
 import { getErc20PoolFactoryInterface } from '../contracts';
 
-export function getCustomErrorMessage(contract: ALL_CONTRACTS, errorDataResult: string) {
+export function getCustomError(contract: ALL_CONTRACTS, errorDataResult: string) {
   // retrieve the list of custom errors available to the contract
   const customErrorNames = Object.keys(contract.interface.errors);
 
@@ -23,7 +23,7 @@ export function getCustomErrorMessage(contract: ALL_CONTRACTS, errorDataResult: 
   }
 }
 
-export function parseSdkError(error: any) {
+export function parseSdkError(contract: ALL_CONTRACTS, error: any) {
   const iFace = getErc20PoolFactoryInterface();
   return iFace.parseError(error._innerException.error.data.result);
 }

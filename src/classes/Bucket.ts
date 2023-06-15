@@ -166,31 +166,29 @@ export class Bucket {
    */
   async getPosition(lenderAddress: Address): Promise<Position> {
     // pool contract multicall to find pending debt and LPB
-    let data: any = await this.pool.ethcallProvider.all([
+    let data: string[] = await this.pool.ethcallProvider.all([
       this.pool.contractMulti.debtInfo(),
       this.pool.contractMulti.lenderInfo(this.index, lenderAddress),
     ]);
     const lpBalance = BigNumber.from(data[1][0]);
 
     // info contract multicall to get htp and calculate token amounts for LPB
-    const pricesInfo = await this.pool.poolInfoContractUtils.poolPricesInfo(
-      this.poolContract.address
-    );
-    const lpToQuote = await this.pool.poolInfoContractUtils.lpToQuoteTokens(
+    const pricesInfoCall = this.pool.contractUtilsMulti.poolPricesInfo(this.poolContract.address);
+    const lpToQuoteCall = this.pool.contractUtilsMulti.lpToQuoteTokens(
       this.poolContract.address,
       lpBalance,
       this.index
     );
-    const lpToCollateral = await this.pool.poolInfoContractUtils.lpToCollateral(
+    const lpToCollateralCall = this.pool.contractUtilsMulti.lpToCollateral(
       this.poolContract.address,
       lpBalance,
       this.index
     );
-
-    const htpIndex = +pricesInfo[3];
-    const lupIndex = +pricesInfo[5];
-    const depositRedeemable = BigNumber.from(lpToQuote);
-    const collateralRedeemable = BigNumber.from(lpToCollateral);
+    data = await this.pool.ethcallProvider.all([pricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
+    const htpIndex = +data[0][3];
+    const lupIndex = +data[0][5];
+    const depositRedeemable = BigNumber.from(data[1]);
+    const collateralRedeemable = BigNumber.from(data[2]);
 
     let depositWithdrawable;
     if (this.index > lupIndex) {
@@ -204,7 +202,7 @@ export class Bucket {
           this.pool.contractMulti.depositUpToIndex(lupIndex),
           this.pool.contractMulti.depositUpToIndex(htpIndex),
         ]);
-        liquidityBetweenLupAndHtp = BigNumber.from(lpToQuote).sub(BigNumber.from(pricesInfo));
+        liquidityBetweenLupAndHtp = BigNumber.from(data[1]).sub(BigNumber.from(data[0]));
       }
       depositWithdrawable = liquidityBetweenLupAndHtp.lt(depositRedeemable)
         ? liquidityBetweenLupAndHtp

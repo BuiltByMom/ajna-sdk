@@ -193,11 +193,18 @@ export abstract class Pool {
    * @returns {@link Stats}
    */
   async getStats(): Promise<Stats> {
-    const [poolSize, loansCount] = await this.poolInfoContractUtils.poolLoansInfo(this.poolAddress);
-    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] =
-      await this.poolInfoContractUtils.poolUtilizationInfo(this.poolAddress);
-    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] =
-      await this.poolInfoContractUtils.poolReservesInfo(this.poolAddress);
+    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
+    const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
+    const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
+    const data: string[] = await this.ethcallProvider.all([
+      poolLoansInfoCall,
+      poolUtilizationInfoCall,
+      poolReservesInfo,
+    ]);
+
+    const [poolSize, loansCount] = data[0];
+    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
+    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
 
     const [debt, , liquidationDebt] = await debtInfo(this.contract);
 

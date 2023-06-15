@@ -9,10 +9,9 @@ import {
 } from '../types';
 import { BigNumber, PopulatedTransaction, ContractReceipt, ContractTransaction } from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
-import { Pool } from '../classes/Pool';
 import { SdkError } from '../classes/types';
 import { getNamedContract, getPoolContract } from './helpers';
-import { getCustomErrorMessage } from './errors';
+import { getCustomError } from './errors';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -113,10 +112,12 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns ContractTransaction
    */
-  async verifyAndSubmitResponse(): Promise<ContractTransaction> {
+  async verifyAndSubmitResponse(
+    gasMultiplier: number = GAS_MULTIPLIER
+  ): Promise<ContractTransaction> {
     const estimatedGas = await this.verify();
     return await this._contract[this._methodName](...this._txArgs, {
-      gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
+      gasLimit: +estimatedGas.mul(gasMultiplier),
     });
   }
 
@@ -127,8 +128,8 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} if transaction will fail at current block height.
    * @returns TransactionReceipt
    */
-  async verifyAndSubmit(confirmations?: number) {
-    const tx = await this.verifyAndSubmitResponse();
+  async verifyAndSubmit(confirmations = 1, gasMultiplier?: number): Promise<ContractReceipt> {
+    const tx = await this.verifyAndSubmitResponse(gasMultiplier);
     return await tx.wait(confirmations);
   }
 
@@ -153,6 +154,15 @@ class WrappedTransactionClass implements WrappedTransaction {
         return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
       }
     }
+
+    if (error.error?.data) {
+      const errorDataResult = error.error.data.result;
+      return this.getCustomErrorFromHash(contract, errorDataResult);
+    }
+    if (error?.data) {
+      const errorDataResult = error.data.result;
+      return this.getCustomErrorFromHash(contract, errorDataResult);
+    }
     return { message: 'Revert reason unknown', _innerErrorData: undefined };
   }
 
@@ -169,7 +179,7 @@ class WrappedTransactionClass implements WrappedTransaction {
       errorDataResultAddress = `0x${errorDataResult.slice(-40)}`;
     }
     return {
-      message: getCustomErrorMessage(contract, errorDataResult),
+      message: getCustomError(contract, errorDataResult),
       _innerErrorData: errorDataResultAddress,
     };
   }

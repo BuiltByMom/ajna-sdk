@@ -63,7 +63,7 @@ export function parseTxEvents(txReceipt: ContractReceipt) {
     const { data, args, address, topics, eventSignature, event } = e;
     if (event && eventSignature) {
       const parsedArgs = args?.length ? formatLogArgs(args as string[]) : undefined;
-      console.log(`parsedArgs:`, parsedArgs);
+      console.log(event, `parsedArgs:`, parsedArgs);
       return {
         ...acc,
         [event as string]: { event, args, parsedArgs, data, address, topics, eventSignature },
