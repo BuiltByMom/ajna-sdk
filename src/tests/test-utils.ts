@@ -72,6 +72,6 @@ export function parseTxEvents(txReceipt: ContractReceipt) {
     return acc;
   }, {});
 
-  console.log(`parsed events:`, parsedEvents);
+  // console.log(`parsed events:`, parsedEvents);
   return parsedEvents;
 }

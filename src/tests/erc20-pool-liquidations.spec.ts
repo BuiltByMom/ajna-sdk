@@ -33,26 +33,26 @@ describe('Liquidations', () => {
   const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
   // const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
-  let snapshotId: string;
+  let snapshotId: number;
 
   beforeAll(async () => {
     pool = await ajna.factory.getPool(TESTB_ADDRESS, QUOTE_ADDRESS);
 
     // approve
     let tx = await pool.quoteApprove(signerLender, toWad(40));
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // add 9 quote tokens to 2001 bucket
     const higherBucket = await pool.getBucketByIndex(2001);
     let quoteAmount = toWad(9);
     tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // add 10 quote tokens to 2500 bucket (price 3863)
     const lowerBucket = await pool.getBucketByIndex(2500);
     quoteAmount = toWad(10);
     tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // fund borrower2
     let receipt = await TESTB.connect(signerDeployer).transfer(
@@ -67,10 +67,10 @@ describe('Liquidations', () => {
     let collateralToPledge = toWad(0.0003);
 
     tx = await pool.collateralApprove(signerBorrower2, collateralToPledge);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     tx = await pool.drawDebt(signerBorrower2, amountToBorrow, collateralToPledge);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // check pool lup index
     let stats = await pool.getStats();
@@ -96,9 +96,9 @@ describe('Liquidations', () => {
     amountToBorrow = toWad(10);
     collateralToPledge = toWad(1);
     tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // check pool lup index again, make sure lup went below bucket 2001
     stats = await pool.getStats();
@@ -116,8 +116,7 @@ describe('Liquidations', () => {
   });
 
   afterEach(async () => {
-    await revertToSnapshot(provider, snapshotId);
-    // expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
+    expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
     // Re-take snapshot after every test, as same snapshot couldn't be used twice
     snapshotId = await takeSnapshot(provider);
   });
@@ -148,30 +147,26 @@ describe('Liquidations', () => {
 
   it('should use kick and isKickable', async () => {
     let isKickable = await pool.isKickable(signerBorrower.address);
-    console.log(`isKickable:`, isKickable);
     expect(isKickable).toBeFalsy();
     let liquidation = pool.getLiquidation(signerBorrower.address);
     let auctionStatus = await liquidation.getStatus();
-    console.log(`auctionStatus:`, auctionStatus);
     expect(auctionStatus.isTakeable).toBeFalsy();
 
     isKickable = await pool.isKickable(signerBorrower2.address);
-    console.log(`isKickable2:`, isKickable);
     expect(isKickable).toBeTruthy();
     liquidation = pool.getLiquidation(signerBorrower.address);
     auctionStatus = await liquidation.getStatus();
-    console.log(`auctionStatus2:`, auctionStatus);
     expect(auctionStatus.isTakeable).toBeFalsy();
 
     const tx = await pool.kick(signerLender, signerBorrower2.address);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use kickWithDeposit', async () => {
     const bucket = await pool.getBucketByIndex(2001);
 
     const tx = await bucket.kickWithDeposit(signerLender);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use arb take', async () => {
@@ -179,7 +174,7 @@ describe('Liquidations', () => {
 
     // kick first
     let tx = await pool.kick(signerLender, signerBorrower2.address);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
@@ -188,7 +183,7 @@ describe('Liquidations', () => {
 
     // take
     tx = await liquidation.arbTake(signerLender, bucketIndex);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     const statuses = await pool.getLiquidationStatuses([signerBorrower2.address]);
     expect(statuses.size).toEqual(1);
@@ -210,7 +205,7 @@ describe('Liquidations', () => {
 
     // kick first
     let tx = await pool.kick(signerLender, signerBorrower2.address);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
@@ -230,19 +225,19 @@ describe('Liquidations', () => {
 
     // lender adds liquidity
     tx = await pool.quoteApprove(signerLender, toWad(allowance));
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // take
     tx = await liquidation.depositTake(signerLender, bucket.index);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use take', async () => {
     // kick first
     let tx = await pool.kick(signerLender, signerBorrower2.address);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
@@ -251,12 +246,18 @@ describe('Liquidations', () => {
 
     // take
     tx = await liquidation.take(signerLender);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
+
+    // should not be able to withdraw bond prior to settlement
+    await expect(async () => {
+      tx = await pool.withdrawBonds(signerBorrower);
+      await tx.verify();
+    }).rejects.toThrow('InsufficientLiquidity()');
   });
 
   it('should use settle', async () => {
     let tx = await pool.kick(signerLender, signerBorrower2.address);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
@@ -265,8 +266,9 @@ describe('Liquidations', () => {
     expect(auctionStatus.isTakeable).toBeFalsy();
     expect(auctionStatus.isCollateralized).toBeFalsy();
 
+    // should not be able to settle yet
     await expect(async () => {
-      tx = await liquidation.settle(signerBorrower);
+      tx = await liquidation.settle(signerLender);
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
@@ -275,11 +277,11 @@ describe('Liquidations', () => {
     await timeJump(provider, jumpTimeSeconds);
 
     tx = await liquidation.settle(signerLender);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     // withdraw liquidation bond
     tx = await pool.withdrawBonds(signerLender);
-    tx.verifyAndSubmit();
+    await submitAndVerifyTransaction(tx);
 
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
