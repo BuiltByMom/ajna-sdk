@@ -142,8 +142,7 @@ describe('ERC20 Pool', () => {
     const collateralToPledge = toWad(3.0);
 
     let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-    const res = await tx.verifyAndSubmit();
-    parseTxEvents(res);
+    await tx.verifyAndSubmit();
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
     await submitAndVerifyTransaction(tx);
   });
@@ -173,13 +172,13 @@ describe('ERC20 Pool', () => {
   it('should use repayDebt successfully', async () => {
     const collateralAmountToPull = toWad(1);
 
-    let tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
+    const tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
     await submitAndVerifyTransaction(tx);
 
-    tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, collateralAmountToPull);
+    const tx2 = await pool.repayDebt(signerBorrower, constants.MaxUint256, collateralAmountToPull);
 
     // known custom errors in the ABIs
-    const res = await tx.verifyAndSubmit();
+    const res = await tx2.verifyAndSubmit();
     const parsed = parseTxEvents(res);
 
     expect(parsed.RepayDebt?.parsedArgs.collateralPulled.toString()).toBe(
@@ -530,8 +529,6 @@ describe('ERC20 Pool', () => {
     await tx.verifyAndSubmit();
     tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
     await submitAndVerifyTransaction(tx);
-    // res = await tx.verifyAndSubmit();
-    // parseTxEvents(res);
     const repaymentTime = await getBlockTime(signerBorrower);
     stats = await pool.getStats();
     expect(stats.debt.eq(toWad(0))).toBe(true);
