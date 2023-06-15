@@ -1,17 +1,10 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Signer, constants } from 'ethers';
-import {
-  Address,
-  CallData,
-  ERC20Pool,
-  PoolInfoUtils,
-  SignerOrProvider,
-  TOKEN_POOL,
-} from '../types';
+import { Address, CallData, PoolInfoUtils, SignerOrProvider, TOKEN_POOL } from '../types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
-import { settle } from '../contracts/pool';
-import { bucketTake, take } from '../contracts/erc20-pool';
+import { createTransaction } from '../utils';
+import { bucketTake } from '../contracts/pool';
 
 export interface AuctionStatus {
   /** time auction was kicked */
@@ -85,12 +78,7 @@ export class Liquidation {
   async arbTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(
-      contractPoolWithSigner as ERC20Pool,
-      this.borrowerAddress,
-      false,
-      bucketIndex
-    );
+    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, false, bucketIndex);
   }
 
   /**
@@ -102,12 +90,7 @@ export class Liquidation {
   async depositTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(
-      contractPoolWithSigner as ERC20Pool,
-      this.borrowerAddress,
-      true,
-      bucketIndex
-    );
+    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, false, bucketIndex);
   }
 
   /**
@@ -119,12 +102,10 @@ export class Liquidation {
   async take(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await take(
-      contractPoolWithSigner as ERC20Pool,
-      this.borrowerAddress,
-      maxAmount,
-      await signer.getAddress()
-    );
+    return createTransaction(contractPoolWithSigner, {
+      methodName: 'take',
+      args: [this.borrowerAddress, maxAmount, await signer.getAddress()],
+    });
   }
 
   /**
@@ -141,13 +122,10 @@ export class Liquidation {
   async takeWithCall(signer: Signer, maxAmount: BigNumber, callee: Address, callData?: CallData) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await take(
-      contractPoolWithSigner as ERC20Pool,
-      this.borrowerAddress,
-      maxAmount,
-      callee,
-      callData
-    );
+    return createTransaction(contractPoolWithSigner, {
+      methodName: 'take',
+      args: [this.borrowerAddress, maxAmount, callee, callData],
+    });
   }
 
   /**
@@ -159,6 +137,9 @@ export class Liquidation {
   async settle(signer: Signer, maxDepth = MAX_SETTLE_BUCKETS) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await settle(contractPoolWithSigner, this.borrowerAddress, maxDepth);
+    return createTransaction(contractPoolWithSigner, {
+      methodName: 'settle',
+      args: [this.borrowerAddress, maxDepth],
+    });
   }
 }

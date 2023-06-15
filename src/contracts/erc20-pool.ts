@@ -87,7 +87,7 @@ export async function addCollateral(
 }
 
 export async function removeCollateral(
-  contract: TOKEN_POOL,
+  contract: ERC20Pool,
   bucketIndex: number,
   maxAmount: BigNumber,
   overrides?: TransactionOverrides
@@ -111,20 +111,6 @@ export async function approve(
   return await createTransaction(
     erc20,
     { methodName: 'approve', args: [poolAddress, allowance] },
-    overrides
-  );
-}
-
-export async function bucketTake(
-  contract: ERC20Pool,
-  borrowerAddress: Address,
-  depositTake: boolean,
-  bucketIndex: number,
-  overrides?: TransactionOverrides
-) {
-  return await createTransaction(
-    contract,
-    { methodName: 'bucketTake', args: [borrowerAddress, depositTake, bucketIndex] },
     overrides
   );
 }

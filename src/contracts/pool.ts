@@ -16,6 +16,19 @@ export async function addQuoteToken(
   );
 }
 
+export async function bucketTake(
+  contract: TOKEN_POOL,
+  borrowerAddress: Address,
+  depositTake: boolean,
+  bucketIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'bucketTake', args: [borrowerAddress, depositTake, bucketIndex] },
+    overrides
+  );
+}
 export async function moveQuoteToken(
   contract: TOKEN_POOL,
   maxAmountToMove: BigNumber,
