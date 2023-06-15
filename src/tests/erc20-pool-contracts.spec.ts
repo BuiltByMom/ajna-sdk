@@ -13,7 +13,6 @@ import { parseTxEvents, submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
-import { CRAStatus } from '../classes/ClaimableReserveAuction';
 import { parseSdkError } from '../utils/errors';
 
 dotenv.config();
@@ -163,9 +162,6 @@ describe('ERC20 Pool', () => {
   it('should use getPrices and loansInfo successfully', async () => {
     const prices = await poolA.getPrices();
 
-    const pools = await ajna.factory.getDeployedPools();
-    console.log(`deployed pools:`, pools);
-
     expect(prices.hpb).toEqual(indexToPrice(3236));
     expect(prices.hpbIndex).toEqual(3236);
     expect(prices.htp).toEqual(toWad('76.997041420118343231'));
@@ -184,7 +180,12 @@ describe('ERC20 Pool', () => {
 
     // known custom errors in the ABIs
     const res = await tx.verifyAndSubmit();
-    parseTxEvents(res);
+    const parsed = parseTxEvents(res);
+
+    expect(parsed.RepayDebt?.parsedArgs.collateralPulled.toString()).toBe(
+      collateralAmountToPull.toString()
+    );
+    expect(parsed.RepayDebt?.parsedArgs.borrower).toBe(signerBorrower.address);
   });
 
   it('should use removeQuoteToken successfully', async () => {
@@ -528,8 +529,9 @@ describe('ERC20 Pool', () => {
     tx = await pool.quoteApprove(signerBorrower, repayDebtAmountInQuote);
     await tx.verifyAndSubmit();
     tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
-    res = await tx.verifyAndSubmit();
-    parseTxEvents(res);
+    await submitAndVerifyTransaction(tx);
+    // res = await tx.verifyAndSubmit();
+    // parseTxEvents(res);
     const repaymentTime = await getBlockTime(signerBorrower);
     stats = await pool.getStats();
     expect(stats.debt.eq(toWad(0))).toBe(true);
@@ -554,7 +556,7 @@ describe('ERC20 Pool', () => {
     // wait 32 hours
     jumpTimeSeconds = 32 * 60 * 60;
     await timeJump(provider, jumpTimeSeconds);
-    status = (await auction.getStatus()) as CRAStatus;
+    status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
     expect(status.price).toBeBetween(toWad('0.20'), toWad('0.25'));
 
@@ -572,7 +574,7 @@ describe('ERC20 Pool', () => {
     expect(parsed2.ReserveAuction?.parsedArgs.currentBurnEpoch.toString()).toBe('1');
     expect(parsed2.ReserveAuction?.parsedArgs.claimableReservesRemaining.toString()).toBe('0');
 
-    status = (await auction.getStatus()) as CRAStatus;
+    status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
     expect(status.claimableReserves.eq(constants.Zero)).toBe(true);
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
