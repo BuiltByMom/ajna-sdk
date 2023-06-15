@@ -33,7 +33,7 @@ describe('Liquidations', () => {
   const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
   // const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
-  let snapshotId: number;
+  let snapshotId: string;
 
   beforeAll(async () => {
     pool = await ajna.factory.getPool(TESTB_ADDRESS, QUOTE_ADDRESS);
