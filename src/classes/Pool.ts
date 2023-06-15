@@ -12,6 +12,7 @@ import {
   quoteTokenAddress,
   quoteTokenScale,
   withdrawBonds,
+  lenderInfo,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -20,7 +21,7 @@ import {
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
-import { toWad } from '../utils/numeric';
+import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
@@ -340,5 +341,60 @@ export abstract class Pool {
 
   getLPToken(tokenId: BigNumber) {
     return new LPToken(this.provider, tokenId);
+  }
+
+  /**
+   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
+   * @param signer address to redeem LP
+   * @param bucketIndices array of bucket indices to withdraw liquidity from
+   * @returns transaction
+   */
+  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
+    const signerAddress = await signer.getAddress();
+    const callData: Array<CallData> = [];
+
+    // get buckets
+    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
+    const buckets = await Promise.all(bucketPromises);
+
+    // get bucket details
+    const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
+    const bucketStatuses = await Promise.all(bucketStatusPromises);
+
+    // determine lender's LP balance
+    const lpBalancePromises = bucketIndices.map(bucketIndex =>
+      lenderInfo(this.contract, signerAddress, bucketIndex)
+    );
+    const lpBalances = await Promise.all(lpBalancePromises);
+
+    for (let i = 0; i < bucketIndices.length; ++i) {
+      const [lpBalance] = lpBalances[i];
+      const bucketStatus = bucketStatuses[i];
+      const bucketIndex = bucketIndices[i];
+
+      // if there is any quote token in the bucket, redeem LP for deposit first
+      if (lpBalance && bucketStatus.deposit.gt(0)) {
+        callData.push({
+          methodName: 'removeQuoteToken',
+          args: [constants.MaxUint256, bucketIndex],
+        });
+      }
+
+      const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
+
+      // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
+      // arbitrary future block where the TX will be processed.
+      const withdrawCollateral =
+        depositWithdrawnEstimate.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
+
+      if (withdrawCollateral) {
+        callData.push({
+          methodName: 'removeCollateral',
+          args: [constants.MaxUint256, bucketIndex],
+        });
+      }
+    }
+
+    return await this.multicall(signer, callData);
   }
 }

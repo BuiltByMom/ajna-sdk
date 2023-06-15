@@ -276,7 +276,7 @@ export class Bucket {
     }
 
     // if there is any quote token in the bucket, redeem LP for deposit first
-    const callData = [];
+    const callData: Array<CallData> = [];
     if (lpBalance && bucketStatus.deposit.gt(0)) {
       callData.push({
         methodName: 'removeQuoteToken',

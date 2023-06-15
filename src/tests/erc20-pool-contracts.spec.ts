@@ -226,7 +226,7 @@ describe('ERC20 Pool', () => {
     // CAUTION: rate coming back as 1.000000000000000001
     expect(
       bucketStatus.exchangeRate.eq(toWad(1)) ||
-        bucketStatus.exchangeRate.eq(toWad('1.000000000000000001'))
+      bucketStatus.exchangeRate.eq(toWad('1.000000000000000001'))
     ).toBe(true);
   });
 
@@ -540,7 +540,7 @@ describe('ERC20 Pool', () => {
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
   });
 
-  it('should use withdraw liquidity', async () => {
+  it('should use bucket withdraw liquidity', async () => {
     const bucketIndex = priceToIndex(toWad(10)); // bucket 3694
     const bucket = await poolA.getBucketByIndex(bucketIndex);
     const quoteAmount = toWad(20);
@@ -582,5 +582,53 @@ describe('ERC20 Pool', () => {
     await expect(async () => {
       await bucket.withdrawLiquidity(signerLender);
     }).rejects.toThrow('no LP in bucket');
+  });
+
+  it('should use pool withdraw liquidity', async () => {
+    const bucketIndex1 = 3695;
+    const bucketIndex2 = 3696;
+    const bucket1 = await poolA.getBucketByIndex(bucketIndex1);
+    const bucket2 = await poolA.getBucketByIndex(bucketIndex2);
+    const quoteAmount = toWad(2);
+    const collateralAmount = toWad('0.05');
+
+    // lender deposits collateral to bucket1
+    let tx = await poolA.collateralApprove(signerLender, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    tx = await poolA.addCollateral(signerLender, bucketIndex1, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    // lender deposits quote token to bucket1 and bucket2
+    tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
+    await tx.verifyAndSubmit();
+    tx = await bucket1.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+    tx = await bucket2.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    let bucket1Status = await bucket1.getStatus();
+    expect(bucket1Status.deposit.gt(0)).toBe(true);
+    expect(bucket1Status.collateral.gt(0)).toBe(true);
+    expect(bucket1Status.bucketLP.gt(0)).toBe(true);
+    expect((await bucket1.lpBalance(signerLender.address)).gt(0)).toBe(true);
+
+    let bucket2Status = await bucket2.getStatus();
+    expect(bucket2Status.deposit.gt(0)).toBe(true);
+    expect(bucket2Status.bucketLP.gt(0)).toBe(true);
+    expect((await bucket2.lpBalance(signerLender.address)).gt(0)).toBe(true);
+
+    // lender withdraws liquidity
+    tx = await poolA.withdrawLiquidity(signerLender, [bucketIndex1, bucketIndex2]);
+    await tx.verifyAndSubmit();
+
+    expect((await bucket1.lpBalance(signerLender.address)).eq(0)).toBe(true);
+    expect((await bucket2.lpBalance(signerLender.address)).eq(0)).toBe(true);
+
+    bucket1Status = await bucket1.getStatus();
+    expect(bucket1Status.bucketLP.eq(0)).toBe(true);
+
+    bucket2Status = await bucket2.getStatus();
+    expect(bucket2Status.bucketLP.eq(0)).toBe(true);
   });
 });
