@@ -5,7 +5,9 @@ import {
   ContractTransaction,
   ContractReceipt,
   Overrides,
+  PopulatedTransaction,
 } from 'ethers';
+import { ALL_CONTRACTS, CustomContractTypes } from './type-chain';
 
 export type Provider = providers.Provider;
 
@@ -23,11 +25,15 @@ export type TransactionOverrides = Overrides & {
 };
 
 export interface WrappedTransaction {
+  readonly _transaction: PopulatedTransaction;
+  readonly _contract: ALL_CONTRACTS & CustomContractTypes;
+  readonly _methodName: string;
+  readonly _txArgs: any[];
   verify(): Promise<BigNumber>;
-  submit(confirmations?: number): Promise<ContractReceipt>;
   submitResponse(): Promise<ContractTransaction>;
-  verifyAndSubmit(confirmations?: number): Promise<ContractReceipt>;
+  submit(confirmations?: number): Promise<ContractReceipt>;
   verifyAndSubmitResponse(): Promise<ContractTransaction>;
+  verifyAndSubmit(confirmations?: number, gasMultiplier?: number): Promise<ContractReceipt>;
 }
 
 export interface CallData {
