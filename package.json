@@ -21,7 +21,7 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\"",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "yarn build && find dist -type f -name '*.map' -exec rimraf {} +",
     "document": "typedoc src/index.ts",
     "test": "jest --silent=false --runInBand",
     "test:dev": "yarn test --watchAll",
