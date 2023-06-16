@@ -10,7 +10,7 @@ import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { getBlockTime } from '../utils/time';
-import { AuctionStatus } from '../classes/Liquidation';
+import { AuctionStatus } from '../types';
 
 dotenv.config();
 
@@ -192,10 +192,11 @@ describe('Liquidations', () => {
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
     expect(auctionStatus.collateral).toEqual(toWad(0));
     expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
-    expect(auctionStatus.isTakeable).toBeFalsy();
-    expect(auctionStatus.isCollateralized).toBeFalsy();
+    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.isSettleable).toBe(true);
   });
 
   it('should use deposit take', async () => {
@@ -218,10 +219,11 @@ describe('Liquidations', () => {
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
     expect(auctionStatus.collateral).toEqual(toWad(0.0003));
     expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
-    expect(auctionStatus.isTakeable).toBeTruthy();
-    expect(auctionStatus.isCollateralized).toBeFalsy();
+    expect(auctionStatus.isTakeable).toBe(true);
+    expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity
     tx = await pool.quoteApprove(signerLender, toWad(allowance));
@@ -263,8 +265,9 @@ describe('Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBeFalsy();
-    expect(auctionStatus.isCollateralized).toBeFalsy();
+    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isSettleable).toBe(false);
 
     // should not be able to settle yet
     await expect(async () => {
@@ -275,6 +278,8 @@ describe('Liquidations', () => {
     // wait 72 hours
     const jumpTimeSeconds = 72 * 3600; // 72 hours
     await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isSettleable).toBe(true);
 
     tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
@@ -286,5 +291,6 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
     expect(auctionStatus.isTakeable).toBeFalsy();
+    expect(auctionStatus.isSettleable).toBe(false);
   });
 });

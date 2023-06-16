@@ -13,8 +13,8 @@ import {
   collateralScale,
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
-import { Address, Loan, SignerOrProvider } from '../types';
-import { AuctionStatus, Liquidation } from './Liquidation';
+import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
+import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
@@ -370,20 +370,19 @@ export class FungiblePool extends Pool {
     for (let i = 0; i < response.length; ++i) {
       const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
         response[i];
-      const kickTimestampNumber = kickTimestamp.toNumber();
-      const kickTime = new Date(kickTimestampNumber * 1000);
-      const currentTimestampNumber = await getBlockTime(this.provider);
-      const isGracePeriod = currentTimestampNumber - kickTimestampNumber < 3600;
-      const isTakeable = !isGracePeriod && collateral.gt(BigNumber.from(0));
-      retval.set(borrowerAddresses[i], {
-        kickTime,
-        collateral,
-        debtToCover,
-        isTakeable,
-        isCollateralized,
-        price,
-        neutralPrice,
-      });
+
+      retval.set(
+        borrowerAddresses[i],
+        Liquidation._prepareAuctionStatus(
+          await getBlockTime(this.provider),
+          kickTimestamp,
+          collateral,
+          debtToCover,
+          isCollateralized,
+          price,
+          neutralPrice
+        )
+      );
     }
     return retval;
   }

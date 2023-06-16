@@ -33,6 +33,25 @@ export interface IBaseContract {
   getProvider(): SignerOrProvider;
 }
 
+export interface AuctionStatus {
+  /** time auction was kicked */
+  kickTime: Date;
+  /** remaining collateral available to be purchased */
+  collateral: BigNumber;
+  /** remaining borrower debt to be covered */
+  debtToCover: BigNumber;
+  /** true if the grace period has elapsed and the auction has not expired */
+  isTakeable: boolean;
+  /** helps determine if the liquidation may be settled */
+  isCollateralized: boolean;
+  /** current price of the auction */
+  price: BigNumber;
+  /** price at which bond holder is neither rewarded nor penalized */
+  neutralPrice: BigNumber;
+  /** true if settle may be called on the liquidation */
+  isSettleable: boolean;
+}
+
 export interface Loan {
   /** collateralization ratio (1e18 = 100%) */
   collateralization: BigNumber;
