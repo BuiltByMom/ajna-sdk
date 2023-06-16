@@ -66,3 +66,11 @@ export interface Loan {
   /** estimated bond kicker must post to liquidate */
   liquidationBond: BigNumber;
 }
+
+export interface IGrantFund {
+  /**
+   * Handles grant fund distribution cycle, proposals and voting
+   */
+  delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
+  getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
+}
