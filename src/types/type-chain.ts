@@ -10,15 +10,6 @@ import {
   PositionManager,
   RewardsManager,
 } from './contracts';
-import { ERC20Interface } from './contracts/ERC20';
-import { ERC20PoolInterface } from './contracts/ERC20Pool';
-import { ERC20PoolFactoryInterface } from './contracts/ERC20PoolFactory';
-import { ERC721Interface } from './contracts/ERC721';
-import { ERC721PoolInterface } from './contracts/ERC721Pool';
-import { ERC721PoolFactoryInterface } from './contracts/ERC721PoolFactory';
-import { PoolInfoUtilsInterface } from './contracts/PoolInfoUtils';
-import { PositionManagerInterface } from './contracts/PositionManager';
-import { RewardsManagerInterface } from './contracts/RewardsManager';
 
 export interface CustomContractTypes {
   estimateGas: {

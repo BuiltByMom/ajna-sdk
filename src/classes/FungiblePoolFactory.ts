@@ -5,7 +5,7 @@ import {
 } from '../contracts/erc20-pool-factory';
 import { ERC20_NON_SUBSET_HASH } from '../constants';
 import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
-import { Config } from '../classes/Config';
+import { Config } from './Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 import { BigNumber, constants, Signer } from 'ethers';

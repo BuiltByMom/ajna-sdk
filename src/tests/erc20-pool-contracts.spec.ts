@@ -12,7 +12,7 @@ import { getBlockTime, getExpiry } from '../utils/time';
 import { parseTxEvents, submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
-import { Config } from '../constants';
+import { Config } from '../classes/Config';
 import { parseSdkError } from '../utils/errors';
 
 dotenv.config();
