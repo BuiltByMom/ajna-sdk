@@ -3,27 +3,6 @@ import { GAS_MULTIPLIER } from '../constants';
 import { CallData, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
 
 /**
- * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
- * @param contract The ethers.js contract instance.
- * @param methodName The name of the method to call on the contract.
- * @param args An array of arguments to pass to the method.
- * @param overrides An optional object with transaction overrides, such as gasPrice and gasLimit.
- * @returns The wrapped transaction object.
- */
-export async function createTransaction(
-  contract: Contract,
-  callData: CallData,
-  overrides?: TransactionOverrides
-): Promise<WrappedTransaction> {
-  const { methodName, args = [] } = callData;
-  const argsFiltered = args.filter(a => a !== undefined);
-  const tx = await contract.populateTransaction[methodName](
-    ...(overrides ? [...argsFiltered, overrides] : [...argsFiltered])
-  );
-  return new WrappedTransactionClass(tx, contract);
-}
-
-/**
  * A class representing a wrapped transaction that can be used to submit, verify, and estimate gas for a transaction.
  */
 class WrappedTransactionClass implements WrappedTransaction {
@@ -52,11 +31,11 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @throws {@link SdkError} An SDK error if the transaction execution failed and the error reason can be identified.
    * @throws The original error if the transaction execution failed and the error reason cannot be identified.
    */
-  async verify() {
+  async estimateGasCost() {
     try {
       return await this._contract.provider.estimateGas(this._transaction);
     } catch (error: unknown) {
-      const reason = this.parseNodeError(this._contract, error);
+      const reason = parseNodeError(error, this._contract);
       throw new SdkError(reason, error);
     }
   }
@@ -65,7 +44,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * Submits the transaction to the blockchain using the signer.
    * @returns The transaction receipt.
    */
-  async submitResponse() {
+  async submitTransaction() {
     return await this._contract.signer.sendTransaction(this._transaction);
   }
 
@@ -75,7 +54,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns A Promise that resolves to the transaction receipt.
    */
   async submit(confirmations?: number) {
-    const response = await this.submitResponse();
+    const response = await this.submitTransaction();
     return await response.wait(confirmations);
   }
 
@@ -86,7 +65,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns TransactionResponse
    */
   async verifyAndSubmitResponse() {
-    const estimatedGas = await this.verify();
+    const estimatedGas = await this.estimateGasCost();
     const txWithAdjustedGas = {
       ...this._transaction,
       gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
@@ -105,54 +84,81 @@ class WrappedTransactionClass implements WrappedTransaction {
     const response = await this.verifyAndSubmitResponse();
     return await response.wait(confirmations);
   }
+}
 
-  /**
-   * Looks through exception data to find the error hash for various node providers.
-   * @param error Error thrown by Ethers in response to an estimateGas failure.
-   * @returns string
-   */
-  parseNodeError(contract: Contract, error: any) {
-    if (error?.error?.error) {
-      const innerError = error.error.error;
-      // works on mainnet-forked Ganache local testnet
-      if (innerError.data?.reason) return innerError.data.reason;
-      if (innerError.data?.result) {
-        const errorHash = innerError.data.result;
-        return this.getCustomErrorFromHash(contract, errorHash);
-      }
-      // works with Alchemy node on Goerli
-      if (innerError.code === 3) {
-        // if the hash does not map to a custom error, return the node-provided error
-        const errorHash = innerError.data;
-        return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
-      }
-    }
-    return 'Revert reason unknown';
+/**
+ * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
+ * @param contract The ethers.js contract instance.
+ * @param methodName The name of the method to call on the contract.
+ * @param args An array of arguments to pass to the method.
+ * @param overrides An optional object with transaction overrides, such as gasPrice and gasLimit.
+ * @returns The wrapped transaction object.
+ */
+export async function createTransaction(
+  contract: Contract,
+  callData: CallData,
+  overrides?: TransactionOverrides
+): Promise<WrappedTransaction> {
+  const { methodName, args = [] } = callData;
+  const argsFiltered = args.filter(a => a !== undefined);
+  const tx = await contract.populateTransaction[methodName](
+    ...(overrides ? [...argsFiltered, overrides] : [...argsFiltered])
+  );
+  return new WrappedTransactionClass(tx, contract);
+}
+
+/**
+ * Looks through exception data to find the error hash for various node providers.
+ * @param error Error thrown by Ethers in response to an estimateGas failure.
+ * @returns string
+ */
+export function parseNodeError(error: any, contract: Contract | any) {
+  let innerError = error;
+  if (error?.error) {
+    innerError = error.error;
   }
+  if (error?.error?.error) {
+    innerError = error.error.error;
+  }
+  // works on mainnet-forked Ganache local testnet
+  if (innerError.data?.reason) {
+    return innerError.data.reason;
+  }
+  if (innerError.data?.result) {
+    const errorHash = innerError.data.result;
+    return getCustomErrorFromHash(errorHash, contract);
+  }
+  // works with Alchemy node on Goerli
+  if (innerError.code === 3) {
+    // if the hash does not map to a custom error, return the node-provided error
+    const errorHash = innerError.data;
+    return getCustomErrorFromHash(errorHash, contract) ?? error.error.error;
+  }
+  return 'Revert reason unknown';
+}
 
-  /**
-   * Matches error hash from node with custom errors in contract.
-   * @param contract Instance of contract with interface prepared from ABI.
-   * @param errorData Error hash string parsed from exception raised by node.
-   * @returns Human-readable reason explaining why transaction would revert.
-   */
-  getCustomErrorFromHash(contract: Contract, errorData: string) {
-    // retrieve the list of custom errors available to the contract
-    const customErrorNames = Object.keys(contract.interface.errors);
+/**
+ * Matches error hash from node with custom errors in contract.
+ * @param errorData Error hash string parsed from exception raised by node.
+ * @param contract Instance of contract with interface prepared from ABI.
+ * @returns Human-readable reason explaining why transaction would revert.
+ */
+export function getCustomErrorFromHash(errorData: string, contract: Contract | any) {
+  // retrieve the list of custom errors available to the contract
+  const customErrorNames = Object.keys(contract.interface.errors);
 
-    // index the contract's errors by the first 8 bytes of their hash
-    const errorsByHash = customErrorNames.reduce((acc: any, name: string) => {
-      return {
-        ...acc,
-        [contract.interface.getSighash(name)]: name,
-      };
-    }, {});
+  // index the contract's errors by the first 8 bytes of their hash
+  const errorsByHash = customErrorNames.reduce((acc: any, name: string) => {
+    return {
+      ...acc,
+      [contract.interface.getSighash(name)]: name,
+    };
+  }, {});
 
-    errorData = errorData.substring(0, 10);
-    if (errorData in errorsByHash) {
-      return errorsByHash[errorData];
-    } else {
-      return undefined;
-    }
+  const errorSigHash = errorData.substring(0, 10);
+  if (errorSigHash in errorsByHash) {
+    return errorsByHash[errorSigHash];
+  } else {
+    return undefined;
   }
 }

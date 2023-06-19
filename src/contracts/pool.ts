@@ -151,3 +151,15 @@ export async function takeReserves(
     overrides
   );
 }
+
+export async function approveLPTransferors(
+  pool: Contract,
+  transferors: Array<Address>,
+  overrides?: TransactionOverrides
+) {
+  return createTransaction(
+    pool,
+    { methodName: 'approveLPTransferors', args: [transferors] },
+    overrides
+  );
+}

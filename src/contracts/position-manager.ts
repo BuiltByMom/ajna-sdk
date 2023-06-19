@@ -1,4 +1,4 @@
-import { BigNumber, Contract, Signer } from 'ethers';
+import { BigNumber, BigNumberish, BytesLike, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
@@ -6,7 +6,8 @@ import {
   SignerOrProvider,
   TransactionOverrides,
 } from '../types';
-import { createTransaction } from '../utils/transactions';
+import { SdkError } from '../classes/types';
+import { createTransaction, parseNodeError } from '../utils';
 
 export const getPositionManagerContract = (provider: SignerOrProvider) => {
   return PositionManager__factory.connect(Config.positionManager, provider);
@@ -15,35 +16,41 @@ export const getPositionManagerContract = (provider: SignerOrProvider) => {
 export async function mint(
   signer: Signer,
   recipient: Address,
-  pool: Address,
-  poolSubsetHash: string, // TODO: convert to bytes32
+  poolAddress: Address,
+  poolSubsetHash: BytesLike,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
-
-  return await createTransaction(
-    contractInstance,
-    { methodName: 'mint', args: [pool, recipient, poolSubsetHash] },
-    overrides
-  );
+  const contractInstance = getPositionManagerContract(signer);
+  try {
+    return await createTransaction(
+      contractInstance,
+      { methodName: 'mint', args: [poolAddress, recipient, poolSubsetHash] },
+      overrides
+    );
+  } catch (error: any) {
+    throw new SdkError('mint error:', parseNodeError(error, poolAddress));
+  }
 }
 
 export async function burn(
   signer: Signer,
-  tokenId: BigNumber,
-  pool: Address,
+  tokenId: BigNumberish,
+  poolAddress: Address,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
-
-  return await createTransaction(
-    contractInstance,
-    { methodName: 'burn', args: [pool, tokenId] },
-    overrides
-  );
+  try {
+    const contractInstance = getPositionManagerContract(signer);
+    return await createTransaction(
+      contractInstance,
+      { methodName: 'burn', args: [poolAddress, tokenId] },
+      overrides
+    );
+  } catch (error: any) {
+    throw new SdkError('burn error:', parseNodeError(error, poolAddress));
+  }
 }
 
 export async function tokenURI(provider: SignerOrProvider, tokenId: BigNumber) {
-  const contractInstance: Contract = getPositionManagerContract(provider);
+  const contractInstance = getPositionManagerContract(provider);
   return await contractInstance.tokenURI(tokenId);
 }

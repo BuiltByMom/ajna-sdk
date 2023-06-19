@@ -5,6 +5,8 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
+import { parseNodeError } from '../utils';
+import { SdkError } from '../classes/types';
 
 dotenv.config();
 jest.setTimeout(1200000);
@@ -23,8 +25,9 @@ describe('LP Token and PositionManager', () => {
   });
 
   it('should mint and burn LP token', async () => {
-    let tx = await pool.mintLPToken(signerLender);
-    await submitAndVerifyTransaction(tx);
+    const mintTx = await pool.mintLPToken(signerLender);
+    const receipt = await submitAndVerifyTransaction(mintTx);
+    expect(receipt).toHaveProperty('logs');
 
     // TODO: get the tokenID from previous transaction
     const tokenId = BigNumber.from(1);
@@ -32,7 +35,40 @@ describe('LP Token and PositionManager', () => {
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
 
-    tx = await pool.burnLPToken(signerLender, tokenId);
-    await submitAndVerifyTransaction(tx);
+    const burnTx = await pool.burnLPToken(signerLender, tokenId);
+    const burnReceipt = await submitAndVerifyTransaction(burnTx);
+    expect(burnReceipt).toHaveProperty('logs');
+  });
+
+  it('should memorialize and then redeem an LP position', async () => {
+    const mintTx = await pool.mintLPToken(signerLender);
+    const receipt = await submitAndVerifyTransaction(mintTx);
+    expect(receipt).toHaveProperty('logs');
+
+    const tokenId = BigNumber.from(2);
+    const memorializeTxReceipt = await ajna.positionManager.memorializePositions(
+      signerLender,
+      pool.poolAddress,
+      tokenId
+    );
+    expect(memorializeTxReceipt).toHaveProperty('logs');
+
+    try {
+      const approveTx = await pool.approveLPTransferors(signerLender, [
+        ajna.positionManager.contract.address,
+      ]);
+      const approveReceipt = await submitAndVerifyTransaction(approveTx);
+      expect(approveReceipt).toHaveProperty('logs');
+
+      const redeemTx = await ajna.positionManager.redeemPositions(
+        signerLender,
+        pool.poolAddress,
+        tokenId
+      );
+      expect(redeemTx).toHaveProperty('logs');
+    } catch (error: any) {
+      console.log(`ERROR:`, error);
+      throw new SdkError(parseNodeError(error, ajna.positionManager.contract), error);
+    }
   });
 });

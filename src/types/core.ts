@@ -23,9 +23,9 @@ export interface TransactionOverrides {
 }
 
 export interface WrappedTransaction {
-  verify(): Promise<BigNumber>;
+  estimateGasCost(): Promise<BigNumber>;
+  submitTransaction(): Promise<TransactionResponse>;
   submit(confirmations?: number): Promise<TransactionReceipt>;
-  submitResponse(): Promise<TransactionResponse>;
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
   verifyAndSubmitResponse(): Promise<TransactionResponse>;
 }

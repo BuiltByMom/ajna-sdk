@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -14,6 +14,7 @@ import {
   quoteTokenScale,
   withdrawBonds,
   lenderInfo,
+  approveLPTransferors,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -21,7 +22,16 @@ import {
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
+import {
+  Address,
+  CallData,
+  ERC20Pool,
+  ERC721Pool,
+  PoolInfoUtils,
+  Provider,
+  SdkError,
+  SignerOrProvider,
+} from '../types';
 import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
@@ -101,7 +111,7 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: Contract;
+  contract: ERC20Pool | ERC721Pool;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
@@ -119,7 +129,7 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: Contract,
+    contract: ERC20Pool | ERC721Pool,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;
@@ -357,6 +367,10 @@ export abstract class Pool {
 
   async burnLPToken(signer: Signer, tokenId: BigNumber) {
     return burn(signer, tokenId, this.poolAddress);
+  }
+
+  async approveLPTransferors(signer: Signer, transferors: Array<Address>) {
+    return approveLPTransferors(this.contract.connect(signer), transferors);
   }
 
   getLPToken(tokenId: BigNumber) {

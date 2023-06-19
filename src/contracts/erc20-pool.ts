@@ -1,16 +1,22 @@
-import ERC20Pool from '../abis/ERC20Pool.json';
-import { Address, CallData, SignerOrProvider, TransactionOverrides } from '../types';
+import ERC20PoolAbi from '../abis/ERC20Pool.json';
+import {
+  Address,
+  CallData,
+  ERC20Pool__factory,
+  SignerOrProvider,
+  TransactionOverrides,
+} from '../types';
 import { createTransaction } from '../utils/transactions';
 import { getErc20Contract } from './erc20';
-import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { BigNumber, Contract, Signer } from 'ethers';
 import { Contract as ContractMulti } from 'ethcall';
 
 export const getErc20PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
-  return new ethers.Contract(poolAddress, ERC20Pool, provider);
+  return ERC20Pool__factory.connect(poolAddress, provider);
 };
 
 export const getErc20PoolContractMulti = (poolAddress: Address) => {
-  return new ContractMulti(poolAddress, ERC20Pool);
+  return new ContractMulti(poolAddress, ERC20PoolAbi);
 };
 
 export async function collateralScale(contract: Contract) {
