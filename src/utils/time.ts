@@ -1,6 +1,5 @@
-import { SdkError } from '../classes/types';
 import { DEFAULT_TTL } from '../constants';
-import { Provider, SignerOrProvider } from '../types';
+import { Provider, SignerOrProvider, SdkError } from '../types';
 import { Signer } from 'ethers';
 
 // calculates expiration time based on current block timestamp

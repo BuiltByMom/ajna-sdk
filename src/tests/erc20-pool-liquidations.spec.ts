@@ -135,6 +135,7 @@ describe('Liquidations', () => {
     expect(loan1multi.thresholdPrice.eq(loan1.thresholdPrice)).toBe(true);
     expect(loan1multi.neutralPrice.eq(loan1.neutralPrice)).toBe(true);
     expect(loan1multi.liquidationBond.eq(loan1.liquidationBond)).toBe(true);
+    expect(loan1multi.isKicked).toBe(loan1.isKicked);
 
     const loan2multi = loans.get(signerBorrower2.address)!;
     expect(loan2multi.collateralization.eq(loan2.collateralization)).toBe(true);
@@ -143,6 +144,7 @@ describe('Liquidations', () => {
     expect(loan2multi.thresholdPrice.eq(loan2.thresholdPrice)).toBe(true);
     expect(loan2multi.neutralPrice.eq(loan2.neutralPrice)).toBe(true);
     expect(loan2multi.liquidationBond.eq(loan2.liquidationBond)).toBe(true);
+    expect(loan2multi.isKicked).toBe(loan2.isKicked);
   });
 
   it('should use kick and isKickable', async () => {
@@ -275,6 +277,8 @@ describe('Liquidations', () => {
     let tx = await pool.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
 
+    let loan = await pool.getLoan(signerBorrower2.address);
+    expect(loan.isKicked).toBe(true);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
@@ -302,6 +306,8 @@ describe('Liquidations', () => {
 
     tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
+    loan = await pool.getLoan(signerBorrower2.address);
+    expect(loan.isKicked).toBe(false);
 
     // kicker's liquidation bond becomes claimable
     kickerInfo = await pool.kickerInfo(signerLender.address);

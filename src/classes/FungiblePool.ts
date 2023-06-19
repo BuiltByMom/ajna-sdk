@@ -196,18 +196,24 @@ export class FungiblePool extends Pool {
       this.poolAddress,
       borrowerAddress
     );
+    const auctionStatusCall = this.contractUtilsMulti.auctionStatus(
+      this.poolAddress,
+      borrowerAddress
+    );
 
     const response: BigNumber[][] = await this.ethcallProvider.all([
       poolPricesInfoCall,
       poolMompCall,
       poolLoansInfoCall,
       borrowerInfoCall,
+      auctionStatusCall,
     ]);
 
     const [, , , , lup] = response[0];
     const momp = BigNumber.from(response[1]);
     const [, , , pendingInflator] = response[2];
     const [debt, collateral, t0np] = response[3];
+    const [kickTimestamp] = response[4];
     const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
@@ -219,6 +225,7 @@ export class FungiblePool extends Pool {
       thresholdPrice: tp,
       neutralPrice: np,
       liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
+      isKicked: !kickTimestamp.eq(BigNumber.from(0)),
     };
   }
 
@@ -235,6 +242,7 @@ export class FungiblePool extends Pool {
     calls.push(this.contractUtilsMulti.poolLoansInfo(this.poolAddress));
     for (const loan of borrowerAddresses) {
       calls.push(this.contractUtilsMulti.borrowerInfo(this.poolAddress, loan));
+      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
     }
 
     // perform the multicall
@@ -248,19 +256,22 @@ export class FungiblePool extends Pool {
     const [, , , pendingInflator] = response[++i];
 
     // iterate through borrower info, offset by the 3 pool-level requests
-    for (++i; i < borrowerAddresses.length + 3; ++i) {
-      const [debt, collateral, t0np] = response[i];
+    let borrowerIndex = 0;
+    while (borrowerIndex < borrowerAddresses.length) {
+      const [debt, collateral, t0np] = response[++i];
+      const kickTimestamp = response[++i][0];
 
       const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
       const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
       const np = wmul(t0np, pendingInflator);
-      retval.set(borrowerAddresses[i - 3], {
+      retval.set(borrowerAddresses[borrowerIndex++], {
         collateralization,
         debt,
         collateral,
         thresholdPrice: tp,
         neutralPrice: np,
         liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
+        isKicked: !kickTimestamp.eq(BigNumber.from(0)),
       });
     }
 
@@ -334,6 +345,7 @@ export class FungiblePool extends Pool {
       collateral: newCollateral,
       thresholdPrice,
       neutralPrice,
+      isKicked: collateralization.lt(constants.One),
       liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex,

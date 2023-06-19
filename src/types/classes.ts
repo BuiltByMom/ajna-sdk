@@ -65,6 +65,8 @@ export interface Loan {
   neutralPrice: BigNumber;
   /** estimated bond kicker must post to liquidate */
   liquidationBond: BigNumber;
+  /** true if the loan is under liquidation */
+  isKicked: boolean;
 }
 
 export interface IGrantFund {

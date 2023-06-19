@@ -21,13 +21,12 @@ import {
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
+import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
 import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
-import { SdkError } from './types';
 import { LPToken } from './LPToken';
 
 export interface DebtInfo {

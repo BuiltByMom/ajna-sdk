@@ -1,7 +1,6 @@
-import { SdkError } from '../classes/types';
-import { GAS_MULTIPLIER } from '../constants';
-import { CallData, TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
+import { GAS_MULTIPLIER } from '../constants';
+import { CallData, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.

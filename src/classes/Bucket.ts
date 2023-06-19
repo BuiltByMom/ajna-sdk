@@ -14,8 +14,7 @@ import {
   lpToQuoteTokens,
   lpToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { SdkError } from './types';
+import { Address, CallData, PoolInfoUtils, SdkError, SignerOrProvider } from '../types';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';

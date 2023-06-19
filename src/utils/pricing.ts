@@ -1,7 +1,7 @@
-import { SdkError } from '../classes/types';
-import prices from '../constants/prices.json';
 import { BigNumber } from 'ethers';
 import { log2, bignumber as mbn } from 'mathjs';
+import prices from '../constants/prices.json';
+import { SdkError } from '../types/core';
 
 // Not exported because these are implementation details of the pricing calculation
 const MIN_BUCKET_INDEX = -3232;

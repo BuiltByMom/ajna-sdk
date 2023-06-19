@@ -304,6 +304,7 @@ describe('ERC20 Pool', () => {
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
     expect(loan.liquidationBond).toBeBetween(toWad(1900), toWad(1900).mul(2));
+    expect(loan.isKicked).toBe(false);
   });
 
   it('should use estimateLoan successfully', async () => {
