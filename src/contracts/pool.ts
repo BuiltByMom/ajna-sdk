@@ -60,6 +60,13 @@ export async function loansInfo(contract: Contract): Promise<[Address, BigNumber
   return await contract.loansInfo();
 }
 
+export async function kickerInfo(
+  contract: Contract,
+  kicker: Address
+): Promise<[BigNumber, BigNumber]> {
+  return await contract.kickerInfo(kicker);
+}
+
 export async function depositIndex(contract: Contract, debtAmount: BigNumber) {
   return await contract.depositIndex(debtAmount);
 }

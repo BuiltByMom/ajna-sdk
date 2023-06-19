@@ -303,7 +303,7 @@ describe('ERC20 Pool', () => {
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(7000), loan.debt);
+    expect(loan.liquidationBond).toBeBetween(toWad(1900), toWad(1900).mul(2));
   });
 
   it('should use estimateLoan successfully', async () => {
@@ -314,7 +314,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(11000), loanEstimate.debt);
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(3000), toWad(3000).mul(2));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
   });

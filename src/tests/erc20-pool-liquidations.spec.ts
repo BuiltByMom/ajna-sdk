@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
-import { providers } from 'ethers';
+import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
-import { toWad } from '../utils/numeric';
+import { toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
@@ -165,8 +165,22 @@ describe('Liquidations', () => {
   it('should use kickWithDeposit', async () => {
     const bucket = await pool.getBucketByIndex(2001);
 
+    // check state prior to the kickWithDeposit
+    const loan = await pool.getLoan(signerBorrower2.address);
+    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
+
     const tx = await bucket.kickWithDeposit(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    // ensure the liquidation bond estimate was accurate
+    kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked).toBeBetween(
+      loan.liquidationBond,
+      wmul(loan.liquidationBond, toWad('1.0001'))
+    );
   });
 
   it('should use arb take', async () => {
@@ -281,12 +295,27 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isSettleable).toBe(true);
 
+    // kicker's liquidation bond remains locked before settle
+    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.gt(constants.Zero)).toBe(true);
+
     tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    // kicker's liquidation bond becomes claimable
+    kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.gt(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
     // withdraw liquidation bond
     tx = await pool.withdrawBonds(signerLender);
     await submitAndVerifyTransaction(tx);
+
+    // kicker's liquidation bond has been claimed
+    kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);

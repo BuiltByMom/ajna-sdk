@@ -1,6 +1,6 @@
 import { BigNumber, Signer, constants } from 'ethers';
 import { getBlockTime, getExpiry } from '../utils/time';
-import { MAX_FENWICK_INDEX } from '../constants';
+import { MAX_FENWICK_INDEX, ONE_PERCENT_WAD } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
   addCollateral,
@@ -16,7 +16,7 @@ import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
 import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
-import { toWad, wdiv, wmul } from '../utils/numeric';
+import { max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 
 export interface LoanEstimate extends Loan {
@@ -166,9 +166,11 @@ export class FungiblePool extends Pool {
    * @returns required liquidation bond, in WAD precision
    */
   calculateLiquidationBond(momp: BigNumber, tp: BigNumber, borrowerDebt: BigNumber) {
-    const tpMompRatio = wdiv(tp, momp);
-    const onePercent = toWad('0.01');
-    const bondFactor = tp.gt(momp) || tpMompRatio.lt(onePercent) ? onePercent : tpMompRatio;
+    // if threshold price > momp, bond factor is 1%
+    // otherwise, bond factor is 1-(tp/momp), bounded between 1% and 30%
+    const bondFactor = tp.gte(momp)
+      ? ONE_PERCENT_WAD
+      : min(toWad('0.3'), max(ONE_PERCENT_WAD, toWad(1).sub(wdiv(tp, momp))));
     // bond = bondFactor * debt
     return wmul(bondFactor, borrowerDebt);
   }

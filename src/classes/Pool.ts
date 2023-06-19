@@ -9,6 +9,7 @@ import {
   debtInfo,
   depositIndex,
   kick,
+  kickerInfo,
   quoteTokenAddress,
   quoteTokenScale,
   withdrawBonds,
@@ -36,6 +37,13 @@ export interface DebtInfo {
   accruedDebt: BigNumber;
   /** debt under liquidation */
   debtInAuction: BigNumber;
+}
+
+export interface KickerInfo {
+  /** liquidation bond able to be withdrawn */
+  claimable: BigNumber;
+  /** liquidation bond not yet able to be withdrawn */
+  locked: BigNumber;
 }
 
 export interface LoansInfo {
@@ -304,6 +312,19 @@ export abstract class Pool {
     const tp = collateral.gt(0) ? debt.div(collateral) : BigNumber.from(0);
 
     return lup.lte(toWad(tp));
+  }
+
+  /**
+   * retrieves status of an auction kicker's liquidation bond
+   * @param kickerAddress identifies the actor who kicked liquidations
+   */
+  async kickerInfo(kickerAddress: Address): Promise<KickerInfo> {
+    const [claimable, locked] = await kickerInfo(this.contract, kickerAddress);
+
+    return {
+      claimable,
+      locked,
+    };
   }
 
   /**
