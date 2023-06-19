@@ -1,6 +1,16 @@
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
+import { ALL_CONTRACTS } from 'types/type-chain';
 import { GAS_MULTIPLIER } from '../constants';
-import { CallData, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
+import {
+  CallData,
+  FunctionEventName,
+  TransactionEventDetails,
+  TransactionOverrides,
+  WrappedTransaction,
+  SdkError,
+} from '../types';
+import { parseNodeError } from './errors';
+import { getParsedEvents, getTxEventArgs } from './events';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -17,10 +27,16 @@ export async function createTransaction(
 ): Promise<WrappedTransaction> {
   const { methodName, args = [] } = callData;
   const argsFiltered = args.filter(a => a !== undefined);
-  const tx = await contract.populateTransaction[methodName](
-    ...(overrides ? [...argsFiltered, overrides] : [...argsFiltered])
-  );
-  return new WrappedTransactionClass(tx, contract);
+
+  const params = overrides ? [...argsFiltered, overrides] : [...argsFiltered];
+
+  try {
+    const tx = await contract.populateTransaction[methodName](...params);
+    return new WrappedTransactionClass(tx, contract);
+  } catch (error: any) {
+    const reason = parseNodeError(error, contract);
+    throw new SdkError(reason, error);
+  }
 }
 
 /**
@@ -155,4 +171,69 @@ class WrappedTransactionClass implements WrappedTransaction {
       return undefined;
     }
   }
+}
+
+/**
+ * Verifies that the transaction can be executed by estimating its gas cost.
+ * @returns A Promise that resolves to the estimated gas cost.
+ * @throws {@link SdkError} An SDK error if the transaction execution failed and the error reason can be identified.
+ * @throws The original error if the transaction execution failed and the error reason cannot be identified.
+ */
+export async function estimateGasCost(contract: Contract, transaction: PopulatedTransaction) {
+  try {
+    const estimatedGas = await contract.provider.estimateGas(transaction);
+    return estimatedGas;
+  } catch (error: unknown) {
+    const reason = parseNodeError(error, contract);
+    throw new SdkError(reason, error);
+  }
+}
+
+/**
+ * Estimates gas, submits a transaction with gas estimate, and waits for the
+ * node to acknowledge the transaction is pending.
+ * @throws {@link SdkError} if transaction will fail at current block height.
+ * @returns ContractTransaction
+ */
+export async function estimateGasCostAndSendTx(
+  contract: ALL_CONTRACTS,
+  methodName: string,
+  args: any[] = [],
+  overrides?: TransactionOverrides
+): Promise<TransactionEventDetails> {
+  const populatedTransaction = await contract.populateTransaction[methodName](...args);
+  const estimatedGas = await estimateGasCost(contract, populatedTransaction);
+
+  const txOverrides = {
+    ...overrides,
+    gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
+    from: await contract.signer.getAddress(),
+  };
+
+  const tx = await contract.functions[methodName](...args, txOverrides);
+  const txReceipt = await tx.wait();
+
+  const eventName = FunctionEventName[methodName as keyof typeof FunctionEventName];
+  const parsedEvents = getParsedEvents(txReceipt, contract);
+  const eventArgs = getTxEventArgs(txReceipt, contract, eventName);
+
+  const res = {
+    transaction: {
+      hash: txReceipt.transactionHash,
+      receipt: txReceipt,
+      methodName,
+      args,
+      contractName: contract.contractName,
+      contractAddress: contract.address,
+    },
+    event: {
+      eventName,
+      args: eventArgs,
+    },
+    allEvents: parsedEvents,
+  };
+
+  // console.log(`res:`, res);
+
+  return res;
 }

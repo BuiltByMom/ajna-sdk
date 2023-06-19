@@ -5,11 +5,11 @@ import {
   PositionManager,
   SdkError,
   SignerOrProvider,
+  TransactionEventDetails,
   TransactionOverrides,
 } from '../types';
-import { createTransaction } from '../utils';
-import { FungiblePool } from './FungiblePool';
-import { TransactionReceipt } from '@ethersproject/providers';
+import { estimateGasCostAndSendTx } from '../utils';
+import { ErcPool } from 'types/typechain';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -47,10 +47,10 @@ export class LPToken {
 
   async memorializePositions(
     signer: Signer,
-    poolClass: FungiblePool,
+    poolClass: ErcPool,
     tokenId: BigNumberish,
     overrides?: TransactionOverrides
-  ): Promise<TransactionReceipt> {
+  ): Promise<TransactionEventDetails> {
     const positionManager = this.contractPositionManager.connect(signer);
     const poolContract = poolClass.contract.connect(signer);
 
@@ -71,12 +71,12 @@ export class LPToken {
         throw new SdkError('Insufficient LP allowance');
       }
 
-      const wrappedTx = await createTransaction(
+      return await estimateGasCostAndSendTx(
         positionManager,
-        { methodName: 'memorializePositions', args: [poolContract.address, tokenId, indexes] },
+        'memorializePositions',
+        [poolContract.address, tokenId, indexes],
         { ...overrides, from: await signer.getAddress() }
       );
-      return await wrappedTx.verifyAndSubmit();
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }
@@ -87,16 +87,16 @@ export class LPToken {
     poolAddress: Address,
     tokenId: BigNumberish,
     overrides?: TransactionOverrides
-  ): Promise<TransactionReceipt> {
+  ): Promise<TransactionEventDetails> {
     const positionManager = getPositionManagerContract(signer);
     try {
       const indexes = await positionManager.getPositionIndexes(tokenId);
-      const wrappedTx = await createTransaction(
+      return await estimateGasCostAndSendTx(
         positionManager,
-        { methodName: 'redeemPositions', args: [poolAddress, tokenId, indexes] },
+        'redeemPositions',
+        [poolAddress, tokenId, indexes],
         { ...overrides, from: await signer.getAddress() }
       );
-      return await wrappedTx.verifyAndSubmit();
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }

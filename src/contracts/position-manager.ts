@@ -7,7 +7,7 @@ import {
   TransactionOverrides,
   SdkError,
 } from '../types';
-import { createTransaction } from '../utils';
+import { estimateGasCostAndSendTx } from '../utils';
 
 export const getPositionManagerContract = (provider: SignerOrProvider) => {
   return PositionManager__factory.connect(Config.positionManager, provider);
@@ -20,16 +20,13 @@ export async function mint(
   poolSubsetHash: BytesLike,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance = getPositionManagerContract(signer);
-  try {
-    return await createTransaction(
-      contractInstance,
-      { methodName: 'mint', args: [poolAddress, recipient, poolSubsetHash] },
-      overrides
-    );
-  } catch (error: any) {
-    throw new SdkError('mint error:', error);
-  }
+  const positionManager = getPositionManagerContract(signer);
+  return await estimateGasCostAndSendTx(
+    positionManager,
+    'mint',
+    [poolAddress, recipient, poolSubsetHash],
+    overrides
+  );
 }
 
 export async function burn(
@@ -40,9 +37,10 @@ export async function burn(
 ) {
   try {
     const contractInstance = getPositionManagerContract(signer);
-    return await createTransaction(
+    return await estimateGasCostAndSendTx(
       contractInstance,
-      { methodName: 'burn', args: [poolAddress, tokenId] },
+      'burn',
+      [poolAddress, tokenId],
       overrides
     );
   } catch (error: any) {

@@ -1,5 +1,7 @@
 export * from './add-account';
 export * from './checksum-address';
+export * from './errors';
+export * from './events';
 export * from './ganache';
 export * from './numeric';
 export * from './pricing';

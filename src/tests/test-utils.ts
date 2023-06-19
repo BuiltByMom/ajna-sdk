@@ -1,14 +1,18 @@
 import { BigNumber } from 'ethers';
-import { WrappedTransaction } from '../types/core';
+import { SdkError, WrappedTransaction } from '../types/core';
 import { expect } from '@jest/globals';
 import type { MatcherFunction } from 'expect';
 
 export const submitAndVerifyTransaction = async (tx: WrappedTransaction) => {
-  const receipt = await tx.verifyAndSubmit();
-  expect(receipt).toBeDefined();
-  expect(receipt.confirmations).toBeGreaterThanOrEqual(1);
-  expect(receipt.transactionHash).not.toBe('');
-  return receipt;
+  try {
+    const receipt = await tx.verifyAndSubmit();
+    expect(receipt).toBeDefined();
+    expect(receipt.confirmations).toBeGreaterThanOrEqual(1);
+    expect(receipt.transactionHash).not.toBe('');
+    return receipt;
+  } catch (error: any) {
+    throw new SdkError(error.message, error);
+  }
 };
 
 const toBeBetween: MatcherFunction<[smaller: unknown, larger: unknown]> = function (

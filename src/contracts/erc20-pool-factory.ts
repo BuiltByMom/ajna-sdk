@@ -1,16 +1,19 @@
-import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
 import { Config } from '../classes/Config';
-import { Address, SignerOrProvider, TransactionOverrides } from '../types';
-import checksumAddress from '../utils/checksum-address';
+import {
+  Address,
+  ERC20PoolFactory__factory,
+  SignerOrProvider,
+  TransactionOverrides,
+} from '../types';
 import { createTransaction } from '../utils/transactions';
-import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { BigNumber, Contract, Signer } from 'ethers';
 
 export const getErc20PoolFactoryContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(
-    checksumAddress(Config.erc20PoolFactory),
-    erc20PoolFactoryAbi,
-    provider
-  );
+  return ERC20PoolFactory__factory.connect(Config.erc20PoolFactory, provider);
+};
+
+export const getErc20PoolFactoryInterface = () => {
+  return ERC20PoolFactory__factory.createInterface();
 };
 
 export async function deployPool(

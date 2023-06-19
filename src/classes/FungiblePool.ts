@@ -4,16 +4,14 @@ import { MAX_FENWICK_INDEX, ONE_PERCENT_WAD } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
   addCollateral,
-  removeCollateral,
   approve,
   drawDebt,
   getErc20PoolContractMulti,
-  repayDebt,
   getErc20PoolContract,
   collateralScale,
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
-import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
+import { Address, AuctionStatus, ERC20Pool, Loan, SignerOrProvider } from '../types';
 import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
 import { max, min, toWad, wdiv, wmul } from '../utils/numeric';
@@ -82,38 +80,11 @@ export class FungiblePool extends Pool {
     const borrowerAddress = await signer.getAddress();
 
     return await drawDebt(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       borrowerAddress,
       amountToBorrow,
       limitIndex ?? MAX_FENWICK_INDEX,
       collateralToPledge
-    );
-  }
-
-  /**
-   * repays debt and pulls collateral
-   * @param signer borrower
-   * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
-   * @param collateralAmountToPull amount of collateral to withdraw after repayment
-   * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
-   * @returns transaction
-   */
-  async repayDebt(
-    signer: Signer,
-    maxQuoteTokenAmountToRepay: BigNumber,
-    collateralAmountToPull: BigNumber,
-    limitIndex?: number
-  ) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    const sender = await signer.getAddress();
-    return await repayDebt(
-      contractPoolWithSigner,
-      sender,
-      maxQuoteTokenAmountToRepay,
-      collateralAmountToPull,
-      sender,
-      limitIndex ?? MAX_FENWICK_INDEX
     );
   }
 
@@ -134,28 +105,11 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await addCollateral(
-      contractPoolWithSigner,
+      contractPoolWithSigner as ERC20Pool,
       collateralAmountToAdd,
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
     );
-  }
-
-  /**
-   * withdraw collateral from a bucket (not for borrowers)
-   * @param signer address to redeem LP
-   * @param bucketIndex identifies the price bucket
-   * @param maxAmount optionally limits amount to remove
-   * @returns transaction
-   */
-  async removeCollateral(
-    signer: Signer,
-    bucketIndex: number,
-    maxAmount: BigNumber = constants.MaxUint256
-  ) {
-    const contractPoolWithSigner = this.contract.connect(signer);
-
-    return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
   }
 
   /**
@@ -335,7 +289,7 @@ export class FungiblePool extends Pool {
     // calculate the hypothetical MOMP and neutral price
     const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
     const mompIndex = await depositIndex(this.contract, mompDebt);
-    const momp = indexToPrice(mompIndex);
+    const momp = indexToPrice(mompIndex.toNumber());
     // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
     const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
 

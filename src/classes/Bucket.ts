@@ -1,24 +1,24 @@
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
-import {
-  addQuoteToken,
-  kickWithDeposit,
-  lenderInfo,
-  moveQuoteToken,
-  removeQuoteToken,
-} from '../contracts/pool';
+import { kickWithDeposit, lenderInfo, moveQuoteToken, removeQuoteToken } from '../contracts/pool';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
   lpToQuoteTokens,
   lpToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, PoolInfoUtils, SdkError, SignerOrProvider } from '../types';
-import { fromWad, toWad, wmul } from '../utils/numeric';
-import { indexToPrice } from '../utils/pricing';
-import { getExpiry } from '../utils/time';
+import {
+  Address,
+  CallData,
+  ERC20Pool,
+  ERC721Pool,
+  SdkError,
+  PoolInfoUtils,
+  SignerOrProvider,
+} from '../types';
 import { Pool } from './Pool';
+import { fromWad, toWad, wmul, indexToPrice, estimateGasCostAndSendTx, getExpiry } from '../utils';
 
 export interface BucketStatus {
   /* amount of quote token, including accrued interest, owed to the bucket */
@@ -48,7 +48,7 @@ export interface Position {
 export class Bucket {
   provider: SignerOrProvider;
   contractUtils: PoolInfoUtils;
-  poolContract: Contract;
+  poolContract: ERC20Pool | ERC721Pool;
   pool: Pool;
   bucketName: string;
   index: number;
@@ -109,17 +109,15 @@ export class Bucket {
    * @param signer lender
    * @param amount amount to deposit
    * @param ttlSeconds revert if not processed in this amount of block time
-   * @returns transaction
+   * @returns ContractTransaction
    */
   async addQuoteToken(signer: Signer, amount: BigNumber, ttlSeconds?: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
-
-    return await addQuoteToken(
-      contractPoolWithSigner,
+    return await estimateGasCostAndSendTx(contractPoolWithSigner, 'addQuoteToken', [
       amount,
       this.index,
-      await getExpiry(this.provider, ttlSeconds)
-    );
+      await getExpiry(this.provider, ttlSeconds),
+    ]);
   }
 
   /**

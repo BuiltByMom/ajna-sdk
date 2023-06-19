@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -15,13 +15,15 @@ import {
   withdrawBonds,
   lenderInfo,
   approveLPTransferors,
+  removeCollateral,
+  repayDebt,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { burn, mint } from '../contracts/position-manager';
+import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
 import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
@@ -29,6 +31,7 @@ import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { LPToken } from './LPToken';
+import { ErcPool } from 'types/typechain';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -102,7 +105,7 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: Contract;
+  contract: ErcPool;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
@@ -120,7 +123,7 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: Contract,
+    contract: ErcPool,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;
@@ -289,6 +292,50 @@ export abstract class Pool {
     return buckets;
   }
 
+  /**
+   * repays debt and pulls collateral
+   * @param signer borrower
+   * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
+   * @param collateralAmountToPull amount of collateral to withdraw after repayment
+   * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
+   * @returns transaction
+   */
+  async repayDebt(
+    signer: Signer,
+    maxQuoteTokenAmountToRepay: BigNumber,
+    collateralAmountToPull: BigNumber,
+    limitIndex?: number
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    const sender = await signer.getAddress();
+    return await repayDebt(
+      contractPoolWithSigner,
+      sender,
+      maxQuoteTokenAmountToRepay,
+      collateralAmountToPull,
+      sender,
+      limitIndex ?? MAX_FENWICK_INDEX
+    );
+  }
+
+  /**
+   * withdraw collateral from a bucket (not for borrowers)
+   * @param signer address to redeem LP
+   * @param bucketIndex identifies the price bucket
+   * @param maxAmount optionally limits amount to remove
+   * @returns transaction
+   */
+  async removeCollateral(
+    signer: Signer,
+    bucketIndex: number,
+    maxAmount: BigNumber = constants.MaxUint256
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
+  }
+
   async kick(signer: Signer, borrowerAddress: Address, limitIndex: number = MAX_FENWICK_INDEX) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
@@ -360,8 +407,10 @@ export abstract class Pool {
     return burn(signer, tokenId, this.poolAddress);
   }
 
-  async approveLPTransferors(signer: Signer, transferors: Array<Address>) {
-    return approveLPTransferors(this.contract.connect(signer), transferors);
+  async approvePositionManagerLPTransferor(signer: Signer) {
+    return await approveLPTransferors(signer, this.contract, [
+      getPositionManagerContract(signer).address,
+    ]);
   }
 
   getLPToken(tokenId: BigNumber) {

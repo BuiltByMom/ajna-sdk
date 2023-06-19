@@ -1,17 +1,19 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from 'types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
-import { settle } from '../contracts/pool';
-import { bucketTake, take } from '../contracts/erc20-pool';
+import { settle, bucketTake, take } from '../contracts/pool';
+import { getErc20PoolContract } from '../contracts/erc20-pool';
+import { getErc721PoolContract } from '../contracts/erc721-pool';
+import { ErcPool } from '../types/typechain';
 
 /**
  * Models an auction used to liquidate an undercollateralized borrower
  */
 export class Liquidation {
   provider: SignerOrProvider;
-  poolContract: Contract;
+  poolContract: ErcPool;
   utilsContract: PoolInfoUtils;
   borrowerAddress: Address;
 
@@ -20,9 +22,12 @@ export class Liquidation {
    * @param pool            Identifies pool to which this bucket belongs.
    * @param borrowerAddress Identifies the loan being liquidated.
    */
-  constructor(provider: SignerOrProvider, pool: Contract, borrowerAddress: Address) {
+  constructor(provider: SignerOrProvider, pool: ErcPool, borrowerAddress: Address) {
     this.provider = provider;
-    this.poolContract = pool;
+    this.poolContract =
+      pool.contractName === 'ERC20Pool'
+        ? getErc20PoolContract(pool.address, provider)
+        : getErc721PoolContract(pool.address, provider);
     this.utilsContract = getPoolInfoUtilsContract(this.provider);
     this.borrowerAddress = borrowerAddress;
   }

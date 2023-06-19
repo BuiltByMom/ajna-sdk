@@ -1,7 +1,8 @@
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
 import { toWad, wmul } from '../utils/numeric';
+import { ErcPool } from 'types/typechain';
 
 export interface CRAStatus {
   /** time a reserve auction was last kicked */
@@ -23,7 +24,7 @@ export interface CRAStatus {
  */
 export class ClaimableReserveAuction {
   provider: SignerOrProvider;
-  contract: Contract;
+  contract: ErcPool;
   contractUtils: PoolInfoUtils;
   poolAddress: Address;
 
@@ -35,7 +36,7 @@ export class ClaimableReserveAuction {
    */
   constructor(
     provider: SignerOrProvider,
-    contract: Contract,
+    contract: ErcPool,
     contractUtils: PoolInfoUtils,
     poolAddress: Address
   ) {

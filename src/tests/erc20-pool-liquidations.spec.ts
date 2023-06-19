@@ -45,21 +45,21 @@ describe('Liquidations', () => {
     // add 9 quote tokens to 2001 bucket
     const higherBucket = await pool.getBucketByIndex(2001);
     let quoteAmount = toWad(9);
-    tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
-    await submitAndVerifyTransaction(tx);
+    let res = await higherBucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
 
     // add 10 quote tokens to 2500 bucket (price 3863)
     const lowerBucket = await pool.getBucketByIndex(2500);
     quoteAmount = toWad(10);
-    tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
-    await submitAndVerifyTransaction(tx);
+    res = await lowerBucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
 
     // fund borrower2
     let receipt = await TESTB.connect(signerDeployer).transfer(
       signerBorrower2.address,
       toWad('10')
     );
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // draw debt as borrower2
     const bucketIndex = 2001;
@@ -78,7 +78,7 @@ describe('Liquidations', () => {
     expect(+lupIndex).toBe(bucketIndex);
 
     // check loan, make sure borrower2 threshold price is higher than lup price
-    let bucket = await pool.getBucketByIndex(lupIndex);
+    let bucket = await pool.getBucketByIndex(lupIndex.toNumber());
     let lupPrice = bucket.price;
     const loan = await pool.getLoan(await signerBorrower2.getAddress());
 
@@ -90,7 +90,7 @@ describe('Liquidations', () => {
 
     // fund other borrower
     receipt = await TESTB.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
-    expect(receipt.transactionHash).not.toBe('');
+    expect(receipt.hash).not.toBe('');
 
     // draw debt as another borrower to pull lup down
     amountToBorrow = toWad(10);
@@ -106,7 +106,7 @@ describe('Liquidations', () => {
     expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
     // check loan again, make sure borrower2 threshold price is lower than lup price
-    bucket = await pool.getBucketByIndex(lupIndex);
+    bucket = await pool.getBucketByIndex(lupIndex.toNumber());
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();
@@ -244,8 +244,8 @@ describe('Liquidations', () => {
     // lender adds liquidity
     tx = await pool.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    await submitAndVerifyTransaction(tx);
+    const res = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
 
     // take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -263,8 +263,8 @@ describe('Liquidations', () => {
     await timeJump(provider, jumpTimeSeconds);
 
     // take
-    tx = await liquidation.take(signerLender);
-    await submitAndVerifyTransaction(tx);
+    const res = await liquidation.take(signerLender);
+    expect(res.event.args.amount).toBe(toWad(0.0003).toString());
 
     // should not be able to withdraw bond prior to settlement
     await expect(async () => {
