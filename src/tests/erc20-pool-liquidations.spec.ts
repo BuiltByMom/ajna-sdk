@@ -326,10 +326,12 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
     expect(auctionStatus.isTakeable).toBeFalsy();
+    expect(auctionStatus.collateral.eq(constants.Zero)).toBe(true);
+    expect(auctionStatus.debtToCover.eq(constants.Zero)).toBe(true);
     expect(auctionStatus.isSettleable).toBe(true);
   });
 
-  it('should use settle before 72 hours', async () => {
+  it('should use settle after 72 hours', async () => {
     let tx = await pool.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
 
@@ -392,6 +394,8 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
     expect(auctionStatus.isTakeable).toBeFalsy();
+    expect(auctionStatus.collateral.eq(constants.Zero)).toBe(true);
+    expect(auctionStatus.debtToCover.eq(constants.Zero)).toBe(true);
     expect(auctionStatus.isSettleable).toBe(true);
   });
 });
