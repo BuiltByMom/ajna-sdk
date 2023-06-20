@@ -326,7 +326,7 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
     expect(auctionStatus.isTakeable).toBeFalsy();
-    expect(auctionStatus.isSettleable).toBe(false);
+    expect(auctionStatus.isSettleable).toBe(true);
   });
 
   it('should use settle before 72 hours', async () => {
@@ -392,6 +392,6 @@ describe('Liquidations', () => {
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.kickTime.valueOf()).toEqual(0);
     expect(auctionStatus.isTakeable).toBeFalsy();
-    expect(auctionStatus.isSettleable).toBe(false);
+    expect(auctionStatus.isSettleable).toBe(true);
   });
 });

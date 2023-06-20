@@ -62,10 +62,7 @@ export class Liquidation {
     const isGracePeriod = elapsedTime < 3600;
     const zero = constants.Zero;
     const isTakeable = !isGracePeriod && collateral.gt(zero);
-    const isSettleable =
-      collateral.eq(zero) && debtToCover.gt(zero)
-        ? true // reflects status at any time
-        : debtToCover.gt(zero) && collateral.gt(zero) && elapsedTime >= 3600 * 72; // >= 72 hours elapsed
+    const isSettleable = elapsedTime >= 3600 * 72 ? true : collateral.eq(zero);
 
     return {
       kickTime,
