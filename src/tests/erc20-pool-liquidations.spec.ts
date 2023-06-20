@@ -328,4 +328,70 @@ describe('Liquidations', () => {
     expect(auctionStatus.isTakeable).toBeFalsy();
     expect(auctionStatus.isSettleable).toBe(false);
   });
+
+  it('should use settle before 72 hours', async () => {
+    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+
+    let loan = await pool.getLoan(signerBorrower2.address);
+    expect(loan.isKicked).toBe(true);
+    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    let auctionStatus = await liquidation.getStatus();
+    const blockTime = await getBlockTime(signerLender);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
+    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isSettleable).toBe(false);
+
+    // should not be able to settle yet
+    await expect(async () => {
+      tx = await liquidation.settle(signerLender);
+      await tx.verify();
+    }).rejects.toThrow('AuctionNotClearable()');
+
+    // wait 200 hours
+    const jumpTimeSeconds = 200 * 3600; // 200 hours
+    await timeJump(provider, jumpTimeSeconds);
+    expect(auctionStatus.isSettleable).toBe(false);
+
+    // take
+    tx = await liquidation.take(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    // kicker's liquidation bond remains locked before settle
+    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.gt(constants.Zero)).toBe(true);
+
+    // check that collateral == 0 and debt != 0
+    auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.debtToCover.gt(constants.Zero)).toBe(true);
+    expect(auctionStatus.collateral.eq(constants.Zero)).toBe(true);
+    expect(auctionStatus.isSettleable).toBe(true);
+
+    // settle is called where debt != 0 and collateral == 0
+    tx = await liquidation.settle(signerLender);
+    await submitAndVerifyTransaction(tx);
+    loan = await pool.getLoan(signerBorrower2.address);
+    expect(loan.isKicked).toBe(false);
+
+    // kicker's liquidation bond becomes claimable
+    kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.gt(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
+
+    // withdraw liquidation bond
+    tx = await pool.withdrawBonds(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    // kicker's liquidation bond has been claimed
+    kickerInfo = await pool.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
+
+    auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.kickTime.valueOf()).toEqual(0);
+    expect(auctionStatus.isTakeable).toBeFalsy();
+    expect(auctionStatus.isSettleable).toBe(false);
+  });
 });
