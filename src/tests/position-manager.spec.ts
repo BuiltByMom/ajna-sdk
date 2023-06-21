@@ -57,7 +57,7 @@ describe('LP Token and PositionManager', () => {
       );
       expect(memorializeTxReceipt).toHaveProperty('logs');
 
-      const poolStats = await pool.getStats();
+      // const poolStats = await pool.getStats();
       // console.log(`poolStats:`, formatArgValues(poolStats));
 
       const approveTx = await pool.approveLPTransferors(signerLender, [
