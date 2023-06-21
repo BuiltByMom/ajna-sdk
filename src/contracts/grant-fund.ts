@@ -14,6 +14,7 @@ export const getAjnaTokenContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.ajnaToken), ajnaTokenAbi, provider);
 };
 
+// Delegate
 export async function delegateVote(signer: Signer, delegatee: Address) {
   const contractInstance: Contract = getAjnaTokenContract(signer);
   return await createTransaction(contractInstance, {
@@ -21,10 +22,9 @@ export async function delegateVote(signer: Signer, delegatee: Address) {
     args: [delegatee],
   });
 }
-
-export async function getVotingPower(signer: Signer, account: Address) {
-  const contractInstance: Contract = getAjnaTokenContract(signer);
-  return await contractInstance.getVotes(account);
+export async function getDelegates(provider: SignerOrProvider, account: Address) {
+  const contractInstance: Contract = getAjnaTokenContract(provider);
+  return await contractInstance.delegates(account);
 }
 
 export async function getActiveDistributionId(provider: SignerOrProvider): Promise<number> {
@@ -43,4 +43,17 @@ export async function startNewDistributionPeriod(signer: Signer) {
 export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
+}
+
+// Votes
+export async function getVotesFunding(contract: Contract, blockNumber: number, account: Address) {
+  return await contract.getVotesFunding(blockNumber, account);
+}
+
+export async function getVotesScreening(
+  contract: Contract,
+  distributionId: number,
+  account: Address
+) {
+  return await contract.getVotesScreening(distributionId, account);
 }
