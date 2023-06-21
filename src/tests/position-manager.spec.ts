@@ -6,7 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
 import { parseNodeError } from '../utils';
-import { SdkError } from '../classes/types';
+import { SdkError } from '../types';
 
 dotenv.config();
 jest.setTimeout(1200000);
@@ -41,22 +41,29 @@ describe('LP Token and PositionManager', () => {
   });
 
   it('should memorialize and then redeem an LP position', async () => {
+    const tokenId = BigNumber.from(2);
     const mintTx = await pool.mintLPToken(signerLender);
+    const lpToken = pool.getLPToken(tokenId);
+    expect(lpToken.tokenId.toString()).toBe(tokenId.toString());
+
     const receipt = await submitAndVerifyTransaction(mintTx);
     expect(receipt).toHaveProperty('logs');
 
-    const tokenId = BigNumber.from(2);
-    const memorializeTxReceipt = await ajna.positionManager.memorializePositions(
-      signerLender,
-      pool.poolAddress,
-      tokenId
-    );
-    expect(memorializeTxReceipt).toHaveProperty('logs');
-
     try {
+      const memorializeTxReceipt = await ajna.positionManager.memorializePositions(
+        signerLender,
+        pool.contract,
+        BigNumber.from(tokenId)
+      );
+      expect(memorializeTxReceipt).toHaveProperty('logs');
+
+      const poolStats = await pool.getStats();
+      // console.log(`poolStats:`, formatArgValues(poolStats));
+
       const approveTx = await pool.approveLPTransferors(signerLender, [
         ajna.positionManager.contract.address,
       ]);
+
       const approveReceipt = await submitAndVerifyTransaction(approveTx);
       expect(approveReceipt).toHaveProperty('logs');
 
@@ -65,6 +72,7 @@ describe('LP Token and PositionManager', () => {
         pool.poolAddress,
         tokenId
       );
+
       expect(redeemTx).toHaveProperty('logs');
     } catch (error: any) {
       console.log(`ERROR:`, error);

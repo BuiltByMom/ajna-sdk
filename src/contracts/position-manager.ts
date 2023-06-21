@@ -5,8 +5,8 @@ import {
   PositionManager__factory,
   SignerOrProvider,
   TransactionOverrides,
+  SdkError,
 } from '../types';
-import { SdkError } from '../classes/types';
 import { createTransaction, parseNodeError } from '../utils';
 
 export const getPositionManagerContract = (provider: SignerOrProvider) => {
