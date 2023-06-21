@@ -4,7 +4,7 @@ import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
 import { Address } from '../src/types';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
 import dotenv from 'dotenv';
@@ -13,10 +13,13 @@ dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-// Use this for local testnets, where JSON keystores are unavailable.
-// const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
-// Use this for a real chain, such as Goerli or Mainnet.
-const signerLender = addAccountFromKeystore(process.env.LENDER_KEYSTORE || '', provider);
+const signerLender = process.env.LENDER_KEY
+  ? addAccountFromKey(process.env.LENDER_KEY || '', provider)
+  : addAccountFromKeystore(
+      process.env.LENDER_KEYSTORE || '',
+      provider,
+      process.env.LENDER_PASSWORD || ''
+    );
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);

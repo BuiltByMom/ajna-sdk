@@ -48,6 +48,16 @@ Ensure your accounts are funded with tokens. Scripts run fine-grained approvals 
 - `./borrow.ts draw 150 1.3` - draw debt collateralizing at 130%, utilizing about half the pool
 - `./borrow.ts repay` - repay debt and pull collateral
 
+### Kickable loan
+
+- `./lend.ts add 300 2002.5` - add initial liquidity
+- `./borrow.ts draw 250 1.01` - take out a barely-collateralized loan
+- `./lend.ts add 200 1886.9` - add liquidity at lower price
+- _Switch to a different borrower address and key_
+- `./borrow.ts draw 100 1.45` - second borrower takes out a well-collateralized loan, but pushes down LUP
+
+Now that the LUP has moved to 1886.9, the first borrower is undercollateralized and may be kicked.
+
 ### Liquidation
 
 - `./lend.ts add 500 2002.07` - add liquidity, assuming no other lenders

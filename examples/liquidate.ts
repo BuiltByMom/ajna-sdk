@@ -4,7 +4,7 @@ import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
 import { Liquidation } from '../src/classes/Liquidation';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wmul } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { BigNumber, constants, providers } from 'ethers';
@@ -14,11 +14,13 @@ dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerLender = addAccountFromKeystore(
-  process.env.LENDER_KEYSTORE || '',
-  provider,
-  process.env.LENDER_PASSWORD || ''
-);
+const signerLender = process.env.LENDER_KEY
+  ? addAccountFromKey(process.env.LENDER_KEY || '', provider)
+  : addAccountFromKeystore(
+      process.env.LENDER_KEYSTORE || '',
+      provider,
+      process.env.LENDER_PASSWORD || ''
+    );
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
