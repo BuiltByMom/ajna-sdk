@@ -87,7 +87,7 @@ describe('ERC20 Pool', () => {
     );
 
     await expect(async () => {
-      await tx.estimateGasCost();
+      await tx.verify();
     }).rejects.toThrow('PoolAlreadyExists(address)');
   });
 
@@ -403,7 +403,7 @@ describe('ERC20 Pool', () => {
     tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount, -1);
 
     await expect(async () => {
-      await tx.estimateGasCost();
+      await tx.verify();
     }).rejects.toThrow('TransactionExpired()');
   });
 
@@ -432,7 +432,7 @@ describe('ERC20 Pool', () => {
     const tx = await pool.removeCollateral(signerLender, bucketIndex, collateralAmount);
 
     await expect(async () => {
-      await tx.estimateGasCost();
+      await tx.verify();
     }).rejects.toThrow('InsufficientCollateral()');
   });
 

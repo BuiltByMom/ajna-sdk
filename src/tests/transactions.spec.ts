@@ -46,7 +46,7 @@ describe('Transaction utils tests', () => {
 
     // ensure verification does not advance the nonce
     const nonce = await signerLender.getTransactionCount();
-    const responseString = await tx.estimateGasCost();
+    const responseString = await tx.verify();
     expect(responseString).toBeDefined();
     expect(await signerLender.getTransactionCount()).toBe(nonce);
 

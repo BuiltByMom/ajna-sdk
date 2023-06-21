@@ -1,6 +1,8 @@
+import erc721PoolFactoryAbi from '../abis/ERC721PoolFactory.json';
 import { Config } from '../classes/Config';
-import { ERC721PoolFactory__factory, SignerOrProvider } from '../types';
+import { SignerOrProvider } from '../types';
+import { ethers } from 'ethers';
 
 export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
-  return ERC721PoolFactory__factory.connect(Config.erc721PoolFactory, provider);
+  return new ethers.Contract(Config.erc721PoolFactory, erc721PoolFactoryAbi, provider);
 };

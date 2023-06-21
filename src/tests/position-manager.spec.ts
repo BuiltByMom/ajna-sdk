@@ -5,7 +5,6 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
-import { parseNodeError } from '../utils';
 import { SdkError } from '../types';
 
 dotenv.config();
@@ -76,7 +75,7 @@ describe('LP Token and PositionManager', () => {
       expect(redeemTx).toHaveProperty('logs');
     } catch (error: any) {
       console.log(`ERROR:`, error);
-      throw new SdkError(parseNodeError(error, ajna.positionManager.contract), error);
+      throw new SdkError(error.message, error);
     }
   });
 });

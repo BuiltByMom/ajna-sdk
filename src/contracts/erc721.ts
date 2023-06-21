@@ -1,5 +1,7 @@
-import { ERC721__factory, SignerOrProvider } from '../types';
+import erc721Abi from '../abis/ERC721.json';
+import { SignerOrProvider } from '../types';
+import { ethers } from 'ethers';
 
-export const getErc721Contract = (contractAddress: string, provider: SignerOrProvider) => {
-  return ERC721__factory.connect(contractAddress, provider);
+export const getNftContract = (contractAddress: string, provider: SignerOrProvider) => {
+  return new ethers.Contract(contractAddress, erc721Abi, provider);
 };

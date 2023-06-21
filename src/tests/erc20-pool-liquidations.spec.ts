@@ -269,7 +269,7 @@ describe('Liquidations', () => {
     // should not be able to withdraw bond prior to settlement
     await expect(async () => {
       tx = await pool.withdrawBonds(signerBorrower);
-      await tx.estimateGasCost();
+      await tx.verify();
     }).rejects.toThrow('InsufficientLiquidity()');
   });
 
@@ -290,7 +290,7 @@ describe('Liquidations', () => {
     // should not be able to settle yet
     await expect(async () => {
       tx = await liquidation.settle(signerLender);
-      await tx.estimateGasCost();
+      await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait 72 hours

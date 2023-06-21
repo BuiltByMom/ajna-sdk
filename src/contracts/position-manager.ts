@@ -7,7 +7,7 @@ import {
   TransactionOverrides,
   SdkError,
 } from '../types';
-import { createTransaction, parseNodeError } from '../utils';
+import { createTransaction } from '../utils';
 
 export const getPositionManagerContract = (provider: SignerOrProvider) => {
   return PositionManager__factory.connect(Config.positionManager, provider);
@@ -28,7 +28,7 @@ export async function mint(
       overrides
     );
   } catch (error: any) {
-    throw new SdkError('mint error:', parseNodeError(error, poolAddress));
+    throw new SdkError('mint error:', error);
   }
 }
 
@@ -46,7 +46,7 @@ export async function burn(
       overrides
     );
   } catch (error: any) {
-    throw new SdkError('burn error:', parseNodeError(error, poolAddress));
+    throw new SdkError('burn error:', error);
   }
 }
 

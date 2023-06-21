@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Signer, constants } from 'ethers';
+import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -22,16 +22,7 @@ import {
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
 import { burn, mint } from '../contracts/position-manager';
-import {
-  Address,
-  CallData,
-  ERC20Pool,
-  ERC721Pool,
-  PoolInfoUtils,
-  Provider,
-  SdkError,
-  SignerOrProvider,
-} from '../types';
+import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
 import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
@@ -111,7 +102,7 @@ export interface Stats {
  */
 export abstract class Pool {
   provider: SignerOrProvider;
-  contract: ERC20Pool | ERC721Pool;
+  contract: Contract;
   contractMulti: ContractMulti;
   poolInfoContractUtils: PoolInfoUtils;
   contractUtilsMulti: ContractMulti;
@@ -129,7 +120,7 @@ export abstract class Pool {
     provider: SignerOrProvider,
     poolAddress: string,
     ajnaAddress: string,
-    contract: ERC20Pool | ERC721Pool,
+    contract: Contract,
     contractMulti: ContractMulti
   ) {
     this.provider = provider;
