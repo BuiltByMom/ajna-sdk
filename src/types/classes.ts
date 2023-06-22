@@ -69,10 +69,25 @@ export interface Loan {
   isKicked: boolean;
 }
 
+export type DistributionPeriod = {
+  id: number;
+  isActive: boolean;
+  startBlock: number;
+  startDate: number;
+  endBlock: number;
+  endDate: number;
+  blockNumber: number;
+  fundsAvailable: BigNumber;
+  proposalCount: number;
+  votesCount: BigNumber;
+};
+
 export interface IGrantFund {
   /**
    * Handles grant fund distribution cycle, proposals and voting
    */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
+  getActiveDistributionPeriod(signer: Signer): Promise<DistributionPeriod>;
+  startNewDistributionPeriod(signer: Signer): Promise<WrappedTransaction>;
 }
