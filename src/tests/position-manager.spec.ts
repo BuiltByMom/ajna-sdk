@@ -6,6 +6,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
 import { SdkError } from '../types';
+import { priceToIndex } from '../utils';
 
 dotenv.config();
 jest.setTimeout(1200000);
@@ -25,11 +26,10 @@ describe('LP Token and PositionManager', () => {
 
   it('should mint and burn LP token', async () => {
     const mintTx = await pool.mintLPToken(signerLender);
-    const receipt = await submitAndVerifyTransaction(mintTx);
-    expect(receipt).toHaveProperty('logs');
+    const mintReceipt = await submitAndVerifyTransaction(mintTx);
+    expect(mintReceipt).toHaveProperty('logs');
 
-    // TODO: get the tokenID from previous transaction
-    const tokenId = BigNumber.from(1);
+    const tokenId = BigNumber.from(mintReceipt.logs[1].data);
     const lpToken = pool.getLPToken(tokenId);
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
@@ -40,38 +40,36 @@ describe('LP Token and PositionManager', () => {
   });
 
   it('should memorialize and then redeem an LP position', async () => {
-    const tokenId = BigNumber.from(2);
+    const poolStats = await pool.getStats();
+    const bucket = await pool.getBucketByPrice(poolStats.debt);
+    const index = priceToIndex(bucket.price);
+    expect(bucket.index).toBe(index);
+
     const mintTx = await pool.mintLPToken(signerLender);
+    const receipt = await submitAndVerifyTransaction(mintTx);
+    expect(receipt).toHaveProperty('logs');
+    const tokenId = BigNumber.from(receipt.logs[1].data);
+
     const lpToken = pool.getLPToken(tokenId);
     expect(lpToken.tokenId.toString()).toBe(tokenId.toString());
 
-    const receipt = await submitAndVerifyTransaction(mintTx);
-    expect(receipt).toHaveProperty('logs');
-
     try {
-      const memorializeTxReceipt = await ajna.positionManager.memorializePositions(
-        signerLender,
-        pool.contract,
-        BigNumber.from(tokenId)
-      );
+      const memorializeTxReceipt = await lpToken.memorializePositions(signerLender, pool, tokenId);
       expect(memorializeTxReceipt).toHaveProperty('logs');
-
-      // const poolStats = await pool.getStats();
-      // console.log(`poolStats:`, formatArgValues(poolStats));
+      expect(memorializeTxReceipt.logs[0].data).toContain(
+        signerLender.address.slice(2).toLowerCase()
+      );
+      const tokenId2 = BigNumber.from(memorializeTxReceipt.logs[1].data.slice(10, 66));
+      expect(tokenId2.toString()).toBe('2');
 
       const approveTx = await pool.approveLPTransferors(signerLender, [
-        ajna.positionManager.contract.address,
+        lpToken.contractPositionManager.address,
       ]);
 
       const approveReceipt = await submitAndVerifyTransaction(approveTx);
       expect(approveReceipt).toHaveProperty('logs');
 
-      const redeemTx = await ajna.positionManager.redeemPositions(
-        signerLender,
-        pool.poolAddress,
-        tokenId
-      );
-
+      const redeemTx = await lpToken.redeemPositions(signerLender, pool.poolAddress, tokenId2);
       expect(redeemTx).toHaveProperty('logs');
     } catch (error: any) {
       console.log(`ERROR:`, error);
