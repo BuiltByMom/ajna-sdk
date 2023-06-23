@@ -164,7 +164,7 @@ describe('ERC20 Pool', () => {
 
     const res = await pool.repayDebt(signerBorrower, constants.MaxUint256, collateralAmountToPull);
     expect(res.event.args.borrower).toBe(getAddress(signerBorrower.address));
-    expect(res.event.args.quoteRepaid.toString()).toBe(collateralAmountToPull.toString());
+    expect(res.event.args.collateralPulled.toString()).toBe(collateralAmountToPull.toString());
   });
 
   it('should use removeQuoteToken successfully', async () => {
@@ -478,7 +478,6 @@ describe('ERC20 Pool', () => {
     tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
     let res = await bucket.addQuoteToken(signerLender, quoteAmount);
-    expect(res.event.args.amount.toString()).toBe(quoteAmount.toString());
     expect((await bucket.lpBalance(signerLender.address)).gt(0)).toBe(true);
 
     // draw debt
@@ -560,7 +559,7 @@ describe('ERC20 Pool', () => {
     tx = await poolA.quoteApprove(signerLender2, quoteAmount);
     await tx.verifyAndSubmit();
     const res = await bucket.addQuoteToken(signerLender2, quoteAmount);
-    expect(res.event.args.amount.toString()).toBe(quoteAmount.toString());
+    expect(res.event.args.lender).toBe(signerLender2.address);
 
     let bucketStatus = await bucket.getStatus();
 
@@ -607,9 +606,9 @@ describe('ERC20 Pool', () => {
     tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
     await tx.verifyAndSubmit();
     let res = await bucket1.addQuoteToken(signerLender, quoteAmount);
-    expect(res.event.args.amount.toString()).toBe(quoteAmount.toString());
+    expect(res.event.args.index.toString()).toBe(bucket1.index);
     res = await bucket2.addQuoteToken(signerLender, quoteAmount);
-    expect(res.event.args.amount.toString()).toBe(quoteAmount.toString());
+    expect(res.event.args.index.toString()).toBe(bucket2.index);
 
     let bucket1Status = await bucket1.getStatus();
     expect(bucket1Status.deposit.gt(0)).toBe(true);

@@ -9,7 +9,7 @@ import {
   TransactionOverrides,
 } from '../types';
 import { estimateGasCostAndSendTx } from '../utils';
-import { ErcPool } from 'types/typechain';
+import { Pool } from './Pool';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -47,7 +47,7 @@ export class LPToken {
 
   async memorializePositions(
     signer: Signer,
-    poolClass: ErcPool,
+    poolClass: Pool,
     tokenId: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<TransactionEventDetails> {

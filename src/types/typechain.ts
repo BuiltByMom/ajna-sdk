@@ -1,5 +1,14 @@
 import { BigNumber, PopulatedTransaction } from 'ethers';
-import { ERC20, ERC20Pool, ERC721, ERC721Pool } from './contracts';
+import {
+  ERC20,
+  ERC20Pool,
+  ERC20PoolFactory,
+  ERC721,
+  ERC721Pool,
+  ERC721PoolFactory,
+  PositionManager,
+  RewardsManager,
+} from './contracts';
 
 export interface CustomContractTypes {
   [key: string]: any;
@@ -20,3 +29,6 @@ export interface CustomContractTypes {
 
 export type TokenContract = (ERC20 | ERC721) & CustomContractTypes;
 export type ErcPool = (ERC20Pool | ERC721Pool) & CustomContractTypes;
+export type PoolFactory = (ERC20PoolFactory | ERC721PoolFactory) & CustomContractTypes;
+export type ManagerContract = (PositionManager | RewardsManager) & CustomContractTypes;
+export type AllContracts = TokenContract | ErcPool | PoolFactory | ManagerContract;

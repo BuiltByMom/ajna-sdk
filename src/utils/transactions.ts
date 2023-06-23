@@ -1,5 +1,5 @@
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
-import { ALL_CONTRACTS } from 'types/type-chain';
+import { AllContracts } from '../types/typechain';
 import { GAS_MULTIPLIER } from '../constants';
 import {
   CallData,
@@ -196,7 +196,7 @@ export async function estimateGasCost(contract: Contract, transaction: Populated
  * @returns ContractTransaction
  */
 export async function estimateGasCostAndSendTx(
-  contract: ALL_CONTRACTS,
+  contract: AllContracts,
   methodName: string,
   args: any[] = [],
   overrides?: TransactionOverrides
