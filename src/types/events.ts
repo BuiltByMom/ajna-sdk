@@ -69,7 +69,7 @@ export interface TransactionLogDetails {
   txHash: string;
 }
 
-export interface EventArg {
+export interface EventArgs {
   [eventArg: string]: any;
 }
 

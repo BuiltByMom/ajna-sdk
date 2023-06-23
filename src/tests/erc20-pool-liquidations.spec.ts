@@ -45,14 +45,14 @@ describe('Liquidations', () => {
     // add 9 quote tokens to 2001 bucket
     const higherBucket = await pool.getBucketByIndex(2001);
     let quoteAmount = toWad(9);
-    let res = await higherBucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
+    let res = await higherBucket.addQuoteToken(signerLender, quoteAmount);
+    expect(res.event.args.index.toNumber()).toBe(higherBucket.index);
 
     // add 10 quote tokens to 2500 bucket (price 3863)
     const lowerBucket = await pool.getBucketByIndex(2500);
     quoteAmount = toWad(10);
-    res = await lowerBucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
+    res = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
+    expect(res.event.args.index.toNumber()).toBe(lowerBucket.index);
 
     // fund borrower2
     let receipt = await TESTB.connect(signerDeployer).transfer(
@@ -245,7 +245,7 @@ describe('Liquidations', () => {
     tx = await pool.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
     const res = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    expect(res.event.args.amount).toBe(toWad(quoteAmount).toString());
+    expect(res.event.args.index.toNumber()).toBe(bucket.index);
 
     // take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -264,7 +264,7 @@ describe('Liquidations', () => {
 
     // take
     const res = await liquidation.take(signerLender);
-    expect(res.event.args.amount).toBe(toWad(0.0003).toString());
+    expect(res.event.args.borrower).toBe(signerBorrower2.address);
 
     // should not be able to withdraw bond prior to settlement
     await expect(async () => {

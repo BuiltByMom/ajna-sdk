@@ -2,7 +2,7 @@ import { Log } from '@ethersproject/providers';
 import { Contract, ContractReceipt, Event } from 'ethers';
 import {
   ContractEventDetails,
-  EventArg,
+  EventArgs,
   EventName,
   ParsedEventsByEventName,
   ParsedLogsByEventName,
@@ -27,7 +27,7 @@ export function formatLogArgs(args: Result): any {
   return formatted;
 }
 
-export function parseTxLogs(txReceipt: ContractReceipt, contract: Contract) {
+export function parseTxLogs(txReceipt: ContractReceipt, contract: Contract): ParsedLogsByEventName {
   const { logs } = txReceipt;
 
   let parsedLogs;
@@ -65,7 +65,7 @@ export function parseTxLogs(txReceipt: ContractReceipt, contract: Contract) {
   return parsedLogs;
 }
 
-export function parseTxEvents(txReceipt: ContractReceipt) {
+export function parseTxEvents(txReceipt: ContractReceipt): ParsedEventsByEventName {
   const { events } = txReceipt;
   const parsedEvents = events?.reduce((acc: any, event: Event) => {
     const {
@@ -112,7 +112,7 @@ export function getFormattedArgs(
   parsedEvents: ParsedEventsByEventName | ParsedLogsByEventName,
   eventName: EventName
 ) {
-  return parsedEvents?.[eventName]?.parsedArgs as EventArg;
+  return parsedEvents?.[eventName]?.parsedArgs as EventArgs;
 }
 
 export function getParsedEvents(txReceipt: ContractReceipt, contract: Contract) {

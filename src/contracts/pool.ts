@@ -160,7 +160,6 @@ export async function take(
       contract.interface.encodeFunctionData('take', callData.args)
     : [];
 
-  console.log(`encodedCallData:`, encodedCallData);
   return await estimateGasCostAndSendTx(
     contract,
     'take',

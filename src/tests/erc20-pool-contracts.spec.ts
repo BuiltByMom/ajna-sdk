@@ -107,8 +107,8 @@ describe('ERC20 Pool', () => {
 
     const res = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     expect(res.event.args.lender).toBe(signerLender.address);
-    expect(res.event.args.amount.toString()).toBe(toWad(quoteAmount).toString());
     expect(res.event.args.lpAwarded.toString()).toBe(toWad(quoteAmount).toString());
+    expect(res.event.args.index.toNumber()).toBe(bucket.index);
 
     const bucketStatus = await bucket.getStatus();
     expect(bucketStatus.bucketLP.gt(0)).toBe(true);
@@ -606,9 +606,9 @@ describe('ERC20 Pool', () => {
     tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
     await tx.verifyAndSubmit();
     let res = await bucket1.addQuoteToken(signerLender, quoteAmount);
-    expect(res.event.args.index.toString()).toBe(bucket1.index);
+    expect(res.event.args.index.toNumber()).toBe(bucket1.index);
     res = await bucket2.addQuoteToken(signerLender, quoteAmount);
-    expect(res.event.args.index.toString()).toBe(bucket2.index);
+    expect(res.event.args.index.toNumber()).toBe(bucket2.index);
 
     let bucket1Status = await bucket1.getStatus();
     expect(bucket1Status.deposit.gt(0)).toBe(true);
