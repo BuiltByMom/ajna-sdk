@@ -1,3 +1,4 @@
+import { Provider } from '@ethersproject/providers';
 import {
   delegateVote,
   getVotingPower,
@@ -55,11 +56,13 @@ export class GrantFund extends ContractBase implements IGrantFund {
       fundingVotePowerCast,
       _fundedSlateCast,
     ] = await getDistributionPeriod(signer, distributionId);
+    const provider = this.getProvider() as Provider;
+    const startBlockTimestamp = (await provider.getBlock(startBlock)).timestamp;
     return {
       id: distributionId,
       isActive: true,
       startBlock,
-      startDate: 0, // to be determined
+      startDate: startBlockTimestamp * 1000,
       endBlock,
       endDate: 0, // to be determined
       blockNumber: startBlock,
