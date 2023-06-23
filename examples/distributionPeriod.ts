@@ -30,7 +30,7 @@ async function run() {
 
   try {
     const distributionPeriod = await ajna.grants.getActiveDistributionPeriod(caller);
-    console.log('currenct distribution period details:', distributionPeriod);
+    console.log('current distribution period details:', distributionPeriod);
   } catch (e) {
     if (
       e instanceof SdkError &&
