@@ -10,6 +10,8 @@ import { Address, IGrantFund, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
 
+const ONE_DAY_MS = 3600 * 24 * 1000;
+const DISTRIBUTION_PERIOD_DURATION = 90 * ONE_DAY_MS;
 /**
  * Class used to iteract with grants fund contract.
  */
@@ -50,22 +52,27 @@ export class GrantFund extends ContractBase implements IGrantFund {
     }
     const [
       _distributionId,
-      startBlock,
-      endBlock,
+      startBlockNumber,
+      endBlockNumber,
       fundsAvailable,
       fundingVotePowerCast,
       _fundedSlateCast,
     ] = await getDistributionPeriod(signer, distributionId);
     const provider = this.getProvider() as Provider;
-    const startBlockTimestamp = (await provider.getBlock(startBlock)).timestamp;
+
+    const [startBlock, endBlock] = await Promise.all([
+      provider.getBlock(startBlockNumber),
+      provider.getBlock(endBlockNumber),
+    ]);
+    const startDate = startBlock.timestamp * 1000;
     return {
       id: distributionId,
       isActive: true,
-      startBlock,
-      startDate: startBlockTimestamp * 1000,
-      endBlock,
-      endDate: 0, // to be determined
-      blockNumber: startBlock,
+      startBlock: startBlockNumber,
+      startDate,
+      endBlock: endBlockNumber,
+      endDate: endBlock ? endBlock.timestamp : startDate + DISTRIBUTION_PERIOD_DURATION,
+      blockNumber: startBlockNumber,
       fundsAvailable,
       proposalCount: 0, // to be determined
       votesCount: fundingVotePowerCast,
