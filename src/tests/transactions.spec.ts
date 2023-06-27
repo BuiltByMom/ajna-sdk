@@ -11,9 +11,9 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
-const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+const USDC_ADDRESS = '0x606A640CB77AeCBfefe918AebDCB34845FF18546';
+const TESTC_ADDRESS = '0x29eb88824f9F118B2aA975F6919D4a85189c9823';
+const DAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const LENDER_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
 describe('Transaction utils tests', () => {
@@ -25,7 +25,7 @@ describe('Transaction utils tests', () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
       USDC_ADDRESS,
-      USDT_ADDRESS,
+      TESTC_ADDRESS,
       toWad('0.05')
     );
 
@@ -42,7 +42,7 @@ describe('Transaction utils tests', () => {
   });
 
   it('validate method should not submit actual transaction; submit should submit actual transaction', async () => {
-    let tx = await ajna.factory.deployPool(signerLender, USDT_ADDRESS, DAI_ADDRESS, toWad('0.05'));
+    let tx = await ajna.factory.deployPool(signerLender, USDC_ADDRESS, DAI_ADDRESS, toWad('0.05'));
 
     // ensure verification does not advance the nonce
     const nonce = await signerLender.getTransactionCount();
@@ -53,17 +53,17 @@ describe('Transaction utils tests', () => {
     // ensure pool does not exist, because transaction was never submitted
     let pool: Pool;
     await expect(async () => {
-      pool = await ajna.factory.getPool(USDT_ADDRESS, DAI_ADDRESS);
+      pool = await ajna.factory.getPool(USDC_ADDRESS, DAI_ADDRESS);
     }).rejects.toThrow('Pool for specified tokens was not found');
 
     // submit a transaction to deploy the pool
-    tx = await ajna.factory.deployPool(signerLender, USDT_ADDRESS, DAI_ADDRESS, toWad('0.05'));
+    tx = await ajna.factory.deployPool(signerLender, USDC_ADDRESS, DAI_ADDRESS, toWad('0.05'));
     await tx.submit();
 
     // confirm the pool now exists
-    pool = await ajna.factory.getPool(USDT_ADDRESS, DAI_ADDRESS);
+    pool = await ajna.factory.getPool(USDC_ADDRESS, DAI_ADDRESS);
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    expect(pool.collateralAddress).toBe(USDT_ADDRESS);
+    expect(pool.collateralAddress).toBe(USDC_ADDRESS);
     expect(pool.quoteAddress).toBe(DAI_ADDRESS);
     expect(await signerLender.getTransactionCount()).toBe(nonce + 1);
   });

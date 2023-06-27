@@ -5,7 +5,7 @@ import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
-import { timeJump } from '../utils/ganache';
+import { mine, timeJump } from '../utils/ganache';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getBlockTime, getExpiry } from '../utils/time';
@@ -18,14 +18,14 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const TWETH_ADDRESS = '0xC208f8196F1E1696b07Ea9407ed0555fdBC37c2e';
-const TDAI_ADDRESS = '0x94f6AAE460917F8B64bdf94453eD34C2a49c4E10';
-const TESTA_ADDRESS = '0x673f06730Df07D7b90E236092C3A501022083A31';
+const TWETH_ADDRESS = '0x844f3C269f301f89D81f29B91b8d8ED2C69Fa7Bc';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const TESTA_ADDRESS = '0xf6C45B3B42b910110B1c750C959D0a396470c520';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTB_DAI_POOL_ADDRESS = '0x3578b4489fe9ee07fd1d62f767ddcdf2b99ea511';
+const TESTB_DAI_POOL_ADDRESS = '0x46f65d2c707ea9c15D398889cEF64C0C373bFdA7';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -511,6 +511,7 @@ describe('ERC20 Pool', () => {
     expect(status.claimableReserves.lte(status.reserves)).toBe(true);
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
     expect(status.price.eq(constants.Zero)).toBe(true);
+    await mine(provider);
 
     // kick auction
     tx = await auction.kick(signerLender);

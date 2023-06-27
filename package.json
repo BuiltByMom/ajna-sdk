@@ -23,7 +23,7 @@
     "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\"",
     "prepublishOnly": "yarn build && find dist -type f -name '*.map' -exec rimraf {} +",
     "document": "typedoc src/index.ts",
-    "test": "jest --silent=false --runInBand",
+    "test": "jest --silent --runInBand",
     "test:dev": "yarn test --watchAll",
     "typechain-abis": "typechain --target ethers-v5 --discriminate-types --out-dir src/types/contracts './src/abis/*.json'",
     "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'"

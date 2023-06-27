@@ -10,7 +10,7 @@ dotenv.config();
 jest.setTimeout(1200000);
 
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
-const TESTA_TDAI_POOL = '0x9b77d3c37fedb8d1d8cf5174708ed56163ad8fe4';
+const TESTA_TDAI_POOL = '0x845e5B204859f61b1EE99D60A9ff440d972Cde1C';
 
 describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);

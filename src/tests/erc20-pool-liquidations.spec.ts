@@ -16,8 +16,8 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0x2622ebC317f21ec07DCf047593D6be8128Cf991c';
-const QUOTE_ADDRESS = '0x94f6AAE460917F8B64bdf94453eD34C2a49c4E10';
+const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -31,12 +31,12 @@ describe('Liquidations', () => {
   const signerBorrower2 = addAccountFromKey(BORROWER2_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
-  // const TDAI = getErc20Contract(QUOTE_ADDRESS, provider);
+  // const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
   let snapshotId: number;
 
   beforeAll(async () => {
-    pool = await ajna.factory.getPool(TESTB_ADDRESS, QUOTE_ADDRESS);
+    pool = await ajna.factory.getPool(TESTB_ADDRESS, TDAI_ADDRESS);
 
     // approve
     let tx = await pool.quoteApprove(signerLender, toWad(40));
