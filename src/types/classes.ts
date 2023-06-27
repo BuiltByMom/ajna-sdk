@@ -78,7 +78,6 @@ export type DistributionPeriod = {
   endDate: number;
   blockNumber: number;
   fundsAvailable: BigNumber;
-  proposalCount: number;
   votesCount: BigNumber;
 };
 
@@ -89,5 +88,5 @@ export interface IGrantFund {
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
   getActiveDistributionPeriod(signer: Signer): Promise<DistributionPeriod>;
-  startNewDistributionPeriod(signer: Signer): Promise<WrappedTransaction>;
+  getDistributionPeriod(signer: Signer, distributionId: number): Promise<DistributionPeriod>;
 }

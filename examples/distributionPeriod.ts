@@ -7,6 +7,7 @@ import { providers } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
 import { SdkError } from '../src/types';
+import { GrantFund } from '../src/classes/GrantFund';
 
 async function run() {
   dotenv.config();
@@ -21,7 +22,7 @@ async function run() {
   const ajna = new AjnaSDK(provider);
 
   const startDistributionPeriod = async () => {
-    const tx = await ajna.grants.startNewDistributionPeriod(caller);
+    const tx = await GrantFund.startNewDistributionPeriod(caller);
     const receipt = await tx.verify();
     console.log(fromWad(receipt), 'estimated gas required for this transaction');
     const recepit2 = await tx.verifyAndSubmit();

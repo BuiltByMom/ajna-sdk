@@ -41,22 +41,18 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets details of the currently active distribution period
+   * gets details of the distribution period
    * @param signer caller
+   * @param distributionId id of the distrituion period
    * @returns DistributionPeriod
    */
-  async getActiveDistributionPeriod(signer: Signer) {
-    const distributionId = await getActiveDistributionId(signer);
-    if (distributionId === 0) {
-      throw new SdkError('There is no active distribution cycle');
-    }
+  async getDistributionPeriod(signer: Signer, distributionId: number) {
     const [
       _distributionId,
       startBlockNumber,
       endBlockNumber,
       fundsAvailable,
       fundingVotePowerCast,
-      _fundedSlateCast,
     ] = await getDistributionPeriod(signer, distributionId);
     const provider = this.getProvider() as Provider;
 
@@ -67,16 +63,28 @@ export class GrantFund extends ContractBase implements IGrantFund {
     const startDate = startBlock.timestamp * 1000;
     return {
       id: distributionId,
-      isActive: true,
+      isActive: endBlock === null,
       startBlock: startBlockNumber,
       startDate,
       endBlock: endBlockNumber,
       endDate: endBlock ? endBlock.timestamp : startDate + DISTRIBUTION_PERIOD_DURATION,
       blockNumber: startBlockNumber,
       fundsAvailable,
-      proposalCount: 0, // to be determined
       votesCount: fundingVotePowerCast,
     };
+  }
+
+  /**
+   * gets details of the currently active distribution period
+   * @param signer caller
+   * @returns DistributionPeriod
+   */
+  async getActiveDistributionPeriod(signer: Signer) {
+    const distributionId = await getActiveDistributionId(signer);
+    if (distributionId === 0) {
+      throw new SdkError('There is no active distribution cycle');
+    }
+    return await this.getDistributionPeriod(signer, distributionId);
   }
 
   /**
@@ -84,7 +92,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * @param signer caller
    * @returns transaction
    */
-  async startNewDistributionPeriod(signer: Signer) {
+  static async startNewDistributionPeriod(signer: Signer) {
     return await startNewDistributionPeriod(signer);
   }
 }
