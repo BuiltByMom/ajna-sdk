@@ -6,7 +6,7 @@ import { FungiblePool } from '../src/classes/FungiblePool';
 import { Address } from '../src/types';
 import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad } from '../src/utils/numeric';
-import { BigNumber, constants, providers } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -29,12 +29,12 @@ let pool: FungiblePool;
 
 // Looks for pool, deploying it if it doesn't already exist
 async function getPool() {
-  pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
-  if (pool.poolAddress === constants.AddressZero) {
+  try {
+    pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
+    console.log('Using pool with address', pool.poolAddress);
+  } catch (error) {
     pool = await deployPool(collateralAddress, quoteAddress);
-    console.log('Deployed pool to ', pool.poolAddress);
-  } else {
-    console.log('Using pool with address ', pool.poolAddress);
+    console.log('Deployed pool to', pool.poolAddress);
   }
   return pool;
 }

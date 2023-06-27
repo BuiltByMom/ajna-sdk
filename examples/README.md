@@ -11,14 +11,13 @@ First, install `ts-node` globally:
 sudo npm install -g ts-node
 ```
 
-Either source an environment script or create an `.env` file in the examples directory.
-Here's an example `.env` file to test on Goerli:
+First, set up your environment with required endpoint/addresses/keys. Here's an example environment setup:
 
 ```
 ETH_RPC_URL=https://eth-goerli.g.alchemy.com/v2/<your key here>
 
-AJNA_CONTRACT_ERC20_POOL_FACTORY=0x9684b8eC942985b23d343cB82D2F30EdA8fD7179
-AJNA_POOL_UTILS=0xEa36b2a4703182d07df9DdEe46BF97f9979F0cCf
+AJNA_CONTRACT_ERC20_POOL_FACTORY=0xb54FE3ee12926e63FF4A5163766fb93eDbADd5f3
+AJNA_POOL_UTILS=0x28ef92e694d1044917981837b21e5eA994931c71
 
 LENDER_ADDRESS=0xAbc...
 LENDER_KEYSTORE=/path/to/lender-keystore.json
@@ -39,7 +38,7 @@ CAUTION: storing key passwords in your environment is insecure and a bad practic
 
 ## Using scripts to integration test
 
-Ensure your accounts are funded with tokens. Scripts run fine-grained approvals as needed.
+Ensure your accounts are funded with tokens. Scripts run fine-grained approvals as needed. Values need adjustment if pool has existing liquidity/debt
 
 ### Repayment
 
