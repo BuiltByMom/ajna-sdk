@@ -14,3 +14,7 @@ export const MIN_FENWICK_INDEX = 1;
 export const MAX_FENWICK_INDEX = 7388;
 export const DEFAULT_TTL = 600;
 export const MAX_SETTLE_BUCKETS = 10;
+
+// grants distribution period
+export const ONE_DAY_MS = 3600 * 24 * 1000;
+export const DISTRIBUTION_PERIOD_DURATION = 90 * ONE_DAY_MS;

@@ -9,9 +9,7 @@ import {
 import { Address, IGrantFund, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
-
-const ONE_DAY_MS = 3600 * 24 * 1000;
-const DISTRIBUTION_PERIOD_DURATION = 90 * ONE_DAY_MS;
+import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
 /**
  * Class used to iteract with grants fund contract.
  */
@@ -46,15 +44,15 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * @param distributionId id of the distrituion period
    * @returns DistributionPeriod
    */
-  async getDistributionPeriod(signer: Signer, distributionId: number) {
+  async getDistributionPeriod(distributionId: number) {
+    const provider = this.getProvider() as Provider;
     const [
       _distributionId,
       startBlockNumber,
       endBlockNumber,
       fundsAvailable,
       fundingVotePowerCast,
-    ] = await getDistributionPeriod(signer, distributionId);
-    const provider = this.getProvider() as Provider;
+    ] = await getDistributionPeriod(provider, distributionId);
 
     const [startBlock, endBlock] = await Promise.all([
       provider.getBlock(startBlockNumber),
@@ -79,12 +77,12 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * @param signer caller
    * @returns DistributionPeriod
    */
-  async getActiveDistributionPeriod(signer: Signer) {
-    const distributionId = await getActiveDistributionId(signer);
+  async getActiveDistributionPeriod() {
+    const distributionId = await getActiveDistributionId(this.getProvider());
     if (distributionId === 0) {
       throw new SdkError('There is no active distribution cycle');
     }
-    return await this.getDistributionPeriod(signer, distributionId);
+    return await this.getDistributionPeriod(distributionId);
   }
 
   /**

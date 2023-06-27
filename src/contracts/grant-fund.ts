@@ -27,8 +27,8 @@ export async function getVotingPower(signer: Signer, account: Address) {
   return await contractInstance.getVotes(account);
 }
 
-export async function getActiveDistributionId(signer: Signer): Promise<number> {
-  const contractInstance: Contract = getGrantsFundContract(signer);
+export async function getActiveDistributionId(provider: SignerOrProvider): Promise<number> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionId();
 }
 
@@ -40,7 +40,7 @@ export async function startNewDistributionPeriod(signer: Signer) {
   });
 }
 
-export async function getDistributionPeriod(signer: Signer, distributionId: number) {
-  const contractInstance: Contract = getGrantsFundContract(signer);
+export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
+  const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
 }

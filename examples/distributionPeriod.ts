@@ -30,7 +30,7 @@ async function run() {
   };
 
   try {
-    const distributionPeriod = await ajna.grants.getActiveDistributionPeriod(caller);
+    const distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
     console.log('current distribution period details:', distributionPeriod);
   } catch (e) {
     if (

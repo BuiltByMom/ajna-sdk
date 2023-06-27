@@ -87,6 +87,6 @@ export interface IGrantFund {
    */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
-  getActiveDistributionPeriod(signer: Signer): Promise<DistributionPeriod>;
-  getDistributionPeriod(signer: Signer, distributionId: number): Promise<DistributionPeriod>;
+  getActiveDistributionPeriod(): Promise<DistributionPeriod>;
+  getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
 }
