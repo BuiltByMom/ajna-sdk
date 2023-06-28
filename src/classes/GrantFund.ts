@@ -80,7 +80,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   async getActiveDistributionPeriod() {
     const distributionId = await getActiveDistributionId(this.getProvider());
     if (distributionId === 0) {
-      throw new SdkError('There is no active distribution cycle');
+      throw new SdkError('There is no active distribution period');
     }
     return await this.getDistributionPeriod(distributionId);
   }

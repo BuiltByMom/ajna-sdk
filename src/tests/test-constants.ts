@@ -12,7 +12,7 @@ const erc721PoolFactoryAddress = '0x9617ABE221F9A9c492D5348be56aef4Db75A692d';
 const poolUtilsAddress = '0x4f05DA51eAAB00e5812c54e370fB95D4C9c51F21';
 const positionManagerAddress = '0x6c5c7fD98415168ada1930d44447790959097482';
 const ajnaTokenAddress = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
-const grantFundAddress = '0xd364766E1D431e0bb99705c8eb0e6665C3b32eB5';
+const grantFundAddress = '0xE340B87CEd1af1AbE1CE8D617c84B7f168e3b18b';
 
 export const testnetAddresses = new Config(
   erc20PoolFactoryAddress,
