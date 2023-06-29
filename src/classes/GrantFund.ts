@@ -84,13 +84,4 @@ export class GrantFund extends ContractBase implements IGrantFund {
     }
     return await this.getDistributionPeriod(distributionId);
   }
-
-  /**
-   * starts a new distribution period if none exists
-   * @param signer caller
-   * @returns transaction
-   */
-  static async startNewDistributionPeriod(signer: Signer) {
-    return await startNewDistributionPeriod(signer);
-  }
 }

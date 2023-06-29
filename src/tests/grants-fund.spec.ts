@@ -4,8 +4,8 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { expect } from '@jest/globals';
-import { GrantFund } from '../classes/GrantFund';
 import { submitAndVerifyTransaction } from './test-utils';
+import { startNewDistributionPeriod } from '../contracts/grant-fund';
 
 dotenv.config();
 
@@ -25,13 +25,13 @@ describe('ERC20 Pool', () => {
   });
 
   it(`starts a new distribution period if it doesn't exist`, async () => {
-    const tx = await GrantFund.startNewDistributionPeriod(signer);
+    const tx = await startNewDistributionPeriod(signer);
     await submitAndVerifyTransaction(tx);
     await expect(ajna.grants.getActiveDistributionPeriod()).resolves.toBeDefined();
   });
 
   it(`fails to start a new distribution period if an active one already exists`, async () => {
-    const tx = await GrantFund.startNewDistributionPeriod(signer);
+    const tx = await startNewDistributionPeriod(signer);
     await expect(tx.verify()).rejects.toThrow('DistributionPeriodStillActive()');
   });
 
