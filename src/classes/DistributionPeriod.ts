@@ -1,9 +1,6 @@
 import { Provider } from '@ethersproject/providers';
-import {
-  getActiveDistributionId,
-  getDistributionPeriod,
-} from '../contracts/grant-fund';
-import {, IDistributionPeriod, SdkError, SignerOrProvider } from '../types';
+import { getActiveDistributionId, getDistributionPeriod } from '../contracts/grant-fund';
+import { IDistributionPeriod, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 
 import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
@@ -15,7 +12,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     super(signerOrProvider);
   }
 
-    /**
+  /**
    * gets details of the distribution period
    * @param signer caller
    * @param distributionId id of the distrituion period
