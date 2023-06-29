@@ -19,7 +19,7 @@ describe('ERC20 Pool', () => {
   const signer = addAccountFromKey(SIGNER_KEY, provider);
 
   it(`throws and error getting active distribution period if it doesn't exist`, async () => {
-    await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
+    await expect(ajna.distributionPeriods.getActiveDistributionPeriod()).rejects.toThrow(
       'There is no active distribution period'
     );
   });
@@ -27,7 +27,7 @@ describe('ERC20 Pool', () => {
   it(`starts a new distribution period if it doesn't exist`, async () => {
     const tx = await startNewDistributionPeriod(signer);
     await submitAndVerifyTransaction(tx);
-    await expect(ajna.grants.getActiveDistributionPeriod()).resolves.toBeDefined();
+    await expect(ajna.distributionPeriods.getActiveDistributionPeriod()).resolves.toBeDefined();
   });
 
   it(`fails to start a new distribution period if an active one already exists`, async () => {
@@ -36,7 +36,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should get the active distribution period', async () => {
-    const dp = await ajna.grants.getActiveDistributionPeriod();
+    const dp = await ajna.distributionPeriods.getActiveDistributionPeriod();
     expect(dp.id).toBe(1);
     expect(dp.id).toBe(1);
     expect(dp.startBlock).toBeDefined();
@@ -49,7 +49,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should get the distribution by id', async () => {
-    const dp = await ajna.grants.getDistributionPeriod(1);
+    const dp = await ajna.distributionPeriods.getDistributionPeriod(1);
     expect(dp.id).toBe(1);
     expect(dp.startBlock).toBeDefined();
     expect(dp.endBlock).toBeDefined();

@@ -83,10 +83,16 @@ export type DistributionPeriod = {
 
 export interface IGrantFund {
   /**
-   * Handles grant fund distribution cycle, proposals and voting
+   * Handles grant fund methods
    */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
+}
+
+export interface IDistributionPeriod {
+  /**
+   * Handles distribution period methods
+   */
   getActiveDistributionPeriod(): Promise<DistributionPeriod>;
   getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
 }
