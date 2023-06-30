@@ -1,3 +1,4 @@
+import { ONE_HALF_WAD } from '../constants/common';
 import { BigNumber, BigNumberish, constants, ethers } from 'ethers';
 
 // converts from WAD precision to human-readable string
@@ -12,12 +13,17 @@ export const toWad = (value: BigNumberish): BigNumber => {
 
 // calculates product of two WADs
 export const wmul = (lhs: BigNumber, rhs: BigNumber): BigNumber => {
-  return lhs.mul(rhs).div(constants.WeiPerEther);
+  // (x * y + WAD / 2) / WAD;
+  return lhs.mul(rhs).add(ONE_HALF_WAD).div(constants.WeiPerEther);
 };
 
 // calculates quotient of two WADs
 export const wdiv = (lhs: BigNumber, rhs: BigNumber): BigNumber => {
-  return lhs.mul(constants.WeiPerEther).div(rhs);
+  // return (x * WAD + y / 2) / y;
+  return lhs
+    .mul(constants.WeiPerEther)
+    .add(rhs.div(BigNumber.from(2)))
+    .div(rhs);
 };
 
 // returns the minimum of two WADs
