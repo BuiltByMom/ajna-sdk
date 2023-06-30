@@ -26,3 +26,21 @@ export async function getVotingPower(signer: Signer, account: Address) {
   const contractInstance: Contract = getAjnaTokenContract(signer);
   return await contractInstance.getVotes(account);
 }
+
+export async function getActiveDistributionId(provider: SignerOrProvider): Promise<number> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDistributionId();
+}
+
+export async function startNewDistributionPeriod(signer: Signer) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'startNewDistributionPeriod',
+    args: [],
+  });
+}
+
+export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDistributionPeriodInfo(distributionId);
+}

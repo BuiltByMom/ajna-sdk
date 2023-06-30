@@ -2,7 +2,6 @@ import { delegateVote, getVotingPower } from '../contracts/grant-fund';
 import { Address, IGrantFund, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
-
 /**
  * Class used to iteract with grants fund contract.
  */
