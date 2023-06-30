@@ -13,7 +13,7 @@ jest.setTimeout(1200000);
 
 const SIGNER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 
-describe('ERC20 Pool', () => {
+describe('Grants fund', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signer = addAccountFromKey(SIGNER_KEY, provider);
