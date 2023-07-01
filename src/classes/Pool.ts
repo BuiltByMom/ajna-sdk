@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, BigNumberish, Contract, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -14,13 +14,17 @@ import {
   quoteTokenScale,
   withdrawBonds,
   lenderInfo,
+  approveLPTransferors,
+  revokeLPTransferors,
+  lpAllowance,
+  increaseLPAllowance,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { burn, mint } from '../contracts/position-manager';
+import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
 import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
@@ -272,6 +276,16 @@ export abstract class Pool {
     return bucket;
   }
 
+  async lpAllowance(index: BigNumber, spender: Address, owner: Address) {
+    return await lpAllowance(this.contract, index, spender, owner);
+  }
+
+  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumberish[]) {
+    const poolWithSigner = this.contract.connect(signer);
+    const spender = getPositionManagerContract(signer).address;
+    return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
+  }
+
   /**
    * @param minPrice lowest desired price
    * @param maxPrice highest desired price
@@ -357,6 +371,16 @@ export abstract class Pool {
 
   async burnLPToken(signer: Signer, tokenId: BigNumber) {
     return burn(signer, tokenId, this.poolAddress);
+  }
+
+  async approvePositionManagerLPTransferor(signer: Signer) {
+    const addr = getPositionManagerContract(signer).address;
+    return approveLPTransferors(signer, this.contract, [addr]);
+  }
+
+  async revokePositionManagerLPTransferor(signer: Signer) {
+    const addr = getPositionManagerContract(signer).address;
+    return revokeLPTransferors(signer, this.contract, [addr]);
   }
 
   getLPToken(tokenId: BigNumber) {

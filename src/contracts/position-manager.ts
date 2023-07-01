@@ -1,4 +1,4 @@
-import { BigNumber, Contract, Signer } from 'ethers';
+import { BigNumber, BigNumberish, BytesLike, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
@@ -6,7 +6,7 @@ import {
   SignerOrProvider,
   TransactionOverrides,
 } from '../types';
-import { createTransaction } from '../utils/transactions';
+import { createTransaction } from '../utils';
 
 export const getPositionManagerContract = (provider: SignerOrProvider) => {
   return PositionManager__factory.connect(Config.positionManager, provider);
@@ -15,35 +15,77 @@ export const getPositionManagerContract = (provider: SignerOrProvider) => {
 export async function mint(
   signer: Signer,
   recipient: Address,
-  pool: Address,
-  poolSubsetHash: string, // TODO: convert to bytes32
+  poolAddress: Address,
+  poolSubsetHash: BytesLike,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
-
+  const contractInstance = getPositionManagerContract(signer);
   return await createTransaction(
     contractInstance,
-    { methodName: 'mint', args: [pool, recipient, poolSubsetHash] },
+    { methodName: 'mint', args: [poolAddress, recipient, poolSubsetHash] },
     overrides
   );
 }
 
 export async function burn(
   signer: Signer,
-  tokenId: BigNumber,
-  pool: Address,
+  tokenId: BigNumberish,
+  poolAddress: Address,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getPositionManagerContract(signer);
-
+  const contractInstance = getPositionManagerContract(signer);
   return await createTransaction(
     contractInstance,
-    { methodName: 'burn', args: [pool, tokenId] },
+    { methodName: 'burn', args: [poolAddress, tokenId] },
     overrides
   );
 }
 
 export async function tokenURI(provider: SignerOrProvider, tokenId: BigNumber) {
-  const contractInstance: Contract = getPositionManagerContract(provider);
+  const contractInstance = getPositionManagerContract(provider);
   return await contractInstance.tokenURI(tokenId);
+}
+
+export async function getLP(provider: SignerOrProvider, tokenId: BigNumber, index: BigNumberish) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.getLP(tokenId, index);
+}
+
+export async function isIndexInPosition(
+  provider: SignerOrProvider,
+  tokenId: BigNumber,
+  index: BigNumberish
+) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.isIndexInPosition(tokenId, index);
+}
+
+export async function memorializePositions(
+  signer: Signer,
+  poolAddress: Address,
+  tokenId: BigNumberish,
+  indexes: number[],
+  overrides?: TransactionOverrides
+) {
+  const contractInstance = getPositionManagerContract(signer);
+  return createTransaction(
+    contractInstance,
+    { methodName: 'memorializePositions', args: [poolAddress, tokenId, indexes] },
+    { ...overrides, from: await signer.getAddress() }
+  );
+}
+
+export async function redeemPositions(
+  signer: Signer,
+  poolAddress: Address,
+  tokenId: BigNumberish,
+  indexes: number[],
+  overrides?: TransactionOverrides
+) {
+  const contractInstance = getPositionManagerContract(signer);
+  return await createTransaction(
+    contractInstance,
+    { methodName: 'redeemPositions', args: [poolAddress, tokenId, indexes] },
+    { ...overrides, from: await signer.getAddress() }
+  );
 }

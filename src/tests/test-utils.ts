@@ -8,6 +8,7 @@ export const submitAndVerifyTransaction = async (tx: WrappedTransaction) => {
   expect(receipt).toBeDefined();
   expect(receipt.confirmations).toBeGreaterThanOrEqual(1);
   expect(receipt.transactionHash).not.toBe('');
+  return receipt;
 };
 
 const toBeBetween: MatcherFunction<[smaller: unknown, larger: unknown]> = function (

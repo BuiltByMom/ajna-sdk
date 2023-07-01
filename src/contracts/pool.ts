@@ -1,4 +1,4 @@
-import { BigNumber, Contract } from 'ethers';
+import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { Address, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 
@@ -83,6 +83,29 @@ export async function quoteTokenScale(contract: Contract) {
   return await contract.quoteTokenScale();
 }
 
+export async function lpAllowance(
+  contract: Contract,
+  index: BigNumberish,
+  spender: Address,
+  owner: Address
+) {
+  return await contract.lpAllowance(index, spender, owner);
+}
+
+export async function increaseLPAllowance(
+  contract: Contract,
+  spender: Address,
+  indexes: BigNumberish[],
+  amounts: BigNumberish[],
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'increaseLPAllowance', args: [spender, indexes, amounts] },
+    overrides
+  );
+}
+
 export async function kickWithDeposit(
   contract: Contract,
   index: number,
@@ -148,6 +171,35 @@ export async function takeReserves(
   return await createTransaction(
     contract,
     { methodName: 'takeReserves', args: [maxAmount] },
+    overrides
+  );
+}
+
+export async function approveLPTransferors(
+  signer: Signer,
+  pool: Contract,
+  transferors: Array<Address>,
+  overrides?: TransactionOverrides
+) {
+  return createTransaction(
+    pool.connect(signer),
+    {
+      methodName: 'approveLPTransferors',
+      args: [transferors],
+    },
+    overrides
+  );
+}
+
+export async function revokeLPTransferors(
+  signer: Signer,
+  pool: Contract,
+  transferors: Array<Address>,
+  overrides?: TransactionOverrides
+) {
+  return createTransaction(
+    pool.connect(signer),
+    { methodName: 'revokeLPTransferors', args: [transferors] },
     overrides
   );
 }

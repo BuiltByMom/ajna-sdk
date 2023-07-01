@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
+jest.setTimeout(1200000);
 
 describe('Utility tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
