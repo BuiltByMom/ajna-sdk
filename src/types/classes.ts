@@ -89,10 +89,22 @@ export interface IGrantFund {
   getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
 }
 
+export type ProposalParams = {
+  title: string;
+  recipientAddresses: Array<{
+    address: Address;
+    amount: string;
+  }>;
+  externalLink?: string;
+  ipfsHash?: string;
+  arweaveTxid?: string;
+};
+
 export interface IDistributionPeriod {
   /**
    * Handles distribution period methods
    */
   getActiveDistributionPeriod(): Promise<DistributionPeriod>;
   getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
+  createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
 }

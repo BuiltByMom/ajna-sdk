@@ -1,7 +1,7 @@
 import grantsFundAbi from '../abis/GrantFund.json';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
-import { Address, SignerOrProvider } from '../types';
+import { Address, ProposalParams, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 import { Contract, Signer, ethers } from 'ethers';
@@ -43,4 +43,20 @@ export async function startNewDistributionPeriod(signer: Signer) {
 export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
+}
+
+export async function createProposal(
+  signer: Signer,
+  { recipientAddresses, ...rest }: ProposalParams
+) {
+  const iface = new ethers.utils.Interface(ajnaTokenAbi);
+  const encodedTransferCalls = recipientAddresses.map(({ address, amount }) =>
+    iface.encodeFunctionData('transfer', [address, ethers.utils.parseEther(amount)])
+  );
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  const description = JSON.stringify(rest);
+  return await createTransaction(contractInstance, {
+    methodName: 'propose',
+    args: [[Config.ajnaToken], [0], encodedTransferCalls, description],
+  });
 }

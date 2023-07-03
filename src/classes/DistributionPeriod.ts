@@ -1,9 +1,20 @@
 import { Provider } from '@ethersproject/providers';
-import { getActiveDistributionId, getDistributionPeriod } from '../contracts/grant-fund';
-import { IDistributionPeriod, SdkError, SignerOrProvider } from '../types';
+import {
+  createProposal,
+  getActiveDistributionId,
+  getDistributionPeriod,
+} from '../contracts/grant-fund';
+import {
+  IDistributionPeriod,
+  ProposalParams,
+  SdkError,
+  SignerOrProvider,
+  WrappedTransaction,
+} from '../types';
 import { ContractBase } from './ContractBase';
 
 import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
+import { Signer } from 'ethers';
 /**
  * Class used to iteract with distribution periods.
  */
@@ -57,5 +68,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
       throw new SdkError('There is no active distribution period');
     }
     return await this.getDistributionPeriod(distributionId);
+  }
+
+  async createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction> {
+    return createProposal(signer, params);
   }
 }

@@ -17,6 +17,7 @@ async function run() {
   // const voter = addAccountFromKey(process.env.ETH_KEY || '', provider);
   // Use this for a real chain, such as Goerli or Mainnet.
   const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const proposalToAddress = process.env.VOTER_ADDRESS ?? '';
 
   Config.fromEnvironment();
   const ajna = new AjnaSDK(provider);
@@ -24,7 +25,22 @@ async function run() {
   const startDistributionPeriod = async () => {
     const tx = await startNewDistributionPeriod(caller);
     const receipt = await tx.verify();
-    console.log(fromWad(receipt), 'estimated gas required for this transaction');
+    console.log(
+      fromWad(receipt),
+      'estimated gas required for startNewDistributionPeriod transaction'
+    );
+    const recepit2 = await tx.verifyAndSubmit();
+    console.log(recepit2);
+  };
+
+  const propose = async () => {
+    const tx = await ajna.distributionPeriods.createProposal(caller, {
+      title: 'ajna lending improvements',
+      recipientAddresses: [{ address: proposalToAddress, amount: '1000.00' }],
+      externalLink: 'https://example.com',
+    });
+    const receipt = await tx.verify();
+    console.log(fromWad(receipt), 'estimated gas required for propose transaction');
     const recepit2 = await tx.verifyAndSubmit();
     console.log(recepit2);
   };
@@ -43,6 +59,7 @@ async function run() {
       throw e;
     }
   }
+  await propose();
 }
 
 run();
