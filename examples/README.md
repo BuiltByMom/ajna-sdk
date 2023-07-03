@@ -40,10 +40,15 @@ CAUTION: storing key passwords in your environment is insecure and a bad practic
 
 Ensure your accounts are funded with tokens. Scripts run fine-grained approvals as needed. Values need adjustment if pool has existing liquidity/debt
 
-### Repayment
+### Lending
 
 - `./lend.ts add 100 2020.2` - add 100 tokens liquidity at price bucket nearest 2020.2 (index 2630)
 - `./lend.ts add 200 2007.0213` - add liquidity at lower price (index 2631)
+- `./lend.ts add 50` - add 50 tokens liquidity at the lowest utilized price (or highest deposit if no debt)
+- `./lend.ts remove 25 2007.0213` - remove 25 tokens from the lower price bucket
+
+### Borrowing
+
 - `./borrow.ts draw 150 1.3` - draw debt collateralizing at 130%, utilizing about half the pool
 - `./borrow.ts repay` - repay debt and pull collateral
 
