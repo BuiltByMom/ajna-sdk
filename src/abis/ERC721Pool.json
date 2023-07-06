@@ -395,7 +395,8 @@
     "inputs": [
       { "type": "uint256", "name": "amount_" },
       { "type": "uint256", "name": "index_" },
-      { "type": "uint256", "name": "expiry_" }
+      { "type": "uint256", "name": "expiry_" },
+      { "type": "bool", "name": "revertIfBelowLup_" }
     ],
     "outputs": [{ "type": "uint256", "name": "bucketLP_" }]
   },
@@ -717,17 +718,6 @@
   },
   {
     "type": "function",
-    "name": "kickWithDeposit",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "index_" },
-      { "type": "uint256", "name": "npLimitIndex_" }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "kickerInfo",
     "constant": true,
     "stateMutability": "view",
@@ -749,6 +739,17 @@
       { "type": "uint256", "name": "lpBalance_" },
       { "type": "uint256", "name": "depositTime_" }
     ]
+  },
+  {
+    "type": "function",
+    "name": "lenderKick",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      { "type": "uint256", "name": "index_" },
+      { "type": "uint256", "name": "npLimitIndex_" }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
@@ -814,7 +815,8 @@
       { "type": "uint256", "name": "maxAmount_" },
       { "type": "uint256", "name": "fromIndex_" },
       { "type": "uint256", "name": "toIndex_" },
-      { "type": "uint256", "name": "expiry_" }
+      { "type": "uint256", "name": "expiry_" },
+      { "type": "bool", "name": "revertIfBelowLup_" }
     ],
     "outputs": [
       { "type": "uint256", "name": "fromBucketLP_" },

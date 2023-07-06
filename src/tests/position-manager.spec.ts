@@ -13,7 +13,7 @@ jest.setTimeout(1200000);
 
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const NOT_LENDER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTD_TDAI_POOL = '0xe8dcc8fbab00cf7911944de5f9080ecd9f25d3a9';
+const TESTD_TDAI_POOL = '0x4c6041dbf60cbc7b947e8837ecd44525da170ab0';
 
 async function addQuoteTokensByIndexes(
   signer: Signer,

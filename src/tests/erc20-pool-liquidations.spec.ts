@@ -16,8 +16,8 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const TESTB_ADDRESS = '0xfaEe9c3b7956Ee2088672FEd26200FAD7d85CB15';
+const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -164,16 +164,16 @@ describe('Liquidations', () => {
     await submitAndVerifyTransaction(tx);
   });
 
-  it('should use kickWithDeposit', async () => {
+  it('should use lenderKick', async () => {
     const bucket = await pool.getBucketByIndex(2001);
 
-    // check state prior to the kickWithDeposit
+    // check state prior to the lenderKick
     const loan = await pool.getLoan(signerBorrower2.address);
     let kickerInfo = await pool.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
-    const tx = await bucket.kickWithDeposit(signerLender);
+    const tx = await bucket.lenderKick(signerLender);
     await submitAndVerifyTransaction(tx);
 
     // ensure the liquidation bond estimate was accurate
@@ -281,7 +281,7 @@ describe('Liquidations', () => {
     expect(loan.isKicked).toBe(true);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
-    const blockTime = await getBlockTime(signerLender);
+    let blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
@@ -293,11 +293,13 @@ describe('Liquidations', () => {
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
-    // wait 72 hours
-    const jumpTimeSeconds = 72 * 3600; // 72 hours
-    await timeJump(provider, jumpTimeSeconds);
+    // wait just over 72 hours
+    const three_days = 72 * 3600; // 72 hours
+    await timeJump(provider, three_days + 12);
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isSettleable).toBe(true);
+    blockTime = await getBlockTime(signerLender);
+    expect(auctionStatus.kickTime.valueOf() / 1000 + three_days).toBeLessThanOrEqual(blockTime);
 
     // kicker's liquidation bond remains locked before settle
     let kickerInfo = await pool.kickerInfo(signerLender.address);

@@ -11,12 +11,12 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const USDC_ADDRESS = '0x606A640CB77AeCBfefe918AebDCB34845FF18546';
-const TESTC_ADDRESS = '0x29eb88824f9F118B2aA975F6919D4a85189c9823';
-const DAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const USDC_ADDRESS = '0x72BB61e78fcB9dB3b5B3C8035BD9edAB5edd601E';
+const TESTC_ADDRESS = '0x674267c8A74fcAea8ccB1a196749B012e147005e';
+const DAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
 const LENDER_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('Transaction utils tests', () => {
+describe('Transaction Management', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);

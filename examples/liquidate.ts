@@ -71,11 +71,11 @@ async function run() {
     console.log('Kicked loan', borrowerAddress);
     return;
   }
-  if (action === 'kickWithDeposit') {
+  if (action === 'lenderKick') {
     if (process.argv.length <= 3)
-      throw new Error('Please provide price of bucket to withdraw and kick');
+      throw new Error('Please provide price of bucket in which you have liquidity to kick');
     const bucket = await pool.getBucketByIndex(priceToIndex(toWad(process.argv[3])));
-    const tx = await bucket.kickWithDeposit(signerLender);
+    const tx = await bucket.lenderKick(signerLender);
     await tx.verifyAndSubmit();
     console.log('Kicked from bucket', bucket.index);
     return;

@@ -16,8 +16,8 @@ First, set up your environment with required endpoint/addresses/keys. Here's an 
 ```
 ETH_RPC_URL=https://eth-goerli.g.alchemy.com/v2/<your key here>
 
-AJNA_CONTRACT_ERC20_POOL_FACTORY=0xb54FE3ee12926e63FF4A5163766fb93eDbADd5f3
-AJNA_POOL_UTILS=0x28ef92e694d1044917981837b21e5eA994931c71
+AJNA_ERC20_POOL_FACTORY=0x01Da8a85A5B525D476cA2b51e44fe7087fFafaFF
+AJNA_POOL_UTILS=0xBB61407715cDf92b2784E9d2F1675c4B8505cBd8
 
 LENDER_ADDRESS=0xAbc...
 LENDER_KEYSTORE=/path/to/lender-keystore.json
@@ -67,7 +67,7 @@ Now that the LUP has moved to 1886.9, the first borrower is undercollateralized 
 - `./lend.ts add 500 2002.07` - add liquidity, assuming no other lenders
 - `./lend.ts add 500 1992.3` - add liquidity at lower price
 - `./borrow.ts draw 750 1.25` - draw debt utilizing both buckets
-- `./liquidate.ts kickWithDeposit 1992.3` - remove lower-priced deposit, kicking the loan
+- `./liquidate.ts lenderKick 1992.3` - kick loan considering lower-priced deposit
 - `./liquidate.ts status $BORROWER_ADDRESS` - check auction; wait until price reasonable
 - `./liquidate.ts take $BORROWER_ADDRESS 0.25` - perform a partial take
 - `./liquidate.ts take $BORROWER_ADDRESS` - take remainder of collateral
