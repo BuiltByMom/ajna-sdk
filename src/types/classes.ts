@@ -108,3 +108,17 @@ export interface IDistributionPeriod {
   getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
   createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
 }
+
+export interface IProposal {
+  /**
+   * Handles methods specific to a given proposal
+   */
+  getInfo(): Promise<{
+    proposalId: BigNumber;
+    distributionId: number;
+    votesReceived: BigNumber;
+    tokensRequested: BigNumber;
+    fundingVotesReceived: BigNumber;
+    executed: boolean;
+  }>;
+}

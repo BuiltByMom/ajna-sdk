@@ -15,6 +15,7 @@ import { ContractBase } from './ContractBase';
 
 import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
 import { Signer } from 'ethers';
+import { Proposal } from './Proposal';
 /**
  * Class used to iteract with distribution periods.
  */
@@ -72,5 +73,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
 
   async createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction> {
     return createProposal(signer, params);
+  }
+
+  getProposal(proposalId: string): Proposal {
+    return new Proposal(this.getProvider(), proposalId);
   }
 }

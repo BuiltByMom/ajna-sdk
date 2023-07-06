@@ -60,3 +60,8 @@ export async function createProposal(
     args: [[Config.ajnaToken], [0], encodedTransferCalls, description],
   });
 }
+
+export async function getProposalInfo(provider: SignerOrProvider, distributionId: string) {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getProposalInfo(distributionId);
+}
