@@ -15,13 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface ERC20PoolInterface extends utils.Interface {
   functions: {
@@ -153,196 +147,109 @@ export interface ERC20PoolInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: 'addCollateral',
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'addQuoteToken',
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish, boolean]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'approveLPTransferors',
-    values: [PromiseOrValue<string>[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'approvedTransferors',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(functionFragment: 'auctionInfo', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'borrowerInfo', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'bucketCollateralDust',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'bucketExchangeRate',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'bucketInfo',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'approveLPTransferors', values: [string[]]): string;
+  encodeFunctionData(functionFragment: 'approvedTransferors', values: [string, string]): string;
+  encodeFunctionData(functionFragment: 'auctionInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'borrowerInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'bucketCollateralDust', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'bucketExchangeRate', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'bucketInfo', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'bucketTake',
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>, PromiseOrValue<BigNumberish>]
+    values: [string, boolean, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: 'burnInfo', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'burnInfo', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'collateralAddress', values?: undefined): string;
   encodeFunctionData(functionFragment: 'collateralScale', values?: undefined): string;
   encodeFunctionData(functionFragment: 'currentBurnEpoch', values?: undefined): string;
   encodeFunctionData(functionFragment: 'debtInfo', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'decreaseLPAllowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish[], BigNumberish[]]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'depositIndex',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'depositScale',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'depositIndex', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'depositScale', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'depositSize', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'depositUpToIndex',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'depositUpToIndex', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'depositUtilization', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'drawDebt',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'emasInfo', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'flashFee',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'flashFee', values: [string, BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'flashLoan',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, string, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: 'increaseLPAllowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish[], BigNumberish[]]
   ): string;
   encodeFunctionData(functionFragment: 'inflatorInfo', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'initialize',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'initialize', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'interestRateInfo', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'kick',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'kick', values: [string, BigNumberish]): string;
   encodeFunctionData(functionFragment: 'kickReserveAuction', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'kickerInfo', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'lenderInfo',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'lenderKick',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'loanInfo', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'kickerInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'lenderInfo', values: [BigNumberish, string]): string;
+  encodeFunctionData(functionFragment: 'lenderKick', values: [BigNumberish, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'loanInfo', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'loansInfo', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'lpAllowance',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [BigNumberish, string, string]
   ): string;
-  encodeFunctionData(functionFragment: 'maxFlashLoan', values: [PromiseOrValue<string>]): string;
+  encodeFunctionData(functionFragment: 'maxFlashLoan', values: [string]): string;
   encodeFunctionData(
     functionFragment: 'moveQuoteToken',
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish, boolean]
   ): string;
-  encodeFunctionData(functionFragment: 'multicall', values: [PromiseOrValue<BytesLike>[]]): string;
+  encodeFunctionData(functionFragment: 'multicall', values: [BytesLike[]]): string;
   encodeFunctionData(functionFragment: 'pledgedCollateral', values?: undefined): string;
   encodeFunctionData(functionFragment: 'poolType', values?: undefined): string;
   encodeFunctionData(functionFragment: 'quoteTokenAddress', values?: undefined): string;
   encodeFunctionData(functionFragment: 'quoteTokenScale', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'removeCollateral',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'removeQuoteToken',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'repayDebt',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, BigNumberish, BigNumberish, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'reservesInfo', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'revokeLPAllowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish[]]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'revokeLPTransferors',
-    values: [PromiseOrValue<string>[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'settle',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'revokeLPTransferors', values: [string[]]): string;
+  encodeFunctionData(functionFragment: 'settle', values: [string, BigNumberish]): string;
   encodeFunctionData(functionFragment: 'stampLoan', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'take',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, BigNumberish, string, BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'takeReserves',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'takeReserves', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'totalAuctionsInPool', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0Debt', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0DebtInAuction', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'transferLP',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
+    values: [string, string, BigNumberish[]]
   ): string;
   encodeFunctionData(functionFragment: 'updateInterest', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'withdrawBonds',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'withdrawBonds', values: [string, BigNumberish]): string;
 
   decodeFunctionResult(functionFragment: 'addCollateral', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'addQuoteToken', data: BytesLike): Result;
@@ -823,33 +730,29 @@ export interface ERC20Pool extends BaseContract {
 
   functions: {
     addCollateral(
-      amountToAdd_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amountToAdd_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     addQuoteToken(
-      amount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amount_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     approveLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    approvedTransferors(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    approvedTransferors(arg0: string, arg1: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     auctionInfo(
-      borrower_: PromiseOrValue<string>,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [
@@ -878,34 +781,34 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     borrowerInfo(
-      borrower_: PromiseOrValue<string>,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
     bucketCollateralDust(
-      bucketIndex_: PromiseOrValue<BigNumberish>,
+      bucketIndex_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     bucketExchangeRate(
-      index_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { exchangeRate_: BigNumber }>;
 
     bucketInfo(
-      index_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     bucketTake(
-      borrowerAddress_: PromiseOrValue<string>,
-      depositTake_: PromiseOrValue<boolean>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      depositTake_: boolean,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     burnInfo(
-      burnEventEpoch_: PromiseOrValue<BigNumberish>,
+      burnEventEpoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
@@ -918,89 +821,71 @@ export interface ERC20Pool extends BaseContract {
     debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     decreaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    depositIndex(
-      debt_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    depositIndex(debt_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    depositScale(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    depositScale(index_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     depositSize(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    depositUpToIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    depositUpToIndex(index_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     depositUtilization(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     drawDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      amountToBorrow_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      collateralToPledge_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      amountToBorrow_: BigNumberish,
+      limitIndex_: BigNumberish,
+      collateralToPledge_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     emasInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
-    flashFee(
-      token_: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    flashFee(token_: string, arg1: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     flashLoan(
-      receiver_: PromiseOrValue<string>,
-      token_: PromiseOrValue<string>,
-      amount_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiver_: string,
+      token_: string,
+      amount_: BigNumberish,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     increaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     inflatorInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     initialize(
-      rate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      rate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     interestRateInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     kick(
-      borrower_: PromiseOrValue<string>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrower_: string,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    kickReserveAuction(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    kickReserveAuction(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
-    kickerInfo(
-      kicker_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
+    kickerInfo(kicker_: string, overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     lenderInfo(
-      index_: PromiseOrValue<BigNumberish>,
-      lender_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      lender_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -1010,42 +895,39 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     lenderKick(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      index_: BigNumberish,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    loanInfo(
-      loanId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string, BigNumber]>;
+    loanInfo(loanId_: BigNumberish, overrides?: CallOverrides): Promise<[string, BigNumber]>;
 
     loansInfo(overrides?: CallOverrides): Promise<[string, BigNumber, BigNumber]>;
 
     lpAllowance(
-      index_: PromiseOrValue<BigNumberish>,
-      spender_: PromiseOrValue<string>,
-      owner_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      spender_: string,
+      owner_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { allowance_: BigNumber }>;
 
     maxFlashLoan(
-      token_: PromiseOrValue<string>,
+      token_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { maxLoan_: BigNumber }>;
 
     moveQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      data: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     pledgedCollateral(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -1057,60 +939,58 @@ export interface ERC20Pool extends BaseContract {
     quoteTokenScale(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     removeCollateral(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     removeQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     repayDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxQuoteTokenAmountToRepay_: PromiseOrValue<BigNumberish>,
-      collateralAmountToPull_: PromiseOrValue<BigNumberish>,
-      collateralReceiver_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxQuoteTokenAmountToRepay_: BigNumberish,
+      collateralAmountToPull_: BigNumberish,
+      collateralReceiver_: string,
+      limitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     revokeLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     revokeLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     settle(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxDepth_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxDepth_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    stampLoan(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    stampLoan(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
     take(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      callee_: PromiseOrValue<string>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxAmount_: BigNumberish,
+      callee_: string,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     takeReserves(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -1120,51 +1000,45 @@ export interface ERC20Pool extends BaseContract {
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferLP(
-      owner_: PromiseOrValue<string>,
-      newOwner_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner_: string,
+      newOwner_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    updateInterest(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    updateInterest(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
     withdrawBonds(
-      recipient_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      recipient_: string,
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
   };
 
   addCollateral(
-    amountToAdd_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
-    expiry_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    amountToAdd_: BigNumberish,
+    index_: BigNumberish,
+    expiry_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   addQuoteToken(
-    amount_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
-    expiry_: PromiseOrValue<BigNumberish>,
-    revertIfBelowLup_: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    amount_: BigNumberish,
+    index_: BigNumberish,
+    expiry_: BigNumberish,
+    revertIfBelowLup_: boolean,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   approveLPTransferors(
-    transferors_: PromiseOrValue<string>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    transferors_: string[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  approvedTransferors(
-    arg0: PromiseOrValue<string>,
-    arg1: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  approvedTransferors(arg0: string, arg1: string, overrides?: CallOverrides): Promise<boolean>;
 
   auctionInfo(
-    borrower_: PromiseOrValue<string>,
+    borrower_: string,
     overrides?: CallOverrides
   ): Promise<
     [
@@ -1193,34 +1067,28 @@ export interface ERC20Pool extends BaseContract {
   >;
 
   borrowerInfo(
-    borrower_: PromiseOrValue<string>,
+    borrower_: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
-  bucketCollateralDust(
-    bucketIndex_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  bucketCollateralDust(bucketIndex_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  bucketExchangeRate(
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  bucketExchangeRate(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   bucketInfo(
-    index_: PromiseOrValue<BigNumberish>,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
   bucketTake(
-    borrowerAddress_: PromiseOrValue<string>,
-    depositTake_: PromiseOrValue<boolean>,
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrowerAddress_: string,
+    depositTake_: boolean,
+    index_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   burnInfo(
-    burnEventEpoch_: PromiseOrValue<BigNumberish>,
+    burnEventEpoch_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
@@ -1233,120 +1101,105 @@ export interface ERC20Pool extends BaseContract {
   debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
   decreaseLPAllowance(
-    spender_: PromiseOrValue<string>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    amounts_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender_: string,
+    indexes_: BigNumberish[],
+    amounts_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  depositIndex(debt_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  depositIndex(debt_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  depositScale(index_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  depositScale(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   depositSize(overrides?: CallOverrides): Promise<BigNumber>;
 
-  depositUpToIndex(
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  depositUpToIndex(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
   drawDebt(
-    borrowerAddress_: PromiseOrValue<string>,
-    amountToBorrow_: PromiseOrValue<BigNumberish>,
-    limitIndex_: PromiseOrValue<BigNumberish>,
-    collateralToPledge_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrowerAddress_: string,
+    amountToBorrow_: BigNumberish,
+    limitIndex_: BigNumberish,
+    collateralToPledge_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   emasInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
-  flashFee(
-    token_: PromiseOrValue<string>,
-    arg1: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  flashFee(token_: string, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   flashLoan(
-    receiver_: PromiseOrValue<string>,
-    token_: PromiseOrValue<string>,
-    amount_: PromiseOrValue<BigNumberish>,
-    data_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    receiver_: string,
+    token_: string,
+    amount_: BigNumberish,
+    data_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   increaseLPAllowance(
-    spender_: PromiseOrValue<string>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    amounts_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender_: string,
+    indexes_: BigNumberish[],
+    amounts_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   inflatorInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
   initialize(
-    rate_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    rate_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   interestRateInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
   kick(
-    borrower_: PromiseOrValue<string>,
-    npLimitIndex_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrower_: string,
+    npLimitIndex_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  kickReserveAuction(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  kickReserveAuction(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
-  kickerInfo(
-    kicker_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber]>;
+  kickerInfo(kicker_: string, overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
   lenderInfo(
-    index_: PromiseOrValue<BigNumberish>,
-    lender_: PromiseOrValue<string>,
+    index_: BigNumberish,
+    lender_: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber] & { lpBalance_: BigNumber; depositTime_: BigNumber }>;
 
   lenderKick(
-    index_: PromiseOrValue<BigNumberish>,
-    npLimitIndex_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    index_: BigNumberish,
+    npLimitIndex_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  loanInfo(
-    loanId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<[string, BigNumber]>;
+  loanInfo(loanId_: BigNumberish, overrides?: CallOverrides): Promise<[string, BigNumber]>;
 
   loansInfo(overrides?: CallOverrides): Promise<[string, BigNumber, BigNumber]>;
 
   lpAllowance(
-    index_: PromiseOrValue<BigNumberish>,
-    spender_: PromiseOrValue<string>,
-    owner_: PromiseOrValue<string>,
+    index_: BigNumberish,
+    spender_: string,
+    owner_: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  maxFlashLoan(token_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  maxFlashLoan(token_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   moveQuoteToken(
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    fromIndex_: PromiseOrValue<BigNumberish>,
-    toIndex_: PromiseOrValue<BigNumberish>,
-    expiry_: PromiseOrValue<BigNumberish>,
-    revertIfBelowLup_: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    maxAmount_: BigNumberish,
+    fromIndex_: BigNumberish,
+    toIndex_: BigNumberish,
+    expiry_: BigNumberish,
+    revertIfBelowLup_: boolean,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   multicall(
-    data: PromiseOrValue<BytesLike>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    data: BytesLike[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   pledgedCollateral(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1358,60 +1211,58 @@ export interface ERC20Pool extends BaseContract {
   quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
   removeCollateral(
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    maxAmount_: BigNumberish,
+    index_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   removeQuoteToken(
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    maxAmount_: BigNumberish,
+    index_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   repayDebt(
-    borrowerAddress_: PromiseOrValue<string>,
-    maxQuoteTokenAmountToRepay_: PromiseOrValue<BigNumberish>,
-    collateralAmountToPull_: PromiseOrValue<BigNumberish>,
-    collateralReceiver_: PromiseOrValue<string>,
-    limitIndex_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrowerAddress_: string,
+    maxQuoteTokenAmountToRepay_: BigNumberish,
+    collateralAmountToPull_: BigNumberish,
+    collateralReceiver_: string,
+    limitIndex_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
   revokeLPAllowance(
-    spender_: PromiseOrValue<string>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender_: string,
+    indexes_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   revokeLPTransferors(
-    transferors_: PromiseOrValue<string>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    transferors_: string[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   settle(
-    borrowerAddress_: PromiseOrValue<string>,
-    maxDepth_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrowerAddress_: string,
+    maxDepth_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  stampLoan(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  stampLoan(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
   take(
-    borrowerAddress_: PromiseOrValue<string>,
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    callee_: PromiseOrValue<string>,
-    data_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    borrowerAddress_: string,
+    maxAmount_: BigNumberish,
+    callee_: string,
+    data_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   takeReserves(
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    maxAmount_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1421,51 +1272,42 @@ export interface ERC20Pool extends BaseContract {
   totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferLP(
-    owner_: PromiseOrValue<string>,
-    newOwner_: PromiseOrValue<string>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    owner_: string,
+    newOwner_: string,
+    indexes_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  updateInterest(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  updateInterest(overrides?: Overrides & { from?: string }): Promise<ContractTransaction>;
 
   withdrawBonds(
-    recipient_: PromiseOrValue<string>,
-    maxAmount_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    recipient_: string,
+    maxAmount_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     addCollateral(
-      amountToAdd_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
+      amountToAdd_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     addQuoteToken(
-      amount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
+      amount_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approveLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+    approveLPTransferors(transferors_: string[], overrides?: CallOverrides): Promise<void>;
 
-    approvedTransferors(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    approvedTransferors(arg0: string, arg1: string, overrides?: CallOverrides): Promise<boolean>;
 
     auctionInfo(
-      borrower_: PromiseOrValue<string>,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [
@@ -1494,34 +1336,28 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     borrowerInfo(
-      borrower_: PromiseOrValue<string>,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
-    bucketCollateralDust(
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    bucketCollateralDust(bucketIndex_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bucketExchangeRate(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    bucketExchangeRate(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     bucketInfo(
-      index_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     bucketTake(
-      borrowerAddress_: PromiseOrValue<string>,
-      depositTake_: PromiseOrValue<boolean>,
-      index_: PromiseOrValue<BigNumberish>,
+      borrowerAddress_: string,
+      depositTake_: boolean,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     burnInfo(
-      burnEventEpoch_: PromiseOrValue<BigNumberish>,
+      burnEventEpoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
@@ -1534,84 +1370,64 @@ export interface ERC20Pool extends BaseContract {
     debtInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     decreaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    depositIndex(
-      debt_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositIndex(debt_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    depositScale(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositScale(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     depositSize(overrides?: CallOverrides): Promise<BigNumber>;
 
-    depositUpToIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositUpToIndex(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
     drawDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      amountToBorrow_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      collateralToPledge_: PromiseOrValue<BigNumberish>,
+      borrowerAddress_: string,
+      amountToBorrow_: BigNumberish,
+      limitIndex_: BigNumberish,
+      collateralToPledge_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     emasInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
-    flashFee(
-      token_: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    flashFee(token_: string, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     flashLoan(
-      receiver_: PromiseOrValue<string>,
-      token_: PromiseOrValue<string>,
-      amount_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
+      receiver_: string,
+      token_: string,
+      amount_: BigNumberish,
+      data_: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     increaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     inflatorInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
-    initialize(rate_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<void>;
+    initialize(rate_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     interestRateInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
-    kick(
-      borrower_: PromiseOrValue<string>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    kick(borrower_: string, npLimitIndex_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     kickReserveAuction(overrides?: CallOverrides): Promise<void>;
 
-    kickerInfo(
-      kicker_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
+    kickerInfo(kicker_: string, overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     lenderInfo(
-      index_: PromiseOrValue<BigNumberish>,
-      lender_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      lender_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -1621,33 +1437,30 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     lenderKick(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
+      npLimitIndex_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    loanInfo(
-      loanId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string, BigNumber]>;
+    loanInfo(loanId_: BigNumberish, overrides?: CallOverrides): Promise<[string, BigNumber]>;
 
     loansInfo(overrides?: CallOverrides): Promise<[string, BigNumber, BigNumber]>;
 
     lpAllowance(
-      index_: PromiseOrValue<BigNumberish>,
-      spender_: PromiseOrValue<string>,
-      owner_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      spender_: string,
+      owner_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    maxFlashLoan(token_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    maxFlashLoan(token_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     moveQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
+      maxAmount_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -1657,7 +1470,7 @@ export interface ERC20Pool extends BaseContract {
       }
     >;
 
-    multicall(data: PromiseOrValue<BytesLike>[], overrides?: CallOverrides): Promise<string[]>;
+    multicall(data: BytesLike[], overrides?: CallOverrides): Promise<string[]>;
 
     pledgedCollateral(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1668,8 +1481,8 @@ export interface ERC20Pool extends BaseContract {
     quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeCollateral(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -1679,8 +1492,8 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     removeQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -1690,47 +1503,41 @@ export interface ERC20Pool extends BaseContract {
     >;
 
     repayDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxQuoteTokenAmountToRepay_: PromiseOrValue<BigNumberish>,
-      collateralAmountToPull_: PromiseOrValue<BigNumberish>,
-      collateralReceiver_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
+      borrowerAddress_: string,
+      maxQuoteTokenAmountToRepay_: BigNumberish,
+      collateralAmountToPull_: BigNumberish,
+      collateralReceiver_: string,
+      limitIndex_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     revokeLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
+      spender_: string,
+      indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    revokeLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+    revokeLPTransferors(transferors_: string[], overrides?: CallOverrides): Promise<void>;
 
     settle(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxDepth_: PromiseOrValue<BigNumberish>,
+      borrowerAddress_: string,
+      maxDepth_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     stampLoan(overrides?: CallOverrides): Promise<void>;
 
     take(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      callee_: PromiseOrValue<string>,
-      data_: PromiseOrValue<BytesLike>,
+      borrowerAddress_: string,
+      maxAmount_: BigNumberish,
+      callee_: string,
+      data_: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    takeReserves(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    takeReserves(maxAmount_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1739,103 +1546,97 @@ export interface ERC20Pool extends BaseContract {
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferLP(
-      owner_: PromiseOrValue<string>,
-      newOwner_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
+      owner_: string,
+      newOwner_: string,
+      indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     updateInterest(overrides?: CallOverrides): Promise<void>;
 
     withdrawBonds(
-      recipient_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
+      recipient_: string,
+      maxAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
     'AddCollateral(address,uint256,uint256,uint256)'(
-      actor?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      actor?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpAwarded?: null
     ): AddCollateralEventFilter;
     AddCollateral(
-      actor?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      actor?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpAwarded?: null
     ): AddCollateralEventFilter;
 
     'AddQuoteToken(address,uint256,uint256,uint256,uint256)'(
-      lender?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpAwarded?: null,
       lup?: null
     ): AddQuoteTokenEventFilter;
     AddQuoteToken(
-      lender?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpAwarded?: null,
       lup?: null
     ): AddQuoteTokenEventFilter;
 
     'ApproveLPTransferors(address,address[])'(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       transferors?: null
     ): ApproveLPTransferorsEventFilter;
     ApproveLPTransferors(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       transferors?: null
     ): ApproveLPTransferorsEventFilter;
 
     'AuctionNFTSettle(address,uint256,uint256,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       collateral?: null,
       lp?: null,
       index?: null
     ): AuctionNFTSettleEventFilter;
     AuctionNFTSettle(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       collateral?: null,
       lp?: null,
       index?: null
     ): AuctionNFTSettleEventFilter;
 
     'AuctionSettle(address,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       collateral?: null
     ): AuctionSettleEventFilter;
-    AuctionSettle(
-      borrower?: PromiseOrValue<string> | null,
-      collateral?: null
-    ): AuctionSettleEventFilter;
+    AuctionSettle(borrower?: string | null, collateral?: null): AuctionSettleEventFilter;
 
     'BondWithdrawn(address,address,uint256)'(
-      kicker?: PromiseOrValue<string> | null,
-      reciever?: PromiseOrValue<string> | null,
+      kicker?: string | null,
+      reciever?: string | null,
       amount?: null
     ): BondWithdrawnEventFilter;
     BondWithdrawn(
-      kicker?: PromiseOrValue<string> | null,
-      reciever?: PromiseOrValue<string> | null,
+      kicker?: string | null,
+      reciever?: string | null,
       amount?: null
     ): BondWithdrawnEventFilter;
 
     'BucketBankruptcy(uint256,uint256)'(
-      index?: PromiseOrValue<BigNumberish> | null,
+      index?: BigNumberish | null,
       lpForfeited?: null
     ): BucketBankruptcyEventFilter;
-    BucketBankruptcy(
-      index?: PromiseOrValue<BigNumberish> | null,
-      lpForfeited?: null
-    ): BucketBankruptcyEventFilter;
+    BucketBankruptcy(index?: BigNumberish | null, lpForfeited?: null): BucketBankruptcyEventFilter;
 
     'BucketTake(address,uint256,uint256,uint256,uint256,bool)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       index?: null,
       amount?: null,
       collateral?: null,
@@ -1843,7 +1644,7 @@ export interface ERC20Pool extends BaseContract {
       isReward?: null
     ): BucketTakeEventFilter;
     BucketTake(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       index?: null,
       amount?: null,
       collateral?: null,
@@ -1852,80 +1653,71 @@ export interface ERC20Pool extends BaseContract {
     ): BucketTakeEventFilter;
 
     'BucketTakeLPAwarded(address,address,uint256,uint256)'(
-      taker?: PromiseOrValue<string> | null,
-      kicker?: PromiseOrValue<string> | null,
+      taker?: string | null,
+      kicker?: string | null,
       lpAwardedTaker?: null,
       lpAwardedKicker?: null
     ): BucketTakeLPAwardedEventFilter;
     BucketTakeLPAwarded(
-      taker?: PromiseOrValue<string> | null,
-      kicker?: PromiseOrValue<string> | null,
+      taker?: string | null,
+      kicker?: string | null,
       lpAwardedTaker?: null,
       lpAwardedKicker?: null
     ): BucketTakeLPAwardedEventFilter;
 
     'DecreaseLPAllowance(address,address,uint256[],uint256[])'(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null,
       amounts?: null
     ): DecreaseLPAllowanceEventFilter;
     DecreaseLPAllowance(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null,
       amounts?: null
     ): DecreaseLPAllowanceEventFilter;
 
     'DrawDebt(address,uint256,uint256,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       amountBorrowed?: null,
       collateralPledged?: null,
       lup?: null
     ): DrawDebtEventFilter;
     DrawDebt(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       amountBorrowed?: null,
       collateralPledged?: null,
       lup?: null
     ): DrawDebtEventFilter;
 
     'Flashloan(address,address,uint256)'(
-      receiver?: PromiseOrValue<string> | null,
-      token?: PromiseOrValue<string> | null,
+      receiver?: string | null,
+      token?: string | null,
       amount?: null
     ): FlashloanEventFilter;
-    Flashloan(
-      receiver?: PromiseOrValue<string> | null,
-      token?: PromiseOrValue<string> | null,
-      amount?: null
-    ): FlashloanEventFilter;
+    Flashloan(receiver?: string | null, token?: string | null, amount?: null): FlashloanEventFilter;
 
     'IncreaseLPAllowance(address,address,uint256[],uint256[])'(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null,
       amounts?: null
     ): IncreaseLPAllowanceEventFilter;
     IncreaseLPAllowance(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null,
       amounts?: null
     ): IncreaseLPAllowanceEventFilter;
 
     'Kick(address,uint256,uint256,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       debt?: null,
       collateral?: null,
       bond?: null
     ): KickEventFilter;
-    Kick(
-      borrower?: PromiseOrValue<string> | null,
-      debt?: null,
-      collateral?: null,
-      bond?: null
-    ): KickEventFilter;
+    Kick(borrower?: string | null, debt?: null, collateral?: null, bond?: null): KickEventFilter;
 
     'KickReserveAuction(uint256,uint256,uint256)'(
       claimableReservesRemaining?: null,
@@ -1938,22 +1730,22 @@ export interface ERC20Pool extends BaseContract {
       currentBurnEpoch?: null
     ): KickReserveAuctionEventFilter;
 
-    'LoanStamped(address)'(borrower?: PromiseOrValue<string> | null): LoanStampedEventFilter;
-    LoanStamped(borrower?: PromiseOrValue<string> | null): LoanStampedEventFilter;
+    'LoanStamped(address)'(borrower?: string | null): LoanStampedEventFilter;
+    LoanStamped(borrower?: string | null): LoanStampedEventFilter;
 
     'MoveQuoteToken(address,uint256,uint256,uint256,uint256,uint256,uint256)'(
-      lender?: PromiseOrValue<string> | null,
-      from?: PromiseOrValue<BigNumberish> | null,
-      to?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      from?: BigNumberish | null,
+      to?: BigNumberish | null,
       amount?: null,
       lpRedeemedFrom?: null,
       lpAwardedTo?: null,
       lup?: null
     ): MoveQuoteTokenEventFilter;
     MoveQuoteToken(
-      lender?: PromiseOrValue<string> | null,
-      from?: PromiseOrValue<BigNumberish> | null,
-      to?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      from?: BigNumberish | null,
+      to?: BigNumberish | null,
       amount?: null,
       lpRedeemedFrom?: null,
       lpAwardedTo?: null,
@@ -1961,41 +1753,41 @@ export interface ERC20Pool extends BaseContract {
     ): MoveQuoteTokenEventFilter;
 
     'RemoveCollateral(address,uint256,uint256,uint256)'(
-      claimer?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      claimer?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpRedeemed?: null
     ): RemoveCollateralEventFilter;
     RemoveCollateral(
-      claimer?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      claimer?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpRedeemed?: null
     ): RemoveCollateralEventFilter;
 
     'RemoveQuoteToken(address,uint256,uint256,uint256,uint256)'(
-      lender?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpRedeemed?: null,
       lup?: null
     ): RemoveQuoteTokenEventFilter;
     RemoveQuoteToken(
-      lender?: PromiseOrValue<string> | null,
-      index?: PromiseOrValue<BigNumberish> | null,
+      lender?: string | null,
+      index?: BigNumberish | null,
       amount?: null,
       lpRedeemed?: null,
       lup?: null
     ): RemoveQuoteTokenEventFilter;
 
     'RepayDebt(address,uint256,uint256,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       quoteRepaid?: null,
       collateralPulled?: null,
       lup?: null
     ): RepayDebtEventFilter;
     RepayDebt(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       quoteRepaid?: null,
       collateralPulled?: null,
       lup?: null
@@ -2019,40 +1811,34 @@ export interface ERC20Pool extends BaseContract {
     ResetInterestRate(oldRate?: null, newRate?: null): ResetInterestRateEventFilter;
 
     'RevokeLPAllowance(address,address,uint256[])'(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null
     ): RevokeLPAllowanceEventFilter;
     RevokeLPAllowance(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       indexes?: null
     ): RevokeLPAllowanceEventFilter;
 
     'RevokeLPTransferors(address,address[])'(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       transferors?: null
     ): RevokeLPTransferorsEventFilter;
-    RevokeLPTransferors(
-      lender?: PromiseOrValue<string> | null,
-      transferors?: null
-    ): RevokeLPTransferorsEventFilter;
+    RevokeLPTransferors(lender?: string | null, transferors?: null): RevokeLPTransferorsEventFilter;
 
-    'Settle(address,uint256)'(
-      borrower?: PromiseOrValue<string> | null,
-      settledDebt?: null
-    ): SettleEventFilter;
-    Settle(borrower?: PromiseOrValue<string> | null, settledDebt?: null): SettleEventFilter;
+    'Settle(address,uint256)'(borrower?: string | null, settledDebt?: null): SettleEventFilter;
+    Settle(borrower?: string | null, settledDebt?: null): SettleEventFilter;
 
     'Take(address,uint256,uint256,uint256,bool)'(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       amount?: null,
       collateral?: null,
       bondChange?: null,
       isReward?: null
     ): TakeEventFilter;
     Take(
-      borrower?: PromiseOrValue<string> | null,
+      borrower?: string | null,
       amount?: null,
       collateral?: null,
       bondChange?: null,
@@ -2076,58 +1862,45 @@ export interface ERC20Pool extends BaseContract {
 
   estimateGas: {
     addCollateral(
-      amountToAdd_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amountToAdd_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     addQuoteToken(
-      amount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amount_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     approveLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    approvedTransferors(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    approvedTransferors(arg0: string, arg1: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    auctionInfo(borrower_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    auctionInfo(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    borrowerInfo(borrower_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    borrowerInfo(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bucketCollateralDust(
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    bucketCollateralDust(bucketIndex_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bucketExchangeRate(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    bucketExchangeRate(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    bucketInfo(index_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    bucketInfo(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     bucketTake(
-      borrowerAddress_: PromiseOrValue<string>,
-      depositTake_: PromiseOrValue<boolean>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      depositTake_: boolean,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    burnInfo(
-      burnEventEpoch_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    burnInfo(burnEventEpoch_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     collateralAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2138,121 +1911,100 @@ export interface ERC20Pool extends BaseContract {
     debtInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     decreaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    depositIndex(
-      debt_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositIndex(debt_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    depositScale(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositScale(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     depositSize(overrides?: CallOverrides): Promise<BigNumber>;
 
-    depositUpToIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    depositUpToIndex(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     depositUtilization(overrides?: CallOverrides): Promise<BigNumber>;
 
     drawDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      amountToBorrow_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      collateralToPledge_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      amountToBorrow_: BigNumberish,
+      limitIndex_: BigNumberish,
+      collateralToPledge_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     emasInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
-    flashFee(
-      token_: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    flashFee(token_: string, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     flashLoan(
-      receiver_: PromiseOrValue<string>,
-      token_: PromiseOrValue<string>,
-      amount_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiver_: string,
+      token_: string,
+      amount_: BigNumberish,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     increaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     inflatorInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(
-      rate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    initialize(rate_: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     interestRateInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     kick(
-      borrower_: PromiseOrValue<string>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrower_: string,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    kickReserveAuction(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    kickReserveAuction(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
-    kickerInfo(kicker_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    kickerInfo(kicker_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     lenderInfo(
-      index_: PromiseOrValue<BigNumberish>,
-      lender_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      lender_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     lenderKick(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      index_: BigNumberish,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    loanInfo(loanId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    loanInfo(loanId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     loansInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     lpAllowance(
-      index_: PromiseOrValue<BigNumberish>,
-      spender_: PromiseOrValue<string>,
-      owner_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      spender_: string,
+      owner_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    maxFlashLoan(token_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    maxFlashLoan(token_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     moveQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    multicall(data: BytesLike[], overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     pledgedCollateral(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2263,58 +2015,58 @@ export interface ERC20Pool extends BaseContract {
     quoteTokenScale(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeCollateral(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     removeQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     repayDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxQuoteTokenAmountToRepay_: PromiseOrValue<BigNumberish>,
-      collateralAmountToPull_: PromiseOrValue<BigNumberish>,
-      collateralReceiver_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxQuoteTokenAmountToRepay_: BigNumberish,
+      collateralAmountToPull_: BigNumberish,
+      collateralReceiver_: string,
+      limitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     reservesInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     revokeLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     revokeLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     settle(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxDepth_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxDepth_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    stampLoan(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
+    stampLoan(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     take(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      callee_: PromiseOrValue<string>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxAmount_: BigNumberish,
+      callee_: string,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     takeReserves(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2324,82 +2076,73 @@ export interface ERC20Pool extends BaseContract {
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferLP(
-      owner_: PromiseOrValue<string>,
-      newOwner_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner_: string,
+      newOwner_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    updateInterest(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
+    updateInterest(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     withdrawBonds(
-      recipient_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      recipient_: string,
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     addCollateral(
-      amountToAdd_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amountToAdd_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     addQuoteToken(
-      amount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amount_: BigNumberish,
+      index_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     approveLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     approvedTransferors(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
+      arg0: string,
+      arg1: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    auctionInfo(
-      borrower_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    auctionInfo(borrower_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    borrowerInfo(
-      borrower_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    borrowerInfo(borrower_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     bucketCollateralDust(
-      bucketIndex_: PromiseOrValue<BigNumberish>,
+      bucketIndex_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     bucketExchangeRate(
-      index_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    bucketInfo(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    bucketInfo(index_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     bucketTake(
-      borrowerAddress_: PromiseOrValue<string>,
-      depositTake_: PromiseOrValue<boolean>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      depositTake_: boolean,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     burnInfo(
-      burnEventEpoch_: PromiseOrValue<BigNumberish>,
+      burnEventEpoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2412,129 +2155,112 @@ export interface ERC20Pool extends BaseContract {
     debtInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     decreaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    depositIndex(
-      debt_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    depositIndex(debt_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    depositScale(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    depositScale(index_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     depositSize(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     depositUpToIndex(
-      index_: PromiseOrValue<BigNumberish>,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     depositUtilization(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     drawDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      amountToBorrow_: PromiseOrValue<BigNumberish>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      collateralToPledge_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      amountToBorrow_: BigNumberish,
+      limitIndex_: BigNumberish,
+      collateralToPledge_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     emasInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     flashFee(
-      token_: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
+      token_: string,
+      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     flashLoan(
-      receiver_: PromiseOrValue<string>,
-      token_: PromiseOrValue<string>,
-      amount_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiver_: string,
+      token_: string,
+      amount_: BigNumberish,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     increaseLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      amounts_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      amounts_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     inflatorInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
-      rate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      rate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     interestRateInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     kick(
-      borrower_: PromiseOrValue<string>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrower_: string,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    kickReserveAuction(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    kickReserveAuction(overrides?: Overrides & { from?: string }): Promise<PopulatedTransaction>;
 
-    kickerInfo(
-      kicker_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    kickerInfo(kicker_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lenderInfo(
-      index_: PromiseOrValue<BigNumberish>,
-      lender_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      lender_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     lenderKick(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      index_: BigNumberish,
+      npLimitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    loanInfo(
-      loanId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    loanInfo(loanId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     loansInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lpAllowance(
-      index_: PromiseOrValue<BigNumberish>,
-      spender_: PromiseOrValue<string>,
-      owner_: PromiseOrValue<string>,
+      index_: BigNumberish,
+      spender_: string,
+      owner_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    maxFlashLoan(
-      token_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    maxFlashLoan(token_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     moveQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      data: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     pledgedCollateral(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2546,60 +2272,58 @@ export interface ERC20Pool extends BaseContract {
     quoteTokenScale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     removeCollateral(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     removeQuoteToken(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      index_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     repayDebt(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxQuoteTokenAmountToRepay_: PromiseOrValue<BigNumberish>,
-      collateralAmountToPull_: PromiseOrValue<BigNumberish>,
-      collateralReceiver_: PromiseOrValue<string>,
-      limitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxQuoteTokenAmountToRepay_: BigNumberish,
+      collateralAmountToPull_: BigNumberish,
+      collateralReceiver_: string,
+      limitIndex_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     reservesInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     revokeLPAllowance(
-      spender_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     revokeLPTransferors(
-      transferors_: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      transferors_: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     settle(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxDepth_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxDepth_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    stampLoan(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    stampLoan(overrides?: Overrides & { from?: string }): Promise<PopulatedTransaction>;
 
     take(
-      borrowerAddress_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      callee_: PromiseOrValue<string>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      borrowerAddress_: string,
+      maxAmount_: BigNumberish,
+      callee_: string,
+      data_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     takeReserves(
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2609,20 +2333,18 @@ export interface ERC20Pool extends BaseContract {
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferLP(
-      owner_: PromiseOrValue<string>,
-      newOwner_: PromiseOrValue<string>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner_: string,
+      newOwner_: string,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    updateInterest(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    updateInterest(overrides?: Overrides & { from?: string }): Promise<PopulatedTransaction>;
 
     withdrawBonds(
-      recipient_: PromiseOrValue<string>,
-      maxAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      recipient_: string,
+      maxAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };
 }

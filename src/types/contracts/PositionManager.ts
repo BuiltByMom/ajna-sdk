@@ -15,13 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface PositionManagerInterface extends utils.Interface {
   functions: {
@@ -95,114 +89,67 @@ export interface PositionManagerInterface extends utils.Interface {
 
   encodeFunctionData(functionFragment: 'DOMAIN_SEPARATOR', values?: undefined): string;
   encodeFunctionData(functionFragment: 'PERMIT_TYPEHASH', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'approve',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'balanceOf', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'burn',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getApproved',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getLP',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getPositionIndexes',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'approve', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'balanceOf', values: [string]): string;
+  encodeFunctionData(functionFragment: 'burn', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getApproved', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getLP', values: [BigNumberish, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getPositionIndexes', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'getPositionIndexesFiltered',
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'getPositionInfo',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'isAjnaPool',
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'isApprovedForAll',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: 'isAjnaPool', values: [string, BytesLike]): string;
+  encodeFunctionData(functionFragment: 'isApprovedForAll', values: [string, string]): string;
   encodeFunctionData(
     functionFragment: 'isIndexInPosition',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'isPositionBucketBankrupt',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'memorializePositions',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish, BigNumberish[]]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'mint',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BytesLike>]
-  ): string;
+  encodeFunctionData(functionFragment: 'mint', values: [string, string, BytesLike]): string;
   encodeFunctionData(
     functionFragment: 'moveLiquidity',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>
-    ]
+    values: [string, BigNumberish, BigNumberish, BigNumberish, BigNumberish, boolean]
   ): string;
-  encodeFunctionData(functionFragment: 'multicall', values: [PromiseOrValue<BytesLike>[]]): string;
+  encodeFunctionData(functionFragment: 'multicall', values: [BytesLike[]]): string;
   encodeFunctionData(functionFragment: 'name', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'nonces', values: [PromiseOrValue<BigNumberish>]): string;
-  encodeFunctionData(functionFragment: 'ownerOf', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'nonces', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'ownerOf', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'permit',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, BigNumberish, BigNumberish, BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: 'poolKey', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'poolKey', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'redeemPositions',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish, BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: 'safeTransferFrom(address,address,uint256)',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'safeTransferFrom(address,address,uint256,bytes)',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, string, BigNumberish, BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'setApprovalForAll',
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'supportsInterface',
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
+  encodeFunctionData(functionFragment: 'setApprovalForAll', values: [string, boolean]): string;
+  encodeFunctionData(functionFragment: 'supportsInterface', values: [BytesLike]): string;
   encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'tokenURI', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'tokenURI', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'transferFrom',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, string, BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: 'DOMAIN_SEPARATOR', data: BytesLike): Result;
@@ -379,157 +326,148 @@ export interface PositionManager extends BaseContract {
     PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
 
     approve(
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     burn(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    getApproved(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     getLP(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getPositionIndexes(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
+    getPositionIndexes(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber[]]>;
 
     getPositionIndexesFiltered(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]] & { filteredIndexes_: BigNumber[] }>;
 
     getPositionInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
     isAjnaPool(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
+      pool_: string,
+      subsetHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     isApprovedForAll(
-      owner: PromiseOrValue<string>,
-      operator: PromiseOrValue<string>,
+      owner: string,
+      operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     isIndexInPosition(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     isPositionBucketBankrupt(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     memorializePositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     mint(
-      pool_: PromiseOrValue<string>,
-      recipient_: PromiseOrValue<string>,
-      poolSubsetHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      recipient_: string,
+      poolSubsetHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     moveLiquidity(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      data: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
-    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     permit(
-      spender_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      signature_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      tokenId_: BigNumberish,
+      deadline_: BigNumberish,
+      signature_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
+    poolKey(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     redeemPositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     'safeTransferFrom(address,address,uint256)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     'safeTransferFrom(address,address,uint256,bytes)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     setApprovalForAll(
-      operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenURI(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[string]>;
+    tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
   };
 
@@ -538,154 +476,140 @@ export interface PositionManager extends BaseContract {
   PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
   approve(
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    pool_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  getApproved(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   getLP(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getPositionIndexes(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
+  getPositionIndexes(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber[]>;
 
   getPositionIndexesFiltered(
-    tokenId_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
   getPositionInfo(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber]>;
 
-  isAjnaPool(
-    pool_: PromiseOrValue<string>,
-    subsetHash_: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  isAjnaPool(pool_: string, subsetHash_: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
-  isApprovedForAll(
-    owner: PromiseOrValue<string>,
-    operator: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<boolean>;
 
   isIndexInPosition(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   isPositionBucketBankrupt(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   memorializePositions(
-    pool_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    tokenId_: BigNumberish,
+    indexes_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   mint(
-    pool_: PromiseOrValue<string>,
-    recipient_: PromiseOrValue<string>,
-    poolSubsetHash_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    recipient_: string,
+    poolSubsetHash_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   moveLiquidity(
-    pool_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    fromIndex_: PromiseOrValue<BigNumberish>,
-    toIndex_: PromiseOrValue<BigNumberish>,
-    expiry_: PromiseOrValue<BigNumberish>,
-    revertIfBelowLup_: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    tokenId_: BigNumberish,
+    fromIndex_: BigNumberish,
+    toIndex_: BigNumberish,
+    expiry_: BigNumberish,
+    revertIfBelowLup_: boolean,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   multicall(
-    data: PromiseOrValue<BytesLike>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    data: BytesLike[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
-  nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   permit(
-    spender_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    deadline_: PromiseOrValue<BigNumberish>,
-    signature_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender_: string,
+    tokenId_: BigNumberish,
+    deadline_: BigNumberish,
+    signature_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  poolKey(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   redeemPositions(
-    pool_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    tokenId_: BigNumberish,
+    indexes_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   'safeTransferFrom(address,address,uint256)'(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   'safeTransferFrom(address,address,uint256,bytes)'(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   setApprovalForAll(
-    operator: PromiseOrValue<string>,
-    approved: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    operator: string,
+    approved: boolean,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  supportsInterface(
-    interfaceId: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenURI(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   transferFrom(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   callStatic: {
@@ -693,211 +617,179 @@ export interface PositionManager extends BaseContract {
 
     PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
-    approve(
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    approve(to: string, tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    burn(pool_: string, tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    getApproved(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     getLP(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPositionIndexes(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+    getPositionIndexes(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber[]>;
 
     getPositionIndexesFiltered(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
     getPositionInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
-    isAjnaPool(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    isAjnaPool(pool_: string, subsetHash_: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
-    isApprovedForAll(
-      owner: PromiseOrValue<string>,
-      operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<boolean>;
 
     isIndexInPosition(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     isPositionBucketBankrupt(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     memorializePositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     mint(
-      pool_: PromiseOrValue<string>,
-      recipient_: PromiseOrValue<string>,
-      poolSubsetHash_: PromiseOrValue<BytesLike>,
+      pool_: string,
+      recipient_: string,
+      poolSubsetHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     moveLiquidity(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
+      pool_: string,
+      tokenId_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    multicall(data: PromiseOrValue<BytesLike>[], overrides?: CallOverrides): Promise<string[]>;
+    multicall(data: BytesLike[], overrides?: CallOverrides): Promise<string[]>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
-    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     permit(
-      spender_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      signature_: PromiseOrValue<BytesLike>,
+      spender_: string,
+      tokenId_: BigNumberish,
+      deadline_: BigNumberish,
+      signature_: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+    poolKey(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     redeemPositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
 
     'safeTransferFrom(address,address,uint256)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'safeTransferFrom(address,address,uint256,bytes)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setApprovalForAll(
-      operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
+      operator: string,
+      approved: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenURI(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+    tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
     'Approval(address,address,uint256)'(
-      owner?: PromiseOrValue<string> | null,
-      approved?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      approved?: string | null,
+      tokenId?: BigNumberish | null
     ): ApprovalEventFilter;
     Approval(
-      owner?: PromiseOrValue<string> | null,
-      approved?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      approved?: string | null,
+      tokenId?: BigNumberish | null
     ): ApprovalEventFilter;
 
     'ApprovalForAll(address,address,bool)'(
-      owner?: PromiseOrValue<string> | null,
-      operator?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      operator?: string | null,
       approved?: null
     ): ApprovalForAllEventFilter;
     ApprovalForAll(
-      owner?: PromiseOrValue<string> | null,
-      operator?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      operator?: string | null,
       approved?: null
     ): ApprovalForAllEventFilter;
 
-    'Burn(address,uint256)'(
-      lender?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): BurnEventFilter;
-    Burn(
-      lender?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): BurnEventFilter;
+    'Burn(address,uint256)'(lender?: string | null, tokenId?: BigNumberish | null): BurnEventFilter;
+    Burn(lender?: string | null, tokenId?: BigNumberish | null): BurnEventFilter;
 
     'MemorializePosition(address,uint256,uint256[])'(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       indexes?: null
     ): MemorializePositionEventFilter;
     MemorializePosition(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       indexes?: null
     ): MemorializePositionEventFilter;
 
     'Mint(address,address,uint256)'(
-      lender?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
+      lender?: string | null,
+      pool?: string | null,
       tokenId?: null
     ): MintEventFilter;
-    Mint(
-      lender?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
-      tokenId?: null
-    ): MintEventFilter;
+    Mint(lender?: string | null, pool?: string | null, tokenId?: null): MintEventFilter;
 
     'MoveLiquidity(address,uint256,uint256,uint256,uint256,uint256)'(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       fromIndex?: null,
       toIndex?: null,
@@ -905,7 +797,7 @@ export interface PositionManager extends BaseContract {
       lpAwardedTo?: null
     ): MoveLiquidityEventFilter;
     MoveLiquidity(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       fromIndex?: null,
       toIndex?: null,
@@ -914,25 +806,25 @@ export interface PositionManager extends BaseContract {
     ): MoveLiquidityEventFilter;
 
     'RedeemPosition(address,uint256,uint256[])'(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       indexes?: null
     ): RedeemPositionEventFilter;
     RedeemPosition(
-      lender?: PromiseOrValue<string> | null,
+      lender?: string | null,
       tokenId?: null,
       indexes?: null
     ): RedeemPositionEventFilter;
 
     'Transfer(address,address,uint256)'(
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      from?: string | null,
+      to?: string | null,
+      tokenId?: BigNumberish | null
     ): TransferEventFilter;
     Transfer(
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      from?: string | null,
+      to?: string | null,
+      tokenId?: BigNumberish | null
     ): TransferEventFilter;
   };
 
@@ -942,157 +834,145 @@ export interface PositionManager extends BaseContract {
     PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    balanceOf(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    getApproved(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getLP(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPositionIndexes(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPositionIndexes(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getPositionIndexesFiltered(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getPositionInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isAjnaPool(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
+      pool_: string,
+      subsetHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isApprovedForAll(
-      owner: PromiseOrValue<string>,
-      operator: PromiseOrValue<string>,
+      owner: string,
+      operator: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isIndexInPosition(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isPositionBucketBankrupt(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     memorializePositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     mint(
-      pool_: PromiseOrValue<string>,
-      recipient_: PromiseOrValue<string>,
-      poolSubsetHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      recipient_: string,
+      poolSubsetHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     moveLiquidity(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    multicall(data: BytesLike[], overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
-    nonces(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    ownerOf(tokenId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     permit(
-      spender_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      signature_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      tokenId_: BigNumberish,
+      deadline_: BigNumberish,
+      signature_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    poolKey(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    poolKey(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     redeemPositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     'safeTransferFrom(address,address,uint256)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     'safeTransferFrom(address,address,uint256,bytes)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     setApprovalForAll(
-      operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenURI(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
   };
 
@@ -1102,172 +982,154 @@ export interface PositionManager extends BaseContract {
     PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     approve(
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    balanceOf(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     burn(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    getApproved(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getLP(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPositionIndexes(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPositionIndexesFiltered(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPositionInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isAjnaPool(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
+      pool_: string,
+      subsetHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
-      owner: PromiseOrValue<string>,
-      operator: PromiseOrValue<string>,
+      owner: string,
+      operator: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isIndexInPosition(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isPositionBucketBankrupt(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     memorializePositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     mint(
-      pool_: PromiseOrValue<string>,
-      recipient_: PromiseOrValue<string>,
-      poolSubsetHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      recipient_: string,
+      poolSubsetHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     moveLiquidity(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      fromIndex_: PromiseOrValue<BigNumberish>,
-      toIndex_: PromiseOrValue<BigNumberish>,
-      expiry_: PromiseOrValue<BigNumberish>,
-      revertIfBelowLup_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      fromIndex_: BigNumberish,
+      toIndex_: BigNumberish,
+      expiry_: BigNumberish,
+      revertIfBelowLup_: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     multicall(
-      data: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      data: BytesLike[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    nonces(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    ownerOf(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     permit(
-      spender_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      signature_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender_: string,
+      tokenId_: BigNumberish,
+      deadline_: BigNumberish,
+      signature_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    poolKey(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    poolKey(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     redeemPositions(
-      pool_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      tokenId_: BigNumberish,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     'safeTransferFrom(address,address,uint256)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     'safeTransferFrom(address,address,uint256,bytes)'(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
-      operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
+      interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenURI(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -15,13 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface RewardsManagerInterface extends utils.Interface {
   functions: {
@@ -62,51 +56,35 @@ export interface RewardsManagerInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'ajnaToken', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'calculateRewards',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'claimRewards',
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'emergencyUnstake',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'emergencyUnstake', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'getBucketStateStakeInfo',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'getStakeInfo',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'getStakeInfo', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'isBucketUpdated',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [string, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'isEpochClaimed',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'positionManager', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'rewardsClaimed',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'stake', values: [PromiseOrValue<BigNumberish>]): string;
-  encodeFunctionData(functionFragment: 'unstake', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'rewardsClaimed', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'stake', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'unstake', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'updateBucketExchangeRatesAndClaim',
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>[]]
+    values: [string, BytesLike, BigNumberish[]]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'updateRewardsClaimed',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'updateRewardsClaimed', values: [BigNumberish]): string;
 
   decodeFunctionResult(functionFragment: 'ajnaToken', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'calculateRewards', data: BytesLike): Result;
@@ -228,228 +206,210 @@ export interface RewardsManager extends BaseContract {
     ajnaToken(overrides?: CallOverrides): Promise<[string]>;
 
     calculateRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { rewards_: BigNumber }>;
 
     claimRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
-      minAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
+      minAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     emergencyUnstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     getBucketStateStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      bucketId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      bucketId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
     getStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string, BigNumber]>;
 
     isBucketUpdated(
-      pool_: PromiseOrValue<string>,
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      epoch_: PromiseOrValue<BigNumberish>,
+      pool_: string,
+      bucketIndex_: BigNumberish,
+      epoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     isEpochClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
+      arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     positionManager(overrides?: CallOverrides): Promise<[string]>;
 
-    rewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     stake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     unstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     updateBucketExchangeRatesAndClaim(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      subsetHash_: BytesLike,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    updateRewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
   ajnaToken(overrides?: CallOverrides): Promise<string>;
 
   calculateRewards(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    epochToClaim_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    epochToClaim_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   claimRewards(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    epochToClaim_: PromiseOrValue<BigNumberish>,
-    minAmount_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    tokenId_: BigNumberish,
+    epochToClaim_: BigNumberish,
+    minAmount_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   emergencyUnstake(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   getBucketStateStakeInfo(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    bucketId_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
+    bucketId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber]>;
 
   getStakeInfo(
-    tokenId_: PromiseOrValue<BigNumberish>,
+    tokenId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[string, string, BigNumber]>;
 
   isBucketUpdated(
-    pool_: PromiseOrValue<string>,
-    bucketIndex_: PromiseOrValue<BigNumberish>,
-    epoch_: PromiseOrValue<BigNumberish>,
+    pool_: string,
+    bucketIndex_: BigNumberish,
+    epoch_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   isEpochClaimed(
-    arg0: PromiseOrValue<BigNumberish>,
-    arg1: PromiseOrValue<BigNumberish>,
+    arg0: BigNumberish,
+    arg1: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   positionManager(overrides?: CallOverrides): Promise<string>;
 
-  rewardsClaimed(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   stake(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   unstake(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   updateBucketExchangeRatesAndClaim(
-    pool_: PromiseOrValue<string>,
-    subsetHash_: PromiseOrValue<BytesLike>,
-    indexes_: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    pool_: string,
+    subsetHash_: BytesLike,
+    indexes_: BigNumberish[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  updateRewardsClaimed(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     ajnaToken(overrides?: CallOverrides): Promise<string>;
 
     calculateRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     claimRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
-      minAmount_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
+      minAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    emergencyUnstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    emergencyUnstake(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     getBucketStateStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      bucketId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      bucketId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
     getStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string, BigNumber]>;
 
     isBucketUpdated(
-      pool_: PromiseOrValue<string>,
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      epoch_: PromiseOrValue<BigNumberish>,
+      pool_: string,
+      bucketIndex_: BigNumberish,
+      epoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     isEpochClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
+      arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     positionManager(overrides?: CallOverrides): Promise<string>;
 
-    rewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    stake(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<void>;
+    stake(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    unstake(tokenId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<void>;
+    unstake(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     updateBucketExchangeRatesAndClaim(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
-      indexes_: PromiseOrValue<BigNumberish>[],
+      pool_: string,
+      subsetHash_: BytesLike,
+      indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    updateRewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {
     'ClaimRewards(address,address,uint256,uint256[],uint256)'(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null,
       epochsClaimed?: null,
       amount?: null
     ): ClaimRewardsEventFilter;
     ClaimRewards(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null,
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null,
       epochsClaimed?: null,
       amount?: null
     ): ClaimRewardsEventFilter;
@@ -466,36 +426,36 @@ export interface RewardsManager extends BaseContract {
     ): MoveStakedLiquidityEventFilter;
 
     'Stake(address,address,uint256)'(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null
     ): StakeEventFilter;
     Stake(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null
     ): StakeEventFilter;
 
     'Unstake(address,address,uint256)'(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null
     ): UnstakeEventFilter;
     Unstake(
-      owner?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      owner?: string | null,
+      ajnaPool?: string | null,
+      tokenId?: BigNumberish | null
     ): UnstakeEventFilter;
 
     'UpdateExchangeRates(address,address,uint256[],uint256)'(
-      caller?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
+      caller?: string | null,
+      ajnaPool?: string | null,
       indexesUpdated?: null,
       rewardsClaimed?: null
     ): UpdateExchangeRatesEventFilter;
     UpdateExchangeRates(
-      caller?: PromiseOrValue<string> | null,
-      ajnaPool?: PromiseOrValue<string> | null,
+      caller?: string | null,
+      ajnaPool?: string | null,
       indexesUpdated?: null,
       rewardsClaimed?: null
     ): UpdateExchangeRatesEventFilter;
@@ -505,148 +465,127 @@ export interface RewardsManager extends BaseContract {
     ajnaToken(overrides?: CallOverrides): Promise<BigNumber>;
 
     calculateRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     claimRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
-      minAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
+      minAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     emergencyUnstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     getBucketStateStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      bucketId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      bucketId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getStakeInfo(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     isBucketUpdated(
-      pool_: PromiseOrValue<string>,
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      epoch_: PromiseOrValue<BigNumberish>,
+      pool_: string,
+      bucketIndex_: BigNumberish,
+      epoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isEpochClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
+      arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     positionManager(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    stake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    stake(tokenId_: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
-    unstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    unstake(tokenId_: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     updateBucketExchangeRatesAndClaim(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      subsetHash_: BytesLike,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    updateRewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
     ajnaToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     calculateRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     claimRewards(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      epochToClaim_: PromiseOrValue<BigNumberish>,
-      minAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      epochToClaim_: BigNumberish,
+      minAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     emergencyUnstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     getBucketStateStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      bucketId_: PromiseOrValue<BigNumberish>,
+      tokenId_: BigNumberish,
+      bucketId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getStakeInfo(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getStakeInfo(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isBucketUpdated(
-      pool_: PromiseOrValue<string>,
-      bucketIndex_: PromiseOrValue<BigNumberish>,
-      epoch_: PromiseOrValue<BigNumberish>,
+      pool_: string,
+      bucketIndex_: BigNumberish,
+      epoch_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isEpochClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
+      arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     positionManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    rewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     stake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     unstake(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     updateBucketExchangeRatesAndClaim(
-      pool_: PromiseOrValue<string>,
-      subsetHash_: PromiseOrValue<BytesLike>,
-      indexes_: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      pool_: string,
+      subsetHash_: BytesLike,
+      indexes_: BigNumberish[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     updateRewardsClaimed(
-      arg0: PromiseOrValue<BigNumberish>,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

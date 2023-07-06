@@ -15,25 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
-
-export declare namespace ERC20Votes {
-  export type CheckpointStruct = {
-    fromBlock: PromiseOrValue<BigNumberish>;
-    votes: PromiseOrValue<BigNumberish>;
-  };
-
-  export type CheckpointStructOutput = [number, BigNumber] & {
-    fromBlock: number;
-    votes: BigNumber;
-  };
-}
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface AjnaTokenInterface extends utils.Interface {
   functions: {
@@ -94,92 +76,41 @@ export interface AjnaTokenInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: 'DOMAIN_SEPARATOR', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'allowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'approve',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'balanceOf', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'burn', values: [PromiseOrValue<BigNumberish>]): string;
-  encodeFunctionData(
-    functionFragment: 'burnFrom',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'checkpoints',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'allowance', values: [string, string]): string;
+  encodeFunctionData(functionFragment: 'approve', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'balanceOf', values: [string]): string;
+  encodeFunctionData(functionFragment: 'burn', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'burnFrom', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'checkpoints', values: [string, BigNumberish]): string;
   encodeFunctionData(functionFragment: 'decimals', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'decreaseAllowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'delegate', values: [PromiseOrValue<string>]): string;
+  encodeFunctionData(functionFragment: 'decreaseAllowance', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'delegate', values: [string]): string;
   encodeFunctionData(
     functionFragment: 'delegateBySig',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, BigNumberish, BigNumberish, BigNumberish, BytesLike, BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: 'delegates', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'getPastTotalSupply',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getPastVotes',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'getVotes', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'increaseAllowance',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'delegates', values: [string]): string;
+  encodeFunctionData(functionFragment: 'getPastTotalSupply', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getPastVotes', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getVotes', values: [string]): string;
+  encodeFunctionData(functionFragment: 'increaseAllowance', values: [string, BigNumberish]): string;
   encodeFunctionData(functionFragment: 'name', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'nonces', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'numCheckpoints', values: [PromiseOrValue<string>]): string;
+  encodeFunctionData(functionFragment: 'nonces', values: [string]): string;
+  encodeFunctionData(functionFragment: 'numCheckpoints', values: [string]): string;
   encodeFunctionData(
     functionFragment: 'permit',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, string, BigNumberish, BigNumberish, BigNumberish, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalSupply', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'transfer',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'transfer', values: [string, BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'transferFrom',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'transferFromWithPermit',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, string, string, BigNumberish, BigNumberish, BigNumberish, BytesLike, BytesLike]
   ): string;
 
   decodeFunctionResult(functionFragment: 'DOMAIN_SEPARATOR', data: BytesLike): Result;
@@ -289,96 +220,89 @@ export interface AjnaToken extends BaseContract {
   functions: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
 
-    allowance(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     approve(
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    balanceOf(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     burn(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     burnFrom(
-      account: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      account: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     checkpoints(
-      account: PromiseOrValue<string>,
-      pos: PromiseOrValue<BigNumberish>,
+      account: string,
+      pos: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[ERC20Votes.CheckpointStructOutput]>;
+    ): Promise<[[number, BigNumber] & { fromBlock: number; votes: BigNumber }]>;
 
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
     decreaseAllowance(
-      spender: PromiseOrValue<string>,
-      subtractedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      subtractedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     delegate(
-      delegatee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      delegatee: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     delegateBySig(
-      delegatee: PromiseOrValue<string>,
-      nonce: PromiseOrValue<BigNumberish>,
-      expiry: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    delegates(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[string]>;
+    delegates(account: string, overrides?: CallOverrides): Promise<[string]>;
 
-    getPastTotalSupply(
-      blockNumber: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    getPastTotalSupply(blockNumber: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getPastVotes(
-      account: PromiseOrValue<string>,
-      blockNumber: PromiseOrValue<BigNumberish>,
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getVotes(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    getVotes(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     increaseAllowance(
-      spender: PromiseOrValue<string>,
-      addedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      addedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
-    nonces(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    nonces(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    numCheckpoints(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[number]>;
+    numCheckpoints(account: string, overrides?: CallOverrides): Promise<[number]>;
 
     permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
@@ -386,123 +310,116 @@ export interface AjnaToken extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transfer(
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     transferFromWithPermit(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      spender_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from_: string,
+      to_: string,
+      spender_: string,
+      value_: BigNumberish,
+      deadline_: BigNumberish,
+      v_: BigNumberish,
+      r_: BytesLike,
+      s_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
-  allowance(
-    owner: PromiseOrValue<string>,
-    spender: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   approve(
-    spender: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  balanceOf(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   burnFrom(
-    account: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    account: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   checkpoints(
-    account: PromiseOrValue<string>,
-    pos: PromiseOrValue<BigNumberish>,
+    account: string,
+    pos: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<ERC20Votes.CheckpointStructOutput>;
+  ): Promise<[number, BigNumber] & { fromBlock: number; votes: BigNumber }>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
 
   decreaseAllowance(
-    spender: PromiseOrValue<string>,
-    subtractedValue: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender: string,
+    subtractedValue: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   delegate(
-    delegatee: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    delegatee: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   delegateBySig(
-    delegatee: PromiseOrValue<string>,
-    nonce: PromiseOrValue<BigNumberish>,
-    expiry: PromiseOrValue<BigNumberish>,
-    v: PromiseOrValue<BigNumberish>,
-    r: PromiseOrValue<BytesLike>,
-    s: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    delegatee: string,
+    nonce: BigNumberish,
+    expiry: BigNumberish,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  delegates(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<string>;
+  delegates(account: string, overrides?: CallOverrides): Promise<string>;
 
-  getPastTotalSupply(
-    blockNumber: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getPastTotalSupply(blockNumber: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   getPastVotes(
-    account: PromiseOrValue<string>,
-    blockNumber: PromiseOrValue<BigNumberish>,
+    account: string,
+    blockNumber: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getVotes(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  getVotes(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   increaseAllowance(
-    spender: PromiseOrValue<string>,
-    addedValue: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    spender: string,
+    addedValue: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
 
-  nonces(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  numCheckpoints(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<number>;
+  numCheckpoints(account: string, overrides?: CallOverrides): Promise<number>;
 
   permit(
-    owner: PromiseOrValue<string>,
-    spender: PromiseOrValue<string>,
-    value: PromiseOrValue<BigNumberish>,
-    deadline: PromiseOrValue<BigNumberish>,
-    v: PromiseOrValue<BigNumberish>,
-    r: PromiseOrValue<BytesLike>,
-    s: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    owner: string,
+    spender: string,
+    value: BigNumberish,
+    deadline: BigNumberish,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
@@ -510,116 +427,101 @@ export interface AjnaToken extends BaseContract {
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transfer(
-    to: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    to: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   transferFrom(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    from: string,
+    to: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   transferFromWithPermit(
-    from_: PromiseOrValue<string>,
-    to_: PromiseOrValue<string>,
-    spender_: PromiseOrValue<string>,
-    value_: PromiseOrValue<BigNumberish>,
-    deadline_: PromiseOrValue<BigNumberish>,
-    v_: PromiseOrValue<BigNumberish>,
-    r_: PromiseOrValue<BytesLike>,
-    s_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    from_: string,
+    to_: string,
+    spender_: string,
+    value_: BigNumberish,
+    deadline_: BigNumberish,
+    v_: BigNumberish,
+    r_: BytesLike,
+    s_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
-    allowance(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    approve(
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    approve(spender: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
-    balanceOf(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(amount: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<void>;
+    burn(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    burnFrom(
-      account: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    burnFrom(account: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     checkpoints(
-      account: PromiseOrValue<string>,
-      pos: PromiseOrValue<BigNumberish>,
+      account: string,
+      pos: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<ERC20Votes.CheckpointStructOutput>;
+    ): Promise<[number, BigNumber] & { fromBlock: number; votes: BigNumber }>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
 
     decreaseAllowance(
-      spender: PromiseOrValue<string>,
-      subtractedValue: PromiseOrValue<BigNumberish>,
+      spender: string,
+      subtractedValue: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    delegate(delegatee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
+    delegate(delegatee: string, overrides?: CallOverrides): Promise<void>;
 
     delegateBySig(
-      delegatee: PromiseOrValue<string>,
-      nonce: PromiseOrValue<BigNumberish>,
-      expiry: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    delegates(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<string>;
+    delegates(account: string, overrides?: CallOverrides): Promise<string>;
 
-    getPastTotalSupply(
-      blockNumber: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPastTotalSupply(blockNumber: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getPastVotes(
-      account: PromiseOrValue<string>,
-      blockNumber: PromiseOrValue<BigNumberish>,
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getVotes(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    getVotes(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
-      spender: PromiseOrValue<string>,
-      addedValue: PromiseOrValue<BigNumberish>,
+      spender: string,
+      addedValue: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
-    nonces(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    numCheckpoints(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<number>;
+    numCheckpoints(account: string, overrides?: CallOverrides): Promise<number>;
 
     permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -627,171 +529,142 @@ export interface AjnaToken extends BaseContract {
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transfer(
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    transfer(to: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      from: string,
+      to: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     transferFromWithPermit(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      spender_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
+      from_: string,
+      to_: string,
+      spender_: string,
+      value_: BigNumberish,
+      deadline_: BigNumberish,
+      v_: BigNumberish,
+      r_: BytesLike,
+      s_: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
     'Approval(address,address,uint256)'(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
+      owner?: string | null,
+      spender?: string | null,
       value?: null
     ): ApprovalEventFilter;
-    Approval(
-      owner?: PromiseOrValue<string> | null,
-      spender?: PromiseOrValue<string> | null,
-      value?: null
-    ): ApprovalEventFilter;
+    Approval(owner?: string | null, spender?: string | null, value?: null): ApprovalEventFilter;
 
     'DelegateChanged(address,address,address)'(
-      delegator?: PromiseOrValue<string> | null,
-      fromDelegate?: PromiseOrValue<string> | null,
-      toDelegate?: PromiseOrValue<string> | null
+      delegator?: string | null,
+      fromDelegate?: string | null,
+      toDelegate?: string | null
     ): DelegateChangedEventFilter;
     DelegateChanged(
-      delegator?: PromiseOrValue<string> | null,
-      fromDelegate?: PromiseOrValue<string> | null,
-      toDelegate?: PromiseOrValue<string> | null
+      delegator?: string | null,
+      fromDelegate?: string | null,
+      toDelegate?: string | null
     ): DelegateChangedEventFilter;
 
     'DelegateVotesChanged(address,uint256,uint256)'(
-      delegate?: PromiseOrValue<string> | null,
+      delegate?: string | null,
       previousBalance?: null,
       newBalance?: null
     ): DelegateVotesChangedEventFilter;
     DelegateVotesChanged(
-      delegate?: PromiseOrValue<string> | null,
+      delegate?: string | null,
       previousBalance?: null,
       newBalance?: null
     ): DelegateVotesChangedEventFilter;
 
     'Transfer(address,address,uint256)'(
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
+      from?: string | null,
+      to?: string | null,
       value?: null
     ): TransferEventFilter;
-    Transfer(
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
-      value?: null
-    ): TransferEventFilter;
+    Transfer(from?: string | null, to?: string | null, value?: null): TransferEventFilter;
   };
 
   estimateGas: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
 
-    allowance(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     approve(
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    balanceOf(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    burn(amount: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     burnFrom(
-      account: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      account: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    checkpoints(
-      account: PromiseOrValue<string>,
-      pos: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    checkpoints(account: string, pos: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
     decreaseAllowance(
-      spender: PromiseOrValue<string>,
-      subtractedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      subtractedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    delegate(
-      delegatee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    delegate(delegatee: string, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     delegateBySig(
-      delegatee: PromiseOrValue<string>,
-      nonce: PromiseOrValue<BigNumberish>,
-      expiry: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    delegates(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    delegates(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getPastTotalSupply(
-      blockNumber: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPastTotalSupply(blockNumber: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getPastVotes(
-      account: PromiseOrValue<string>,
-      blockNumber: PromiseOrValue<BigNumberish>,
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getVotes(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    getVotes(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
-      spender: PromiseOrValue<string>,
-      addedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      addedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
-    nonces(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    numCheckpoints(account: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    numCheckpoints(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
@@ -799,28 +672,28 @@ export interface AjnaToken extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     transferFromWithPermit(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      spender_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from_: string,
+      to_: string,
+      spender_: string,
+      value_: BigNumberish,
+      deadline_: BigNumberish,
+      v_: BigNumberish,
+      r_: BytesLike,
+      s_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
   };
 
@@ -828,107 +701,95 @@ export interface AjnaToken extends BaseContract {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     allowance(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
+      owner: string,
+      spender: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     approve(
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    balanceOf(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    balanceOf(account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     burn(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     burnFrom(
-      account: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      account: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     checkpoints(
-      account: PromiseOrValue<string>,
-      pos: PromiseOrValue<BigNumberish>,
+      account: string,
+      pos: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     decreaseAllowance(
-      spender: PromiseOrValue<string>,
-      subtractedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      subtractedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     delegate(
-      delegatee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      delegatee: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     delegateBySig(
-      delegatee: PromiseOrValue<string>,
-      nonce: PromiseOrValue<BigNumberish>,
-      expiry: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    delegates(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    delegates(account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getPastTotalSupply(
-      blockNumber: PromiseOrValue<BigNumberish>,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPastVotes(
-      account: PromiseOrValue<string>,
-      blockNumber: PromiseOrValue<BigNumberish>,
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getVotes(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getVotes(account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     increaseAllowance(
-      spender: PromiseOrValue<string>,
-      addedValue: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      spender: string,
+      addedValue: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    nonces(owner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    nonces(owner: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    numCheckpoints(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    numCheckpoints(account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -936,28 +797,28 @@ export interface AjnaToken extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transfer(
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     transferFromWithPermit(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      spender_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      deadline_: PromiseOrValue<BigNumberish>,
-      v_: PromiseOrValue<BigNumberish>,
-      r_: PromiseOrValue<BytesLike>,
-      s_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      from_: string,
+      to_: string,
+      spender_: string,
+      value_: BigNumberish,
+      deadline_: BigNumberish,
+      v_: BigNumberish,
+      r_: BytesLike,
+      s_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };
 }
