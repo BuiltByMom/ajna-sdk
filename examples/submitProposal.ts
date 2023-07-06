@@ -49,10 +49,7 @@ async function run() {
     const distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
     console.log('current distribution period details:', distributionPeriod);
   } catch (e) {
-    if (
-      e instanceof SdkError &&
-      e.message === 'There is no active distribution period, starting a new one'
-    ) {
+    if (e instanceof SdkError && e.message === 'There is no active distribution period') {
       console.log('There is no active distribution period, starting a new one');
       await startDistributionPeriod();
     } else {
