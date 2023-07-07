@@ -3,17 +3,18 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { addAccountFromKeystore } from '../src/utils/add-account';
-import { providers } from 'ethers';
+import { BigNumber, ethers, providers } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
 import { SdkError } from '../src/types';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
+import grantsFundAbi from '../src/abis/GrantFund.json';
 
-const CREATE_NEW_PROPOSAL = true;
-// sample RC5 proposal id for goerli network: 0x7d84a6263ae0d98d3329bd7b46bb4e8d6f98cd35a7adb45c274c8b7fd5ebd5e0
-const EXISTING_PROPOSAL_ID = '';
+const CREATE_NEW_PROPOSAL = false;
+// sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
+const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e';
 // proposal description must be unique, select a different title each time
-const PROPOSAL_TITLE = 'ajna lending improvements 4';
+const PROPOSAL_TITLE = 'ajna community courses 4';
 
 async function run() {
   dotenv.config();
@@ -48,7 +49,9 @@ async function run() {
     const receipt = await tx.verify();
     console.log(fromWad(receipt), 'estimated gas required for propose transaction');
     const recepit2 = await tx.verifyAndSubmit();
-    const proposalId = recepit2.logs[0].topics[0];
+    const iface = new ethers.utils.Interface(grantsFundAbi);
+    const logDescription = iface.parseLog(recepit2.logs[0]);
+    const proposalId = logDescription.args[0];
     console.log('proposal created with id', proposalId);
     return proposalId;
   };
@@ -64,7 +67,7 @@ async function run() {
       throw e;
     }
   }
-  const proposalId = CREATE_NEW_PROPOSAL ? await propose() : EXISTING_PROPOSAL_ID;
+  const proposalId = CREATE_NEW_PROPOSAL ? await propose() : BigNumber.from(EXISTING_PROPOSAL_ID);
   const proposal = ajna.distributionPeriods.getProposal(proposalId);
   const { votesReceived, tokensRequested, fundingVotesReceived } = await proposal.getInfo();
   console.log(
@@ -72,6 +75,8 @@ async function run() {
       fundingVotesReceived
     )} funding votes, with ${fromWad(tokensRequested)} tokens required`
   );
+  const state = await proposal.getState();
+  console.log(`the proposal is in ${state} state`);
 }
 
 run();

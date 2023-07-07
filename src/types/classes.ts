@@ -109,6 +109,19 @@ export interface IDistributionPeriod {
   createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
 }
 
+export const proposalStates = [
+  'Pending',
+  'Active',
+  'Canceled',
+  'Defeated',
+  'Succeeded',
+  'Queued',
+  'Expired',
+  'Executed',
+] as const;
+
+export type ProposalState = (typeof proposalStates)[number];
+
 export interface IProposal {
   /**
    * Handles methods specific to a given proposal
@@ -121,4 +134,5 @@ export interface IProposal {
     fundingVotesReceived: BigNumber;
     executed: boolean;
   }>;
+  getState(): Promise<ProposalState>;
 }

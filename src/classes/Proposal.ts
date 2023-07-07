@@ -1,13 +1,15 @@
-import { getProposalInfo } from '../contracts/grant-fund';
-import { IProposal, SignerOrProvider } from 'types';
+import { BigNumber } from 'ethers';
+import { getProposalInfo, getProposalState } from '../contracts/grant-fund';
+import { IProposal, proposalStates } from '../types/classes';
+import { SignerOrProvider } from 'types';
 
 /**
  * models a grants fund proposal
  */
 export class Proposal implements IProposal {
   provider: SignerOrProvider;
-  id: string;
-  constructor(provider: SignerOrProvider, id: string) {
+  id: BigNumber;
+  constructor(provider: SignerOrProvider, id: BigNumber) {
     this.provider = provider;
     this.id = id;
   }
@@ -29,5 +31,10 @@ export class Proposal implements IProposal {
       fundingVotesReceived,
       executed,
     };
+  }
+
+  async getState() {
+    const index = await getProposalState(this.provider, this.id);
+    return proposalStates[index];
   }
 }
