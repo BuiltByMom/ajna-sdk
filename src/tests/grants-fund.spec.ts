@@ -5,8 +5,9 @@ import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { expect } from '@jest/globals';
 import { submitAndVerifyTransaction } from './test-utils';
-import { startNewDistributionPeriod } from '../contracts/grant-fund';
+import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
 import { timeJump } from '../utils/ganache';
+import { fromWad } from '../utils';
 
 dotenv.config();
 
@@ -64,11 +65,11 @@ describe('Grants fund', () => {
       arweaveTxid: '000000001',
     });
     const receipt = await submitAndVerifyTransaction(tx);
-    const proposalId = receipt.logs[0].topics[0];
+    const proposalId = getProposalIdFromReceipt(receipt);
     const proposal = ajna.distributionPeriods.getProposal(proposalId);
     const proposalInfo = await proposal.getInfo();
     expect(proposalInfo.votesReceived.isZero()).toBe(true);
-    expect(proposalInfo.tokensRequested.isZero()).toBe(true);
+    expect(fromWad(proposalInfo.tokensRequested)).toBe('1000.0');
     expect(proposalInfo.fundingVotesReceived.isZero()).toBe(true);
     expect(proposalInfo.executed).toBe(false);
   });

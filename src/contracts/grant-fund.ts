@@ -5,6 +5,7 @@ import { Address, ProposalParams, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 import { BigNumber, Contract, Signer, ethers } from 'ethers';
+import { TransactionReceipt } from '@ethersproject/providers';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
@@ -59,6 +60,12 @@ export async function createProposal(
     methodName: 'propose',
     args: [[Config.ajnaToken], [0], encodedTransferCalls, description],
   });
+}
+
+export function getProposalIdFromReceipt(receipt: TransactionReceipt): BigNumber {
+  const iface = new ethers.utils.Interface(grantsFundAbi);
+  const logDescription = iface.parseLog(receipt.logs[0]);
+  return logDescription.args[0];
 }
 
 export async function getProposalInfo(provider: SignerOrProvider, distributionId: BigNumber) {

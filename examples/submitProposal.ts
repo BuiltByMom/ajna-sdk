@@ -3,18 +3,17 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { addAccountFromKeystore } from '../src/utils/add-account';
-import { BigNumber, ethers, providers } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
 import { SdkError } from '../src/types';
-import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
-import grantsFundAbi from '../src/abis/GrantFund.json';
+import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../src/contracts/grant-fund';
 
-const CREATE_NEW_PROPOSAL = false;
+const CREATE_NEW_PROPOSAL = true;
 // sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
 const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e';
 // proposal description must be unique, select a different title each time
-const PROPOSAL_TITLE = 'ajna community courses 4';
+const PROPOSAL_TITLE = 'ajna community courses 5';
 
 async function run() {
   dotenv.config();
@@ -46,12 +45,10 @@ async function run() {
       recipientAddresses: [{ address: proposalToAddress, amount: '1000.00' }],
       externalLink: 'https://example.com',
     });
-    const receipt = await tx.verify();
-    console.log(fromWad(receipt), 'estimated gas required for propose transaction');
-    const recepit2 = await tx.verifyAndSubmit();
-    const iface = new ethers.utils.Interface(grantsFundAbi);
-    const logDescription = iface.parseLog(recepit2.logs[0]);
-    const proposalId = logDescription.args[0];
+    const estimatedGas = await tx.verify();
+    console.log(fromWad(estimatedGas), 'estimated gas required for propose transaction');
+    const recepit = await tx.verifyAndSubmit();
+    const proposalId = getProposalIdFromReceipt(recepit);
     console.log('proposal created with id', proposalId);
     return proposalId;
   };
