@@ -4,7 +4,7 @@ import { Config } from '../classes/Config';
 import { Address, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
-import { Contract, Signer, ethers } from 'ethers';
+import { BigNumber, Contract, Signer, ethers } from 'ethers';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
@@ -43,4 +43,9 @@ export async function startNewDistributionPeriod(signer: Signer) {
 export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
+}
+
+export async function getTreasury(provider: SignerOrProvider): Promise<BigNumber> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.treasury();
 }

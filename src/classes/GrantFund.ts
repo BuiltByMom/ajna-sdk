@@ -1,5 +1,10 @@
-import { delegateVote, getVotingPower } from '../contracts/grant-fund';
-import { Address, IGrantFund, SignerOrProvider } from '../types';
+import {
+  delegateVote,
+  getTreasury,
+  getVotingPower,
+  startNewDistributionPeriod,
+} from '../contracts/grant-fund';
+import { Address, IGrantFund, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
 /**
@@ -28,5 +33,12 @@ export class GrantFund extends ContractBase implements IGrantFund {
    */
   async getVotingPower(signer: Signer, address?: string) {
     return await getVotingPower(signer, address ?? (await signer.getAddress()));
+  }
+
+  async startNewDistributionPeriod(signer: Signer) {
+    if ((await getTreasury(signer)).isZero()) {
+      throw new SdkError('Unfunded treasury');
+    }
+    return startNewDistributionPeriod(signer);
   }
 }
