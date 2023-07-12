@@ -1,7 +1,6 @@
 import { BigNumber } from 'ethers';
 import { getProposalInfo, getProposalState } from '../contracts/grant-fund';
-import { IProposal, proposalStates } from '../types/classes';
-import { SignerOrProvider } from 'types';
+import { IProposal, proposalStates, SignerOrProvider } from '../types';
 
 /**
  * models a grants fund proposal
