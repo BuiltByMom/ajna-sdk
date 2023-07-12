@@ -37,13 +37,13 @@ export class GrantFund extends ContractBase implements IGrantFund {
 
   /**
    * get the remaining quadratic voting power available to the voter in the funding stage of a distribution period
-   * @param blockNumber current distribution period block number
+   * @param distributionId the distributionId of the distribution period to check
    * @param address the address of the voter to check
    * @returns the voter's remaining quadratic voting power
    */
-  async getVotesFunding(blockNumber: number, address: Address) {
+  async getVotesFunding(distributionId: number, address: Address) {
     const contractInstance = getGrantsFundContract(this.getProvider());
-    return await getVotesFunding(contractInstance, blockNumber, address);
+    return await getVotesFunding(contractInstance, distributionId, address);
   }
 
   /**

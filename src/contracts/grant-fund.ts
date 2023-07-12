@@ -46,8 +46,12 @@ export async function getDistributionPeriod(provider: SignerOrProvider, distribu
 }
 
 // Votes
-export async function getVotesFunding(contract: Contract, blockNumber: number, account: Address) {
-  return await contract.getVotesFunding(blockNumber, account);
+export async function getVotesFunding(
+  contract: Contract,
+  distributionId: number,
+  account: Address
+) {
+  return await contract.getVotesFunding(distributionId, account);
 }
 
 export async function getVotesScreening(

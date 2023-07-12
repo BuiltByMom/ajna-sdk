@@ -6,6 +6,8 @@ import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { DistributionPeriod } from '../types/classes';
 import { fromWad } from '../utils/numeric';
+import { mine } from '../utils/ganache';
+import { getBlock } from '../utils/time';
 
 dotenv.config();
 
@@ -35,18 +37,14 @@ describe('Grant Fund', () => {
       expect(delegate).toBe(DELEGATEE_ADDRESS);
     });
   });
+
   describe('Voting', () => {
     let distributionPeriod: DistributionPeriod;
     beforeAll(async () => {
       distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
-    });
-    it('should get votes funding', async () => {
-      const delegate = await ajna.grants.getVotesFunding(
-        distributionPeriod.blockNumber,
-        DELEGATEE_ADDRESS
-      );
-      expect(delegate).toBeDefined();
-      expect(fromWad(delegate)).toBe('0.0');
+      const currentBlock = await getBlock(provider);
+      expect(distributionPeriod.startBlock < currentBlock.number);
+      expect(distributionPeriod.blockNumber < currentBlock.number);
     });
     it('should get votes screening', async () => {
       const delegate = await ajna.grants.getVotesScreening(
@@ -55,6 +53,13 @@ describe('Grant Fund', () => {
       );
       expect(delegate).toBeDefined();
       expect(fromWad(delegate)).toBe('0.0');
+    });
+    it('should get votes funding', async () => {
+      const SCREENING_PERIOD_LENGTH = 525_600;
+      await mine(provider, SCREENING_PERIOD_LENGTH);
+      const delegate = await ajna.grants.getVotesFunding(distributionPeriod.id, DELEGATEE_ADDRESS);
+      expect(delegate).toBeDefined();
+      expect(fromWad(delegate)).toBe('490000000000000000.0');
     });
   });
 });
