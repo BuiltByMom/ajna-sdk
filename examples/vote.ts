@@ -54,6 +54,8 @@ async function run() {
 
   const distributionPeriodData = await getDistributionPeriod();
 
+  console.log('distribution', distributionPeriodData);
+
   const fundingVotes = await ajna.grants.getVotesFunding(
     distributionPeriodData.blockNumber,
     delegateeAddress
