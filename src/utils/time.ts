@@ -1,3 +1,4 @@
+import { Block } from '@ethersproject/providers';
 import { DEFAULT_TTL } from '../constants';
 import { Provider, SignerOrProvider, SdkError } from '../types';
 import { Signer } from 'ethers';
@@ -10,7 +11,7 @@ export const getExpiry = async (signer: SignerOrProvider, ttlSeconds: number = D
   return (await getBlockTime(signer)) + ttlSeconds;
 };
 
-export const getBlock = async (signer: SignerOrProvider): Promise<any> => {
+export const getBlock = async (signer: SignerOrProvider): Promise<Block> => {
   const provider = getProvider(signer);
   let blockNumber = await provider.getBlockNumber();
   let block = await provider.getBlock(blockNumber);
