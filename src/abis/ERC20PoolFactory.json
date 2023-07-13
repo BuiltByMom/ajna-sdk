@@ -1,9 +1,14 @@
 [
   { "type": "constructor", "payable": false, "inputs": [{ "type": "address", "name": "ajna_" }] },
   { "type": "error", "name": "CreateFail", "inputs": [] },
+  { "type": "error", "name": "DecimalsNotCompliant", "inputs": [] },
   { "type": "error", "name": "DeployQuoteCollateralSameToken", "inputs": [] },
   { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
-  { "type": "error", "name": "PoolAlreadyExists", "inputs": [] },
+  {
+    "type": "error",
+    "name": "PoolAlreadyExists",
+    "inputs": [{ "type": "address", "name": "pool_" }]
+  },
   { "type": "error", "name": "PoolInterestRateInvalid", "inputs": [] },
   {
     "type": "event",

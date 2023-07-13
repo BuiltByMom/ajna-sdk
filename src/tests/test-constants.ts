@@ -7,16 +7,18 @@ export const TEST_CONFIG = {
 };
 
 // here just to name the parameters
-const erc20PoolFactoryAddress = '0x06F4dC71a0029E31141fa23988735950324A48C7';
-const erc721PoolFactoryAddress = '0x9EF8ad06546EE0FbCB9927bC015b0ce7159c2e1e';
-const poolUtilsAddress = '0xD86c4A8b172170Da0d5C0C1F12455bA80Eaa42AD';
-const positionManagerAddress = '0x9617ABE221F9A9c492D5348be56aef4Db75A692d';
+const erc20PoolFactoryAddress = '0xD86c4A8b172170Da0d5C0C1F12455bA80Eaa42AD';
+const erc721PoolFactoryAddress = '0x9617ABE221F9A9c492D5348be56aef4Db75A692d';
+const poolUtilsAddress = '0x4f05DA51eAAB00e5812c54e370fB95D4C9c51F21';
+const positionManagerAddress = '0x6c5c7fD98415168ada1930d44447790959097482';
 const ajnaTokenAddress = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
+const grantFundAddress = '0xE340B87CEd1af1AbE1CE8D617c84B7f168e3b18b';
 
 export const testnetAddresses = new Config(
   erc20PoolFactoryAddress,
   erc721PoolFactoryAddress,
   poolUtilsAddress,
   positionManagerAddress,
-  ajnaTokenAddress
+  ajnaTokenAddress,
+  grantFundAddress
 );

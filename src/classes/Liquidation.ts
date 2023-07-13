@@ -1,27 +1,10 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { Address, CallData, PoolInfoUtils, SignerOrProvider } from 'types';
+import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from 'types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
 import { settle } from '../contracts/pool';
 import { bucketTake, take } from '../contracts/erc20-pool';
-
-export interface AuctionStatus {
-  /** time auction was kicked */
-  kickTime: Date;
-  /** remaining collateral available to be purchased */
-  collateral: BigNumber;
-  /** remaining borrower debt to be covered */
-  debtToCover: BigNumber;
-  /** true if the grace period has elapsed and the auction has not expired */
-  isTakeable: boolean;
-  /** helps determine if the liquidation may be settled */
-  isCollateralized: boolean;
-  /** current price of the auction */
-  price: BigNumber;
-  /** price at which bond holder is neither rewarded nor penalized */
-  neutralPrice: BigNumber;
-}
 
 /**
  * Models an auction used to liquidate an undercollateralized borrower
@@ -52,11 +35,34 @@ export class Liquidation {
     const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
       await auctionStatus(this.utilsContract, this.poolContract.address, this.borrowerAddress);
 
+    return Liquidation._prepareAuctionStatus(
+      await getBlockTime(this.provider),
+      kickTimestamp,
+      collateral,
+      debtToCover,
+      isCollateralized,
+      price,
+      neutralPrice
+    );
+  }
+
+  static _prepareAuctionStatus(
+    currentTimestamp: number,
+    kickTimestamp: BigNumber,
+    collateral: BigNumber,
+    debtToCover: BigNumber,
+    isCollateralized: boolean,
+    price: BigNumber,
+    neutralPrice: BigNumber
+  ) {
     const kickTimestampNumber = kickTimestamp.toNumber();
     const kickTime = new Date(kickTimestampNumber * 1000);
-    const currentTimestampNumber = await getBlockTime(this.provider);
-    const isGracePeriod = currentTimestampNumber - kickTimestampNumber < 3600;
-    const isTakeable = !isGracePeriod && collateral.gt(BigNumber.from(0));
+    const elapsedTime = currentTimestamp - kickTimestampNumber;
+
+    const isGracePeriod = elapsedTime < 3600;
+    const zero = constants.Zero;
+    const isTakeable = !isGracePeriod && collateral.gt(zero);
+    const isSettleable = kickTimestampNumber > 0 && (elapsedTime >= 3600 * 72 || collateral.eq(0));
 
     return {
       kickTime,
@@ -66,6 +72,7 @@ export class Liquidation {
       isCollateralized,
       price,
       neutralPrice,
+      isSettleable,
     };
   }
 

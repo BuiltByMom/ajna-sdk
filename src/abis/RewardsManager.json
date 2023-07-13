@@ -10,7 +10,9 @@
   { "type": "error", "name": "AlreadyClaimed", "inputs": [] },
   { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
   { "type": "error", "name": "EpochNotAvailable", "inputs": [] },
+  { "type": "error", "name": "InsufficientLiquidity", "inputs": [] },
   { "type": "error", "name": "MoveStakedLiquidityInvalid", "inputs": [] },
+  { "type": "error", "name": "NotAjnaPool", "inputs": [] },
   { "type": "error", "name": "NotOwnerOfDeposit", "inputs": [] },
   {
     "type": "event",
@@ -93,8 +95,17 @@
     "payable": false,
     "inputs": [
       { "type": "uint256", "name": "tokenId_" },
-      { "type": "uint256", "name": "epochToClaim_" }
+      { "type": "uint256", "name": "epochToClaim_" },
+      { "type": "uint256", "name": "minAmount_" }
     ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "emergencyUnstake",
+    "constant": false,
+    "payable": false,
+    "inputs": [{ "type": "uint256", "name": "tokenId_" }],
     "outputs": []
   },
   {
@@ -120,25 +131,25 @@
   },
   {
     "type": "function",
+    "name": "isBucketUpdated",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "pool_" },
+      { "type": "uint256", "name": "bucketIndex_" },
+      { "type": "uint256", "name": "epoch_" }
+    ],
+    "outputs": [{ "type": "bool" }]
+  },
+  {
+    "type": "function",
     "name": "isEpochClaimed",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
     "inputs": [{ "type": "uint256" }, { "type": "uint256" }],
     "outputs": [{ "type": "bool" }]
-  },
-  {
-    "type": "function",
-    "name": "moveStakedLiquidity",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "tokenId_" },
-      { "type": "uint256[]", "name": "fromBuckets_" },
-      { "type": "uint256[]", "name": "toBuckets_" },
-      { "type": "uint256", "name": "expiry_" }
-    ],
-    "outputs": []
   },
   {
     "type": "function",
@@ -181,6 +192,7 @@
     "payable": false,
     "inputs": [
       { "type": "address", "name": "pool_" },
+      { "type": "bytes32", "name": "subsetHash_" },
       { "type": "uint256[]", "name": "indexes_" }
     ],
     "outputs": [{ "type": "uint256", "name": "updateReward" }]

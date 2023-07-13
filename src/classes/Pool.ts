@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, BigNumberish, Contract, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -9,23 +9,28 @@ import {
   debtInfo,
   depositIndex,
   kick,
+  kickerInfo,
   quoteTokenAddress,
   quoteTokenScale,
   withdrawBonds,
+  lenderInfo,
+  approveLPTransferors,
+  revokeLPTransferors,
+  lpAllowance,
+  increaseLPAllowance,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
 } from '../contracts/pool-info-utils';
-import { burn, mint } from '../contracts/position-manager';
-import { Address, CallData, PoolInfoUtils, Provider, SignerOrProvider } from '../types';
-import { toWad } from '../utils/numeric';
+import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
+import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
+import { toWad, wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
-import { SdkError } from './types';
 import { LPToken } from './LPToken';
 
 export interface DebtInfo {
@@ -35,6 +40,13 @@ export interface DebtInfo {
   accruedDebt: BigNumber;
   /** debt under liquidation */
   debtInAuction: BigNumber;
+}
+
+export interface KickerInfo {
+  /** liquidation bond able to be withdrawn */
+  claimable: BigNumber;
+  /** liquidation bond not yet able to be withdrawn */
+  locked: BigNumber;
 }
 
 export interface LoansInfo {
@@ -264,6 +276,16 @@ export abstract class Pool {
     return bucket;
   }
 
+  async lpAllowance(index: BigNumber, spender: Address, owner: Address) {
+    return await lpAllowance(this.contract, index, spender, owner);
+  }
+
+  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumberish[]) {
+    const poolWithSigner = this.contract.connect(signer);
+    const spender = getPositionManagerContract(signer).address;
+    return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
+  }
+
   /**
    * @param minPrice lowest desired price
    * @param maxPrice highest desired price
@@ -306,6 +328,19 @@ export abstract class Pool {
   }
 
   /**
+   * retrieves status of an auction kicker's liquidation bond
+   * @param kickerAddress identifies the actor who kicked liquidations
+   */
+  async kickerInfo(kickerAddress: Address): Promise<KickerInfo> {
+    const [claimable, locked] = await kickerInfo(this.contract, kickerAddress);
+
+    return {
+      claimable,
+      locked,
+    };
+  }
+
+  /**
    * called by kickers to withdraw liquidation bond from one or more auctions kicked
    * @param signer kicker
    * @param maxAmount optional amount of bond to withdraw; defaults to all
@@ -338,7 +373,72 @@ export abstract class Pool {
     return burn(signer, tokenId, this.poolAddress);
   }
 
+  async approvePositionManagerLPTransferor(signer: Signer) {
+    const addr = getPositionManagerContract(signer).address;
+    return approveLPTransferors(signer, this.contract, [addr]);
+  }
+
+  async revokePositionManagerLPTransferor(signer: Signer) {
+    const addr = getPositionManagerContract(signer).address;
+    return revokeLPTransferors(signer, this.contract, [addr]);
+  }
+
   getLPToken(tokenId: BigNumber) {
     return new LPToken(this.provider, tokenId);
+  }
+
+  /**
+   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
+   * @param signer address to redeem LP
+   * @param bucketIndices array of bucket indices to withdraw liquidity from
+   * @returns transaction
+   */
+  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
+    const signerAddress = await signer.getAddress();
+    const callData: Array<CallData> = [];
+
+    // get buckets
+    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
+    const buckets = await Promise.all(bucketPromises);
+
+    // get bucket details
+    const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
+    const bucketStatuses = await Promise.all(bucketStatusPromises);
+
+    // determine lender's LP balance
+    const lpBalancePromises = bucketIndices.map(bucketIndex =>
+      lenderInfo(this.contract, signerAddress, bucketIndex)
+    );
+    const lpBalances = await Promise.all(lpBalancePromises);
+
+    for (let i = 0; i < bucketIndices.length; ++i) {
+      const [lpBalance] = lpBalances[i];
+      const bucketStatus = bucketStatuses[i];
+      const bucketIndex = bucketIndices[i];
+
+      // if there is any quote token in the bucket, redeem LP for deposit first
+      if (lpBalance && bucketStatus.deposit.gt(0)) {
+        callData.push({
+          methodName: 'removeQuoteToken',
+          args: [constants.MaxUint256, bucketIndex],
+        });
+      }
+
+      const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
+
+      // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
+      // arbitrary future block where the TX will be processed.
+      const withdrawCollateral =
+        depositWithdrawnEstimate.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
+
+      if (withdrawCollateral) {
+        callData.push({
+          methodName: 'removeCollateral',
+          args: [constants.MaxUint256, bucketIndex],
+        });
+      }
+    }
+
+    return await this.multicall(signer, callData);
   }
 }

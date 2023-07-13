@@ -23,12 +23,22 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'AllowanceTooLow',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'BucketBankrupt',
     inputs: [],
   },
   {
     type: 'error',
     name: 'BucketIndexOutOfBounds',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'DeployWithZeroAddress',
     inputs: [],
   },
   {
@@ -43,7 +53,22 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'NoToken',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'NonExistentToken',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'NotAjnaPool',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'NotAuthorized',
     inputs: [],
   },
   {
@@ -110,6 +135,11 @@ const _abi = [
         name: 'prod1',
       },
     ],
+  },
+  {
+    type: 'error',
+    name: 'PermitExpired',
+    inputs: [],
   },
   {
     type: 'error',
@@ -375,18 +405,12 @@ const _abi = [
     payable: false,
     inputs: [
       {
-        type: 'tuple',
-        name: 'params_',
-        components: [
-          {
-            type: 'uint256',
-            name: 'tokenId',
-          },
-          {
-            type: 'address',
-            name: 'pool',
-          },
-        ],
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'tokenId_',
       },
     ],
     outputs: [],
@@ -495,6 +519,28 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'isAjnaPool',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'bytes32',
+        name: 'subsetHash_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'bool',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'isApprovedForAll',
     constant: true,
     stateMutability: 'view',
@@ -566,18 +612,16 @@ const _abi = [
     payable: false,
     inputs: [
       {
-        type: 'tuple',
-        name: 'params_',
-        components: [
-          {
-            type: 'uint256',
-            name: 'tokenId',
-          },
-          {
-            type: 'uint256[]',
-            name: 'indexes',
-          },
-        ],
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'tokenId_',
+      },
+      {
+        type: 'uint256[]',
+        name: 'indexes_',
       },
     ],
     outputs: [],
@@ -589,22 +633,16 @@ const _abi = [
     payable: false,
     inputs: [
       {
-        type: 'tuple',
-        name: 'params_',
-        components: [
-          {
-            type: 'address',
-            name: 'recipient',
-          },
-          {
-            type: 'address',
-            name: 'pool',
-          },
-          {
-            type: 'bytes32',
-            name: 'poolSubsetHash',
-          },
-        ],
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'address',
+        name: 'recipient_',
+      },
+      {
+        type: 'bytes32',
+        name: 'poolSubsetHash_',
       },
     ],
     outputs: [
@@ -621,30 +659,28 @@ const _abi = [
     payable: false,
     inputs: [
       {
-        type: 'tuple',
-        name: 'params_',
-        components: [
-          {
-            type: 'uint256',
-            name: 'tokenId',
-          },
-          {
-            type: 'address',
-            name: 'pool',
-          },
-          {
-            type: 'uint256',
-            name: 'fromIndex',
-          },
-          {
-            type: 'uint256',
-            name: 'toIndex',
-          },
-          {
-            type: 'uint256',
-            name: 'expiry',
-          },
-        ],
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'tokenId_',
+      },
+      {
+        type: 'uint256',
+        name: 'fromIndex_',
+      },
+      {
+        type: 'uint256',
+        name: 'toIndex_',
+      },
+      {
+        type: 'uint256',
+        name: 'expiry_',
+      },
+      {
+        type: 'bool',
+        name: 'revertIfBelowLup_',
       },
     ],
     outputs: [],
@@ -677,6 +713,24 @@ const _abi = [
     outputs: [
       {
         type: 'string',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'nonces',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'tokenId_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
       },
     ],
   },
@@ -717,16 +771,8 @@ const _abi = [
         name: 'deadline_',
       },
       {
-        type: 'uint8',
-        name: 'v_',
-      },
-      {
-        type: 'bytes32',
-        name: 'r_',
-      },
-      {
-        type: 'bytes32',
-        name: 's_',
+        type: 'bytes',
+        name: 'signature_',
       },
     ],
     outputs: [],
@@ -740,6 +786,7 @@ const _abi = [
     inputs: [
       {
         type: 'uint256',
+        name: 'tokenId_',
       },
     ],
     outputs: [
@@ -750,27 +797,21 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'reedemPositions',
+    name: 'redeemPositions',
     constant: false,
     payable: false,
     inputs: [
       {
-        type: 'tuple',
-        name: 'params_',
-        components: [
-          {
-            type: 'uint256',
-            name: 'tokenId',
-          },
-          {
-            type: 'address',
-            name: 'pool',
-          },
-          {
-            type: 'uint256[]',
-            name: 'indexes',
-          },
-        ],
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'tokenId_',
+      },
+      {
+        type: 'uint256[]',
+        name: 'indexes_',
       },
     ],
     outputs: [],

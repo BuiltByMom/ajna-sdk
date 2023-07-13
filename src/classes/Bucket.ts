@@ -3,8 +3,8 @@ import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import {
   addQuoteToken,
-  kickWithDeposit,
   lenderInfo,
+  lenderKick,
   moveQuoteToken,
   removeQuoteToken,
 } from '../contracts/pool';
@@ -14,8 +14,7 @@ import {
   lpToQuoteTokens,
   lpToCollateral,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { SdkError } from './types';
+import { Address, CallData, PoolInfoUtils, SdkError, SignerOrProvider } from '../types';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
@@ -110,16 +109,23 @@ export class Bucket {
    * @param signer lender
    * @param amount amount to deposit
    * @param ttlSeconds revert if not processed in this amount of block time
+   * @param revertBelowLUP revert if lowest utilized price is above this bucket when processed
    * @returns transaction
    */
-  async addQuoteToken(signer: Signer, amount: BigNumber, ttlSeconds?: number) {
+  async addQuoteToken(
+    signer: Signer,
+    amount: BigNumber,
+    ttlSeconds?: number,
+    revertBelowLUP = false
+  ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
     return await addQuoteToken(
       contractPoolWithSigner,
       amount,
       this.index,
-      await getExpiry(this.provider, ttlSeconds)
+      await getExpiry(this.provider, ttlSeconds),
+      revertBelowLUP
     );
   }
 
@@ -129,13 +135,15 @@ export class Bucket {
    * @param toIndex price bucket to which quote token should be deposited
    * @param maxAmountToMove optionally limits amount to move
    * @param ttlSeconds revert if not processed in this amount of time
+   * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
    * @returns transaction
    */
   async moveQuoteToken(
     signer: Signer,
     toIndex: number,
     maxAmountToMove = constants.MaxUint256,
-    ttlSeconds?: number
+    ttlSeconds?: number,
+    revertBelowLUP = false
   ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
@@ -144,7 +152,8 @@ export class Bucket {
       maxAmountToMove,
       this.index,
       toIndex,
-      await getExpiry(this.provider, ttlSeconds)
+      await getExpiry(this.provider, ttlSeconds),
+      revertBelowLUP
     );
   }
 
@@ -276,7 +285,7 @@ export class Bucket {
     }
 
     // if there is any quote token in the bucket, redeem LP for deposit first
-    const callData = [];
+    const callData: Array<CallData> = [];
     if (lpBalance && bucketStatus.deposit.gt(0)) {
       callData.push({
         methodName: 'removeQuoteToken',
@@ -298,9 +307,15 @@ export class Bucket {
     return await this.multicall(signer, callData);
   }
 
-  async kickWithDeposit(signer: Signer, limitIndex: number = MAX_FENWICK_INDEX) {
+  /**
+   * allows lender to kick a loan based on a LUP calculated as if they withdraw liquidity
+   * @param signer lender
+   * @param limitIndex bucket in which lender has an LP balance
+   * @returns transaction
+   */
+  async lenderKick(signer: Signer, limitIndex: number = MAX_FENWICK_INDEX) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await kickWithDeposit(contractPoolWithSigner, this.index, limitIndex);
+    return await lenderKick(contractPoolWithSigner, this.index, limitIndex);
   }
 }

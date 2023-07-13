@@ -24,6 +24,11 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'DecimalsNotCompliant',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'DeployQuoteCollateralSameToken',
     inputs: [],
   },
@@ -40,7 +45,12 @@ const _abi = [
   {
     type: 'error',
     name: 'PoolAlreadyExists',
-    inputs: [],
+    inputs: [
+      {
+        type: 'address',
+        name: 'pool_',
+      },
+    ],
   },
   {
     type: 'error',
@@ -113,6 +123,32 @@ const _abi = [
     outputs: [
       {
         type: 'address',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'deployPool',
+    constant: false,
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'collateral_',
+      },
+      {
+        type: 'address',
+        name: 'quote_',
+      },
+      {
+        type: 'uint256',
+        name: 'interestRate_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'address',
+        name: 'pool_',
       },
     ],
   },

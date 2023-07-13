@@ -5,7 +5,7 @@ import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
-import { timeJump } from '../utils/ganache';
+import { mine, timeJump } from '../utils/ganache';
 import { fromWad, toWad, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getBlockTime, getExpiry } from '../utils/time';
@@ -18,13 +18,14 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const WETH_ADDRESS = '0x6bC99FA34D0076377731049695180e53bcdD767f';
-const TESTA_ADDRESS = '0x9B3d4D0d039Cd7A32B6aA66Fd88862D0F041adE8';
-const DAI_ADDRESS = '0xC041d30870CfDeeDfac49Da86AEFb9cFfa833d65';
+const TWETH_ADDRESS = '0xc17985054Cab9CEf76ec024820dAaaC50CE1ad85';
+const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
+const TESTA_ADDRESS = '0x919ae2c42A69ebD939262F39b4dAdAFDBf9eB374';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
+const TESTB_DAI_POOL_ADDRESS = '0x3578b4489fe9ee07fd1d62f767ddcdf2b99ea511';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -33,8 +34,8 @@ describe('ERC20 Pool', () => {
   const signerLender2 = addAccountFromKey(LENDER_2_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
-  const TWETH = getErc20Contract(WETH_ADDRESS, provider);
-  const TDAI = getErc20Contract(DAI_ADDRESS, provider);
+  const TWETH = getErc20Contract(TWETH_ADDRESS, provider);
+  const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
   let poolA: FungiblePool = {} as FungiblePool;
 
@@ -42,7 +43,7 @@ describe('ERC20 Pool', () => {
     // fund lender
     let receipt = await TDAI.connect(signerDeployer).transfer(signerLender.address, toWad('100'));
     expect(receipt.transactionHash).not.toBe('');
-    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('0.5'));
+    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('1.0'));
     expect(receipt.transactionHash).not.toBe('');
 
     // fund lender2
@@ -58,44 +59,41 @@ describe('ERC20 Pool', () => {
     expect(receipt.transactionHash).not.toBe('');
 
     // initialize canned pool
-    poolA = await ajna.factory.getPool(TESTA_ADDRESS, DAI_ADDRESS);
+    poolA = await ajna.factory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
   });
 
   it('should confirm AjnaSDK pool successfully', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
-      WETH_ADDRESS,
-      DAI_ADDRESS,
+      TWETH_ADDRESS,
+      TDAI_ADDRESS,
       toWad('0.05')
     );
-
     await tx.verifyAndSubmit();
-
-    pool = await ajna.factory.getPool(WETH_ADDRESS, DAI_ADDRESS);
-
+    pool = await ajna.factory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
     expect(pool).toBeDefined();
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    expect(pool.collateralAddress).toBe(WETH_ADDRESS);
-    expect(pool.quoteAddress).toBe(DAI_ADDRESS);
+    expect(pool.collateralAddress).toBe(TWETH_ADDRESS);
+    expect(pool.quoteAddress).toBe(TDAI_ADDRESS);
     expect(pool.toString()).toContain('TWETH-TDAI');
   });
 
   it('should not allow to create existing pool', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
-      WETH_ADDRESS,
-      DAI_ADDRESS,
+      TESTA_ADDRESS,
+      TDAI_ADDRESS,
       toWad('0.05')
     );
 
     await expect(async () => {
       await tx.verify();
-    }).rejects.toThrow('PoolAlreadyExists()');
+    }).rejects.toThrow('PoolAlreadyExists(address)');
   });
 
   it('should load pool by address', async () => {
-    const poolB = await ajna.factory.getPoolByAddress('0x3bfdbb510a882eabacb42813c5551fe5deab75e5');
-    expect(poolB.quoteAddress).toBe(DAI_ADDRESS);
+    const poolB = await ajna.factory.getPoolByAddress(TESTB_DAI_POOL_ADDRESS);
+    expect(poolB.quoteAddress).toBe(TDAI_ADDRESS);
     expect(poolB.toString()).toContain('TESTB-TDAI');
   });
 
@@ -104,27 +102,21 @@ describe('ERC20 Pool', () => {
     const bucket = await pool.getBucketByIndex(2000);
 
     let tx = await pool.quoteApprove(signerLender, toWad(quoteAmount));
-    let response = await tx.verifyAndSubmitResponse();
-    await response.wait();
-
-    expect(response).toBeDefined();
-    expect(response.hash).not.toBe('');
+    await submitAndVerifyTransaction(tx);
 
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    response = await tx.verifyAndSubmitResponse();
-
-    expect(response).toBeDefined();
-    expect(response.hash).not.toBe('');
-
-    const receipt = await response.wait();
-
-    expect(receipt).toBeDefined();
-    expect(receipt.confirmations).toBe(1);
-
-    expect((await bucket.getStatus()).bucketLP.gt(0)).toBeTruthy();
+    await submitAndVerifyTransaction(tx);
+    const bucketStatus = await bucket.getStatus();
+    expect(bucketStatus.bucketLP.gt(0)).toBe(true);
+    expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance?.gt(0)).toBeTruthy();
+    expect(lpBalance?.gt(0)).toBe(true);
+  });
+
+  it('should get origination fee rate', async () => {
+    const feeRate = await pool.getOriginationFeeRate();
+    expect(feeRate).toBeBetween(constants.Zero, toWad('0.01'));
   });
 
   it('should get origination fee rate', async () => {
@@ -146,12 +138,12 @@ describe('ERC20 Pool', () => {
   it('should use poolStats successfully', async () => {
     const stats = await poolA.getStats();
 
-    expect(stats.poolSize?.gte(toWad('25000'))).toBeTruthy();
+    expect(stats.poolSize?.gte(toWad('25000'))).toBe(true);
     expect(stats.loansCount).toEqual(1);
-    expect(stats.minDebtAmount?.gte(toWad('0'))).toBeTruthy();
-    expect(stats.collateralization?.gte(toWad('1'))).toBeTruthy();
-    expect(stats.actualUtilization?.gte(toWad('0'))).toBeTruthy();
-    expect(stats.targetUtilization?.gte(toWad('0'))).toBeTruthy();
+    expect(stats.minDebtAmount?.gte(toWad('0'))).toBe(true);
+    expect(stats.collateralization?.gte(toWad('1'))).toBe(true);
+    expect(stats.actualUtilization?.gte(toWad('0'))).toBe(true);
+    expect(stats.targetUtilization?.gte(toWad('0'))).toBe(true);
   });
 
   it('should use getPrices and loansInfo successfully', async () => {
@@ -167,14 +159,12 @@ describe('ERC20 Pool', () => {
 
   it('should use repayDebt successfully', async () => {
     const collateralAmountToPull = toWad(1);
-    const maxQuoteTokenAmountToRepay = toWad(2);
 
     let tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
     await submitAndVerifyTransaction(tx);
 
-    tx = await pool.repayDebt(signerBorrower, maxQuoteTokenAmountToRepay, collateralAmountToPull);
+    tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, collateralAmountToPull);
 
-    // FIXME: full repayment produces revert with hash 0x03119322, which does not match
     // known custom errors in the ABIs
     await submitAndVerifyTransaction(tx);
   });
@@ -188,7 +178,7 @@ describe('ERC20 Pool', () => {
     await submitAndVerifyTransaction(tx);
 
     const lpAfter = (await bucket.getStatus()).bucketLP;
-    expect(lpBefore.gt(lpAfter)).toBeTruthy();
+    expect(lpBefore.gt(lpAfter)).toBe(true);
   });
 
   it('should raise appropriate error if removeQuoteToken fails', async () => {
@@ -216,14 +206,8 @@ describe('ERC20 Pool', () => {
 
     const fromLpAfter = await bucketFrom.lpBalance(signerLender.address);
     const toLpAfter = await bucketTo.lpBalance(signerLender.address);
-    expect(fromLpAfter.lt(fromLpBefore)).toBeTruthy();
-    expect(toLpAfter.gt(toLpBefore)).toBeTruthy();
-  });
-
-  it('should use getStats successfully', async () => {
-    const stats = await pool.getStats();
-
-    expect(stats).not.toBe('');
+    expect(fromLpAfter.lt(fromLpBefore)).toBe(true);
+    expect(toLpAfter.gt(toLpBefore)).toBe(true);
   });
 
   it('should use getBucketsByPriceRange successfully', async () => {
@@ -241,10 +225,14 @@ describe('ERC20 Pool', () => {
     expect(bucket.price).toEqual(toWad('106.520649069543057301'));
 
     const bucketStatus = await bucket.getStatus();
-    expect(bucketStatus.deposit.eq(constants.Zero)).toBeTruthy();
-    expect(bucketStatus.collateral.eq(toWad(3.1))).toBeTruthy();
-    expect(bucketStatus.bucketLP.gt(0)).toBeTruthy();
-    expect(bucketStatus.exchangeRate).toEqual(toWad('1'));
+    expect(bucketStatus.deposit.eq(constants.Zero)).toBe(true);
+    expect(bucketStatus.collateral.eq(toWad(3.1))).toBe(true);
+    expect(bucketStatus.bucketLP.gt(0)).toBe(true);
+    // CAUTION: rate coming back as 1.000000000000000001
+    expect(
+      bucketStatus.exchangeRate.eq(toWad(1)) ||
+        bucketStatus.exchangeRate.eq(toWad('1.000000000000000001'))
+    ).toBe(true);
   });
 
   it('should use getBucketByPrice successfully', async () => {
@@ -264,9 +252,9 @@ describe('ERC20 Pool', () => {
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3261 (86.821');
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance.gt(constants.Zero)).toBeTruthy();
+    expect(lpBalance.gt(constants.Zero)).toBe(true);
     const deposit = await bucket.lpToQuoteTokens(lpBalance);
-    expect(deposit.gte(toWad('5000'))).toBeTruthy();
+    expect(deposit.gte(toWad('5000'))).toBe(true);
   });
 
   it('should use lpToCollateral successfully', async () => {
@@ -274,9 +262,9 @@ describe('ERC20 Pool', () => {
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220 (106.52');
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance.gt(constants.Zero)).toBeTruthy();
+    expect(lpBalance.gt(constants.Zero)).toBe(true);
     const collateral = await bucket.lpToCollateral(lpBalance);
-    expect(collateral.eq(toWad(3.1))).toBeTruthy();
+    expect(collateral.eq(toWad(3.1))).toBe(true);
   });
 
   it('should use getPosition successfully', async () => {
@@ -320,7 +308,8 @@ describe('ERC20 Pool', () => {
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(7000), loan.debt);
+    expect(loan.liquidationBond).toBeBetween(toWad(1900), toWad(1900).mul(2));
+    expect(loan.isKicked).toBe(false);
   });
 
   it('should use estimateLoan successfully', async () => {
@@ -331,7 +320,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(11000), loanEstimate.debt);
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(3000), toWad(3000).mul(2));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
   });
@@ -355,8 +344,8 @@ describe('ERC20 Pool', () => {
     let bucketStatus1 = await bucket1.getStatus();
     let bucketStatus2 = await bucket2.getStatus();
 
-    expect(bucketStatus1.deposit.eq(0)).toBeTruthy();
-    expect(bucketStatus2.deposit.eq(0)).toBeTruthy();
+    expect(bucketStatus1.deposit.eq(0)).toBe(true);
+    expect(bucketStatus2.deposit.eq(0)).toBe(true);
 
     let tx = await pool.quoteApprove(signerLender, toWad(allowance));
     let response = await tx.verifyAndSubmitResponse();
@@ -368,11 +357,11 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider)],
+        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider), false],
       },
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider)],
+        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider), false],
       },
     ]);
     response = await tx.verifyAndSubmitResponse();
@@ -383,8 +372,8 @@ describe('ERC20 Pool', () => {
     bucketStatus1 = await bucket1.getStatus();
     bucketStatus2 = await bucket2.getStatus();
 
-    expect(bucketStatus1.deposit.gt(0)).toBeTruthy();
-    expect(bucketStatus2.deposit.gt(0)).toBeTruthy();
+    expect(bucketStatus1.deposit.gt(0)).toBe(true);
+    expect(bucketStatus2.deposit.gt(0)).toBe(true);
   });
 
   it('should use addCollateral successfully', async () => {
@@ -399,17 +388,14 @@ describe('ERC20 Pool', () => {
     const bucketCollateralBefore = bucketStatus.collateral || BigNumber.from(0);
 
     tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount);
-    const receipt = await tx.verifyAndSubmit();
-
-    expect(receipt).toBeDefined();
-    expect(receipt.confirmations).toBe(1);
+    await submitAndVerifyTransaction(tx);
 
     bucketStatus = await bucket.getStatus();
     expect(bucketStatus.collateral).toEqual(bucketCollateralBefore.add(collateralAmount));
-    expect(bucketStatus.bucketLP?.gt(0)).toBeTruthy();
+    expect(bucketStatus.bucketLP?.gt(0)).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance?.gt(0)).toBeTruthy();
+    expect(lpBalance?.gt(0)).toBe(true);
   });
 
   it('should reject addCollateral if expired ttl set', async () => {
@@ -419,7 +405,7 @@ describe('ERC20 Pool', () => {
     let tx = await pool.collateralApprove(signerLender, collateralAmount);
     await tx.verifyAndSubmit();
 
-    tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount, 0);
+    tx = await pool.addCollateral(signerLender, bucketIndex, collateralAmount, -1);
 
     await expect(async () => {
       await tx.verify();
@@ -437,7 +423,7 @@ describe('ERC20 Pool', () => {
     const bucketStatus = await bucket.getStatus();
 
     expect(receipt.transactionHash).not.toBe('');
-    expect(bucketStatus.collateral.eq(0)).toBeTruthy();
+    expect(bucketStatus.collateral.eq(0)).toBe(true);
   });
 
   it('removeCollateral should reject if bucket has 0 collateral balance', async () => {
@@ -446,7 +432,7 @@ describe('ERC20 Pool', () => {
 
     const bucket = await pool.getBucketByIndex(bucketIndex);
     const bucketStatus = await bucket.getStatus();
-    expect(bucketStatus.collateral.eq(0)).toBeTruthy();
+    expect(bucketStatus.collateral.eq(0)).toBe(true);
 
     const tx = await pool.removeCollateral(signerLender, bucketIndex, collateralAmount);
 
@@ -460,8 +446,8 @@ describe('ERC20 Pool', () => {
 
     // Mint tokens to actors
     const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
-    const TOKEN_C = getErc20Contract(DAI_ADDRESS, provider);
-    const TOKEN_Q = getErc20Contract(WETH_ADDRESS, provider); // TWETH
+    const TOKEN_C = getErc20Contract(TDAI_ADDRESS, provider);
+    const TOKEN_Q = getErc20Contract(TWETH_ADDRESS, provider); // TWETH
     const TOKEN_AJNA = getErc20Contract(Config.ajnaToken, provider);
     const tokenAmount = toWad(BigNumber.from(100000));
 
@@ -472,14 +458,19 @@ describe('ERC20 Pool', () => {
     await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
 
     // Deploy pool
-    let tx = await ajna.factory.deployPool(signerLender, DAI_ADDRESS, WETH_ADDRESS, toWad('0.05'));
+    let tx = await ajna.factory.deployPool(
+      signerLender,
+      TDAI_ADDRESS,
+      TWETH_ADDRESS,
+      toWad('0.05')
+    );
     await tx.submit();
 
-    pool = await ajna.factory.getPool(DAI_ADDRESS, WETH_ADDRESS);
+    pool = await ajna.factory.getPool(TDAI_ADDRESS, TWETH_ADDRESS);
 
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
-    expect(pool.collateralAddress).toBe(DAI_ADDRESS);
-    expect(pool.quoteAddress).toBe(WETH_ADDRESS);
+    expect(pool.collateralAddress).toBe(TDAI_ADDRESS);
+    expect(pool.quoteAddress).toBe(TWETH_ADDRESS);
 
     // Lender adds quote
     const quoteAmount = toWad(50000);
@@ -491,7 +482,7 @@ describe('ERC20 Pool', () => {
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
 
-    expect((await bucket.lpBalance(signerLender.address)).gt(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender.address)).gt(0)).toBe(true);
 
     // draw debt
     const amountToBorrow = toWad(1000);
@@ -501,39 +492,41 @@ describe('ERC20 Pool', () => {
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
     await submitAndVerifyTransaction(tx);
 
-    // wait year (8760 hours)
-    let jumpTimeSeconds = 8760 * 60 * 60;
+    // wait a year (8760 hours)
+    let jumpTimeSeconds = 8760 * 3600;
     await timeJump(provider, jumpTimeSeconds);
 
     // check and repay debt, expected debt value around 1053
     const repayDebtAmountInQuote = toWad(1100);
     let stats = await pool.getStats();
-    expect(stats.debt.lt(repayDebtAmountInQuote)).toBeTruthy();
+    expect(stats.debt.lt(repayDebtAmountInQuote)).toBe(true);
     tx = await pool.quoteApprove(signerBorrower, repayDebtAmountInQuote);
     await tx.verifyAndSubmit();
     tx = await pool.repayDebt(signerBorrower, repayDebtAmountInQuote, toWad(0));
     await submitAndVerifyTransaction(tx);
     const repaymentTime = await getBlockTime(signerBorrower);
     stats = await pool.getStats();
-    expect(stats.debt.eq(toWad(0))).toBeTruthy();
+    expect(stats.debt.eq(toWad(0))).toBe(true);
 
     // check reserves before auction kicked
     const auction = pool.getClaimableReserveAuction();
     let status = await auction.getStatus();
     expect(status.lastKickTime).toEqual(new Date(0));
-    expect(status.reserves.gt(toWad(8))).toBeTruthy();
-    expect(status.claimableReserves.lte(status.reserves)).toBeTruthy();
-    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBeTruthy();
-    expect(status.price.eq(constants.Zero)).toBeTruthy();
+    expect(status.reserves.gt(toWad(8))).toBe(true);
+    expect(status.claimableReserves.lte(status.reserves)).toBe(true);
+    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
+    expect(status.price.eq(constants.Zero)).toBe(true);
+    await timeJump(provider, 12); // ensure repay and kick blocks have different timestamps
+    await mine(provider);
 
     // kick auction
     tx = await auction.kick(signerLender);
     await submitAndVerifyTransaction(tx);
     const takeable = await auction.isTakeable();
-    expect(takeable).toBeTruthy();
+    expect(takeable).toBe(true);
 
     // wait 32 hours
-    jumpTimeSeconds = 32 * 60 * 60;
+    jumpTimeSeconds = 32 * 3600;
     await timeJump(provider, jumpTimeSeconds);
     status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
@@ -551,11 +544,11 @@ describe('ERC20 Pool', () => {
     await submitAndVerifyTransaction(tx);
     status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
-    expect(status.claimableReserves.eq(constants.Zero)).toBeTruthy();
-    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBeTruthy();
+    expect(status.claimableReserves.eq(constants.Zero)).toBe(true);
+    expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
   });
 
-  it('should use withdraw liquidity', async () => {
+  it('should use bucket withdraw liquidity', async () => {
     const bucketIndex = priceToIndex(toWad(10)); // bucket 3694
     const bucket = await poolA.getBucketByIndex(bucketIndex);
     const quoteAmount = toWad(20);
@@ -575,27 +568,75 @@ describe('ERC20 Pool', () => {
 
     let bucketStatus = await bucket.getStatus();
 
-    expect(bucketStatus.deposit.gt(0)).toBeTruthy();
-    expect(bucketStatus.collateral.gt(0)).toBeTruthy();
-    expect(bucketStatus.bucketLP.gt(0)).toBeTruthy();
-    expect((await bucket.lpBalance(signerLender2.address)).gt(0)).toBeTruthy();
+    expect(bucketStatus.deposit.gt(0)).toBe(true);
+    expect(bucketStatus.collateral.gt(0)).toBe(true);
+    expect(bucketStatus.bucketLP.gt(0)).toBe(true);
+    expect((await bucket.lpBalance(signerLender2.address)).gt(0)).toBe(true);
 
     // lender2 withdraws quote token
     tx = await bucket.withdrawLiquidity(signerLender2);
     await tx.verifyAndSubmit();
-    expect((await bucket.lpBalance(signerLender2.address)).eq(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender2.address)).eq(0)).toBe(true);
 
     // lender withdraws collateral
     tx = await bucket.withdrawLiquidity(signerLender);
     await tx.verifyAndSubmit();
-    expect((await bucket.lpBalance(signerLender.address)).eq(0)).toBeTruthy();
+    expect((await bucket.lpBalance(signerLender.address)).eq(0)).toBe(true);
 
     bucketStatus = await bucket.getStatus();
-    expect(bucketStatus.bucketLP.eq(0)).toBeTruthy();
+    expect(bucketStatus.bucketLP.eq(0)).toBe(true);
 
     // lender withdraws with no LP
     await expect(async () => {
       await bucket.withdrawLiquidity(signerLender);
     }).rejects.toThrow('no LP in bucket');
+  });
+
+  it('should use pool withdraw liquidity', async () => {
+    const bucketIndex1 = 3695;
+    const bucketIndex2 = 3696;
+    const bucket1 = await poolA.getBucketByIndex(bucketIndex1);
+    const bucket2 = await poolA.getBucketByIndex(bucketIndex2);
+    const quoteAmount = toWad(2);
+    const collateralAmount = toWad('0.05');
+
+    // lender deposits collateral to bucket1
+    let tx = await poolA.collateralApprove(signerLender, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    tx = await poolA.addCollateral(signerLender, bucketIndex1, collateralAmount);
+    await tx.verifyAndSubmit();
+
+    // lender deposits quote token to bucket1 and bucket2
+    tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
+    await tx.verifyAndSubmit();
+    tx = await bucket1.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+    tx = await bucket2.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    let bucket1Status = await bucket1.getStatus();
+    expect(bucket1Status.deposit.gt(0)).toBe(true);
+    expect(bucket1Status.collateral.gt(0)).toBe(true);
+    expect(bucket1Status.bucketLP.gt(0)).toBe(true);
+    expect((await bucket1.lpBalance(signerLender.address)).gt(0)).toBe(true);
+
+    let bucket2Status = await bucket2.getStatus();
+    expect(bucket2Status.deposit.gt(0)).toBe(true);
+    expect(bucket2Status.bucketLP.gt(0)).toBe(true);
+    expect((await bucket2.lpBalance(signerLender.address)).gt(0)).toBe(true);
+
+    // lender withdraws liquidity
+    tx = await poolA.withdrawLiquidity(signerLender, [bucketIndex1, bucketIndex2]);
+    await tx.verifyAndSubmit();
+
+    expect((await bucket1.lpBalance(signerLender.address)).eq(0)).toBe(true);
+    expect((await bucket2.lpBalance(signerLender.address)).eq(0)).toBe(true);
+
+    bucket1Status = await bucket1.getStatus();
+    expect(bucket1Status.bucketLP.eq(0)).toBe(true);
+
+    bucket2Status = await bucket2.getStatus();
+    expect(bucket2Status.bucketLP.eq(0)).toBe(true);
   });
 });

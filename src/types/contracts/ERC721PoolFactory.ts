@@ -29,6 +29,7 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
     'MAX_RATE()': FunctionFragment;
     'MIN_RATE()': FunctionFragment;
     'ajna()': FunctionFragment;
+    'deployPool(address,address,uint256)': FunctionFragment;
     'deployPool(address,address,uint256[],uint256)': FunctionFragment;
     'deployedPools(bytes32,address,address)': FunctionFragment;
     'deployedPoolsList(uint256)': FunctionFragment;
@@ -44,7 +45,8 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
       | 'MAX_RATE'
       | 'MIN_RATE'
       | 'ajna'
-      | 'deployPool'
+      | 'deployPool(address,address,uint256)'
+      | 'deployPool(address,address,uint256[],uint256)'
       | 'deployedPools'
       | 'deployedPoolsList'
       | 'getDeployedPoolsList'
@@ -58,7 +60,11 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'MIN_RATE', values?: undefined): string;
   encodeFunctionData(functionFragment: 'ajna', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: 'deployPool',
+    functionFragment: 'deployPool(address,address,uint256)',
+    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'deployPool(address,address,uint256[],uint256)',
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -86,7 +92,14 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'MAX_RATE', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'MIN_RATE', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'ajna', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'deployPool', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'deployPool(address,address,uint256)',
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'deployPool(address,address,uint256[],uint256)',
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: 'deployedPools', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'deployedPoolsList', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getDeployedPoolsList', data: BytesLike): Result;
@@ -143,7 +156,14 @@ export interface ERC721PoolFactory extends BaseContract {
 
     ajna(overrides?: CallOverrides): Promise<[string]>;
 
-    deployPool(
+    'deployPool(address,address,uint256)'(
+      collateral_: PromiseOrValue<string>,
+      quote_: PromiseOrValue<string>,
+      interestRate_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    'deployPool(address,address,uint256[],uint256)'(
       collateral_: PromiseOrValue<string>,
       quote_: PromiseOrValue<string>,
       tokenIds_: PromiseOrValue<BigNumberish>[],
@@ -183,7 +203,14 @@ export interface ERC721PoolFactory extends BaseContract {
 
   ajna(overrides?: CallOverrides): Promise<string>;
 
-  deployPool(
+  'deployPool(address,address,uint256)'(
+    collateral_: PromiseOrValue<string>,
+    quote_: PromiseOrValue<string>,
+    interestRate_: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  'deployPool(address,address,uint256[],uint256)'(
     collateral_: PromiseOrValue<string>,
     quote_: PromiseOrValue<string>,
     tokenIds_: PromiseOrValue<BigNumberish>[],
@@ -220,7 +247,14 @@ export interface ERC721PoolFactory extends BaseContract {
 
     ajna(overrides?: CallOverrides): Promise<string>;
 
-    deployPool(
+    'deployPool(address,address,uint256)'(
+      collateral_: PromiseOrValue<string>,
+      quote_: PromiseOrValue<string>,
+      interestRate_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    'deployPool(address,address,uint256[],uint256)'(
       collateral_: PromiseOrValue<string>,
       quote_: PromiseOrValue<string>,
       tokenIds_: PromiseOrValue<BigNumberish>[],
@@ -266,7 +300,14 @@ export interface ERC721PoolFactory extends BaseContract {
 
     ajna(overrides?: CallOverrides): Promise<BigNumber>;
 
-    deployPool(
+    'deployPool(address,address,uint256)'(
+      collateral_: PromiseOrValue<string>,
+      quote_: PromiseOrValue<string>,
+      interestRate_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    'deployPool(address,address,uint256[],uint256)'(
       collateral_: PromiseOrValue<string>,
       quote_: PromiseOrValue<string>,
       tokenIds_: PromiseOrValue<BigNumberish>[],
@@ -307,7 +348,14 @@ export interface ERC721PoolFactory extends BaseContract {
 
     ajna(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    deployPool(
+    'deployPool(address,address,uint256)'(
+      collateral_: PromiseOrValue<string>,
+      quote_: PromiseOrValue<string>,
+      interestRate_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    'deployPool(address,address,uint256[],uint256)'(
       collateral_: PromiseOrValue<string>,
       quote_: PromiseOrValue<string>,
       tokenIds_: PromiseOrValue<BigNumberish>[],
