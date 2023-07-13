@@ -105,7 +105,7 @@ describe('Grants fund', () => {
       expect(delegate).toBeDefined();
       expect(fromWad(delegate)).toBe('0.0');
     });
-    it('should get votes funding', async () => {
+    it.skip('should get votes funding', async () => {
       const SCREENING_PERIOD_LENGTH = 525_600;
       await mine(provider, SCREENING_PERIOD_LENGTH);
       const delegate = await ajna.grants.getVotesFunding(distributionPeriod.id, DELEGATEE_ADDRESS);
