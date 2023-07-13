@@ -1,11 +1,10 @@
+import { BigNumber, constants, Signer } from 'ethers';
 import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
 import { ERC20_NON_SUBSET_HASH } from '../constants';
-import { Address, IERC20PoolFactory, SignerOrProvider } from '../types';
+import { Address, IERC20PoolFactory, SdkError, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
-import { BigNumber, constants, Signer } from 'ethers';
-import { SdkError } from './types';
 
 /**
  * Factory used to find or create pools with ERC20 collateral.

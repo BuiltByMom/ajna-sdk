@@ -38,7 +38,17 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'InsufficientLiquidity',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'MoveStakedLiquidityInvalid',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'NotAjnaPool',
     inputs: [],
   },
   {
@@ -221,6 +231,23 @@ const _abi = [
         type: 'uint256',
         name: 'epochToClaim_',
       },
+      {
+        type: 'uint256',
+        name: 'minAmount_',
+      },
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'emergencyUnstake',
+    constant: false,
+    payable: false,
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'tokenId_',
+      },
     ],
     outputs: [],
   },
@@ -275,6 +302,32 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'isBucketUpdated',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'bucketIndex_',
+      },
+      {
+        type: 'uint256',
+        name: 'epoch_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'bool',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'isEpochClaimed',
     constant: true,
     stateMutability: 'view',
@@ -292,31 +345,6 @@ const _abi = [
         type: 'bool',
       },
     ],
-  },
-  {
-    type: 'function',
-    name: 'moveStakedLiquidity',
-    constant: false,
-    payable: false,
-    inputs: [
-      {
-        type: 'uint256',
-        name: 'tokenId_',
-      },
-      {
-        type: 'uint256[]',
-        name: 'fromBuckets_',
-      },
-      {
-        type: 'uint256[]',
-        name: 'toBuckets_',
-      },
-      {
-        type: 'uint256',
-        name: 'expiry_',
-      },
-    ],
-    outputs: [],
   },
   {
     type: 'function',
@@ -383,6 +411,10 @@ const _abi = [
       {
         type: 'address',
         name: 'pool_',
+      },
+      {
+        type: 'bytes32',
+        name: 'subsetHash_',
       },
       {
         type: 'uint256[]',

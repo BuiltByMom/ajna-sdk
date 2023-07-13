@@ -38,12 +38,14 @@ export const updateAbis = function () {
 };
 
 const abisWeCareAbout = new Set([
+  'AjnaToken.json',
   'ERC20.json',
   'ERC20Pool.json',
   'ERC20PoolFactory.json',
   'ERC721.json',
   'ERC721Pool.json',
   'ERC721PoolFactory.json',
+  'GrantFund.json',
   'PoolInfoUtils.json',
   'PositionManager.json',
   'RewardsManager.json',

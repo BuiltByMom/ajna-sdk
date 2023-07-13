@@ -7,11 +7,16 @@
       { "type": "address", "name": "erc721Factory_" }
     ]
   },
+  { "type": "error", "name": "AllowanceTooLow", "inputs": [] },
   { "type": "error", "name": "BucketBankrupt", "inputs": [] },
   { "type": "error", "name": "BucketIndexOutOfBounds", "inputs": [] },
+  { "type": "error", "name": "DeployWithZeroAddress", "inputs": [] },
   { "type": "error", "name": "LiquidityNotRemoved", "inputs": [] },
   { "type": "error", "name": "NoAuth", "inputs": [] },
+  { "type": "error", "name": "NoToken", "inputs": [] },
+  { "type": "error", "name": "NonExistentToken", "inputs": [] },
   { "type": "error", "name": "NotAjnaPool", "inputs": [] },
+  { "type": "error", "name": "NotAuthorized", "inputs": [] },
   {
     "type": "error",
     "name": "PRBMathSD59x18__Exp2InputTooBig",
@@ -43,6 +48,7 @@
     "name": "PRBMath__MulDivFixedPointOverflow",
     "inputs": [{ "type": "uint256", "name": "prod1" }]
   },
+  { "type": "error", "name": "PermitExpired", "inputs": [] },
   { "type": "error", "name": "RemovePositionFailed", "inputs": [] },
   { "type": "error", "name": "WrongPool", "inputs": [] },
   {
@@ -171,14 +177,8 @@
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "tuple",
-        "name": "params_",
-        "components": [
-          { "type": "uint256", "name": "tokenId" },
-          { "type": "address", "name": "pool" }
-        ]
-      }
+      { "type": "address", "name": "pool_" },
+      { "type": "uint256", "name": "tokenId_" }
     ],
     "outputs": []
   },
@@ -235,6 +235,18 @@
   },
   {
     "type": "function",
+    "name": "isAjnaPool",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "pool_" },
+      { "type": "bytes32", "name": "subsetHash_" }
+    ],
+    "outputs": [{ "type": "bool" }]
+  },
+  {
+    "type": "function",
     "name": "isApprovedForAll",
     "constant": true,
     "stateMutability": "view",
@@ -275,14 +287,9 @@
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "tuple",
-        "name": "params_",
-        "components": [
-          { "type": "uint256", "name": "tokenId" },
-          { "type": "uint256[]", "name": "indexes" }
-        ]
-      }
+      { "type": "address", "name": "pool_" },
+      { "type": "uint256", "name": "tokenId_" },
+      { "type": "uint256[]", "name": "indexes_" }
     ],
     "outputs": []
   },
@@ -292,15 +299,9 @@
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "tuple",
-        "name": "params_",
-        "components": [
-          { "type": "address", "name": "recipient" },
-          { "type": "address", "name": "pool" },
-          { "type": "bytes32", "name": "poolSubsetHash" }
-        ]
-      }
+      { "type": "address", "name": "pool_" },
+      { "type": "address", "name": "recipient_" },
+      { "type": "bytes32", "name": "poolSubsetHash_" }
     ],
     "outputs": [{ "type": "uint256", "name": "tokenId_" }]
   },
@@ -310,17 +311,12 @@
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "tuple",
-        "name": "params_",
-        "components": [
-          { "type": "uint256", "name": "tokenId" },
-          { "type": "address", "name": "pool" },
-          { "type": "uint256", "name": "fromIndex" },
-          { "type": "uint256", "name": "toIndex" },
-          { "type": "uint256", "name": "expiry" }
-        ]
-      }
+      { "type": "address", "name": "pool_" },
+      { "type": "uint256", "name": "tokenId_" },
+      { "type": "uint256", "name": "fromIndex_" },
+      { "type": "uint256", "name": "toIndex_" },
+      { "type": "uint256", "name": "expiry_" },
+      { "type": "bool", "name": "revertIfBelowLup_" }
     ],
     "outputs": []
   },
@@ -343,6 +339,15 @@
   },
   {
     "type": "function",
+    "name": "nonces",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "uint256", "name": "tokenId_" }],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
     "name": "ownerOf",
     "constant": true,
     "stateMutability": "view",
@@ -359,9 +364,7 @@
       { "type": "address", "name": "spender_" },
       { "type": "uint256", "name": "tokenId_" },
       { "type": "uint256", "name": "deadline_" },
-      { "type": "uint8", "name": "v_" },
-      { "type": "bytes32", "name": "r_" },
-      { "type": "bytes32", "name": "s_" }
+      { "type": "bytes", "name": "signature_" }
     ],
     "outputs": []
   },
@@ -371,24 +374,18 @@
     "constant": true,
     "stateMutability": "view",
     "payable": false,
-    "inputs": [{ "type": "uint256" }],
+    "inputs": [{ "type": "uint256", "name": "tokenId_" }],
     "outputs": [{ "type": "address" }]
   },
   {
     "type": "function",
-    "name": "reedemPositions",
+    "name": "redeemPositions",
     "constant": false,
     "payable": false,
     "inputs": [
-      {
-        "type": "tuple",
-        "name": "params_",
-        "components": [
-          { "type": "uint256", "name": "tokenId" },
-          { "type": "address", "name": "pool" },
-          { "type": "uint256[]", "name": "indexes" }
-        ]
-      }
+      { "type": "address", "name": "pool_" },
+      { "type": "uint256", "name": "tokenId_" },
+      { "type": "uint256[]", "name": "indexes_" }
     ],
     "outputs": []
   },

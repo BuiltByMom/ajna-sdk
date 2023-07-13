@@ -3,17 +3,25 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
-import { Address } from '../src/types';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { Address, SdkError } from '../src/types';
+import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad } from '../src/utils/numeric';
-import { BigNumber, constants, providers } from 'ethers';
+import { indexToPrice } from '../src/utils/pricing';
+import { BigNumber, providers } from 'ethers';
+import dotenv from 'dotenv';
+import { MAX_FENWICK_INDEX } from '../src/constants';
+
+dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-// Use this for local testnets, where JSON keystores are unavailable.
-// const signerLender = addAccountFromKey(process.env.ETH_KEY || '', provider);
-// Use this for a real chain, such as Goerli or Mainnet.
-const signerLender = addAccountFromKeystore(process.env.LENDER_KEYSTORE || '', provider);
+const signerLender = process.env.LENDER_KEY
+  ? addAccountFromKey(process.env.LENDER_KEY || '', provider)
+  : addAccountFromKeystore(
+      process.env.LENDER_KEYSTORE || '',
+      provider,
+      process.env.LENDER_PASSWORD || ''
+    );
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
@@ -23,12 +31,12 @@ let pool: FungiblePool;
 
 // Looks for pool, deploying it if it doesn't already exist
 async function getPool() {
-  pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
-  if (pool.poolAddress === constants.AddressZero) {
+  try {
+    pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
+    console.log('Using pool with address', pool.poolAddress);
+  } catch (error) {
     pool = await deployPool(collateralAddress, quoteAddress);
-    console.log('Deployed pool to ', pool.poolAddress);
-  } else {
-    console.log('Using pool with address ', pool.poolAddress);
+    console.log('Deployed pool to', pool.poolAddress);
   }
   return pool;
 }
@@ -41,6 +49,10 @@ async function deployPool(collateral: Address, quote: Address) {
 
 // Using fine-grained approval, add liquidity to the pool
 async function addLiquidity(amount: BigNumber, price: BigNumber) {
+  // validate the user's price
+  if (price.gt(indexToPrice(1)) || price.lte(indexToPrice(MAX_FENWICK_INDEX)))
+    throw new SdkError('Please provide a valid price');
+
   const bucket = await pool.getBucketByPrice(price);
   let tx = await pool.quoteApprove(signerLender, amount);
   await tx.verifyAndSubmit();
@@ -59,11 +71,16 @@ async function removeLiquidity(amount: BigNumber, price: BigNumber) {
 async function run() {
   const pool = await getPool();
   const stats = await pool.getStats();
-  console.log('Pool has', fromWad(stats.poolSize), 'liquidity and', stats.loansCount, 'loans');
+  const prices = await pool.getPrices();
+  console.log('Pool has', fromWad(stats.poolSize), 'liquidity and', fromWad(stats.debt), 'debt');
+
+  const poolPriceIndex = Math.max(prices.lupIndex, prices.hpbIndex);
+  const poolPriceExists = poolPriceIndex > 0 && poolPriceIndex < MAX_FENWICK_INDEX;
+  if (poolPriceExists) console.log('Pool price', fromWad(indexToPrice(poolPriceIndex)));
 
   const action = process.argv.length > 2 ? process.argv[2] : '';
-  const deposit = process.argv.length > 3 ? toWad(process.argv[3]) : toWad('200');
-  const price = process.argv.length > 4 ? toWad(process.argv[4]) : toWad('2007.0213');
+  const deposit = process.argv.length > 3 ? toWad(process.argv[3]) : toWad('100');
+  const price = process.argv.length > 4 ? toWad(process.argv[4]) : indexToPrice(poolPriceIndex);
 
   if (action === 'add') {
     await addLiquidity(deposit, price);

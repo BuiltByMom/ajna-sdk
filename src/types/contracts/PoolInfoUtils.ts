@@ -24,6 +24,7 @@ import type {
 export interface PoolInfoUtilsInterface extends utils.Interface {
   functions: {
     'auctionStatus(address,address)': FunctionFragment;
+    'availableQuoteTokenAmount(address)': FunctionFragment;
     'borrowFeeRate(address)': FunctionFragment;
     'borrowerInfo(address,address)': FunctionFragment;
     'bucketInfo(address,uint256)': FunctionFragment;
@@ -48,6 +49,7 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | 'auctionStatus'
+      | 'availableQuoteTokenAmount'
       | 'borrowFeeRate'
       | 'borrowerInfo'
       | 'bucketInfo'
@@ -72,6 +74,10 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: 'auctionStatus',
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'availableQuoteTokenAmount',
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: 'borrowFeeRate', values: [PromiseOrValue<string>]): string;
   encodeFunctionData(
@@ -124,6 +130,7 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: 'auctionStatus', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'availableQuoteTokenAmount', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'borrowFeeRate', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'borrowerInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'bucketInfo', data: BytesLike): Result;
@@ -188,6 +195,11 @@ export interface PoolInfoUtils extends BaseContract {
         neutralPrice_: BigNumber;
       }
     >;
+
+    availableQuoteTokenAmount(
+      ajnaPool_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { amount_: BigNumber }>;
 
     borrowFeeRate(
       ajnaPool_: PromiseOrValue<string>,
@@ -338,6 +350,11 @@ export interface PoolInfoUtils extends BaseContract {
     }
   >;
 
+  availableQuoteTokenAmount(
+    ajnaPool_: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
   borrowerInfo(
@@ -474,6 +491,11 @@ export interface PoolInfoUtils extends BaseContract {
         neutralPrice_: BigNumber;
       }
     >;
+
+    availableQuoteTokenAmount(
+      ajnaPool_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -612,6 +634,11 @@ export interface PoolInfoUtils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    availableQuoteTokenAmount(
+      ajnaPool_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     borrowerInfo(
@@ -694,6 +721,11 @@ export interface PoolInfoUtils extends BaseContract {
     auctionStatus(
       ajnaPool_: PromiseOrValue<string>,
       borrower_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    availableQuoteTokenAmount(
+      ajnaPool_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

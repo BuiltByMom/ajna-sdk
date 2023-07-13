@@ -1,5 +1,5 @@
 import { PoolUtils } from '../classes/PoolUtils';
-import { fromWad, toWad, wdiv, wmul } from '../utils/numeric';
+import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import {
   indexToPrice as indexToPriceLocal,
   priceToIndex as priceToIndexLocal,
@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { BigNumber, constants, providers } from 'ethers';
 
 dotenv.config();
+jest.setTimeout(1200000);
 
 describe('Utility tests', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -84,5 +85,16 @@ describe('Utility tests', () => {
         '115792089237316195423570985008687907853269984665640564039457584007913129639935'
       )
     );
+  });
+
+  it('min should function as expected', async () => {
+    expect(min(toWad('3.5'), toWad('1.8')).eq(toWad('1.8')));
+    expect(min(toWad('5611'), toWad('80211')).eq(toWad('5611')));
+  });
+
+  it('max should function as expected', async () => {
+    expect(max(toWad('38.062'), toWad('22.6845977')).eq(toWad('38.062')));
+    expect(max(toWad(4), toWad(0)).eq(toWad(4)));
+    expect(max(toWad(37), toWad(74536)).eq(toWad(74536)));
   });
 });

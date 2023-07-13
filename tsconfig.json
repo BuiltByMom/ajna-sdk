@@ -18,7 +18,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "./dist",
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,

@@ -4,18 +4,23 @@ import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
 import { Liquidation } from '../src/classes/Liquidation';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wmul } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
 import { BigNumber, constants, providers } from 'ethers';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerLender = addAccountFromKeystore(
-  process.env.LENDER_KEYSTORE || '',
-  provider,
-  process.env.LENDER_PASSWORD || ''
-);
+const signerLender = process.env.LENDER_KEY
+  ? addAccountFromKey(process.env.LENDER_KEY || '', provider)
+  : addAccountFromKeystore(
+      process.env.LENDER_KEYSTORE || '',
+      provider,
+      process.env.LENDER_PASSWORD || ''
+    );
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
@@ -58,11 +63,19 @@ async function run() {
 
   const action = process.argv.length > 2 ? process.argv[2] : '';
 
-  if (action === 'kickWithDeposit') {
+  if (action === 'kick') {
+    if (process.argv.length <= 3) throw new Error('Please identify loan to kick');
+    const borrowerAddress = process.argv[3];
+    const tx = await pool.kick(signerLender, borrowerAddress);
+    await tx.verifyAndSubmit();
+    console.log('Kicked loan', borrowerAddress);
+    return;
+  }
+  if (action === 'lenderKick') {
     if (process.argv.length <= 3)
-      throw new Error('Please provide price of bucket to withdraw and kick');
+      throw new Error('Please provide price of bucket in which you have liquidity to kick');
     const bucket = await pool.getBucketByIndex(priceToIndex(toWad(process.argv[3])));
-    const tx = await bucket.kickWithDeposit(signerLender);
+    const tx = await bucket.lenderKick(signerLender);
     await tx.verifyAndSubmit();
     console.log('Kicked from bucket', bucket.index);
     return;

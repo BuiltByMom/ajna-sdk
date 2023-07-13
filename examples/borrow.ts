@@ -3,19 +3,25 @@
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
-import { addAccountFromKeystore } from '../src/utils/add-account';
+import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { BigNumber, constants, providers } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
 import { Stats } from '../src/classes/Pool';
+import dotenv from 'dotenv';
+import { Loan } from '../src/types';
+
+dotenv.config();
 
 // Configure from environment
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerBorrower = addAccountFromKeystore(
-  process.env.BORROWER_KEYSTORE || '',
-  provider,
-  process.env.BORROWER_PASSWORD || ''
-);
+const signerBorrower = process.env.BORROWER_KEY
+  ? addAccountFromKey(process.env.BORROWER_KEY || '', provider)
+  : addAccountFromKeystore(
+      process.env.BORROWER_KEYSTORE || '',
+      provider,
+      process.env.BORROWER_PASSWORD || ''
+    );
 
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
@@ -39,27 +45,55 @@ async function estimateNewLup(existingPoolDebt: BigNumber, newDebt: BigNumber): 
   return newLup;
 }
 
-// Draws debt without any regard to current debt or collateral pledged
-async function makeLoan(poolStats: Stats, debtToDraw: BigNumber, collateralization: BigNumber) {
-  // add the origination fee
-  const originationFeeRate = await pool.getOriginationFeeRate();
-  debtToDraw = debtToDraw.add(wmul(debtToDraw, originationFeeRate));
+// Draw new debt and/or adjust collateralization of existing loan
+async function adjustLoan(
+  poolStats: Stats,
+  currentLoan: Loan,
+  debtToDraw: BigNumber,
+  collateralization: BigNumber
+) {
+  // determine borrower's total new debt
+  const originationFee = wmul(debtToDraw, await pool.getOriginationFeeRate());
+  const debtToDrawWithFee = debtToDraw.add(originationFee);
+  const proposedBorrowerDebt = currentLoan.debt.add(debtToDrawWithFee);
+  if (proposedBorrowerDebt.eq(toWad(0))) {
+    console.log('No existing or new debt; nothing to recollateralize');
+    return;
+  }
 
   // estimate where the LUP would be with additional debt
-  const price: BigNumber = await estimateNewLup(poolStats.debt, debtToDraw);
+  const price: BigNumber = await estimateNewLup(poolStats.debt, debtToDrawWithFee);
   // revert if LUP drops more than 10 buckets below our estimate before TX processed
   const limitIndex: number = priceToIndex(price) + 10;
   console.log('TX will revert if LUP has dropped below', fromWad(indexToPrice(limitIndex)));
 
-  const collateralToPledge = wmul(wdiv(debtToDraw, price), collateralization);
-  console.log(
-    `${fromWad(collateralToPledge)} collateral required to draw ${fromWad(debtToDraw)} debt`
-  );
-  let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-  await tx.verifyAndSubmit();
-  tx = await pool.drawDebt(signerBorrower, debtToDraw, collateralToPledge, limitIndex);
-  await tx.verifyAndSubmit();
-  console.log('Drew', fromWad(debtToDraw), 'debt');
+  // determine how much collateral needed to achieve desired total collateralization
+  const totalCollateralRequired = wmul(wdiv(proposedBorrowerDebt, price), collateralization);
+  const collateralToPledge = totalCollateralRequired.sub(currentLoan.collateral);
+
+  if (collateralToPledge.gt(toWad(0))) {
+    console.log(
+      `Will pledge ${fromWad(collateralToPledge)} collateral to achieve ${fromWad(
+        collateralization
+      )} borrower collateralization`
+    );
+    // submit TXes to approve and draw new debt
+    let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
+    await tx.verifyAndSubmit();
+    tx = await pool.drawDebt(signerBorrower, debtToDraw, collateralToPledge, limitIndex);
+    await tx.verifyAndSubmit();
+    console.log('Drew', fromWad(debtToDraw), 'debt');
+  } else {
+    // submit TX to pull collateral
+    const collateralToPull = collateralToPledge.mul(-1);
+    const tx = await pool.repayDebt(signerBorrower, toWad(0), collateralToPull);
+    await tx.verifyAndSubmit();
+    console.log(
+      `Pulled ${fromWad(collateralToPull)} collateral to reduce collateralization to ${fromWad(
+        collateralization
+      )}`
+    );
+  }
 }
 
 async function repayLoan(debtToRepay: BigNumber, collateralToPull: BigNumber) {
@@ -67,6 +101,8 @@ async function repayLoan(debtToRepay: BigNumber, collateralToPull: BigNumber) {
   await tx.verifyAndSubmit();
   tx = await pool.repayDebt(signerBorrower, debtToRepay, collateralToPull);
   await tx.verifyAndSubmit();
+  const repaymentAmountString = debtToRepay.eq(constants.MaxUint256) ? 'all' : fromWad(debtToRepay);
+  console.log('Repaid', repaymentAmountString, 'debt');
 }
 
 async function run() {
@@ -76,7 +112,7 @@ async function run() {
   console.log('Pool has', fromWad(stats.poolSize.sub(stats.debt)), 'available to lend');
   const loan = await pool.getLoan(await signerBorrower.getAddress());
   console.log(
-    `Borrower has ${fromWad(loan.debt)} debt and ${fromWad(loan.collateral)} pledged `,
+    `Borrower has ${fromWad(loan.debt)} debt with ${fromWad(loan.collateral)} pledged`,
     `and is ${fromWad(loan.collateralization)} collateralized`
   );
 
@@ -85,7 +121,7 @@ async function run() {
   if (action === 'draw') {
     const debtToDraw: BigNumber = process.argv.length > 3 ? toWad(process.argv[3]) : toWad(100);
     const collateralization = process.argv.length > 4 ? toWad(process.argv[4]) : toWad(1.25);
-    await makeLoan(stats, debtToDraw, collateralization);
+    await adjustLoan(stats, loan, debtToDraw, collateralization);
     return;
   }
   if (action === 'repay') {

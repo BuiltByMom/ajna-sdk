@@ -1,8 +1,6 @@
-import { SdkError } from '../classes/types';
-import { GAS_MULTIPLIER } from '../constants';
-import { CallData, TransactionOverrides, WrappedTransaction } from '../types';
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { GAS_MULTIPLIER } from '../constants';
+import { CallData, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -19,9 +17,8 @@ export async function createTransaction(
 ): Promise<WrappedTransaction> {
   const { methodName, args = [] } = callData;
   const argsFiltered = args.filter(a => a !== undefined);
-  const tx = await contract.populateTransaction[methodName](
-    ...(overrides ? [...argsFiltered, overrides] : [...argsFiltered])
-  );
+  const params = overrides ? [...argsFiltered, overrides] : [...argsFiltered];
+  const tx = await contract.populateTransaction[methodName](...params);
   return new WrappedTransactionClass(tx, contract);
 }
 
@@ -125,7 +122,8 @@ class WrappedTransactionClass implements WrappedTransaction {
       // works with Alchemy node on Goerli
       if (innerError.code === 3) {
         // if the hash does not map to a custom error, return the node-provided error
-        return this.getCustomErrorFromHash(contract, error.error.error.data) ?? error.error.error;
+        const errorHash = innerError.data;
+        return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
       }
     }
     return 'Revert reason unknown';
@@ -142,10 +140,14 @@ class WrappedTransactionClass implements WrappedTransaction {
     const customErrorNames = Object.keys(contract.interface.errors);
 
     // index the contract's errors by the first 8 bytes of their hash
-    const errorsByHash = Object.fromEntries(
-      customErrorNames.map(name => [keccak256(toUtf8Bytes(name)).substring(0, 10), name])
-    );
+    const errorsByHash = customErrorNames.reduce((acc: any, name: string) => {
+      return {
+        ...acc,
+        [contract.interface.getSighash(name)]: name,
+      };
+    }, {});
 
+    errorData = errorData.substring(0, 10);
     if (errorData in errorsByHash) {
       return errorsByHash[errorData];
     } else {

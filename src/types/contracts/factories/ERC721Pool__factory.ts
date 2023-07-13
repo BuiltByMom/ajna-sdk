@@ -1039,6 +1039,10 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
+      {
+        type: 'bool',
+        name: 'revertIfBelowLup_',
+      },
     ],
     outputs: [
       {
@@ -1647,23 +1651,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'kickWithDeposit',
-    constant: false,
-    payable: false,
-    inputs: [
-      {
-        type: 'uint256',
-        name: 'index_',
-      },
-      {
-        type: 'uint256',
-        name: 'npLimitIndex_',
-      },
-    ],
-    outputs: [],
-  },
-  {
-    type: 'function',
     name: 'kickerInfo',
     constant: true,
     stateMutability: 'view',
@@ -1709,6 +1696,23 @@ const _abi = [
         name: 'depositTime_',
       },
     ],
+  },
+  {
+    type: 'function',
+    name: 'lenderKick',
+    constant: false,
+    payable: false,
+    inputs: [
+      {
+        type: 'uint256',
+        name: 'index_',
+      },
+      {
+        type: 'uint256',
+        name: 'npLimitIndex_',
+      },
+    ],
+    outputs: [],
   },
   {
     type: 'function',
@@ -1848,6 +1852,10 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
+      {
+        type: 'bool',
+        name: 'revertIfBelowLup_',
+      },
     ],
     outputs: [
       {
@@ -1918,19 +1926,6 @@ const _abi = [
     outputs: [
       {
         type: 'address',
-      },
-    ],
-  },
-  {
-    type: 'function',
-    name: 'quoteTokenDust',
-    constant: true,
-    stateMutability: 'pure',
-    payable: false,
-    inputs: [],
-    outputs: [
-      {
-        type: 'uint256',
       },
     ],
   },
@@ -2157,6 +2152,7 @@ const _abi = [
     inputs: [
       {
         type: 'uint256',
+        name: 'tokenId_',
       },
     ],
     outputs: [

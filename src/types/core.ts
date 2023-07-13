@@ -34,3 +34,15 @@ export interface CallData {
   methodName: string;
   args?: Array<any>;
 }
+
+/**
+ * Error intentionally raised by SDK.
+ */
+export class SdkError extends Error {
+  readonly _innerException: any;
+
+  constructor(message: string, innerException?: any) {
+    super(message);
+    this._innerException = innerException;
+  }
+}
