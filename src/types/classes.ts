@@ -85,9 +85,26 @@ export interface IGrantFund {
   /**
    * Handles grant fund methods
    */
+  /** delegates vote to the given delegatee */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
-  getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
+  /** get the address account is currently delegating to */
+  getDelegates(address: Address): Promise<Address>;
+  /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
+  getVotesFunding(blockNumber: number, address: Address): Promise<BigNumber>;
+  /** get the voter's voting power in the screening stage of a distribution period */
+  getVotesScreening(distributionId: number, address: Address): Promise<BigNumber>;
 }
+
+export type ProposalParams = {
+  title: string;
+  recipientAddresses: Array<{
+    address: Address;
+    amount: string;
+  }>;
+  externalLink?: string;
+  ipfsHash?: string;
+  arweaveTxid?: string;
+};
 
 export interface IDistributionPeriod {
   /**
@@ -95,4 +112,33 @@ export interface IDistributionPeriod {
    */
   getActiveDistributionPeriod(): Promise<DistributionPeriod>;
   getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
+  createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
+}
+
+export const proposalStates = [
+  'Pending',
+  'Active',
+  'Canceled',
+  'Defeated',
+  'Succeeded',
+  'Queued',
+  'Expired',
+  'Executed',
+] as const;
+
+export type ProposalState = (typeof proposalStates)[number];
+
+export interface IProposal {
+  /**
+   * Handles methods specific to a given proposal
+   */
+  getInfo(): Promise<{
+    proposalId: BigNumber;
+    distributionId: number;
+    votesReceived: BigNumber;
+    tokensRequested: BigNumber;
+    fundingVotesReceived: BigNumber;
+    executed: boolean;
+  }>;
+  getState(): Promise<ProposalState>;
 }

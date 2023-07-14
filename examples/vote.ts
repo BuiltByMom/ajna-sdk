@@ -1,11 +1,14 @@
 #!/usr/bin/env ts-node
 
+import dotenv from 'dotenv';
+import { providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
+import { DistributionPeriod } from '../src/types/classes';
+import { SdkError } from '../src/types/core';
 import { addAccountFromKeystore } from '../src/utils/add-account';
-import { providers } from 'ethers';
-import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
+import { startDistributionPeriod } from './submitProposal';
 
 async function run() {
   dotenv.config();
@@ -25,13 +28,45 @@ async function run() {
     await tx.verifyAndSubmit();
   }
 
-  const votingPower = await ajna.grants.getVotingPower(voter);
-  console.log('Voter voting power is ', fromWad(votingPower));
+  const delegatee = await ajna.grants.getDelegates(delegateeAddress);
+  console.log('Delegatee is ', fromWad(delegatee));
 
-  if (!votingPower.isZero()) {
-    await delegateVote();
-    console.log('voted delegated to delegatee ', delegateeAddress);
-  }
+  await delegateVote();
+  console.log('voted delegated to delegatee ', delegateeAddress);
+
+  const getDistributionPeriod = async () => {
+    let distributionPeriod: DistributionPeriod;
+    try {
+      distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+    } catch (e) {
+      if (
+        e instanceof SdkError &&
+        e.message === 'There is no active distribution period, starting a new one'
+      ) {
+        await startDistributionPeriod(provider);
+        distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+      } else {
+        throw e;
+      }
+    }
+    return distributionPeriod;
+  };
+
+  const distributionPeriodData = await getDistributionPeriod();
+
+  console.log('distribution', distributionPeriodData);
+
+  const fundingVotes = await ajna.grants.getVotesFunding(
+    distributionPeriodData.blockNumber,
+    delegateeAddress
+  );
+  console.log('Funding votes: ', fromWad(fundingVotes));
+
+  const screeningVotes = await ajna.grants.getVotesScreening(
+    distributionPeriodData.id,
+    delegateeAddress
+  );
+  console.log('Funding votes: ', fromWad(screeningVotes));
 }
 
 run();

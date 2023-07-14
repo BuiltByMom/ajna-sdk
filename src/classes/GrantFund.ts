@@ -1,7 +1,10 @@
 import {
   delegateVote,
+  getDelegates,
+  getGrantsFundContract,
   getTreasury,
-  getVotingPower,
+  getVotesFunding,
+  getVotesScreening,
   startNewDistributionPeriod,
 } from '../contracts/grant-fund';
 import { Address, IGrantFund, SdkError, SignerOrProvider } from '../types';
@@ -26,13 +29,34 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets voting power of a given address, defaults to voting power of provider address if not given
-   * @param signer caller
-   * @param address address of the voter
-   * @returns BigNumber
+   * get the address account is currently delegating to
+   * @param address delegator
+   * @returns address
    */
-  async getVotingPower(signer: Signer, address?: string) {
-    return await getVotingPower(signer, address ?? (await signer.getAddress()));
+  async getDelegates(address: Address) {
+    return await getDelegates(this.getProvider(), address);
+  }
+
+  /**
+   * get the remaining quadratic voting power available to the voter in the funding stage of a distribution period
+   * @param distributionId the distributionId of the distribution period to check
+   * @param address the address of the voter to check
+   * @returns the voter's remaining quadratic voting power
+   */
+  async getVotesFunding(distributionId: number, address: Address) {
+    const contractInstance = getGrantsFundContract(this.getProvider());
+    return await getVotesFunding(contractInstance, distributionId, address);
+  }
+
+  /**
+   * get the voter's voting power in the screening stage of a distribution period
+   * @param distributionId the distributionId of the distribution period to check
+   * @param address the address of the voter to check
+   * @returns the voter's voting power
+   */
+  async getVotesScreening(distributionId: number, address: Address) {
+    const contractInstance = getGrantsFundContract(this.getProvider());
+    return await getVotesScreening(contractInstance, distributionId, address);
   }
 
   async startNewDistributionPeriod(signer: Signer) {

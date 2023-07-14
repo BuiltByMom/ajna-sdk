@@ -4,8 +4,8 @@ export async function takeSnapshot(provider: providers.JsonRpcProvider) {
   return +(await provider.send('evm_snapshot', []));
 }
 
-export async function mine(provider: providers.JsonRpcProvider) {
-  await provider.send('evm_mine', []);
+export async function mine(provider: providers.JsonRpcProvider, blocks = 1) {
+  await provider.send('evm_mine', [{ blocks: blocks }]);
 }
 
 // NOTE: due to API limitation, same snapshot couldn't be used twice for reverting
