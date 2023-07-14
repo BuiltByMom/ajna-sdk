@@ -6,14 +6,24 @@ import { addAccountFromKeystore } from '../src/utils/add-account';
 import { BigNumber, providers } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
-import { SdkError } from '../src/types';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../src/contracts/grant-fund';
+import { Provider, SdkError } from '../src/types';
 
 const CREATE_NEW_PROPOSAL = true;
 // sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
 const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e';
 // proposal description must be unique, select a different title each time
 const PROPOSAL_TITLE = 'ajna community courses 5';
+
+export const startDistributionPeriod = async (provider: Provider) => {
+  // Use this for a real chain, such as Goerli or Mainnet.
+  const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const tx = await startNewDistributionPeriod(caller);
+  const receipt = await tx.verify();
+  console.log(fromWad(receipt), 'estimated gas required for this transaction');
+  const recepit2 = await tx.verifyAndSubmit();
+  console.log(recepit2);
+};
 
 async function run() {
   dotenv.config();
@@ -27,17 +37,6 @@ async function run() {
 
   Config.fromEnvironment();
   const ajna = new AjnaSDK(provider);
-
-  const startDistributionPeriod = async () => {
-    const tx = await startNewDistributionPeriod(caller);
-    const receipt = await tx.verify();
-    console.log(
-      fromWad(receipt),
-      'estimated gas required for startNewDistributionPeriod transaction'
-    );
-    const recepit2 = await tx.verifyAndSubmit();
-    console.log(recepit2);
-  };
 
   const propose = async () => {
     const tx = await ajna.distributionPeriods.createProposal(caller, {
@@ -59,7 +58,7 @@ async function run() {
   } catch (e) {
     if (e instanceof SdkError && e.message === 'There is no active distribution period') {
       console.log('There is no active distribution period, starting a new one');
-      await startDistributionPeriod();
+      await startDistributionPeriod(provider);
     } else {
       throw e;
     }

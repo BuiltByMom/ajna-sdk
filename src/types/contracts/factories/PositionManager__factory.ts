@@ -678,6 +678,10 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
+      {
+        type: 'bool',
+        name: 'revertIfBelowLup_',
+      },
     ],
     outputs: [],
   },

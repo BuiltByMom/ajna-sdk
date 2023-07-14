@@ -41,7 +41,7 @@ export interface PositionManagerInterface extends utils.Interface {
     'isPositionBucketBankrupt(uint256,uint256)': FunctionFragment;
     'memorializePositions(address,uint256,uint256[])': FunctionFragment;
     'mint(address,address,bytes32)': FunctionFragment;
-    'moveLiquidity(address,uint256,uint256,uint256,uint256)': FunctionFragment;
+    'moveLiquidity(address,uint256,uint256,uint256,uint256,bool)': FunctionFragment;
     'multicall(bytes[])': FunctionFragment;
     'name()': FunctionFragment;
     'nonces(uint256)': FunctionFragment;
@@ -155,7 +155,8 @@ export interface PositionManagerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(functionFragment: 'multicall', values: [PromiseOrValue<BytesLike>[]]): string;
@@ -462,6 +463,7 @@ export interface PositionManager extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -617,6 +619,7 @@ export interface PositionManager extends BaseContract {
     fromIndex_: PromiseOrValue<BigNumberish>,
     toIndex_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
+    revertIfBelowLup_: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -772,6 +775,7 @@ export interface PositionManager extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1022,6 +1026,7 @@ export interface PositionManager extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1184,6 +1189,7 @@ export interface PositionManager extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

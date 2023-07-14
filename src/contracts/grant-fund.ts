@@ -15,6 +15,7 @@ export const getAjnaTokenContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.ajnaToken), ajnaTokenAbi, provider);
 };
 
+// Delegate
 export async function delegateVote(signer: Signer, delegatee: Address) {
   const contractInstance: Contract = getAjnaTokenContract(signer);
   return await createTransaction(contractInstance, {
@@ -22,12 +23,12 @@ export async function delegateVote(signer: Signer, delegatee: Address) {
     args: [delegatee],
   });
 }
-
-export async function getVotingPower(signer: Signer, account: Address) {
-  const contractInstance: Contract = getAjnaTokenContract(signer);
-  return await contractInstance.getVotes(account);
+export async function getDelegates(provider: SignerOrProvider, account: Address) {
+  const contractInstance: Contract = getAjnaTokenContract(provider);
+  return await contractInstance.delegates(account);
 }
 
+// Distribution period
 export async function getActiveDistributionId(provider: SignerOrProvider): Promise<number> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionId();
@@ -46,6 +47,7 @@ export async function getDistributionPeriod(provider: SignerOrProvider, distribu
   return await contractInstance.getDistributionPeriodInfo(distributionId);
 }
 
+// Proposals
 export async function createProposal(
   signer: Signer,
   { recipientAddresses, ...rest }: ProposalParams
@@ -76,4 +78,21 @@ export async function getProposalInfo(provider: SignerOrProvider, distributionId
 export async function getProposalState(provider: SignerOrProvider, distributionId: BigNumber) {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.state(distributionId);
+}
+
+// Votes
+export async function getVotesFunding(
+  contract: Contract,
+  distributionId: number,
+  account: Address
+) {
+  return await contract.getVotesFunding(distributionId, account);
+}
+
+export async function getVotesScreening(
+  contract: Contract,
+  distributionId: number,
+  account: Address
+) {
+  return await contract.getVotesScreening(distributionId, account);
 }

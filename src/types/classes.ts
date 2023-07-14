@@ -85,8 +85,14 @@ export interface IGrantFund {
   /**
    * Handles grant fund methods
    */
+  /** delegates vote to the given delegatee */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
-  getVotingPower(signer: Signer, address?: Address): Promise<BigNumber>;
+  /** get the address account is currently delegating to */
+  getDelegates(address: Address): Promise<Address>;
+  /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
+  getVotesFunding(blockNumber: number, address: Address): Promise<BigNumber>;
+  /** get the voter's voting power in the screening stage of a distribution period */
+  getVotesScreening(distributionId: number, address: Address): Promise<BigNumber>;
 }
 
 export type ProposalParams = {

@@ -26,7 +26,7 @@ import type {
 export interface ERC721PoolInterface extends utils.Interface {
   functions: {
     'addCollateral(uint256[],uint256,uint256)': FunctionFragment;
-    'addQuoteToken(uint256,uint256,uint256)': FunctionFragment;
+    'addQuoteToken(uint256,uint256,uint256,bool)': FunctionFragment;
     'approveLPTransferors(address[])': FunctionFragment;
     'approvedTransferors(address,address)': FunctionFragment;
     'auctionInfo(address)': FunctionFragment;
@@ -57,15 +57,15 @@ export interface ERC721PoolInterface extends utils.Interface {
     'isSubset()': FunctionFragment;
     'kick(address,uint256)': FunctionFragment;
     'kickReserveAuction()': FunctionFragment;
-    'kickWithDeposit(uint256,uint256)': FunctionFragment;
     'kickerInfo(address)': FunctionFragment;
     'lenderInfo(uint256,address)': FunctionFragment;
+    'lenderKick(uint256,uint256)': FunctionFragment;
     'loanInfo(uint256)': FunctionFragment;
     'loansInfo()': FunctionFragment;
     'lpAllowance(uint256,address,address)': FunctionFragment;
     'maxFlashLoan(address)': FunctionFragment;
     'mergeOrRemoveCollateral(uint256[],uint256,uint256)': FunctionFragment;
-    'moveQuoteToken(uint256,uint256,uint256,uint256)': FunctionFragment;
+    'moveQuoteToken(uint256,uint256,uint256,uint256,bool)': FunctionFragment;
     'multicall(bytes[])': FunctionFragment;
     'pledgedCollateral()': FunctionFragment;
     'poolType()': FunctionFragment;
@@ -126,9 +126,9 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'isSubset'
       | 'kick'
       | 'kickReserveAuction'
-      | 'kickWithDeposit'
       | 'kickerInfo'
       | 'lenderInfo'
+      | 'lenderKick'
       | 'loanInfo'
       | 'loansInfo'
       | 'lpAllowance'
@@ -174,7 +174,8 @@ export interface ERC721PoolInterface extends utils.Interface {
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(
@@ -268,14 +269,14 @@ export interface ERC721PoolInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: 'kickReserveAuction', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'kickWithDeposit',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
   encodeFunctionData(functionFragment: 'kickerInfo', values: [PromiseOrValue<string>]): string;
   encodeFunctionData(
     functionFragment: 'lenderInfo',
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'lenderKick',
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: 'loanInfo', values: [PromiseOrValue<BigNumberish>]): string;
   encodeFunctionData(functionFragment: 'loansInfo', values?: undefined): string;
@@ -298,7 +299,8 @@ export interface ERC721PoolInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(functionFragment: 'multicall', values: [PromiseOrValue<BytesLike>[]]): string;
@@ -405,9 +407,9 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'isSubset', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kick', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kickReserveAuction', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'kickWithDeposit', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'kickerInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lenderInfo', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'lenderKick', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'loanInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'loansInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lpAllowance', data: BytesLike): Result;
@@ -882,6 +884,7 @@ export interface ERC721Pool extends BaseContract {
       amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1048,12 +1051,6 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    kickWithDeposit(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     kickerInfo(
       kicker_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1069,6 +1066,12 @@ export interface ERC721Pool extends BaseContract {
         depositTime_: BigNumber;
       }
     >;
+
+    lenderKick(
+      index_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     loanInfo(
       loanId_: PromiseOrValue<BigNumberish>,
@@ -1101,6 +1104,7 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1221,6 +1225,7 @@ export interface ERC721Pool extends BaseContract {
     amount_: PromiseOrValue<BigNumberish>,
     index_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
+    revertIfBelowLup_: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1378,12 +1383,6 @@ export interface ERC721Pool extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  kickWithDeposit(
-    index_: PromiseOrValue<BigNumberish>,
-    npLimitIndex_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   kickerInfo(
     kicker_: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1394,6 +1393,12 @@ export interface ERC721Pool extends BaseContract {
     lender_: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber] & { lpBalance_: BigNumber; depositTime_: BigNumber }>;
+
+  lenderKick(
+    index_: PromiseOrValue<BigNumberish>,
+    npLimitIndex_: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   loanInfo(
     loanId_: PromiseOrValue<BigNumberish>,
@@ -1423,6 +1428,7 @@ export interface ERC721Pool extends BaseContract {
     fromIndex_: PromiseOrValue<BigNumberish>,
     toIndex_: PromiseOrValue<BigNumberish>,
     expiry_: PromiseOrValue<BigNumberish>,
+    revertIfBelowLup_: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1543,6 +1549,7 @@ export interface ERC721Pool extends BaseContract {
       amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1707,12 +1714,6 @@ export interface ERC721Pool extends BaseContract {
 
     kickReserveAuction(overrides?: CallOverrides): Promise<void>;
 
-    kickWithDeposit(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     kickerInfo(
       kicker_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1728,6 +1729,12 @@ export interface ERC721Pool extends BaseContract {
         depositTime_: BigNumber;
       }
     >;
+
+    lenderKick(
+      index_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     loanInfo(
       loanId_: PromiseOrValue<BigNumberish>,
@@ -1762,6 +1769,7 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -2223,6 +2231,7 @@ export interface ERC721Pool extends BaseContract {
       amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2356,18 +2365,18 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    kickWithDeposit(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     kickerInfo(kicker_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     lenderInfo(
       index_: PromiseOrValue<BigNumberish>,
       lender_: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lenderKick(
+      index_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     loanInfo(loanId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
@@ -2395,6 +2404,7 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2512,6 +2522,7 @@ export interface ERC721Pool extends BaseContract {
       amount_: PromiseOrValue<BigNumberish>,
       index_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2654,12 +2665,6 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    kickWithDeposit(
-      index_: PromiseOrValue<BigNumberish>,
-      npLimitIndex_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     kickerInfo(
       kicker_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2669,6 +2674,12 @@ export interface ERC721Pool extends BaseContract {
       index_: PromiseOrValue<BigNumberish>,
       lender_: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    lenderKick(
+      index_: PromiseOrValue<BigNumberish>,
+      npLimitIndex_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     loanInfo(
@@ -2702,6 +2713,7 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: PromiseOrValue<BigNumberish>,
       toIndex_: PromiseOrValue<BigNumberish>,
       expiry_: PromiseOrValue<BigNumberish>,
+      revertIfBelowLup_: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

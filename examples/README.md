@@ -16,8 +16,8 @@ First, set up your environment with required endpoint/addresses/keys. Here's an 
 ```
 ETH_RPC_URL=https://eth-goerli.g.alchemy.com/v2/<your key here>
 
-AJNA_CONTRACT_ERC20_POOL_FACTORY=0xb54FE3ee12926e63FF4A5163766fb93eDbADd5f3
-AJNA_POOL_UTILS=0x28ef92e694d1044917981837b21e5eA994931c71
+AJNA_ERC20_POOL_FACTORY=0x01Da8a85A5B525D476cA2b51e44fe7087fFafaFF
+AJNA_POOL_UTILS=0xBB61407715cDf92b2784E9d2F1675c4B8505cBd8
 
 LENDER_ADDRESS=0xAbc...
 LENDER_KEYSTORE=/path/to/lender-keystore.json
@@ -32,6 +32,7 @@ VOTER_PASSWORD=<key password>
 COLLATERAL_TOKEN=0x9c09FE6b19174D838CAe2C4Fb5A4A311c4008441
 QUOTE_TOKEN=0x10aA0Cf12AAb305bd77AD8F76c037E048B12513B
 AJNA_TOKEN_ADDRESS=0xaadebCF61AA7Da0573b524DE57c67aDa797D46c5
+AJNA_GRANT_FUND=0xd364766E1D431e0bb99705c8eb0e6665C3b32eB5
 ```
 
 CAUTION: storing key passwords in your environment is insecure and a bad practice. Do not do this with accounts with real funds.
@@ -67,7 +68,7 @@ Now that the LUP has moved to 1886.9, the first borrower is undercollateralized 
 - `./lend.ts add 500 2002.07` - add liquidity, assuming no other lenders
 - `./lend.ts add 500 1992.3` - add liquidity at lower price
 - `./borrow.ts draw 750 1.25` - draw debt utilizing both buckets
-- `./liquidate.ts kickWithDeposit 1992.3` - remove lower-priced deposit, kicking the loan
+- `./liquidate.ts lenderKick 1992.3` - kick loan considering lower-priced deposit
 - `./liquidate.ts status $BORROWER_ADDRESS` - check auction; wait until price reasonable
 - `./liquidate.ts take $BORROWER_ADDRESS 0.25` - perform a partial take
 - `./liquidate.ts take $BORROWER_ADDRESS` - take remainder of collateral

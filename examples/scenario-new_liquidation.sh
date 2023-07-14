@@ -9,4 +9,4 @@ set -e
 ./borrow.ts draw 750 1.25
 
 # lender withdraws from lower bucket, kicking the loan
-./liquidate.ts kickWithDeposit 1992.3
+./liquidate.ts lenderKick 1992.3

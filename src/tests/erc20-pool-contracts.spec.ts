@@ -18,14 +18,14 @@ dotenv.config();
 
 jest.setTimeout(1200000);
 
-const TWETH_ADDRESS = '0x844f3C269f301f89D81f29B91b8d8ED2C69Fa7Bc';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
-const TESTA_ADDRESS = '0xf6C45B3B42b910110B1c750C959D0a396470c520';
+const TWETH_ADDRESS = '0xc17985054Cab9CEf76ec024820dAaaC50CE1ad85';
+const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
+const TESTA_ADDRESS = '0x919ae2c42A69ebD939262F39b4dAdAFDBf9eB374';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTB_DAI_POOL_ADDRESS = '0x46f65d2c707ea9c15D398889cEF64C0C373bFdA7';
+const TESTB_DAI_POOL_ADDRESS = '0x3578b4489fe9ee07fd1d62f767ddcdf2b99ea511';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -352,11 +352,11 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider)],
+        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider), false],
       },
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider)],
+        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider), false],
       },
     ]);
     response = await tx.verifyAndSubmitResponse();
@@ -487,8 +487,8 @@ describe('ERC20 Pool', () => {
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
     await submitAndVerifyTransaction(tx);
 
-    // wait year (8760 hours)
-    let jumpTimeSeconds = 8760 * 60 * 60;
+    // wait a year (8760 hours)
+    let jumpTimeSeconds = 8760 * 3600;
     await timeJump(provider, jumpTimeSeconds);
 
     // check and repay debt, expected debt value around 1053
@@ -511,6 +511,7 @@ describe('ERC20 Pool', () => {
     expect(status.claimableReserves.lte(status.reserves)).toBe(true);
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
     expect(status.price.eq(constants.Zero)).toBe(true);
+    await timeJump(provider, 12); // ensure repay and kick blocks have different timestamps
     await mine(provider);
 
     // kick auction
@@ -520,7 +521,7 @@ describe('ERC20 Pool', () => {
     expect(takeable).toBe(true);
 
     // wait 32 hours
-    jumpTimeSeconds = 32 * 60 * 60;
+    jumpTimeSeconds = 32 * 3600;
     await timeJump(provider, jumpTimeSeconds);
     status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
