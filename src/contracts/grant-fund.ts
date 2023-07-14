@@ -47,6 +47,11 @@ export async function getDistributionPeriod(provider: SignerOrProvider, distribu
   return await contractInstance.getDistributionPeriodInfo(distributionId);
 }
 
+export async function getTreasury(provider: SignerOrProvider): Promise<BigNumber> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.treasury();
+}
+
 // Proposals
 export async function createProposal(
   signer: Signer,

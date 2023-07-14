@@ -2,10 +2,12 @@ import {
   delegateVote,
   getDelegates,
   getGrantsFundContract,
+  getTreasury,
   getVotesFunding,
   getVotesScreening,
+  startNewDistributionPeriod,
 } from '../contracts/grant-fund';
-import { Address, IGrantFund, SignerOrProvider } from '../types';
+import { Address, IGrantFund, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { Signer } from 'ethers';
 /**
@@ -55,5 +57,12 @@ export class GrantFund extends ContractBase implements IGrantFund {
   async getVotesScreening(distributionId: number, address: Address) {
     const contractInstance = getGrantsFundContract(this.getProvider());
     return await getVotesScreening(contractInstance, distributionId, address);
+  }
+
+  async startNewDistributionPeriod(signer: Signer) {
+    if ((await getTreasury(signer)).isZero()) {
+      throw new SdkError('Unfunded treasury');
+    }
+    return startNewDistributionPeriod(signer);
   }
 }
