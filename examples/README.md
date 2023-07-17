@@ -53,6 +53,10 @@ Ensure your accounts are funded with tokens. Scripts run fine-grained approvals 
 - `./borrow.ts draw 150 1.3` - draw debt collateralizing at 130%, utilizing about half the pool
 - `./borrow.ts repay` - repay debt and pull collateral
 
+### Management
+
+- `./lend.ts updateInterest` - update the interest rate of a stagnant pool
+
 ### Kickable loan
 
 - `./lend.ts add 300 2002.5` - add initial liquidity

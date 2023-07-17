@@ -18,6 +18,8 @@ import {
   revokeLPTransferors,
   lpAllowance,
   increaseLPAllowance,
+  updateInterest,
+  interestRateInfo,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -98,6 +100,8 @@ export interface Stats {
   claimableReservesRemaining: BigNumber;
   /** current price at which `1` quote token may be purchased, denominated in `Ajna` */
   reserveAuctionPrice: BigNumber;
+  /** interest rate paid by borrowers */
+  borrowRate: BigNumber;
 }
 
 /**
@@ -218,6 +222,8 @@ export abstract class Pool {
 
     const [debt, , liquidationDebt] = await debtInfo(this.contract);
 
+    const rateInfo = await interestRateInfo(this.contract);
+
     return {
       poolSize: BigNumber.from(poolSize),
       debt,
@@ -231,6 +237,7 @@ export abstract class Pool {
       claimableReserves: BigNumber.from(claimableReserves),
       claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
       reserveAuctionPrice: BigNumber.from(auctionPrice),
+      borrowRate: rateInfo[0],
     };
   }
 
@@ -350,6 +357,17 @@ export abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
     const recipient = await signer.getAddress();
     return await withdrawBonds(contractPoolWithSigner, recipient, maxAmount);
+  }
+
+  /**
+   * may be called periodically by actors to adjust interest rate if no other TXes have occurred
+   * in the past 12 hours
+   * @param signer actor who wants to update the interest rate
+   * @returns transaction
+   */
+  async updateInterest(signer: Signer) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+    return await updateInterest(contractPoolWithSigner);
   }
 
   /**

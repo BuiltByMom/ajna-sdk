@@ -65,6 +65,10 @@ export async function loansInfo(contract: Contract): Promise<[Address, BigNumber
   return await contract.loansInfo();
 }
 
+export async function interestRateInfo(contract: Contract): Promise<[BigNumber, BigNumber]> {
+  return await contract.interestRateInfo();
+}
+
 export async function kickerInfo(
   contract: Contract,
   kicker: Address
@@ -161,6 +165,10 @@ export async function withdrawBonds(
     { methodName: 'withdrawBonds', args: [recipientAddress, maxAmount] },
     overrides
   );
+}
+
+export async function updateInterest(contract: Contract, overrides?: TransactionOverrides) {
+  return await createTransaction(contract, { methodName: 'updateInterest' }, overrides);
 }
 
 export async function kickReserveAuction(contract: Contract, overrides?: TransactionOverrides) {

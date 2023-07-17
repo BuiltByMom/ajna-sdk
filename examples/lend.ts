@@ -68,11 +68,18 @@ async function removeLiquidity(amount: BigNumber, price: BigNumber) {
   console.log('Removed liquidity from bucket', bucket.index);
 }
 
+async function updateInterest() {
+  await pool.updateInterest(signerLender);
+  const stats = await pool.getStats();
+  console.log('Borrow rate ', fromWad(stats.borrowRate), 'after updating');
+}
+
 async function run() {
   const pool = await getPool();
   const stats = await pool.getStats();
   const prices = await pool.getPrices();
   console.log('Pool has', fromWad(stats.poolSize), 'liquidity and', fromWad(stats.debt), 'debt');
+  console.log('Borrow rate', fromWad(stats.borrowRate));
 
   const poolPriceIndex = Math.max(prices.lupIndex, prices.hpbIndex);
   const poolPriceExists = poolPriceIndex > 0 && poolPriceIndex < MAX_FENWICK_INDEX;
@@ -88,6 +95,10 @@ async function run() {
   }
   if (action === 'remove') {
     await removeLiquidity(deposit, price);
+    return;
+  }
+  if (action === 'updateInterest') {
+    await updateInterest();
     return;
   }
 }
