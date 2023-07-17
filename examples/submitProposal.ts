@@ -17,7 +17,7 @@ const PROPOSAL_TITLE = 'multi address transfers test';
 
 export const startDistributionPeriod = async (provider: Provider) => {
   // Use this for a real chain, such as Goerli or Mainnet.
-  const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const caller = await addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
   const tx = await startNewDistributionPeriod(caller);
   const receipt = await tx.verify();
   console.log(fromWad(receipt), 'estimated gas required for this transaction');
@@ -32,7 +32,7 @@ async function run() {
   // Use this for local testnets, where JSON keystores are unavailable.
   // const voter = addAccountFromKey(process.env.ETH_KEY || '', provider);
   // Use this for a real chain, such as Goerli or Mainnet.
-  const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const caller = await addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
   const proposalToAddress = process.env.VOTER_ADDRESS ?? '';
   const proposalToAddress2 = process.env.LENDER_ADDRESS ?? '';
 

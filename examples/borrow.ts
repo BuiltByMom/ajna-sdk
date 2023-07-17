@@ -17,7 +17,7 @@ dotenv.config();
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 const signerBorrower = process.env.BORROWER_KEY
   ? addAccountFromKey(process.env.BORROWER_KEY || '', provider)
-  : addAccountFromKeystore(
+  : await addAccountFromKeystore(
       process.env.BORROWER_KEYSTORE || '',
       provider,
       process.env.BORROWER_PASSWORD || ''

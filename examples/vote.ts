@@ -18,7 +18,7 @@ async function run() {
   // Use this for local testnets, where JSON keystores are unavailable.
   // const voter = addAccountFromKey(process.env.ETH_KEY || '', provider);
   // Use this for a real chain, such as Goerli or Mainnet.
-  const voter = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const voter = await addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
   const voterAddress: string = process.env.VOTER_ADDRESS ?? '';
 
   Config.fromEnvironment();
