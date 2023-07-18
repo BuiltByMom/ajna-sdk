@@ -1,37 +1,23 @@
 #!/usr/bin/env ts-node
 
 import { AjnaSDK } from '../src/classes/AjnaSDK';
-import { Config } from '../src/classes/Config';
 import { FungiblePool } from '../src/classes/FungiblePool';
-import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
-import { BigNumber, constants, providers } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
 import { Stats } from '../src/classes/Pool';
 import dotenv from 'dotenv';
 import { Loan } from '../src/types';
+import { initAjna } from './utils';
 
 dotenv.config();
 
-// Configure from environment
-const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerBorrower = process.env.BORROWER_KEY
-  ? addAccountFromKey(process.env.BORROWER_KEY || '', provider)
-  : await addAccountFromKeystore(
-      process.env.BORROWER_KEYSTORE || '',
-      provider,
-      process.env.BORROWER_PASSWORD || ''
-    );
-
-Config.fromEnvironment();
-const ajna = new AjnaSDK(provider);
 const collateralAddress = process.env.COLLATERAL_TOKEN || '0x0';
 const quoteAddress = process.env.QUOTE_TOKEN || '0x0';
-let pool: FungiblePool;
 
 // Gets instance of Pool object
-async function getPool() {
-  pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
+async function getPool(ajna: AjnaSDK) {
+  const pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
   if (pool.poolAddress === constants.AddressZero) {
     throw new Error('Pool not yet deployed; run lender script first');
   }
@@ -39,7 +25,11 @@ async function getPool() {
 }
 
 // Estimates where LUP will be after debt has been drawn
-async function estimateNewLup(existingPoolDebt: BigNumber, newDebt: BigNumber): Promise<BigNumber> {
+async function estimateNewLup(
+  pool: FungiblePool,
+  existingPoolDebt: BigNumber,
+  newDebt: BigNumber
+): Promise<BigNumber> {
   const newLup = indexToPrice(await pool.depositIndex(existingPoolDebt.add(newDebt)));
   console.log('Drawing', fromWad(newDebt), 'would push LUP down to', fromWad(newLup));
   return newLup;
@@ -47,6 +37,8 @@ async function estimateNewLup(existingPoolDebt: BigNumber, newDebt: BigNumber): 
 
 // Draw new debt and/or adjust collateralization of existing loan
 async function adjustLoan(
+  pool: FungiblePool,
+  signerBorrower: Signer,
   poolStats: Stats,
   currentLoan: Loan,
   debtToDraw: BigNumber,
@@ -62,7 +54,7 @@ async function adjustLoan(
   }
 
   // estimate where the LUP would be with additional debt
-  const price: BigNumber = await estimateNewLup(poolStats.debt, debtToDrawWithFee);
+  const price: BigNumber = await estimateNewLup(pool, poolStats.debt, debtToDrawWithFee);
   // revert if LUP drops more than 10 buckets below our estimate before TX processed
   const limitIndex: number = priceToIndex(price) + 10;
   console.log('TX will revert if LUP has dropped below', fromWad(indexToPrice(limitIndex)));
@@ -96,7 +88,12 @@ async function adjustLoan(
   }
 }
 
-async function repayLoan(debtToRepay: BigNumber, collateralToPull: BigNumber) {
+async function repayLoan(
+  pool: FungiblePool,
+  signerBorrower: Signer,
+  debtToRepay: BigNumber,
+  collateralToPull: BigNumber
+) {
   let tx = await pool.quoteApprove(signerBorrower, debtToRepay);
   await tx.verifyAndSubmit();
   tx = await pool.repayDebt(signerBorrower, debtToRepay, collateralToPull);
@@ -106,7 +103,10 @@ async function repayLoan(debtToRepay: BigNumber, collateralToPull: BigNumber) {
 }
 
 async function run() {
-  const pool = await getPool();
+  const { ajna, signer: signerBorrower } = await initAjna('borrower');
+  const pool = await getPool(ajna);
+
+  // const pool = await getPool();
   console.log('Found pool at', pool.poolAddress);
   const stats = await pool.getStats();
   console.log('Pool has', fromWad(stats.poolSize.sub(stats.debt)), 'available to lend');
@@ -121,13 +121,13 @@ async function run() {
   if (action === 'draw') {
     const debtToDraw: BigNumber = process.argv.length > 3 ? toWad(process.argv[3]) : toWad(100);
     const collateralization = process.argv.length > 4 ? toWad(process.argv[4]) : toWad(1.25);
-    await adjustLoan(stats, loan, debtToDraw, collateralization);
+    await adjustLoan(pool, signerBorrower, stats, loan, debtToDraw, collateralization);
     return;
   }
   if (action === 'repay') {
     const debtToRepay = process.argv.length > 3 ? toWad(process.argv[3]) : constants.MaxUint256;
     const pullCollateral = process.argv.length > 4 ? toWad(process.argv[4]) : loan.collateral;
-    await repayLoan(debtToRepay, pullCollateral);
+    await repayLoan(pool, signerBorrower, debtToRepay, pullCollateral);
     return;
   }
 }

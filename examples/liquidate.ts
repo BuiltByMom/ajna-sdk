@@ -1,43 +1,34 @@
 #!/usr/bin/env ts-node
 
 import { AjnaSDK } from '../src/classes/AjnaSDK';
-import { Config } from '../src/classes/Config';
-import { FungiblePool } from '../src/classes/FungiblePool';
 import { Liquidation } from '../src/classes/Liquidation';
-import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad, toWad, wmul } from '../src/utils/numeric';
 import { priceToIndex } from '../src/utils/pricing';
-import { BigNumber, constants, providers } from 'ethers';
+import { BigNumber, Signer, constants } from 'ethers';
 import dotenv from 'dotenv';
+import { initAjna } from './utils';
+import { FungiblePool } from '../src/classes/FungiblePool';
 
 dotenv.config();
 
-// Configure from environment
-const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerLender = process.env.LENDER_KEY
-  ? addAccountFromKey(process.env.LENDER_KEY || '', provider)
-  : await addAccountFromKeystore(
-      process.env.LENDER_KEYSTORE || '',
-      provider,
-      process.env.LENDER_PASSWORD || ''
-    );
-
-Config.fromEnvironment();
-const ajna = new AjnaSDK(provider);
 const collateralAddress = process.env.COLLATERAL_TOKEN || '0x0';
 const quoteAddress = process.env.QUOTE_TOKEN || '0x0';
-let pool: FungiblePool;
 
 // Gets instance of Pool object
-async function getPool() {
-  pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
+async function getPool(ajna: AjnaSDK) {
+  const pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
   if (pool.poolAddress === constants.AddressZero) {
     throw new Error('Pool not yet deployed; run lender script first');
   }
   return pool;
 }
 
-async function take(liquidation: Liquidation, collateral: BigNumber) {
+async function take(
+  pool: FungiblePool,
+  signerLender: Signer,
+  liquidation: Liquidation,
+  collateral: BigNumber
+) {
   const auctionStatus = await liquidation.getStatus();
   let tx = await pool.quoteApprove(signerLender, wmul(collateral, auctionStatus.price));
   await tx.verifyAndSubmit();
@@ -46,7 +37,11 @@ async function take(liquidation: Liquidation, collateral: BigNumber) {
   console.log('Took auction', liquidation.borrowerAddress, 'at', fromWad(auctionStatus.price));
 }
 
-async function settleAndWithdrawBond(liquidation: Liquidation) {
+async function settleAndWithdrawBond(
+  pool: FungiblePool,
+  signerLender: Signer,
+  liquidation: Liquidation
+) {
   let tx = await liquidation.settle(signerLender);
   await tx.verifyAndSubmit();
   console.log('Settled auction', liquidation.borrowerAddress);
@@ -56,7 +51,8 @@ async function settleAndWithdrawBond(liquidation: Liquidation) {
 }
 
 async function run() {
-  const pool = await getPool();
+  const { ajna, signer: signerLender } = await initAjna('lender');
+  const pool = await getPool(ajna);
   console.log('Found pool at ', pool.poolAddress);
   const stats = await pool.getStats();
   console.log('Pool is', +fromWad(stats.collateralization) * 100 + '% collateralized');
@@ -97,13 +93,13 @@ async function run() {
     const liquidation = pool.getLiquidation(process.argv[3]);
     const auctionStatus = await liquidation.getStatus();
     const collateral = process.argv.length > 4 ? toWad(process.argv[4]) : auctionStatus.collateral;
-    take(liquidation, collateral);
+    take(pool, signerLender, liquidation, collateral);
     return;
   }
   if (action === 'settle') {
     if (process.argv.length <= 3) throw new Error('Please identify liquidation to settle');
     const liquidation = pool.getLiquidation(process.argv[3]);
-    settleAndWithdrawBond(liquidation);
+    settleAndWithdrawBond(pool, signerLender, liquidation);
     return;
   }
 }

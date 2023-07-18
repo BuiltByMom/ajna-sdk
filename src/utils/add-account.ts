@@ -10,16 +10,18 @@ export const addAccountFromKeystore = async (
   keystorePath: string,
   provider: providers.Provider,
   pw = ''
-) => {
+): Promise<Wallet> => {
   // read the keystore file, confirming it exists
   const jsonKeystore = fs.readFileSync(keystorePath).toString();
 
   const pswd =
-    pw ??
-    (await password({
-      message: 'Enter a password to encrypt your new keystore wallet',
-      mask: '*',
-    }));
+    pw !== ''
+      ? pw
+      : await password({
+          message: 'Enter a password to encrypt your new keystore wallet',
+          mask: '*',
+        });
+
   let wallet = Wallet.fromEncryptedJsonSync(jsonKeystore, pswd);
   wallet = wallet.connect(provider);
   return wallet;
