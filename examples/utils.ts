@@ -52,7 +52,7 @@ export async function getProviderSigner(
 export async function initAjna(actor: Actor = 'lender', network?: Network) {
   const selectedNetwork = network
     ? network
-    : process.env.ETH_RPC_URL?.includes('mainnet')
+    : process.env.ETH_NETWORK === 'mainnet'
     ? Networks.Mainnet
     : Networks.Goerli;
 
