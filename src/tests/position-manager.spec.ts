@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { BigNumber, Signer, providers } from 'ethers';
 import { TEST_CONFIG as config } from './test-constants';
 import { AjnaSDK } from '../classes/AjnaSDK';
@@ -8,7 +7,6 @@ import { toWad } from '../utils';
 import { Pool } from '../classes/Pool';
 import { getLP, getPositionManagerContract } from '../contracts/position-manager';
 
-dotenv.config();
 jest.setTimeout(1200000);
 
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';

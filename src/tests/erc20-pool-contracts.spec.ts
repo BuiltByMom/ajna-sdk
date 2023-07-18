@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { Bucket } from '../classes/Bucket';
@@ -13,8 +12,6 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
-
-dotenv.config();
 
 jest.setTimeout(1200000);
 

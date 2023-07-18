@@ -1,11 +1,9 @@
-import dotenv from 'dotenv';
 import { Address } from 'types';
-
-dotenv.config();
 
 /**
  * manages static protocol configuration, particularly contract addresses for a single chain
  */
+
 class Config {
   static erc20PoolFactory: Address;
   static erc721PoolFactory: Address;
