@@ -4,7 +4,7 @@ import { BigNumber, Signer } from 'ethers';
 
 export interface IERC20PoolFactory {
   /**
-   * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
+   * Creates a pool for the given collateral and quote token and returns new pool instance.
    */
   deployPool(
     signer: Signer,
@@ -20,6 +20,19 @@ export interface IERC20PoolFactory {
    * Returns pool address for the given collateral and quote tokens addresses.
    */
   getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address>;
+}
+
+export interface IERC721PoolFactory {
+  // TODO: determine how to pass subset, implement facilities to create and obtain pools
+  deployPool(
+    signer: Signer,
+    collateralAddress: Address,
+    subset: any,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction>;
+  getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<FungiblePool>;
+  getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address>;
 }
 
 export interface IBaseContract {

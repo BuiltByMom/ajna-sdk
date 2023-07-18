@@ -19,7 +19,7 @@ describe('Transaction Management', () => {
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
 
   it('should return wrapped transaction object', async () => {
-    const tx = await ajna.factory.deployPool(
+    const tx = await ajna.fungiblePoolFactory.deployPool(
       signerLender,
       USDC_ADDRESS,
       TESTC_ADDRESS,
@@ -39,7 +39,12 @@ describe('Transaction Management', () => {
   });
 
   it('validate method should not submit actual transaction; submit should submit actual transaction', async () => {
-    let tx = await ajna.factory.deployPool(signerLender, USDC_ADDRESS, DAI_ADDRESS, toWad('0.05'));
+    let tx = await ajna.fungiblePoolFactory.deployPool(
+      signerLender,
+      USDC_ADDRESS,
+      DAI_ADDRESS,
+      toWad('0.05')
+    );
 
     // ensure verification does not advance the nonce
     const nonce = await signerLender.getTransactionCount();
@@ -50,15 +55,20 @@ describe('Transaction Management', () => {
     // ensure pool does not exist, because transaction was never submitted
     let pool: Pool;
     await expect(async () => {
-      pool = await ajna.factory.getPool(USDC_ADDRESS, DAI_ADDRESS);
+      pool = await ajna.fungiblePoolFactory.getPool(USDC_ADDRESS, DAI_ADDRESS);
     }).rejects.toThrow('Pool for specified tokens was not found');
 
     // submit a transaction to deploy the pool
-    tx = await ajna.factory.deployPool(signerLender, USDC_ADDRESS, DAI_ADDRESS, toWad('0.05'));
+    tx = await ajna.fungiblePoolFactory.deployPool(
+      signerLender,
+      USDC_ADDRESS,
+      DAI_ADDRESS,
+      toWad('0.05')
+    );
     await tx.submit();
 
     // confirm the pool now exists
-    pool = await ajna.factory.getPool(USDC_ADDRESS, DAI_ADDRESS);
+    pool = await ajna.fungiblePoolFactory.getPool(USDC_ADDRESS, DAI_ADDRESS);
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(USDC_ADDRESS);
     expect(pool.quoteAddress).toBe(DAI_ADDRESS);
