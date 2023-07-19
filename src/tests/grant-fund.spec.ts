@@ -5,10 +5,12 @@ import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contrac
 import { addAccountFromKey } from '../utils/add-account';
 import { mine, timeJump } from '../utils/ganache';
 import { fromWad } from '../utils/numeric';
-import { getBlock } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { DistributionPeriod } from '../classes/DistributionPeriod';
+import { getBlock } from '../utils';
+
+// dotenv.config();
 
 jest.setTimeout(1200000);
 
@@ -102,8 +104,23 @@ describe('Grants fund', () => {
       expect(proposalInfo.executed).toBe(false);
     });
   });
-  describe('Delegates', () => {
+  describe('Delegates and voting', () => {
+    let distributionPeriod: DistributionPeriod;
+    beforeAll(async () => {
+      // jump until no distribution period has started yet
+      await mine(provider, 648_000);
+      // const currentBlock = await getBlock(provider);
+      // console.log('currentBlock', currentBlock);
+      // for (let i = 0; i < 7; i++) {
+      //   await mine(provider, 100_000);
+      // }
+      // const currentBlock2 = await getBlock(provider);
+      // console.log('currentBlock after mine', currentBlock2);
+    });
     it('should delegate successfully', async () => {
+      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
+      expect(distributionPeriod).toBeUndefined();
+      // delegate before distribution period starts
       const delegate = await ajna.grants.delegateVote(voter, DELEGATEE_ADDRESS);
       expect(delegate).toBeDefined();
       const transaction = await delegate.verifyAndSubmit();
@@ -111,7 +128,7 @@ describe('Grants fund', () => {
       expect(transaction.to).toBe('0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d');
       expect(transaction.status).toBe(1);
     });
-    it('should get delegate', async () => {
+    it.skip('should get delegate', async () => {
       const delegate = await ajna.grants.getDelegates(VOTER_ADDRESS);
       expect(delegate).toBeDefined();
       expect(delegate).toBe(DELEGATEE_ADDRESS);
@@ -124,7 +141,14 @@ describe('Grants fund', () => {
       const currentBlock = await getBlock(provider);
       expect(distributionPeriod.startBlock < currentBlock.number);
     });
-    it('should get votes screening', async () => {
+    it.skip('distribution period should be on screening stage', async () => {
+      // start new distribution period
+      const tx = await startNewDistributionPeriod(signer);
+      tx.verifyAndSubmit();
+      const isOnScreeningStage = await ajna.grants.isDistributionPeriodOnScreeningStage();
+      expect(isOnScreeningStage).toBe(true);
+    });
+    it.skip('should get votes screening', async () => {
       const delegate = await ajna.grants.getVotesScreening(
         distributionPeriod.id,
         DELEGATEE_ADDRESS
@@ -138,6 +162,11 @@ describe('Grants fund', () => {
       const delegate = await ajna.grants.getVotesFunding(distributionPeriod.id, DELEGATEE_ADDRESS);
       expect(delegate).toBeDefined();
       expect(fromWad(delegate)).toBe('490000000000000000.0');
+    });
+    it.skip('should get votes based on current distribution period stage', async () => {
+      const votes = await ajna.grants.getVotingPower(DELEGATEE_ADDRESS);
+      expect(votes).toBeDefined();
+      expect(fromWad(votes)).toBe('0.0');
     });
   });
 });

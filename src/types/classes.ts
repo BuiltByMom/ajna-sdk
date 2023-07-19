@@ -69,6 +69,8 @@ export interface Loan {
   isKicked: boolean;
 }
 
+// [votesUsed, proposalId]
+export type VoteParams = [BigNumber, BigNumber];
 export interface IGrantFund {
   /**
    * Handles grant fund methods

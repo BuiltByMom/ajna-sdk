@@ -18,3 +18,4 @@ export const MAX_SETTLE_BUCKETS = 10;
 // grants distribution period
 export const ONE_DAY_MS = 3600 * 24 * 1000;
 export const DISTRIBUTION_PERIOD_DURATION = 90 * ONE_DAY_MS;
+export const SCREENING_STAGE = utils.keccak256(utils.toUtf8Bytes('Screening'));
