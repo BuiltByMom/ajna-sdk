@@ -1,7 +1,8 @@
 import { BigNumber, Signer } from 'ethers';
-import { Address, IERC721PoolFactory, SignerOrProvider, WrappedTransaction } from '../types';
 import { ContractBase } from './ContractBase';
+import { deployNFTPool } from '../contracts/erc721-pool-factory';
 import { FungiblePool } from './FungiblePool';
+import { Address, IERC721PoolFactory, SignerOrProvider, WrappedTransaction } from '../types';
 
 /**
  * Factory used to find or create pools with ERC721 collateral.
@@ -11,17 +12,23 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     super(signerOrProvider);
   }
 
-  deployPool(
+  async deployCollectionPool(
     signer: Signer,
-    collateralAddress: string,
-    subset: any,
-    quoteAddress: string,
+    nftAddress: Address,
+    quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    throw new Error(
-      'Method not implemented.' +
-        [signer, collateralAddress, subset, quoteAddress, interestRate].toString()
-    );
+    return await deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
+  }
+
+  async deploySubsetPool(
+    signer: Signer,
+    nftAddress: Address,
+    subset: Array<number>,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction> {
+    return await deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
   getPool(collateralAddress: string, subset: any, quoteAddress: string): Promise<FungiblePool> {

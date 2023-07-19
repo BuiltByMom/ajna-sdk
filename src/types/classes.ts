@@ -23,14 +23,35 @@ export interface IERC20PoolFactory {
 }
 
 export interface IERC721PoolFactory {
-  // TODO: determine how to pass subset, implement facilities to create and obtain pools
-  deployPool(
+  /**
+   * Creates a pool where any token in a particular NFT collection is valid collateral
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   */
+  deployCollectionPool(
     signer: Signer,
-    collateralAddress: Address,
-    subset: any,
+    nftAddress: Address,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction>;
+  /**
+   * Creates a pool where specific tokens in an NFT collection are whitelisted
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param subset list of whitelisted tokenIds
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   */
+  deploySubsetPool(
+    signer: Signer,
+    nftAddress: Address,
+    subset: Array<number>,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction>;
+  // TODO: work in progress
   getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<FungiblePool>;
   getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address>;
 }
