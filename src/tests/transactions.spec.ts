@@ -4,10 +4,7 @@ import { addAccountFromKey } from '../utils/add-account';
 import { toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { constants, providers } from 'ethers';
-import dotenv from 'dotenv';
 import './test-utils';
-
-dotenv.config();
 
 jest.setTimeout(1200000);
 

@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
@@ -11,8 +10,6 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { getBlockTime } from '../utils/time';
 import { AuctionStatus } from '../types';
-
-dotenv.config();
 
 jest.setTimeout(1200000);
 

@@ -5,10 +5,8 @@ import {
   priceToIndex as priceToIndexLocal,
 } from '../utils/pricing';
 import { TEST_CONFIG as config } from './test-constants';
-import dotenv from 'dotenv';
 import { BigNumber, constants, providers } from 'ethers';
 
-dotenv.config();
 jest.setTimeout(1200000);
 
 describe('Utility tests', () => {

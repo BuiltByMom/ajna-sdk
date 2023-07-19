@@ -1,5 +1,4 @@
 import { expect } from '@jest/globals';
-import dotenv from 'dotenv';
 import { providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
@@ -10,8 +9,6 @@ import { fromWad } from '../utils/numeric';
 import { getBlock } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
-
-dotenv.config();
 
 jest.setTimeout(1200000);
 
