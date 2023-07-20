@@ -13,7 +13,7 @@ export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
   );
 };
 
-export async function deployNFTPool(
+export function deployNFTPool(
   signer: Signer,
   collateralAddress: Address,
   tokenIds: Array<number>,
@@ -24,14 +24,14 @@ export async function deployNFTPool(
   const contractInstance: Contract = getErc721PoolFactoryContract(signer);
   console.info('contractInstance', contractInstance);
 
-  return await createTransaction(
+  return createTransaction(
     contractInstance,
     { methodName: 'deployPool', args: [collateralAddress, quoteAddress, tokenIds, interestRate] },
     overrides
   );
 }
 
-export async function getDeployedNFTPools(
+export function getDeployedNFTPools(
   provider: SignerOrProvider,
   collateralAddress: Address,
   quoteAddress: Address,
@@ -39,5 +39,5 @@ export async function getDeployedNFTPools(
 ): Promise<Address> {
   const contractInstance: Contract = getErc721PoolFactoryContract(provider);
 
-  return await contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
+  return contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
 }
