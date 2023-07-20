@@ -1,6 +1,7 @@
-import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
-import { FungiblePool } from 'classes/FungiblePool';
 import { BigNumber, Signer } from 'ethers';
+import { FungiblePool } from 'classes/FungiblePool';
+import { NonfungiblePool } from 'classes/NonfungiblePool';
+import { Address, SignerOrProvider, WrappedTransaction } from 'types/core';
 
 export interface IERC20PoolFactory {
   /**
@@ -52,7 +53,7 @@ export interface IERC721PoolFactory {
     interestRate: BigNumber
   ): Promise<WrappedTransaction>;
   // TODO: work in progress
-  getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<FungiblePool>;
+  getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<NonfungiblePool>;
   getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address>;
 }
 

@@ -1,8 +1,9 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, constants, Signer } from 'ethers';
+import { deployNFTPool, getDeployedNFTPools } from 'contracts/erc721-pool-factory';
+import { Address, IERC721PoolFactory, SdkError, SignerOrProvider, WrappedTransaction } from 'types';
+import { Config } from './Config';
 import { ContractBase } from './ContractBase';
-import { deployNFTPool } from '../contracts/erc721-pool-factory';
-import { FungiblePool } from './FungiblePool';
-import { Address, IERC721PoolFactory, SignerOrProvider, WrappedTransaction } from '../types';
+import { NonfungiblePool } from './NonfungiblePool';
 
 /**
  * Factory used to find or create pools with ERC721 collateral.
@@ -12,29 +13,43 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     super(signerOrProvider);
   }
 
-  async deployCollectionPool(
+  deployCollectionPool(
     signer: Signer,
     nftAddress: Address,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
+    return deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
   }
 
-  async deploySubsetPool(
+  deploySubsetPool(
     signer: Signer,
     nftAddress: Address,
     subset: Array<number>,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
+    return deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
-  getPool(collateralAddress: string, subset: any, quoteAddress: string): Promise<FungiblePool> {
-    throw new Error(
-      'Method not implemented.' + [collateralAddress, subset, quoteAddress].toString()
-    );
+  async getPool(
+    collateralAddress: string,
+    subset: any,
+    quoteAddress: string
+  ): Promise<NonfungiblePool> {
+    const existingPoolAddress = await this.getPoolAddress(collateralAddress, subset, quoteAddress);
+
+    if (existingPoolAddress === constants.AddressZero) {
+      throw new SdkError('Pool for specified tokens was not found');
+    }
+
+    return await this.getPoolByAddress(existingPoolAddress);
+  }
+
+  async getPoolByAddress(poolAddress: Address) {
+    const newPool = new NonfungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
+    await newPool.initialize();
+    return newPool;
   }
 
   /**
@@ -44,13 +59,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    * @param quoteAddress token address
    * @returns address of the existing pool
    */
-  async getPoolAddress(
-    collateralAddress: Address,
-    subset: any,
-    quoteAddress: Address
-  ): Promise<Address> {
-    throw new Error(
-      'Method not implemented.' + [collateralAddress, subset, quoteAddress].toString()
-    );
+  getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address> {
+    return getDeployedNFTPools(this.getProvider(), collateralAddress, quoteAddress, subset);
   }
 }
