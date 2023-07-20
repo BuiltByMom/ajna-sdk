@@ -22,6 +22,7 @@ export async function deployNFTPool(
   overrides?: TransactionOverrides
 ) {
   const contractInstance: Contract = getErc721PoolFactoryContract(signer);
+  console.info('contractInstance', contractInstance);
 
   return await createTransaction(
     contractInstance,
