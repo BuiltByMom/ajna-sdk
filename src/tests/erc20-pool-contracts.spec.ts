@@ -59,17 +59,20 @@ describe('ERC20 Pool', () => {
     poolA = await ajna.factory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
   });
 
-  it('should confirm AjnaSDK pool successfully', async () => {
+  it('should create new pool successfully', async () => {
     const tx = await ajna.factory.deployPool(
       signerLender,
       TWETH_ADDRESS,
       TDAI_ADDRESS,
       toWad('0.05')
     );
-    await tx.verifyAndSubmit();
+    const receipt = await tx.verifyAndSubmit();
+    const eventLogs = tx.getEventLogs(receipt);
+    const poolAddress = eventLogs.get('PoolCreated')![0].args[0];
+
     pool = await ajna.factory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
     expect(pool).toBeDefined();
-    expect(pool.poolAddress).not.toBe(constants.AddressZero);
+    expect(pool.poolAddress).toBe(poolAddress);
     expect(pool.collateralAddress).toBe(TWETH_ADDRESS);
     expect(pool.quoteAddress).toBe(TDAI_ADDRESS);
     expect(pool.toString()).toContain('TWETH-TDAI');
@@ -334,7 +337,15 @@ describe('ERC20 Pool', () => {
 
     // remove all liquidity from bucket
     const tx = await bucket.removeQuoteToken(signerLender);
-    await submitAndVerifyTransaction(tx);
+    const receipt = await submitAndVerifyTransaction(tx);
+
+    const eventLogs = tx.getEventLogs(receipt);
+    const removeEventArgs = eventLogs.get('RemoveQuoteToken')![0].args;
+    expect(removeEventArgs['lender']).toEqual(signerLender.address);
+    expect(removeEventArgs['index'].eq(BigNumber.from(2000))).toBe(true);
+    expect(removeEventArgs['amount']).toBeBetween(toWad(4), toWad(4.1));
+    expect(removeEventArgs['lpRedeemed']).toBeBetween(toWad(4), toWad(4.1));
+    expect(removeEventArgs['lup']).toEqual(indexToPrice(0));
   });
 
   it('should use multicall successfully', async () => {

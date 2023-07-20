@@ -1,6 +1,8 @@
 import { BaseContract, Contract, PopulatedTransaction } from 'ethers';
 import { GAS_MULTIPLIER } from '../constants';
-import { CallData, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
+import { CallData, EventLog, SdkError, TransactionOverrides, WrappedTransaction } from '../types';
+import { TransactionReceipt } from '@ethersproject/providers';
+import { LogDescription } from '@ethersproject/abi';
 
 /**
  * Creates a wrapped transaction object that can be used to submit, verify, and estimate gas for a transaction.
@@ -103,6 +105,29 @@ class WrappedTransactionClass implements WrappedTransaction {
   async verifyAndSubmit(confirmations?: number) {
     const response = await this.verifyAndSubmitResponse();
     return await response.wait(confirmations);
+  }
+
+  /**
+   * Reveals data emitted by a successful transaction.
+   * @param receipt Receipt from a processed transaction.
+   * @returns Map of events indexed by event name, and the data emitted in each event.
+   */
+  getEventLogs(receipt: TransactionReceipt) {
+    const eventLogs = new Map<string, Array<EventLog>>();
+    let eventsForName;
+    for (const log of receipt.logs) {
+      try {
+        const logDesc: LogDescription = this._contract.interface.parseLog(log);
+        const eventLog: EventLog = { eventName: logDesc.name, args: logDesc.args };
+        eventsForName = eventLogs.get(logDesc.name);
+        if (eventsForName) eventsForName.push(eventLog);
+        else eventLogs.set(logDesc.name, [eventLog]);
+      } catch (ex: any) {
+        // TODO: pass in an array of other contracts whose interfaces we could try parsing with
+        if (!ex.toString().startsWith('Error: no matching event')) throw ex;
+      }
+    }
+    return eventLogs;
   }
 
   /**

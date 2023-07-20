@@ -1,3 +1,4 @@
+import { Result } from '@ethersproject/abi';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import { BigNumber, providers, Signer as EthersSigner } from 'ethers';
 
@@ -28,11 +29,17 @@ export interface WrappedTransaction {
   submitResponse(): Promise<TransactionResponse>;
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
   verifyAndSubmitResponse(): Promise<TransactionResponse>;
+  getEventLogs(receipt: TransactionReceipt): Map<string, Array<EventLog>>;
 }
 
 export interface CallData {
   methodName: string;
   args?: Array<any>;
+}
+
+export interface EventLog {
+  eventName: string;
+  args: Result;
 }
 
 /**

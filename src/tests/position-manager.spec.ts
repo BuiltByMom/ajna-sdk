@@ -48,7 +48,8 @@ describe('LP Token and PositionManager', () => {
     const mintReceipt = await submitAndVerifyTransaction(mintTx);
     expect(mintReceipt).toHaveProperty('logs');
 
-    const tokenId = BigNumber.from(mintReceipt.logs[1].data);
+    const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
     const lpToken = pool.getLPToken(tokenId);
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
@@ -65,10 +66,11 @@ describe('LP Token and PositionManager', () => {
     await addQuoteTokensByIndexes(signerLender, pool, [bucketIndex], [amount]);
 
     const mintTx = await pool.mintLPToken(signerLender);
-    const receipt = await submitAndVerifyTransaction(mintTx);
-    expect(receipt).toHaveProperty('logs');
+    const mintReceipt = await submitAndVerifyTransaction(mintTx);
+    expect(mintReceipt).toHaveProperty('logs');
 
-    const tokenId = BigNumber.from(receipt.logs[1].data);
+    const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
     const lpToken = pool.getLPToken(tokenId);
     expect(lpToken.tokenId.toString()).toBe(tokenId.toString());
 
@@ -121,10 +123,11 @@ describe('LP Token and PositionManager', () => {
 
     await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
 
-    let res = await pool.mintLPToken(signerLender);
-    const receipt = await submitAndVerifyTransaction(res);
+    let tx = await pool.mintLPToken(signerLender);
+    const mintReceipt = await submitAndVerifyTransaction(tx);
 
-    const tokenId = BigNumber.from(receipt.logs[1].data);
+    const mintEventLogs = tx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
     const lpToken = pool.getLPToken(tokenId);
 
     const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
@@ -140,8 +143,8 @@ describe('LP Token and PositionManager', () => {
       expect(inPosition).toBe(false);
     }
 
-    res = await lpToken.memorializePositions(signerLender, pool.contract, tokenId, indices);
-    const receipt1 = await submitAndVerifyTransaction(res);
+    tx = await lpToken.memorializePositions(signerLender, pool.contract, tokenId, indices);
+    const receipt1 = await submitAndVerifyTransaction(tx);
     expect(receipt1).toHaveProperty('logs');
 
     for (const index of indices) {
@@ -154,12 +157,12 @@ describe('LP Token and PositionManager', () => {
     expect(pis.length).toBe(3);
     expect(pis.map(pi => pi.toNumber())).toEqual(indices);
 
-    res = await lpToken.redeemPositions(signerNotLender, pool.poolAddress, tokenId, indices);
+    tx = await lpToken.redeemPositions(signerNotLender, pool.poolAddress, tokenId, indices);
     await expect(async () => {
-      await res.verify();
+      await tx.verify();
     }).rejects.toThrow(`NoAuth()`);
 
-    res = await lpToken.redeemPositions(signerLender, pool.poolAddress, tokenId, indices);
-    await submitAndVerifyTransaction(res);
+    tx = await lpToken.redeemPositions(signerLender, pool.poolAddress, tokenId, indices);
+    await submitAndVerifyTransaction(tx);
   });
 });
