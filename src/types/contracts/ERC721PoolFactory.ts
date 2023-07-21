@@ -15,13 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface ERC721PoolFactoryInterface extends utils.Interface {
   functions: {
@@ -61,30 +55,19 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'ajna', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'deployPool(address,address,uint256)',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'deployPool(address,address,uint256[],uint256)',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, string, BigNumberish[], BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'deployedPools',
-    values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [BytesLike, string, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'deployedPoolsList',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'deployedPoolsList', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'getDeployedPoolsList', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'getNFTSubsetHash',
-    values: [PromiseOrValue<BigNumberish>[]]
-  ): string;
+  encodeFunctionData(functionFragment: 'getNFTSubsetHash', values: [BigNumberish[]]): string;
   encodeFunctionData(functionFragment: 'getNumberOfDeployedPools', values?: undefined): string;
   encodeFunctionData(functionFragment: 'implementation', values?: undefined): string;
 
@@ -157,38 +140,32 @@ export interface ERC721PoolFactory extends BaseContract {
     ajna(overrides?: CallOverrides): Promise<[string]>;
 
     'deployPool(address,address,uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     'deployPool(address,address,uint256[],uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      tokenIds_: BigNumberish[],
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     deployedPools(
-      arg0: PromiseOrValue<BytesLike>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<string>,
+      arg0: BytesLike,
+      arg1: string,
+      arg2: string,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    deployedPoolsList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    deployedPoolsList(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     getDeployedPoolsList(overrides?: CallOverrides): Promise<[string[]]>;
 
-    getNFTSubsetHash(
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    getNFTSubsetHash(tokenIds_: BigNumberish[], overrides?: CallOverrides): Promise<[string]>;
 
     getNumberOfDeployedPools(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -204,35 +181,32 @@ export interface ERC721PoolFactory extends BaseContract {
   ajna(overrides?: CallOverrides): Promise<string>;
 
   'deployPool(address,address,uint256)'(
-    collateral_: PromiseOrValue<string>,
-    quote_: PromiseOrValue<string>,
-    interestRate_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    collateral_: string,
+    quote_: string,
+    interestRate_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   'deployPool(address,address,uint256[],uint256)'(
-    collateral_: PromiseOrValue<string>,
-    quote_: PromiseOrValue<string>,
-    tokenIds_: PromiseOrValue<BigNumberish>[],
-    interestRate_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    collateral_: string,
+    quote_: string,
+    tokenIds_: BigNumberish[],
+    interestRate_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   deployedPools(
-    arg0: PromiseOrValue<BytesLike>,
-    arg1: PromiseOrValue<string>,
-    arg2: PromiseOrValue<string>,
+    arg0: BytesLike,
+    arg1: string,
+    arg2: string,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  deployedPoolsList(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<string>;
+  deployedPoolsList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   getDeployedPoolsList(overrides?: CallOverrides): Promise<string[]>;
 
-  getNFTSubsetHash(
-    tokenIds_: PromiseOrValue<BigNumberish>[],
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getNFTSubsetHash(tokenIds_: BigNumberish[], overrides?: CallOverrides): Promise<string>;
 
   getNumberOfDeployedPools(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -248,38 +222,32 @@ export interface ERC721PoolFactory extends BaseContract {
     ajna(overrides?: CallOverrides): Promise<string>;
 
     'deployPool(address,address,uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      interestRate_: PromiseOrValue<BigNumberish>,
+      collateral_: string,
+      quote_: string,
+      interestRate_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
     'deployPool(address,address,uint256[],uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      interestRate_: PromiseOrValue<BigNumberish>,
+      collateral_: string,
+      quote_: string,
+      tokenIds_: BigNumberish[],
+      interestRate_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
     deployedPools(
-      arg0: PromiseOrValue<BytesLike>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<string>,
+      arg0: BytesLike,
+      arg1: string,
+      arg2: string,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    deployedPoolsList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    deployedPoolsList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     getDeployedPoolsList(overrides?: CallOverrides): Promise<string[]>;
 
-    getNFTSubsetHash(
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<string>;
+    getNFTSubsetHash(tokenIds_: BigNumberish[], overrides?: CallOverrides): Promise<string>;
 
     getNumberOfDeployedPools(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -301,38 +269,32 @@ export interface ERC721PoolFactory extends BaseContract {
     ajna(overrides?: CallOverrides): Promise<BigNumber>;
 
     'deployPool(address,address,uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     'deployPool(address,address,uint256[],uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      tokenIds_: BigNumberish[],
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     deployedPools(
-      arg0: PromiseOrValue<BytesLike>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<string>,
+      arg0: BytesLike,
+      arg1: string,
+      arg2: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    deployedPoolsList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    deployedPoolsList(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getDeployedPoolsList(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getNFTSubsetHash(
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getNFTSubsetHash(tokenIds_: BigNumberish[], overrides?: CallOverrides): Promise<BigNumber>;
 
     getNumberOfDeployedPools(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -349,36 +311,33 @@ export interface ERC721PoolFactory extends BaseContract {
     ajna(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'deployPool(address,address,uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     'deployPool(address,address,uint256[],uint256)'(
-      collateral_: PromiseOrValue<string>,
-      quote_: PromiseOrValue<string>,
-      tokenIds_: PromiseOrValue<BigNumberish>[],
-      interestRate_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      collateral_: string,
+      quote_: string,
+      tokenIds_: BigNumberish[],
+      interestRate_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     deployedPools(
-      arg0: PromiseOrValue<BytesLike>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<string>,
+      arg0: BytesLike,
+      arg1: string,
+      arg2: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    deployedPoolsList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    deployedPoolsList(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getDeployedPoolsList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getNFTSubsetHash(
-      tokenIds_: PromiseOrValue<BigNumberish>[],
+      tokenIds_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

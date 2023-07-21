@@ -15,13 +15,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface GrantFundInterface extends utils.Interface {
   functions: {
@@ -93,136 +87,66 @@ export interface GrantFundInterface extends utils.Interface {
       | 'updateSlate'
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: '_voterInfo',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: '_voterInfo', values: [BigNumberish, string]): string;
   encodeFunctionData(functionFragment: 'ajnaTokenAddress', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'claimDelegateReward',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'claimDelegateReward', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'execute',
-    values: [
-      PromiseOrValue<string>[],
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BytesLike>[],
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string[], BigNumberish[], BytesLike[], BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'fundTreasury',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'fundTreasury', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'fundingVote',
-    values: [
-      {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votesUsed: PromiseOrValue<BigNumberish>;
-      }[]
-    ]
+    values: [{ proposalId: BigNumberish; votesUsed: BigNumberish }[]]
   ): string;
   encodeFunctionData(
     functionFragment: 'getChallengeStageStartBlock',
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'getDelegateReward',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getDescriptionHash',
-    values: [PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: 'getDelegateReward', values: [BigNumberish, string]): string;
+  encodeFunctionData(functionFragment: 'getDescriptionHash', values: [string]): string;
   encodeFunctionData(functionFragment: 'getDistributionId', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'getDistributionPeriodInfo',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getFundedProposalSlate',
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getFundingStageEndBlock',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'getDistributionPeriodInfo', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getFundedProposalSlate', values: [BytesLike]): string;
+  encodeFunctionData(functionFragment: 'getFundingStageEndBlock', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'getFundingVotesCast',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: 'getHasClaimedRewards',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'getProposalInfo',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getScreeningStageEndBlock',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: 'getProposalInfo', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getScreeningStageEndBlock', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'getScreeningVotesCast',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: 'getSlateHash',
-    values: [PromiseOrValue<BigNumberish>[]]
-  ): string;
+  encodeFunctionData(functionFragment: 'getSlateHash', values: [BigNumberish[]]): string;
   encodeFunctionData(functionFragment: 'getStage', values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: 'getTopTenProposals',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getVoterInfo',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getVotesFunding',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'getVotesScreening',
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: 'getTopTenProposals', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'getVoterInfo', values: [BigNumberish, string]): string;
+  encodeFunctionData(functionFragment: 'getVotesFunding', values: [BigNumberish, string]): string;
+  encodeFunctionData(functionFragment: 'getVotesScreening', values: [BigNumberish, string]): string;
   encodeFunctionData(
     functionFragment: 'hashProposal',
-    values: [
-      PromiseOrValue<string>[],
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BytesLike>[],
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string[], BigNumberish[], BytesLike[], BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: 'propose',
-    values: [
-      PromiseOrValue<string>[],
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BytesLike>[],
-      PromiseOrValue<string>
-    ]
+    values: [string[], BigNumberish[], BytesLike[], string]
   ): string;
   encodeFunctionData(
     functionFragment: 'screeningVote',
-    values: [
-      {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votes: PromiseOrValue<BigNumberish>;
-      }[]
-    ]
+    values: [{ proposalId: BigNumberish; votes: BigNumberish }[]]
   ): string;
   encodeFunctionData(functionFragment: 'startNewDistributionPeriod', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'state', values: [PromiseOrValue<BigNumberish>]): string;
+  encodeFunctionData(functionFragment: 'state', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'treasury', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'updateSlate',
-    values: [PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>]
+    values: [BigNumberish[], BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: '_voterInfo', data: BytesLike): Result;
@@ -386,8 +310,8 @@ export interface GrantFund extends BaseContract {
 
   functions: {
     _voterInfo(
-      distributionId: PromiseOrValue<BigNumberish>,
-      voter: PromiseOrValue<string>,
+      distributionId: BigNumberish,
+      voter: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, boolean] & {
@@ -401,164 +325,152 @@ export interface GrantFund extends BaseContract {
     ajnaTokenAddress(overrides?: CallOverrides): Promise<[string]>;
 
     claimDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     execute(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     fundTreasury(
-      fundingAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      fundingAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     fundingVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votesUsed: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votesUsed: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     getChallengeStageStartBlock(
-      endBlock_: PromiseOrValue<BigNumberish>,
+      endBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     getDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      voter_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      voter_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { rewards_: BigNumber }>;
 
-    getDescriptionHash(
-      description_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    getDescriptionHash(description_: string, overrides?: CallOverrides): Promise<[string]>;
 
     getDistributionId(overrides?: CallOverrides): Promise<[number]>;
 
     getDistributionPeriodInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number, number, number, BigNumber, BigNumber, string]>;
 
     getFundedProposalSlate(
-      slateHash_: PromiseOrValue<BytesLike>,
+      slateHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
     getFundingStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     getFundingVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[[BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }[]]>;
 
     getHasClaimedRewards(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     getProposalInfo(
-      proposalId_: PromiseOrValue<BigNumberish>,
+      proposalId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, number, BigNumber, BigNumber, BigNumber, boolean]>;
 
     getScreeningStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     getScreeningVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getSlateHash(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    getSlateHash(proposalIds_: BigNumberish[], overrides?: CallOverrides): Promise<[string]>;
 
     getStage(overrides?: CallOverrides): Promise<[string] & { stage_: string }>;
 
     getTopTenProposals(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
     getVoterInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
     getVotesFunding(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { votes_: BigNumber }>;
 
     getVotesScreening(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { votes_: BigNumber }>;
 
     hashProposal(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { proposalId_: BigNumber }>;
 
     propose(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      description_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      description_: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     screeningVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votes: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votes: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
     startNewDistributionPeriod(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    state(proposalId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<[number]>;
+    state(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
 
     treasury(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     updateSlate(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      proposalIds_: BigNumberish[],
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
   };
 
   _voterInfo(
-    distributionId: PromiseOrValue<BigNumberish>,
-    voter: PromiseOrValue<string>,
+    distributionId: BigNumberish,
+    voter: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, boolean] & {
@@ -572,164 +484,146 @@ export interface GrantFund extends BaseContract {
   ajnaTokenAddress(overrides?: CallOverrides): Promise<string>;
 
   claimDelegateReward(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    distributionId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   execute(
-    targets_: PromiseOrValue<string>[],
-    values_: PromiseOrValue<BigNumberish>[],
-    calldatas_: PromiseOrValue<BytesLike>[],
-    descriptionHash_: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    targets_: string[],
+    values_: BigNumberish[],
+    calldatas_: BytesLike[],
+    descriptionHash_: BytesLike,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   fundTreasury(
-    fundingAmount_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    fundingAmount_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   fundingVote(
-    voteParams_: {
-      proposalId: PromiseOrValue<BigNumberish>;
-      votesUsed: PromiseOrValue<BigNumberish>;
-    }[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    voteParams_: { proposalId: BigNumberish; votesUsed: BigNumberish }[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   getChallengeStageStartBlock(
-    endBlock_: PromiseOrValue<BigNumberish>,
+    endBlock_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   getDelegateReward(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    voter_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    voter_: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getDescriptionHash(
-    description_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getDescriptionHash(description_: string, overrides?: CallOverrides): Promise<string>;
 
   getDistributionId(overrides?: CallOverrides): Promise<number>;
 
   getDistributionPeriodInfo(
-    distributionId_: PromiseOrValue<BigNumberish>,
+    distributionId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[number, number, number, BigNumber, BigNumber, string]>;
 
-  getFundedProposalSlate(
-    slateHash_: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
+  getFundedProposalSlate(slateHash_: BytesLike, overrides?: CallOverrides): Promise<BigNumber[]>;
 
-  getFundingStageEndBlock(
-    startBlock_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getFundingStageEndBlock(startBlock_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   getFundingVotesCast(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }[]>;
 
   getHasClaimedRewards(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   getProposalInfo(
-    proposalId_: PromiseOrValue<BigNumberish>,
+    proposalId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[BigNumber, number, BigNumber, BigNumber, BigNumber, boolean]>;
 
   getScreeningStageEndBlock(
-    startBlock_: PromiseOrValue<BigNumberish>,
+    startBlock_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   getScreeningVotesCast(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getSlateHash(
-    proposalIds_: PromiseOrValue<BigNumberish>[],
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getSlateHash(proposalIds_: BigNumberish[], overrides?: CallOverrides): Promise<string>;
 
   getStage(overrides?: CallOverrides): Promise<string>;
 
   getTopTenProposals(
-    distributionId_: PromiseOrValue<BigNumberish>,
+    distributionId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
   getVoterInfo(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
   getVotesFunding(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   getVotesScreening(
-    distributionId_: PromiseOrValue<BigNumberish>,
-    account_: PromiseOrValue<string>,
+    distributionId_: BigNumberish,
+    account_: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   hashProposal(
-    targets_: PromiseOrValue<string>[],
-    values_: PromiseOrValue<BigNumberish>[],
-    calldatas_: PromiseOrValue<BytesLike>[],
-    descriptionHash_: PromiseOrValue<BytesLike>,
+    targets_: string[],
+    values_: BigNumberish[],
+    calldatas_: BytesLike[],
+    descriptionHash_: BytesLike,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   propose(
-    targets_: PromiseOrValue<string>[],
-    values_: PromiseOrValue<BigNumberish>[],
-    calldatas_: PromiseOrValue<BytesLike>[],
-    description_: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    targets_: string[],
+    values_: BigNumberish[],
+    calldatas_: BytesLike[],
+    description_: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   screeningVote(
-    voteParams_: {
-      proposalId: PromiseOrValue<BigNumberish>;
-      votes: PromiseOrValue<BigNumberish>;
-    }[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    voteParams_: { proposalId: BigNumberish; votes: BigNumberish }[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   startNewDistributionPeriod(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  state(proposalId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<number>;
+  state(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   treasury(overrides?: CallOverrides): Promise<BigNumber>;
 
   updateSlate(
-    proposalIds_: PromiseOrValue<BigNumberish>[],
-    distributionId_: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    proposalIds_: BigNumberish[],
+    distributionId_: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     _voterInfo(
-      distributionId: PromiseOrValue<BigNumberish>,
-      voter: PromiseOrValue<string>,
+      distributionId: BigNumberish,
+      voter: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, boolean] & {
@@ -743,178 +637,160 @@ export interface GrantFund extends BaseContract {
     ajnaTokenAddress(overrides?: CallOverrides): Promise<string>;
 
     claimDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     execute(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    fundTreasury(
-      fundingAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    fundTreasury(fundingAmount_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     fundingVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votesUsed: PromiseOrValue<BigNumberish>;
-      }[],
+      voteParams_: { proposalId: BigNumberish; votesUsed: BigNumberish }[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getChallengeStageStartBlock(
-      endBlock_: PromiseOrValue<BigNumberish>,
+      endBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      voter_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      voter_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDescriptionHash(
-      description_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    getDescriptionHash(description_: string, overrides?: CallOverrides): Promise<string>;
 
     getDistributionId(overrides?: CallOverrides): Promise<number>;
 
     getDistributionPeriodInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number, number, number, BigNumber, BigNumber, string]>;
 
-    getFundedProposalSlate(
-      slateHash_: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+    getFundedProposalSlate(slateHash_: BytesLike, overrides?: CallOverrides): Promise<BigNumber[]>;
 
     getFundingStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getFundingVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }[]>;
 
     getHasClaimedRewards(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     getProposalInfo(
-      proposalId_: PromiseOrValue<BigNumberish>,
+      proposalId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber, number, BigNumber, BigNumber, BigNumber, boolean]>;
 
     getScreeningStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getScreeningVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getSlateHash(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<string>;
+    getSlateHash(proposalIds_: BigNumberish[], overrides?: CallOverrides): Promise<string>;
 
     getStage(overrides?: CallOverrides): Promise<string>;
 
     getTopTenProposals(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
     getVoterInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
     getVotesFunding(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getVotesScreening(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     hashProposal(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     propose(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      description_: PromiseOrValue<string>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      description_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     screeningVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votes: PromiseOrValue<BigNumberish>;
-      }[],
+      voteParams_: { proposalId: BigNumberish; votes: BigNumberish }[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     startNewDistributionPeriod(overrides?: CallOverrides): Promise<number>;
 
-    state(proposalId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<number>;
+    state(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
     treasury(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateSlate(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      distributionId_: PromiseOrValue<BigNumberish>,
+      proposalIds_: BigNumberish[],
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
   };
 
   filters: {
     'DelegateRewardClaimed(address,uint256,uint256)'(
-      delegateeAddress?: PromiseOrValue<string> | null,
-      distributionId?: PromiseOrValue<BigNumberish> | null,
+      delegateeAddress?: string | null,
+      distributionId?: BigNumberish | null,
       rewardClaimed?: null
     ): DelegateRewardClaimedEventFilter;
     DelegateRewardClaimed(
-      delegateeAddress?: PromiseOrValue<string> | null,
-      distributionId?: PromiseOrValue<BigNumberish> | null,
+      delegateeAddress?: string | null,
+      distributionId?: BigNumberish | null,
       rewardClaimed?: null
     ): DelegateRewardClaimedEventFilter;
 
     'DistributionPeriodStarted(uint256,uint256,uint256)'(
-      distributionId?: PromiseOrValue<BigNumberish> | null,
+      distributionId?: BigNumberish | null,
       startBlock?: null,
       endBlock?: null
     ): DistributionPeriodStartedEventFilter;
     DistributionPeriodStarted(
-      distributionId?: PromiseOrValue<BigNumberish> | null,
+      distributionId?: BigNumberish | null,
       startBlock?: null,
       endBlock?: null
     ): DistributionPeriodStartedEventFilter;
@@ -923,12 +799,12 @@ export interface GrantFund extends BaseContract {
     FundTreasury(amount?: null, treasuryBalance?: null): FundTreasuryEventFilter;
 
     'FundedSlateUpdated(uint256,bytes32)'(
-      distributionId?: PromiseOrValue<BigNumberish> | null,
-      fundedSlateHash?: PromiseOrValue<BytesLike> | null
+      distributionId?: BigNumberish | null,
+      fundedSlateHash?: BytesLike | null
     ): FundedSlateUpdatedEventFilter;
     FundedSlateUpdated(
-      distributionId?: PromiseOrValue<BigNumberish> | null,
-      fundedSlateHash?: PromiseOrValue<BytesLike> | null
+      distributionId?: BigNumberish | null,
+      fundedSlateHash?: BytesLike | null
     ): FundedSlateUpdatedEventFilter;
 
     'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'(
@@ -958,14 +834,14 @@ export interface GrantFund extends BaseContract {
     ProposalExecuted(proposalId?: null): ProposalExecutedEventFilter;
 
     'VoteCast(address,uint256,uint8,uint256,string)'(
-      voter?: PromiseOrValue<string> | null,
+      voter?: string | null,
       proposalId?: null,
       support?: null,
       weight?: null,
       reason?: null
     ): VoteCastEventFilter;
     VoteCast(
-      voter?: PromiseOrValue<string> | null,
+      voter?: string | null,
       proposalId?: null,
       support?: null,
       weight?: null,
@@ -975,334 +851,305 @@ export interface GrantFund extends BaseContract {
 
   estimateGas: {
     _voterInfo(
-      distributionId: PromiseOrValue<BigNumberish>,
-      voter: PromiseOrValue<string>,
+      distributionId: BigNumberish,
+      voter: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     ajnaTokenAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     claimDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     execute(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     fundTreasury(
-      fundingAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      fundingAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     fundingVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votesUsed: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votesUsed: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     getChallengeStageStartBlock(
-      endBlock_: PromiseOrValue<BigNumberish>,
+      endBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      voter_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      voter_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDescriptionHash(
-      description_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getDescriptionHash(description_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     getDistributionId(overrides?: CallOverrides): Promise<BigNumber>;
 
     getDistributionPeriodInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getFundedProposalSlate(
-      slateHash_: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getFundedProposalSlate(slateHash_: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     getFundingStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getFundingVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getHasClaimedRewards(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getProposalInfo(
-      proposalId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getProposalInfo(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getScreeningStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getScreeningVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getSlateHash(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getSlateHash(proposalIds_: BigNumberish[], overrides?: CallOverrides): Promise<BigNumber>;
 
     getStage(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTopTenProposals(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getVoterInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getVotesFunding(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getVotesScreening(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     hashProposal(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     propose(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      description_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      description_: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     screeningVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votes: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votes: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    startNewDistributionPeriod(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    startNewDistributionPeriod(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
-    state(proposalId_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+    state(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     treasury(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateSlate(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      proposalIds_: BigNumberish[],
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     _voterInfo(
-      distributionId: PromiseOrValue<BigNumberish>,
-      voter: PromiseOrValue<string>,
+      distributionId: BigNumberish,
+      voter: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     ajnaTokenAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     claimDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     execute(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     fundTreasury(
-      fundingAmount_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      fundingAmount_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     fundingVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votesUsed: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votesUsed: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     getChallengeStageStartBlock(
-      endBlock_: PromiseOrValue<BigNumberish>,
+      endBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getDelegateReward(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      voter_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      voter_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getDescriptionHash(
-      description_: PromiseOrValue<string>,
+      description_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getDistributionId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getDistributionPeriodInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getFundedProposalSlate(
-      slateHash_: PromiseOrValue<BytesLike>,
+      slateHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getFundingStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getFundingVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getHasClaimedRewards(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getProposalInfo(
-      proposalId_: PromiseOrValue<BigNumberish>,
+      proposalId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getScreeningStageEndBlock(
-      startBlock_: PromiseOrValue<BigNumberish>,
+      startBlock_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getScreeningVotesCast(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getSlateHash(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
+      proposalIds_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getStage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTopTenProposals(
-      distributionId_: PromiseOrValue<BigNumberish>,
+      distributionId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getVoterInfo(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getVotesFunding(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getVotesScreening(
-      distributionId_: PromiseOrValue<BigNumberish>,
-      account_: PromiseOrValue<string>,
+      distributionId_: BigNumberish,
+      account_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     hashProposal(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      descriptionHash_: PromiseOrValue<BytesLike>,
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      descriptionHash_: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     propose(
-      targets_: PromiseOrValue<string>[],
-      values_: PromiseOrValue<BigNumberish>[],
-      calldatas_: PromiseOrValue<BytesLike>[],
-      description_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      targets_: string[],
+      values_: BigNumberish[],
+      calldatas_: BytesLike[],
+      description_: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     screeningVote(
-      voteParams_: {
-        proposalId: PromiseOrValue<BigNumberish>;
-        votes: PromiseOrValue<BigNumberish>;
-      }[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      voteParams_: { proposalId: BigNumberish; votes: BigNumberish }[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     startNewDistributionPeriod(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    state(
-      proposalId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    state(proposalId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     treasury(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     updateSlate(
-      proposalIds_: PromiseOrValue<BigNumberish>[],
-      distributionId_: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      proposalIds_: BigNumberish[],
+      distributionId_: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -13,13 +13,7 @@ import type {
 } from 'ethers';
 import type { FunctionFragment, Result } from '@ethersproject/abi';
 import type { Listener, Provider } from '@ethersproject/providers';
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from './common';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common';
 
 export interface PoolInfoUtilsInterface extends utils.Interface {
   functions: {
@@ -71,63 +65,33 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
       | 'unutilizedDepositFeeRate'
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: 'auctionStatus',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'availableQuoteTokenAmount',
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(functionFragment: 'borrowFeeRate', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'borrowerInfo',
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'bucketInfo',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: 'hpb', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'hpbIndex', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'htp', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'indexToPrice',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'lenderInterestMargin',
-    values: [PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: 'auctionStatus', values: [string, string]): string;
+  encodeFunctionData(functionFragment: 'availableQuoteTokenAmount', values: [string]): string;
+  encodeFunctionData(functionFragment: 'borrowFeeRate', values: [string]): string;
+  encodeFunctionData(functionFragment: 'borrowerInfo', values: [string, string]): string;
+  encodeFunctionData(functionFragment: 'bucketInfo', values: [string, BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'hpb', values: [string]): string;
+  encodeFunctionData(functionFragment: 'hpbIndex', values: [string]): string;
+  encodeFunctionData(functionFragment: 'htp', values: [string]): string;
+  encodeFunctionData(functionFragment: 'indexToPrice', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'lenderInterestMargin', values: [string]): string;
   encodeFunctionData(
     functionFragment: 'lpToCollateral',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [string, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: 'lpToQuoteTokens',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [string, BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: 'lup', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'lupIndex', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'momp', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'poolLoansInfo', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(functionFragment: 'poolPricesInfo', values: [PromiseOrValue<string>]): string;
-  encodeFunctionData(
-    functionFragment: 'poolReservesInfo',
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'poolUtilizationInfo',
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'priceToIndex',
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: 'unutilizedDepositFeeRate',
-    values: [PromiseOrValue<string>]
-  ): string;
+  encodeFunctionData(functionFragment: 'lup', values: [string]): string;
+  encodeFunctionData(functionFragment: 'lupIndex', values: [string]): string;
+  encodeFunctionData(functionFragment: 'momp', values: [string]): string;
+  encodeFunctionData(functionFragment: 'poolLoansInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'poolPricesInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'poolReservesInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'poolUtilizationInfo', values: [string]): string;
+  encodeFunctionData(functionFragment: 'priceToIndex', values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: 'unutilizedDepositFeeRate', values: [string]): string;
 
   decodeFunctionResult(functionFragment: 'auctionStatus', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'availableQuoteTokenAmount', data: BytesLike): Result;
@@ -182,8 +146,8 @@ export interface PoolInfoUtils extends BaseContract {
 
   functions: {
     auctionStatus(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
@@ -197,18 +161,15 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     availableQuoteTokenAmount(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { amount_: BigNumber }>;
 
-    borrowFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    borrowFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     borrowerInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -219,8 +180,8 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     bucketInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -233,47 +194,41 @@ export interface PoolInfoUtils extends BaseContract {
       }
     >;
 
-    hpb(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    hpb(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    hpbIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    hpbIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    htp(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { htp_: BigNumber }>;
+    htp(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber] & { htp_: BigNumber }>;
 
-    indexToPrice(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    indexToPrice(index_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     lenderInterestMargin(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { lenderInterestMargin_: BigNumber }>;
 
     lpToCollateral(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { collateralAmount_: BigNumber }>;
 
     lpToQuoteTokens(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { quoteAmount_: BigNumber }>;
 
-    lup(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    lup(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    lupIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    momp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     poolLoansInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, string, BigNumber, BigNumber] & {
@@ -286,7 +241,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolPricesInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -300,7 +255,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolReservesInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -313,7 +268,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolUtilizationInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -324,20 +279,14 @@ export interface PoolInfoUtils extends BaseContract {
       }
     >;
 
-    priceToIndex(
-      price_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    priceToIndex(price_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    unutilizedDepositFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    unutilizedDepositFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
   auctionStatus(
-    ajnaPool_: PromiseOrValue<string>,
-    borrower_: PromiseOrValue<string>,
+    ajnaPool_: string,
+    borrower_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
@@ -350,16 +299,13 @@ export interface PoolInfoUtils extends BaseContract {
     }
   >;
 
-  availableQuoteTokenAmount(
-    ajnaPool_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  availableQuoteTokenAmount(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  borrowFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   borrowerInfo(
-    ajnaPool_: PromiseOrValue<string>,
-    borrower_: PromiseOrValue<string>,
+    ajnaPool_: string,
+    borrower_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber] & {
@@ -370,8 +316,8 @@ export interface PoolInfoUtils extends BaseContract {
   >;
 
   bucketInfo(
-    ajnaPool_: PromiseOrValue<string>,
-    index_: PromiseOrValue<BigNumberish>,
+    ajnaPool_: string,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -384,41 +330,38 @@ export interface PoolInfoUtils extends BaseContract {
     }
   >;
 
-  hpb(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  hpb(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  hpbIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  hpbIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  htp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  htp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  indexToPrice(index_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  indexToPrice(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  lenderInterestMargin(
-    ajnaPool_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  lenderInterestMargin(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   lpToCollateral(
-    ajnaPool_: PromiseOrValue<string>,
-    lp_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    ajnaPool_: string,
+    lp_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   lpToQuoteTokens(
-    ajnaPool_: PromiseOrValue<string>,
-    lp_: PromiseOrValue<BigNumberish>,
-    index_: PromiseOrValue<BigNumberish>,
+    ajnaPool_: string,
+    lp_: BigNumberish,
+    index_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  lup(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  lup(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  lupIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  momp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+  momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   poolLoansInfo(
-    ajnaPool_: PromiseOrValue<string>,
+    ajnaPool_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, string, BigNumber, BigNumber] & {
@@ -431,7 +374,7 @@ export interface PoolInfoUtils extends BaseContract {
   >;
 
   poolPricesInfo(
-    ajnaPool_: PromiseOrValue<string>,
+    ajnaPool_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -445,7 +388,7 @@ export interface PoolInfoUtils extends BaseContract {
   >;
 
   poolReservesInfo(
-    ajnaPool_: PromiseOrValue<string>,
+    ajnaPool_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -458,7 +401,7 @@ export interface PoolInfoUtils extends BaseContract {
   >;
 
   poolUtilizationInfo(
-    ajnaPool_: PromiseOrValue<string>,
+    ajnaPool_: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -469,17 +412,14 @@ export interface PoolInfoUtils extends BaseContract {
     }
   >;
 
-  priceToIndex(price_: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
+  priceToIndex(price_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  unutilizedDepositFeeRate(
-    ajnaPool_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  unutilizedDepositFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     auctionStatus(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, boolean, BigNumber, BigNumber] & {
@@ -492,16 +432,13 @@ export interface PoolInfoUtils extends BaseContract {
       }
     >;
 
-    availableQuoteTokenAmount(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    availableQuoteTokenAmount(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    borrowFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     borrowerInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -512,8 +449,8 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     bucketInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -526,44 +463,38 @@ export interface PoolInfoUtils extends BaseContract {
       }
     >;
 
-    hpb(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    hpb(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    hpbIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    hpbIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    htp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    htp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    indexToPrice(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    indexToPrice(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    lenderInterestMargin(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    lenderInterestMargin(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     lpToCollateral(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     lpToQuoteTokens(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lup(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    lup(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    lupIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    momp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     poolLoansInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, string, BigNumber, BigNumber] & {
@@ -576,7 +507,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolPricesInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -590,7 +521,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolReservesInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -603,7 +534,7 @@ export interface PoolInfoUtils extends BaseContract {
     >;
 
     poolUtilizationInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -614,219 +545,153 @@ export interface PoolInfoUtils extends BaseContract {
       }
     >;
 
-    priceToIndex(
-      price_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    priceToIndex(price_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    unutilizedDepositFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    unutilizedDepositFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {};
 
   estimateGas: {
     auctionStatus(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    availableQuoteTokenAmount(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    availableQuoteTokenAmount(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    borrowFeeRate(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    borrowFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     borrowerInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     bucketInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    hpb(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    hpb(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    hpbIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    hpbIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    htp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    htp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    indexToPrice(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    indexToPrice(index_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    lenderInterestMargin(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    lenderInterestMargin(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     lpToCollateral(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     lpToQuoteTokens(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lup(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    lup(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    lupIndex(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    momp(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    poolLoansInfo(ajnaPool_: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
+    poolLoansInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    poolPricesInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    poolPricesInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    poolReservesInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    poolReservesInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    poolUtilizationInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    poolUtilizationInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    priceToIndex(
-      price_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    priceToIndex(price_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    unutilizedDepositFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    unutilizedDepositFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
     auctionStatus(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     availableQuoteTokenAmount(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    borrowFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    borrowFeeRate(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     borrowerInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      borrower_: PromiseOrValue<string>,
+      ajnaPool_: string,
+      borrower_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     bucketInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    hpb(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    hpb(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    hpbIndex(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    hpbIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    htp(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    htp(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    indexToPrice(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    indexToPrice(index_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lenderInterestMargin(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     lpToCollateral(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     lpToQuoteTokens(
-      ajnaPool_: PromiseOrValue<string>,
-      lp_: PromiseOrValue<BigNumberish>,
-      index_: PromiseOrValue<BigNumberish>,
+      ajnaPool_: string,
+      lp_: BigNumberish,
+      index_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lup(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    lup(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    lupIndex(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    momp(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    poolLoansInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    poolLoansInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    poolPricesInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    poolPricesInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    poolReservesInfo(
-      ajnaPool_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    poolReservesInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     poolUtilizationInfo(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    priceToIndex(
-      price_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    priceToIndex(price_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     unutilizedDepositFeeRate(
-      ajnaPool_: PromiseOrValue<string>,
+      ajnaPool_: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
