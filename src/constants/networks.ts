@@ -22,8 +22,6 @@ export const networks = {
       address: '0xaadebCF61AA7Da0573b524DE57c67aDa797D46c5',
     },
     rpcUrl: process.env.GOERLI_RPC,
-    subgraph: process.env.GOERLI_SUBGRAPH,
-    label: 'Goerli',
   },
   mainnet: {
     ERC20PoolFactory: {
@@ -33,7 +31,7 @@ export const networks = {
       address: '0xb8DA113516bfb986B7b8738a76C136D1c16c5609',
     },
     PositionManager: {
-      address: '0x23E2EFF19bd50BfCF0364B7dCA01004D5cce41f9',
+      address: '',
     },
     RewardsManager: {
       address: '',
@@ -48,7 +46,5 @@ export const networks = {
       address: '0x9a96ec9B57Fb64FbC60B423d1f4da7691Bd35079',
     },
     rpcUrl: process.env.MAINNET_RPC,
-    subgraph: process.env.MAINNET_SUBGRAPH,
-    label: 'Mainnet',
   },
 };
