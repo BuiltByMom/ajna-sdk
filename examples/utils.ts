@@ -1,6 +1,6 @@
 import { providers } from 'ethers';
 import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
-import { Config, networks } from '../src/constants';
+import { Config } from '../src/constants';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 
 export enum Networks {
@@ -11,15 +11,12 @@ export enum Networks {
 export type Network = Networks.Mainnet | Networks.Goerli;
 export type Actor = 'lender' | 'borrower' | 'voter';
 
-function getRpcUrl(network: Network = Networks.Goerli) {
-  return networks[network].rpcUrl;
+function getRpcUrl() {
+  return process.env.ETH_RPC_URL;
 }
 
-export async function getProviderSigner(
-  network: Network = Networks.Goerli,
-  actor: Actor = 'lender'
-) {
-  const provider = new providers.JsonRpcProvider(getRpcUrl(network));
+export async function getProviderSigner(actor: Actor = 'lender') {
+  const provider = new providers.JsonRpcProvider(getRpcUrl());
 
   let pkey = '',
     kstore = '',
@@ -48,18 +45,10 @@ export async function getProviderSigner(
   return { provider, signer };
 }
 
-export async function initAjna(actor: Actor = 'lender', network?: Network) {
-  const selectedNetwork = network
-    ? network
-    : process.env.ETH_NETWORK === 'mainnet'
-    ? Networks.Mainnet
-    : Networks.Goerli;
+export async function initAjna(actor: Actor = 'lender') {
+  const { provider, signer } = await getProviderSigner(actor);
 
-  console.log('Selected Network:', selectedNetwork);
-
-  const { provider, signer } = await getProviderSigner(selectedNetwork, actor);
-
-  Config.fromEnvironment(selectedNetwork);
+  Config.fromEnvironment();
 
   const ajna = new AjnaSDK(provider);
 

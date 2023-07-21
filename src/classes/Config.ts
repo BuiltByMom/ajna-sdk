@@ -39,14 +39,14 @@ class Config {
   /**
    * configures addresses from known environment variables
    */
-  static fromEnvironment(network: 'goerli' | 'mainnet' = 'goerli') {
+  static fromEnvironment() {
     return new Config(
-      networks[network].ERC20PoolFactory.address,
-      networks[network].ERC721PoolFactory.address,
-      networks[network].PoolUtils.address,
-      networks[network].PositionManager.address,
-      networks[network].AjnaToken.address,
-      networks[network].GrantFund.address
+      process.env.AJNA_ERC20_POOL_FACTORY || '',
+      process.env.AJNA_ERC721_POOL_FACTORY || '',
+      process.env.AJNA_POOL_UTILS || '',
+      process.env.AJNA_POSITION_MANAGER || '',
+      process.env.AJNA_TOKEN_ADDRESS || '',
+      process.env.AJNA_GRANT_FUND || ''
     );
   }
 }
