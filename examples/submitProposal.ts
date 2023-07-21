@@ -1,12 +1,11 @@
 #!/usr/bin/env ts-node
 
-import { addAccountFromKeystore } from '../src/utils/add-account';
 import { BigNumber } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../src/contracts/grant-fund';
 import { SdkError } from '../src/types';
-import { Network, initAjna } from './utils';
+import { initAjna } from './utils';
 
 const CREATE_NEW_PROPOSAL = true;
 // sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
@@ -14,9 +13,9 @@ const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221
 // proposal description must be unique, select a different title each time
 const PROPOSAL_TITLE = 'multi address transfers test';
 
-export const startDistributionPeriod = async (network: Network) => {
+export const startDistributionPeriod = async () => {
   // Use this for a real chain, such as Goerli or Mainnet.
-  const { signer: caller } = await initAjna('voter', network);
+  const { signer: caller } = await initAjna('voter');
 
   const tx = await startNewDistributionPeriod(caller);
   const receipt = await tx.verify();

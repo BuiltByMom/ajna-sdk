@@ -3,12 +3,6 @@ import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-acco
 import { Config } from '../src/constants';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 
-export enum Networks {
-  Mainnet = 'mainnet',
-  Goerli = 'goerli',
-}
-
-export type Network = Networks.Mainnet | Networks.Goerli;
 export type Actor = 'lender' | 'borrower' | 'voter';
 
 function getRpcUrl() {
