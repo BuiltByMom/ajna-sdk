@@ -51,30 +51,4 @@ export const networks = {
     subgraph: process.env.MAINNET_SUBGRAPH,
     label: 'Mainnet',
   },
-  aditi: {
-    ERC20PoolFactory: {
-      address: '0xD86c4A8b172170Da0d5C0C1F12455bA80Eaa42AD',
-    },
-    ERC721PoolFactory: {
-      address: '0x9617ABE221F9A9c492D5348be56aef4Db75A692d',
-    },
-    PositionManager: {
-      address: '0x6c5c7fD98415168ada1930d44447790959097482',
-    },
-    RewardsManager: {
-      address: '0x6548dF23A854f72335902e58a1e59B50bb3f11F1',
-    },
-    GrantFund: {
-      address: '0xE340B87CEd1af1AbE1CE8D617c84B7f168e3b18b',
-    },
-    PoolUtils: {
-      address: '0x4f05DA51eAAB00e5812c54e370fB95D4C9c51F21',
-    },
-    AjnaToken: {
-      address: '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d',
-    },
-    rpcUrl: process.env.ADITI_RPC,
-    subgraph: process.env.ADITI_SUBGRAPH,
-    label: 'Aditi',
-  },
 };

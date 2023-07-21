@@ -39,7 +39,7 @@ class Config {
   /**
    * configures addresses from known environment variables
    */
-  static fromEnvironment(network: 'goerli' | 'mainnet' | 'aditi' = 'goerli') {
+  static fromEnvironment(network: 'goerli' | 'mainnet' = 'goerli') {
     return new Config(
       networks[network].ERC20PoolFactory.address,
       networks[network].ERC721PoolFactory.address,

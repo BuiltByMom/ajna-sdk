@@ -6,10 +6,9 @@ import { AjnaSDK } from '../src/classes/AjnaSDK';
 export enum Networks {
   Mainnet = 'mainnet',
   Goerli = 'goerli',
-  Aditi = 'aditi',
 }
 
-export type Network = Networks.Mainnet | Networks.Goerli | Networks.Aditi;
+export type Network = Networks.Mainnet | Networks.Goerli;
 export type Actor = 'lender' | 'borrower' | 'voter';
 
 function getRpcUrl(network: Network = Networks.Goerli) {
