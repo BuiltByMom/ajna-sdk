@@ -14,7 +14,10 @@ export const updateAbis = function () {
     if (abisWeCareAbout.has(file.name)) {
       // read and parse JSON output written by contracts tooling
       const jsonAbi = fs.readFileSync(path.join(dir.path, file.name));
-      const parsed = JSON.parse(jsonAbi.toString()).abi;
+      let parsed = JSON.parse(jsonAbi.toString());
+      if (parsed.abi) {
+        parsed = parsed.abi;
+      }
 
       // remove adjacent duplicate definitions
       for (let i = 0; i < parsed.length; ++i) {
