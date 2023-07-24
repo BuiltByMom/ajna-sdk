@@ -59,10 +59,19 @@ export class GrantFund extends ContractBase implements IGrantFund {
     return await getVotesScreening(contractInstance, distributionId, address);
   }
 
+  /**
+   * get the voter's voting power in the screening stage of a distribution period
+   * @param signer transaction signer
+   * @returns transaction
+   */
   async startNewDistributionPeriod(signer: Signer) {
     if ((await getTreasury(signer)).isZero()) {
       throw new SdkError('Unfunded treasury');
     }
     return startNewDistributionPeriod(signer);
+  }
+
+  async getTreasury() {
+    return getTreasury(this.getProvider());
   }
 }

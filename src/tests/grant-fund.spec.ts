@@ -24,6 +24,12 @@ describe('Grants fund', () => {
   const ajna = new AjnaSDK(provider);
   const signer = addAccountFromKey(SIGNER_KEY, provider);
   const voter = addAccountFromKey(VOTER_KEY, provider);
+  describe('Treasury', () => {
+    it('gets the treasury balance', async () => {
+      const treasury = await ajna.grants.getTreasury();
+      expect(fromWad(treasury)).toBe('291000000.0');
+    });
+  });
   describe('Distribution Period', () => {
     it(`fails to start a new distribution period if an active one already exists`, async () => {
       const tx = await startNewDistributionPeriod(signer);

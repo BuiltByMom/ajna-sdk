@@ -93,6 +93,10 @@ export interface IGrantFund {
   getVotesFunding(blockNumber: number, address: Address): Promise<BigNumber>;
   /** get the voter's voting power in the screening stage of a distribution period */
   getVotesScreening(distributionId: number, address: Address): Promise<BigNumber>;
+  /** starts a new distribution period */
+  startNewDistributionPeriod(signer: Signer): Promise<WrappedTransaction>;
+  /** get the current grants treasury */
+  getTreasury(): Promise<BigNumber>;
 }
 
 export type ProposalParams = {

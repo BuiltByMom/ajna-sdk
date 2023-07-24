@@ -63,6 +63,7 @@ async function run() {
       throw e;
     }
   }
+  console.log('current treasury balance:', fromWad(await ajna.grants.getTreasury()));
   const proposalId = CREATE_NEW_PROPOSAL ? await propose() : BigNumber.from(EXISTING_PROPOSAL_ID);
   const proposal = ajna.distributionPeriods.getProposal(proposalId);
   const { votesReceived, tokensRequested, fundingVotesReceived } = await proposal.getInfo();
