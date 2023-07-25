@@ -23,6 +23,7 @@ class NonfungiblePool extends Pool {
 
   toString() {
     return this.name + ' pool';
+    // TODO: specify whether pool is collection or subset, identify whitelisted tokenIds
   }
 }
 

@@ -111,7 +111,7 @@ describe('ERC721 Pool', () => {
     expect(pool.name).toBe('TDUCK-TDAI');
   });
 
-  it('getPool should return existing pool when given valid collateral and quote addresses', async () => {
+  it('getPool should return existing pool when querying existing collection pool', async () => {
     const pool = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TWETH_ADDRESS);
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(TDUCK_ADDRESS);
@@ -124,7 +124,7 @@ describe('ERC721 Pool', () => {
     expect(pool.poolAddress).toBe(poolDuckDai.poolAddress);
   });
 
-  it('getPoolAddress returns pool address when given existing pool requisites', async () => {
+  it('getPoolAddress returns pool address when querying existing subset pool', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
       TDUCK_ADDRESS,
       [1, 2, 3],
@@ -133,7 +133,16 @@ describe('ERC721 Pool', () => {
     expect(address).toBe(poolDuckDai.poolAddress);
   });
 
-  it('getPoolAddress returns AddressZero when non existing token pair specified', async () => {
+  it('getPoolAddress returns AddressZero when subset for token pair does not exist', async () => {
+    const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
+      TDUCK_ADDRESS,
+      [2, 3, 4],
+      TDAI_ADDRESS
+    );
+    expect(address).toBe(constants.AddressZero);
+  });
+
+  it('getPoolAddress returns AddressZero when token pair does not exist', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
       TGOOSE_ADDRESS,
       [1, 2, 3],
@@ -142,7 +151,7 @@ describe('ERC721 Pool', () => {
     expect(address).toBe(constants.AddressZero);
   });
 
-  it('getPoolAddress returns AddressZero when non existing token pair specified', async () => {
+  it('getPoolAddress returns AddressZero when collection for token pair does not exist', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
       TGOOSE_ADDRESS,
       [],

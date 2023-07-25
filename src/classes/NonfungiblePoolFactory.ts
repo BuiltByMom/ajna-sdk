@@ -13,6 +13,14 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     super(signerOrProvider);
   }
 
+  /**
+   * creates a new collection pool allowing all tokenIds
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   * @returns transaction
+   */
   async deployCollectionPool(
     signer: Signer,
     nftAddress: Address,
@@ -22,6 +30,15 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     return await deployPool(signer, nftAddress, [], quoteAddress, interestRate);
   }
 
+  /**
+   * creates a new subset pool whitelisting specific tokenIds
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param subset array of tokenIds to whitelist
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   * @returns transaction
+   */
   async deploySubsetPool(
     signer: Signer,
     nftAddress: Address,
@@ -32,6 +49,13 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     return await deployPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
+  /**
+   * returns existing pool for two tokens
+   * @param collateralAddress token address
+   * @param subset array of tokenIds for subset pool, empty array for collection pool
+   * @param quoteAddress token address
+   * @returns {@link NonfungiblePool} modeling desired pool
+   */
   async getPool(
     collateralAddress: Address,
     subset: any,
@@ -45,6 +69,11 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     return await this.getPoolByAddress(poolAddress);
   }
 
+  /**
+   * returns existing pool
+   * @param poolAddress address of pool
+   * @returns {@link NonfungiblePool} modeling desired pool
+   */
   async getPoolByAddress(poolAddress: Address) {
     const newPool = new NonfungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
     await newPool.initialize();
@@ -54,9 +83,9 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   /**
    * finds address of an existing pool
    * @param collateralAddress token address
-   * @param subset identifies tokens in pool
+   * @param subset specifies tokenIds whitelisted in pool
    * @param quoteAddress token address
-   * @returns address of the existing pool
+   * @returns address of the existing pool, or zero address if not found
    */
   async getPoolAddress(
     collateralAddress: Address,
