@@ -7,6 +7,7 @@ import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 
 const TDUCK_ADDRESS = '0x1fb7972C722716F39DADF20967c6345dA223D943';
+const TGOOSE_ADDRESS = '0xcc0ec11ED0B23bF63C00A5E138E1529598331d75';
 const TESTA_ADDRESS = '0x919ae2c42A69ebD939262F39b4dAdAFDBf9eB374';
 const TUSDC_ADDRESS = '0x72BB61e78fcB9dB3b5B3C8035BD9edAB5edd601E';
 const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
@@ -134,16 +135,16 @@ describe('ERC721 Pool', () => {
 
   it('getPoolAddress returns AddressZero when non existing token pair specified', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
-      TDUCK_ADDRESS,
+      TGOOSE_ADDRESS,
       [1, 2, 3],
       TWETH_ADDRESS
     );
     expect(address).toBe(constants.AddressZero);
   });
 
-  it.skip('getPoolAddress returns AddressZero when non existing token pair specified', async () => {
+  it('getPoolAddress returns AddressZero when non existing token pair specified', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
-      TDUCK_ADDRESS,
+      TGOOSE_ADDRESS,
       [],
       TDAI_ADDRESS
     );

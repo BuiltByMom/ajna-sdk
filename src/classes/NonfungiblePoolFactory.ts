@@ -13,23 +13,23 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     super(signerOrProvider);
   }
 
-  deployCollectionPool(
+  async deployCollectionPool(
     signer: Signer,
     nftAddress: Address,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return deployPool(signer, nftAddress, [], quoteAddress, interestRate);
+    return await deployPool(signer, nftAddress, [], quoteAddress, interestRate);
   }
 
-  deploySubsetPool(
+  async deploySubsetPool(
     signer: Signer,
     nftAddress: Address,
     subset: any,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return deployPool(signer, nftAddress, subset, quoteAddress, interestRate);
+    return await deployPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
   async getPool(

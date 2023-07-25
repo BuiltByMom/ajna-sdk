@@ -44,11 +44,11 @@ export async function getDeployedPools(
   return await contract.deployedPools(subset, collateralAddress, quoteAddress);
 }
 
-export function getSubsetHash(
+export async function getSubsetHash(
   provider: SignerOrProvider,
   tokensIds: Array<BigNumber>
 ): Promise<string> {
   const contract: Contract = getErc721PoolFactoryContract(provider);
 
-  return contract.getNFTSubsetHash(tokensIds);
+  return await contract.getNFTSubsetHash(tokensIds);
 }
