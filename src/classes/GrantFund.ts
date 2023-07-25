@@ -60,7 +60,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * get the voter's voting power in the screening stage of a distribution period
+   * starts a new distribution period, ensuring the treasury is funded
    * @param signer transaction signer
    * @returns transaction
    */
@@ -71,6 +71,10 @@ export class GrantFund extends ContractBase implements IGrantFund {
     return startNewDistributionPeriod(signer);
   }
 
+  /**
+   * gets the current treasury balance
+   * @returns BigNumber
+   */
   async getTreasury() {
     return getTreasury(this.getProvider());
   }
