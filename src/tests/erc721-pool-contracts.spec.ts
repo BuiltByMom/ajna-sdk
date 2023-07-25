@@ -124,8 +124,12 @@ describe('ERC721 Pool', () => {
   });
 
   it('getPoolAddress returns pool address when given existing pool requisites', async () => {
-    const address = await ajna.nonfungiblePoolFactory.getPoolAddress(TDUCK_ADDRESS, [1, 2, 3], TDAI_ADDRESS)
-    expect(address).toBe(poolDuckDai.poolAddress)
+    const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
+      TDUCK_ADDRESS,
+      [1, 2, 3],
+      TDAI_ADDRESS
+    );
+    expect(address).toBe(poolDuckDai.poolAddress);
   });
 
   it('getPoolAddress returns AddressZero when non existing token pair specified', async () => {

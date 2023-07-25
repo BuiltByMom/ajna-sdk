@@ -45,7 +45,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     return await this.getPoolByAddress(poolAddress);
   }
 
-  async  getPoolByAddress(poolAddress: Address) {
+  async getPoolByAddress(poolAddress: Address) {
     const newPool = new NonfungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
     await newPool.initialize();
     return newPool;
