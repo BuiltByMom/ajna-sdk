@@ -29,7 +29,7 @@ export async function getDelegates(provider: SignerOrProvider, account: Address)
 }
 
 // Distribution period
-export async function getActiveDistributionId(provider: SignerOrProvider): Promise<number> {
+export async function getCurrentDistributionId(provider: SignerOrProvider): Promise<number> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionId();
 }

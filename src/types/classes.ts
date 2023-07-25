@@ -69,18 +69,6 @@ export interface Loan {
   isKicked: boolean;
 }
 
-export type DistributionPeriod = {
-  id: number;
-  isActive: boolean;
-  startBlock: number;
-  startDate: number;
-  endBlock: number;
-  endDate: number;
-  blockNumber: number;
-  fundsAvailable: BigNumber;
-  votesCount: BigNumber;
-};
-
 export interface IGrantFund {
   /**
    * Handles grant fund methods
@@ -97,6 +85,28 @@ export interface IGrantFund {
   startNewDistributionPeriod(signer: Signer): Promise<WrappedTransaction>;
   /** get the current grants treasury */
   getTreasury(): Promise<BigNumber>;
+  /** get the active distribution period */
+  getActiveDistributionPeriod(): Promise<IDistributionPeriod>;
+  /** get a distribution period by id */
+  getDistributionPeriod(distributionId: number): Promise<IDistributionPeriod>;
+  /** creates a proposal */
+  createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
+  /** gets a proposal object by id */
+  getProposal(proposalId: BigNumber): IProposal;
+}
+
+export interface IDistributionPeriod {
+  /**
+   * Handles distribution period methods
+   */
+  id: number;
+  isActive: boolean;
+  startBlock: BigNumber;
+  startDate: number;
+  endBlock: BigNumber;
+  endDate: number;
+  fundsAvailable: BigNumber;
+  votesCount: BigNumber;
 }
 
 export type ProposalParams = {
@@ -109,15 +119,6 @@ export type ProposalParams = {
   ipfsHash?: string;
   arweaveTxid?: string;
 };
-
-export interface IDistributionPeriod {
-  /**
-   * Handles distribution period methods
-   */
-  getActiveDistributionPeriod(): Promise<DistributionPeriod>;
-  getDistributionPeriod(distributionId: number): Promise<DistributionPeriod>;
-  createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
-}
 
 export const proposalStates = [
   'Pending',
@@ -136,6 +137,7 @@ export interface IProposal {
   /**
    * Handles methods specific to a given proposal
    */
+  id: BigNumber;
   getInfo(): Promise<{
     proposalId: BigNumber;
     distributionId: number;

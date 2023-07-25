@@ -39,7 +39,7 @@ async function run() {
   const ajna = new AjnaSDK(provider);
 
   const propose = async () => {
-    const tx = await ajna.distributionPeriods.createProposal(caller, {
+    const tx = await ajna.grants.createProposal(caller, {
       title: PROPOSAL_TITLE,
       recipientAddresses: [{ address: proposalToAddress, amount: '1000.00' }],
       externalLink: 'https://example.com',
@@ -53,7 +53,7 @@ async function run() {
   };
 
   try {
-    const distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+    const distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
     console.log('current distribution period details:', distributionPeriod);
   } catch (e) {
     if (e instanceof SdkError && e.message === 'There is no active distribution period') {
@@ -65,7 +65,7 @@ async function run() {
   }
   console.log('current treasury balance:', fromWad(await ajna.grants.getTreasury()));
   const proposalId = CREATE_NEW_PROPOSAL ? await propose() : BigNumber.from(EXISTING_PROPOSAL_ID);
-  const proposal = ajna.distributionPeriods.getProposal(proposalId);
+  const proposal = ajna.grants.getProposal(proposalId);
   const { votesReceived, tokensRequested, fundingVotesReceived } = await proposal.getInfo();
   console.log(
     `the proposal has received ${fromWad(votesReceived)} votes and ${fromWad(
