@@ -151,6 +151,7 @@ describe('ERC20 Pool', () => {
     expect(stats.actualUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.targetUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.borrowRate).toBeBetween(toWad('0.01'), toWad('0.1'));
+    expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.01'));
   });
 
   it('should use getPrices and loansInfo successfully', async () => {
@@ -162,6 +163,8 @@ describe('ERC20 Pool', () => {
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
     expect(prices.lup).toEqual(indexToPrice(3242));
     expect(prices.lupIndex).toEqual(3242);
+    expect(prices.llb).toEqual(indexToPrice(0));
+    expect(prices.llbIndex).toEqual(0);
   });
 
   it('should use repayDebt successfully', async () => {
@@ -315,7 +318,7 @@ describe('ERC20 Pool', () => {
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(1900), toWad(1900).mul(2));
+    expect(loan.liquidationBond).toBeBetween(toWad(1000), toWad(1000).mul(2));
     expect(loan.isKicked).toBe(false);
   });
 

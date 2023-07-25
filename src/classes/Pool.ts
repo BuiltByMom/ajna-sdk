@@ -19,7 +19,6 @@ import {
   lpAllowance,
   increaseLPAllowance,
   updateInterest,
-  interestRateInfo,
 } from '../contracts/pool';
 import {
   getPoolInfoUtilsContract,
@@ -29,7 +28,7 @@ import {
 import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
 import { toWad, wmul } from '../utils/numeric';
-import { priceToIndex } from '../utils/pricing';
+import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
@@ -51,15 +50,6 @@ export interface KickerInfo {
   locked: BigNumber;
 }
 
-export interface LoansInfo {
-  /** lender with the least-collateralized loan */
-  maxBorrower: Address;
-  /** highest threshold price (HTP) */
-  maxThresholdPrice: BigNumber;
-  /** number of loans in the pool */
-  noOfLoans: number;
-}
-
 export interface PriceInfo {
   /** price of the highest price bucket with deposit */
   hpb: BigNumber;
@@ -73,6 +63,10 @@ export interface PriceInfo {
   lup: BigNumber;
   /** fenwick index of the LUP */
   lupIndex: number;
+  /** lowest bucket at which withdrawals are locked due to liquidation debt */
+  llb: BigNumber;
+  /** fenwick index of the lowest liquidation locked bucket */
+  llbIndex: number;
 }
 
 export interface Stats {
@@ -102,6 +96,8 @@ export interface Stats {
   reserveAuctionPrice: BigNumber;
   /** interest rate paid by borrowers */
   borrowRate: BigNumber;
+  /** can be multiplied by t0debt (obtained elsewhere) to determine current debt */
+  pendingInflator: BigNumber;
 }
 
 /**
@@ -191,6 +187,9 @@ export abstract class Pool {
       this.poolInfoContractUtils,
       this.poolAddress
     );
+    const [, , liquidationDebt] = await debtInfo(this.contract);
+    const llbIndex = await depositIndex(this.contract, liquidationDebt);
+    const llb = indexToPrice(llbIndex);
 
     return {
       hpb,
@@ -199,6 +198,8 @@ export abstract class Pool {
       htpIndex: +htpIndex,
       lup,
       lupIndex: +lupIndex,
+      llb,
+      llbIndex: +llbIndex,
     };
   }
 
@@ -207,22 +208,26 @@ export abstract class Pool {
    * @returns {@link Stats}
    */
   async getStats(): Promise<Stats> {
+    // PoolInfoUtils multicall
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
     const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
-    const data: string[] = await this.ethcallProvider.all([
+    const utilsData: string[] = await this.ethcallProvider.all([
       poolLoansInfoCall,
       poolUtilizationInfoCall,
       poolReservesInfo,
     ]);
+    const [poolSize, loansCount, , pendingInflator] = utilsData[0];
+    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = utilsData[1];
+    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = utilsData[2];
 
-    const [poolSize, loansCount] = data[0];
-    const [minDebtAmount, collateralization, actualUtilization, targetUtilization] = data[1];
-    const [reserves, claimableReserves, claimableReservesRemaining, auctionPrice] = data[2];
-
-    const [debt, , liquidationDebt] = await debtInfo(this.contract);
-
-    const rateInfo = await interestRateInfo(this.contract);
+    // Pool multicall
+    const poolData: any = await this.ethcallProvider.all([
+      this.contractMulti.debtInfo(),
+      this.contractMulti.interestRateInfo(),
+    ]);
+    const [debt, , liquidationDebt] = poolData[0];
+    const rateInfo = poolData[1];
 
     return {
       poolSize: BigNumber.from(poolSize),
@@ -238,6 +243,7 @@ export abstract class Pool {
       claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
       reserveAuctionPrice: BigNumber.from(auctionPrice),
       borrowRate: rateInfo[0],
+      pendingInflator: BigNumber.from(pendingInflator),
     };
   }
 

@@ -1,15 +1,16 @@
 import { constants, providers } from 'ethers';
+import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
+import { TEST_CONFIG as config } from './test-constants';
+import { submitAndVerifyTransaction } from './test-utils';
+import { AuctionStatus } from '../types';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
 import { toWad, wmul } from '../utils/numeric';
-import { TEST_CONFIG as config } from './test-constants';
-import { submitAndVerifyTransaction } from './test-utils';
-import { expect } from '@jest/globals';
+import { indexToPrice } from '../utils/pricing';
 import { getBlockTime } from '../utils/time';
-import { AuctionStatus } from '../types';
 
 jest.setTimeout(1200000);
 
@@ -180,6 +181,13 @@ describe('Liquidations', () => {
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
     );
+
+    // confirm liquidation locked bucket is conveyed
+    const prices = await pool.getPrices();
+    expect(prices.hpb).toEqual(indexToPrice(2001));
+    expect(prices.hpbIndex).toEqual(2001);
+    expect(prices.llb).toEqual(prices.hpb);
+    expect(prices.llbIndex).toEqual(prices.hpbIndex);
   });
 
   it('should use arb take', async () => {
