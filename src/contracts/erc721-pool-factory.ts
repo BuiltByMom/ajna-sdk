@@ -5,7 +5,7 @@ import { Address, SignerOrProvider, TransactionOverrides } from 'types';
 import checksumAddress from 'utils/checksum-address';
 import { createTransaction } from 'utils';
 
-export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
+export const getErc721PoolFactoryContract = (provider: SignerOrProvider): Contract => {
   return new ethers.Contract(
     checksumAddress(Config.erc721PoolFactory),
     erc721PoolFactoryAbi,
@@ -13,7 +13,7 @@ export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
   );
 };
 
-export function deployNFTPool(
+export async function deployPool(
   signer: Signer,
   collateralAddress: Address,
   tokenIds: Array<number>,
@@ -21,23 +21,34 @@ export function deployNFTPool(
   interestRate: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contractInstance: Contract = getErc721PoolFactoryContract(signer);
-  console.info('contractInstance', contractInstance);
+  const contract: Contract = getErc721PoolFactoryContract(signer);
 
-  return createTransaction(
-    contractInstance,
-    { methodName: 'deployPool', args: [collateralAddress, quoteAddress, tokenIds, interestRate] },
+  return await createTransaction(
+    contract,
+    {
+      methodName: 'deployPool(address,address,uint256[],uint256)',
+      args: [collateralAddress, quoteAddress, tokenIds, interestRate],
+    },
     overrides
   );
 }
 
-export function getDeployedNFTPools(
+export async function getDeployedPools(
   provider: SignerOrProvider,
   collateralAddress: Address,
   quoteAddress: Address,
-  nonSubsetHash: string
+  subset: string
 ): Promise<Address> {
-  const contractInstance: Contract = getErc721PoolFactoryContract(provider);
+  const contract: Contract = getErc721PoolFactoryContract(provider);
 
-  return contractInstance.deployedPools(nonSubsetHash, collateralAddress, quoteAddress);
+  return await contract.deployedPools(subset, collateralAddress, quoteAddress);
+}
+
+export function getSubsetHash(
+  provider: SignerOrProvider,
+  tokensIds: Array<BigNumber>
+): Promise<string> {
+  const contract: Contract = getErc721PoolFactoryContract(provider);
+
+  return contract.getNFTSubsetHash(tokensIds);
 }
