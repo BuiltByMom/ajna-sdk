@@ -153,7 +153,7 @@ class WrappedTransactionClass implements WrappedTransaction {
     }
     // metamask provider
     if (error?.data?.data) {
-      const errorHash = error?.data?.data?.result;
+      const errorHash = error.data.data.result;
       return this.getCustomErrorFromHash(contract, errorHash) ?? error.data.data?.message;
     }
     return 'Revert reason unknown';
