@@ -101,9 +101,9 @@ export interface IDistributionPeriod {
    */
   id: number;
   isActive: boolean;
-  startBlock: BigNumber;
+  startBlock: number;
   startDate: number;
-  endBlock: BigNumber;
+  endBlock: number;
   endDate: number;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;

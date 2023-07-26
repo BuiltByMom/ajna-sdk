@@ -8,9 +8,9 @@ import { ContractBase } from './ContractBase';
 export class DistributionPeriod extends ContractBase implements IDistributionPeriod {
   id: number;
   isActive: boolean;
-  startBlock: BigNumber;
+  startBlock: number;
   startDate: number;
-  endBlock: BigNumber;
+  endBlock: number;
   endDate: number;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
@@ -19,9 +19,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     signerOrProvider: SignerOrProvider,
     id: number,
     isActive: boolean,
-    startBlock: BigNumber,
+    startBlock: number,
     startDate: number,
-    endBlock: BigNumber,
+    endBlock: number,
     endDate: number,
     fundsAvailable: BigNumber,
     votesCount: BigNumber

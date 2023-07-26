@@ -2,13 +2,13 @@ import { expect } from '@jest/globals';
 import { providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
-import { DistributionPeriod } from '../types/classes';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine, timeJump } from '../utils/ganache';
 import { fromWad } from '../utils/numeric';
 import { getBlock } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
+import { DistributionPeriod } from '../classes/DistributionPeriod';
 
 jest.setTimeout(1200000);
 
@@ -37,7 +37,7 @@ describe('Grants fund', () => {
     });
 
     it('should get the active distribution period', async () => {
-      const dp = await ajna.distributionPeriods.getActiveDistributionPeriod();
+      const dp = await ajna.grants.getActiveDistributionPeriod();
       expect(dp.id).toBe(1);
       expect(dp.id).toBe(1);
       expect(dp.startBlock).toBeDefined();
@@ -50,7 +50,7 @@ describe('Grants fund', () => {
     });
 
     it('should get the distribution by id', async () => {
-      const dp = await ajna.distributionPeriods.getDistributionPeriod(1);
+      const dp = await ajna.grants.getDistributionPeriod(1);
       expect(dp.id).toBe(1);
       expect(dp.startBlock).toBeDefined();
       expect(dp.endBlock).toBeDefined();
@@ -67,7 +67,7 @@ describe('Grants fund', () => {
     });
 
     it.skip(`throws and error getting active distribution period if it doesn't exist`, async () => {
-      await expect(ajna.distributionPeriods.getActiveDistributionPeriod()).rejects.toThrow(
+      await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
         'There is no active distribution period'
       );
     });
@@ -75,12 +75,12 @@ describe('Grants fund', () => {
     it.skip(`starts a new distribution period if it doesn't exist`, async () => {
       const tx = await startNewDistributionPeriod(signer);
       await submitAndVerifyTransaction(tx);
-      await expect(ajna.distributionPeriods.getActiveDistributionPeriod()).resolves.toBeDefined();
+      await expect(ajna.grants.getActiveDistributionPeriod()).resolves.toBeDefined();
     });
   });
   describe('Proposals', () => {
     it(`creates a new proposal`, async () => {
-      const tx = await ajna.distributionPeriods.createProposal(signer, {
+      const tx = await ajna.grants.createProposal(signer, {
         title: 'ajna proposal test',
         recipientAddresses: [
           {
@@ -94,7 +94,7 @@ describe('Grants fund', () => {
       });
       const receipt = await submitAndVerifyTransaction(tx);
       const proposalId = getProposalIdFromReceipt(receipt);
-      const proposal = ajna.distributionPeriods.getProposal(proposalId);
+      const proposal = ajna.grants.getProposal(proposalId);
       const proposalInfo = await proposal.getInfo();
       expect(proposalInfo.votesReceived.isZero()).toBe(true);
       expect(fromWad(proposalInfo.tokensRequested)).toBe('1000.0');
@@ -120,10 +120,9 @@ describe('Grants fund', () => {
   describe('Voting', () => {
     let distributionPeriod: DistributionPeriod;
     beforeAll(async () => {
-      distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
       const currentBlock = await getBlock(provider);
       expect(distributionPeriod.startBlock < currentBlock.number);
-      expect(distributionPeriod.blockNumber < currentBlock.number);
     });
     it('should get votes screening', async () => {
       const delegate = await ajna.grants.getVotesScreening(
