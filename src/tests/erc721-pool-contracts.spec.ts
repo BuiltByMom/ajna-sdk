@@ -1,10 +1,11 @@
 import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
-import { Address } from '../types';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
+import { Address } from '../types';
 import { toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
+import { submitAndVerifyTransaction } from './test-utils';
 
 const TDUCK_ADDRESS = '0x1fb7972C722716F39DADF20967c6345dA223D943';
 const TGOOSE_ADDRESS = '0xcc0ec11ED0B23bF63C00A5E138E1529598331d75';
@@ -158,5 +159,23 @@ describe('ERC721 Pool', () => {
       TDAI_ADDRESS
     );
     expect(address).toBe(constants.AddressZero);
+  });
+
+  it('liquidity may be added to and removed from a NFT pool', async () => {
+    // add liquidity
+    const quoteAmount = toWad(100);
+    let tx = await poolDuckDai.quoteApprove(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+    const bucket = await poolDuckDai.getBucketByPrice(toWad(200));
+    tx = await bucket.addQuoteToken(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+    let lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance.gte(quoteAmount)).toBe(true);
+
+    // remove liquidity
+    tx = await bucket.removeQuoteToken(signerLender, constants.MaxUint256);
+    await submitAndVerifyTransaction(tx);
+    lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance).toEqual(toWad(0));
   });
 });
