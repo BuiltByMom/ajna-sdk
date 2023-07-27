@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers';
-import { BigNumber, Signer, utils } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 import { SCREENING_STAGE } from '../constants';
 import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
 import {
@@ -72,7 +72,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
    */
   async isDistributionPeriodOnScreeningStage() {
     const distributionPeriodStage = await this.getStage();
-    const screening = await utils.keccak256(SCREENING_STAGE);
+    const screening = await SCREENING_STAGE;
     return distributionPeriodStage === screening;
   }
 

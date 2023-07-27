@@ -5,7 +5,7 @@ import { BigNumber, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
-import { DistributionPeriod } from '../src/types/classes';
+import { IDistributionPeriod } from '../src/types/classes';
 import { SdkError } from '../src/types/core';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad } from '../src/utils/numeric';
@@ -35,9 +35,9 @@ async function run() {
   console.log('Delegatee is ', delegatee);
 
   const getDistributionPeriod = async () => {
-    let distributionPeriod: DistributionPeriod;
+    let distributionPeriod: IDistributionPeriod;
     try {
-      distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
     } catch (e) {
       if (
         e instanceof SdkError &&
@@ -45,7 +45,7 @@ async function run() {
       ) {
         const tx = await startNewDistributionPeriod(voter);
         await tx.verifyAndSubmit();
-        distributionPeriod = await ajna.distributionPeriods.getActiveDistributionPeriod();
+        distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
       } else {
         throw e;
       }
@@ -63,8 +63,8 @@ async function run() {
   async function castVotes() {
     const tx = await ajna.grants.castVotes(voter, [
       [
-        BigNumber.from(1),
         BigNumber.from('0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e'),
+        BigNumber.from(1),
       ],
     ]);
     const estimatedGas = await tx.verify();

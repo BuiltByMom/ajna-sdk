@@ -69,8 +69,17 @@ export interface Loan {
   isKicked: boolean;
 }
 
-// [votesUsed, proposalId]
-export type VoteParams = [BigNumber, BigNumber];
+export type VoteParams = [proposalId: BigNumber, votesUsed: BigNumber];
+
+export type VoterInfo = [
+  votingPower: BigNumber,
+  remainingVotingPower: BigNumber,
+  votesCast: BigNumber
+];
+
+export type FundingVotes = [
+  [BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }
+];
 export interface IGrantFund {
   /**
    * Handles grant fund methods
@@ -79,10 +88,28 @@ export interface IGrantFund {
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   /** get the address account is currently delegating to */
   getDelegates(address: Address): Promise<Address>;
-  /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
-  getVotesFunding(blockNumber: number, address: Address): Promise<BigNumber>;
+  /** retrieve a bytes32 hash of the current distribution period stage. */
+  getStage(address: Address): Promise<string>;
+  /** check if current distribution period is on screening stage */
+  isDistributionPeriodOnScreeningStage(): Promise<boolean>;
   /** get the voter's voting power in the screening stage of a distribution period */
   getVotesScreening(distributionId: number, address: Address): Promise<BigNumber>;
+  /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
+  getVotesFunding(blockNumber: number, address: Address): Promise<BigNumber>;
+  /** get the voter's voting power based on current distribution period stage */
+  getVotingPower(address: Address): Promise<string>;
+  /** get the number of screening votes cast by an account in a given distribution period. */
+  getScreeningVotesCast(distributionId: number, address: Address): Promise<string>;
+  /** get the list of funding votes cast by an account in a given distribution period. */
+  getFundingVotesCast(distributionId: number, address: Address): Promise<FundingVotes>;
+  /** cast an array of screening votes in one transaction. */
+  screeningVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** cast an array of funding votes in one transaction. */
+  fundingVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** cast an array of screening or funding votes (based on current distribution period stage). */
+  castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** get the current state of a given voter in the funding stage. */
+  getVoterInfo(distributionId: number, address: Address): Promise<VoterInfo>;
   /** starts a new distribution period */
   startNewDistributionPeriod(signer: Signer): Promise<WrappedTransaction>;
   /** get the current grants treasury */

@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals';
-import { providers } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
 import { addAccountFromKey } from '../utils/add-account';
@@ -8,7 +8,6 @@ import { fromWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { DistributionPeriod } from '../classes/DistributionPeriod';
-import { getBlock } from '../utils';
 
 // dotenv.config();
 
@@ -16,7 +15,6 @@ jest.setTimeout(1200000);
 
 const SIGNER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 
-const DELEGATEE_ADDRESS = '0x8596d963e0DEBCa873A56FbDd2C9d119Aa0eB443';
 const VOTER_ADDRESS = '0xeeDC2EE00730314b7d7ddBf7d19e81FB7E5176CA';
 const VOTER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const PROPOSAL_TO_ADDRESS = '0xbC33716Bb8Dc2943C0dFFdE1F0A1d2D66F33515E';
@@ -26,6 +24,9 @@ describe('Grants fund', () => {
   const ajna = new AjnaSDK(provider);
   const signer = addAccountFromKey(SIGNER_KEY, provider);
   const voter = addAccountFromKey(VOTER_KEY, provider);
+
+  let proposalId: BigNumber;
+  let proposalId2: BigNumber;
   describe('Treasury', () => {
     it('gets the treasury balance', async () => {
       const treasury = await ajna.grants.getTreasury();
@@ -95,7 +96,7 @@ describe('Grants fund', () => {
         arweaveTxid: '000000001',
       });
       const receipt = await submitAndVerifyTransaction(tx);
-      const proposalId = getProposalIdFromReceipt(receipt);
+      proposalId = getProposalIdFromReceipt(receipt);
       const proposal = ajna.grants.getProposal(proposalId);
       const proposalInfo = await proposal.getInfo();
       expect(proposalInfo.votesReceived.isZero()).toBe(true);
@@ -107,66 +108,124 @@ describe('Grants fund', () => {
   describe('Delegates and voting', () => {
     let distributionPeriod: DistributionPeriod;
     beforeAll(async () => {
-      // jump until no distribution period has started yet
-      await mine(provider, 648_000);
-      // const currentBlock = await getBlock(provider);
-      // console.log('currentBlock', currentBlock);
-      // for (let i = 0; i < 7; i++) {
-      //   await mine(provider, 100_000);
-      // }
-      // const currentBlock2 = await getBlock(provider);
-      // console.log('currentBlock after mine', currentBlock2);
+      // mine blocks until no distribution period is active
+      const DISTRIBUTION_PERIOD_LENGTH = 648_000;
+      await mine(provider, DISTRIBUTION_PERIOD_LENGTH);
     });
     it('should delegate successfully', async () => {
-      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
-      expect(distributionPeriod).toBeUndefined();
+      await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
+        'There is no active distribution period'
+      );
       // delegate before distribution period starts
-      const delegate = await ajna.grants.delegateVote(voter, DELEGATEE_ADDRESS);
+      const delegate = await ajna.grants.delegateVote(voter, VOTER_ADDRESS);
       expect(delegate).toBeDefined();
       const transaction = await delegate.verifyAndSubmit();
       expect(transaction.from).toBe(VOTER_ADDRESS);
       expect(transaction.to).toBe('0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d');
       expect(transaction.status).toBe(1);
     });
-    it.skip('should get delegate', async () => {
+    it('should get delegate', async () => {
       const delegate = await ajna.grants.getDelegates(VOTER_ADDRESS);
       expect(delegate).toBeDefined();
-      expect(delegate).toBe(DELEGATEE_ADDRESS);
+      expect(delegate).toBe(VOTER_ADDRESS);
     });
-  });
-  describe('Voting', () => {
-    let distributionPeriod: DistributionPeriod;
-    beforeAll(async () => {
-      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
-      const currentBlock = await getBlock(provider);
-      expect(distributionPeriod.startBlock < currentBlock.number);
-    });
-    it.skip('distribution period should be on screening stage', async () => {
+    it('distribution period should be on screening stage', async () => {
+      await mine(provider, 34);
       // start new distribution period
       const tx = await startNewDistributionPeriod(signer);
-      tx.verifyAndSubmit();
+      await tx.verifyAndSubmit();
+      await mine(provider, 2);
+      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
       const isOnScreeningStage = await ajna.grants.isDistributionPeriodOnScreeningStage();
       expect(isOnScreeningStage).toBe(true);
     });
-    it.skip('should get votes screening', async () => {
-      const delegate = await ajna.grants.getVotesScreening(
-        distributionPeriod.id,
-        DELEGATEE_ADDRESS
-      );
-      expect(delegate).toBeDefined();
-      expect(fromWad(delegate)).toBe('0.0');
+    it('should get votes screening', async () => {
+      const votes = await ajna.grants.getVotesScreening(distributionPeriod.id, VOTER_ADDRESS);
+      expect(votes).toBeDefined();
+      // expect(fromWad(votes)).toBe('700000000.0');
+      expect(fromWad(votes)).toBe('699900000.0');
     });
-    it.skip('should get votes funding', async () => {
+    it('should cast screening votes', async () => {
+      let tx = await ajna.grants.createProposal(signer, {
+        title: 'ajna proposal test',
+        recipientAddresses: [
+          {
+            address: PROPOSAL_TO_ADDRESS,
+            amount: '1100.00',
+          },
+        ],
+        externalLink: 'https://example.com',
+        ipfsHash: '000000001',
+        arweaveTxid: '000000001',
+      });
+      let receipt = await submitAndVerifyTransaction(tx);
+      proposalId = getProposalIdFromReceipt(receipt);
+      tx = await ajna.grants.createProposal(signer, {
+        title: 'ajna proposal test 2',
+        recipientAddresses: [
+          {
+            address: PROPOSAL_TO_ADDRESS,
+            amount: '102.00',
+          },
+        ],
+        externalLink: 'https://example.com',
+        ipfsHash: '000000001',
+        arweaveTxid: '000000001',
+      });
+      receipt = await submitAndVerifyTransaction(tx);
+      proposalId2 = getProposalIdFromReceipt(receipt);
+      const castVotes = await ajna.grants.castVotes(voter, [
+        [BigNumber.from(proposalId), BigNumber.from(1.0)],
+        [BigNumber.from(proposalId2), BigNumber.from(1.0)],
+      ]);
+      const transaction = await castVotes.verifyAndSubmit();
+      expect(transaction.from).toBe(VOTER_ADDRESS);
+      expect(transaction.status).toBe(1);
+    });
+    it('should get votes funding', async () => {
       const SCREENING_PERIOD_LENGTH = 525_600;
       await mine(provider, SCREENING_PERIOD_LENGTH);
-      const delegate = await ajna.grants.getVotesFunding(distributionPeriod.id, DELEGATEE_ADDRESS);
-      expect(delegate).toBeDefined();
-      expect(fromWad(delegate)).toBe('490000000000000000.0');
-    });
-    it.skip('should get votes based on current distribution period stage', async () => {
-      const votes = await ajna.grants.getVotingPower(DELEGATEE_ADDRESS);
+      const votes = await ajna.grants.getVotesFunding(distributionPeriod.id, VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      expect(fromWad(votes)).toBe('0.0');
+      // expect(fromWad(votes)).toBe('490000000000000000.0');
+      expect(fromWad(votes)).toBe('489860010000000000.0');
+    });
+    it('should cast funding votes', async () => {
+      const castVotes = await ajna.grants.castVotes(voter, [
+        [BigNumber.from(proposalId), BigNumber.from(1.0)],
+        [BigNumber.from(proposalId2), BigNumber.from(1.0)],
+      ]);
+      const transaction = await castVotes.verifyAndSubmit();
+      expect(transaction.from).toBe(VOTER_ADDRESS);
+      expect(transaction.status).toBe(1);
+    });
+    it('should get votes based on current distribution period stage', async () => {
+      const votes = await ajna.grants.getVotingPower(VOTER_ADDRESS);
+      expect(votes).toBeDefined();
+      // expect(fromWad(votes)).toBe('490000000000000000.0');
+      expect(fromWad(votes)).toBe('489860010000000000.0');
+    });
+    it('should get cast votes', async () => {
+      const screeningVotes = await ajna.grants.getScreeningVotesCast(
+        distributionPeriod.id,
+        VOTER_ADDRESS
+      );
+      expect(screeningVotes).toBeDefined();
+      expect(fromWad(BigNumber.from(screeningVotes))).toBe('0.000000000000000002');
+      const fundingVotes = await ajna.grants.getFundingVotesCast(
+        distributionPeriod.id,
+        VOTER_ADDRESS
+      );
+      expect(fundingVotes).toBeDefined();
+      expect(fromWad(fundingVotes[0].votesUsed)).toBe('0.000000000000000001');
+      expect(fromWad(fundingVotes[1].votesUsed)).toBe('0.000000000000000001');
+    });
+    it('should get voter info', async () => {
+      const voterInfo = await ajna.grants.getVoterInfo(distributionPeriod.id, VOTER_ADDRESS);
+      expect(voterInfo).toBeDefined();
+      expect(fromWad(voterInfo[0])).toBe('489860010000000000.0');
+      expect(fromWad(voterInfo[1])).toBe('489860010000000000.0');
+      expect(fromWad(voterInfo[2])).toBe('0.000000000000000002');
     });
   });
 });
