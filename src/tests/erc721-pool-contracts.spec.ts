@@ -2,7 +2,7 @@ import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
 import { Address } from '../types';
-import { toWad } from '../utils';
+import { priceToIndex, toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -39,7 +39,7 @@ describe('ERC721 Pool', () => {
   };
 
   beforeAll(async () => {
-    poolDuckDai = await createPool(TDUCK_ADDRESS, [1, 2, 3], TDAI_ADDRESS);
+    poolDuckDai = await createPool(TDUCK_ADDRESS, [23, 24, 25], TDAI_ADDRESS);
     await createPool(TDUCK_ADDRESS, [], TWETH_ADDRESS);
   });
 
@@ -65,7 +65,7 @@ describe('ERC721 Pool', () => {
     const tx = await ajna.nonfungiblePoolFactory.deploySubsetPool(
       signerLender,
       TDUCK_ADDRESS,
-      [1, 2, 3],
+      [23, 24, 25],
       TDAI_ADDRESS,
       toWad('0.05')
     );
@@ -105,7 +105,11 @@ describe('ERC721 Pool', () => {
   });
 
   it('getPool should return existing collection pool when given existing collateral, subset and quote addresses', async () => {
-    const pool = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [1, 2, 3], TDAI_ADDRESS);
+    const pool = await ajna.nonfungiblePoolFactory.getPool(
+      TDUCK_ADDRESS,
+      [23, 24, 25],
+      TDAI_ADDRESS
+    );
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(TDUCK_ADDRESS);
     expect(pool.quoteAddress).toBe(TDAI_ADDRESS);
@@ -128,7 +132,7 @@ describe('ERC721 Pool', () => {
   it('getPoolAddress returns pool address when querying existing subset pool', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
       TDUCK_ADDRESS,
-      [1, 2, 3],
+      [23, 24, 25],
       TDAI_ADDRESS
     );
     expect(address).toBe(poolDuckDai.poolAddress);
@@ -146,7 +150,7 @@ describe('ERC721 Pool', () => {
   it('getPoolAddress returns AddressZero when token pair does not exist', async () => {
     const address = await ajna.nonfungiblePoolFactory.getPoolAddress(
       TGOOSE_ADDRESS,
-      [1, 2, 3],
+      [23, 24, 25],
       TWETH_ADDRESS
     );
     expect(address).toBe(constants.AddressZero);
@@ -174,6 +178,25 @@ describe('ERC721 Pool', () => {
 
     // remove liquidity
     tx = await bucket.removeQuoteToken(signerLender, constants.MaxUint256);
+    await submitAndVerifyTransaction(tx);
+    lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance).toEqual(toWad(0));
+  });
+
+  it('collateral may be added to and removed from a bucket', async () => {
+    // add collateral
+    const tokenId = 24;
+    const bucketId = priceToIndex(toWad(250));
+    let tx = await poolDuckDai.collateralApprove(signerLender, tokenId);
+    await submitAndVerifyTransaction(tx);
+    tx = await poolDuckDai.addCollateral(signerLender, bucketId, [tokenId]);
+    await submitAndVerifyTransaction(tx);
+    const bucket = await poolDuckDai.getBucketByIndex(bucketId);
+    let lpBalance = await bucket.lpBalance(signerLender.address);
+    expect(lpBalance.gte(toWad(0))).toBe(true);
+
+    // remove collateral
+    tx = await poolDuckDai.removeCollateral(signerLender, bucketId, 1);
     await submitAndVerifyTransaction(tx);
     lpBalance = await bucket.lpBalance(signerLender.address);
     expect(lpBalance).toEqual(toWad(0));
