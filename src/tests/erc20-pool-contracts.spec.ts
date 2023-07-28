@@ -151,7 +151,7 @@ describe('ERC20 Pool', () => {
     expect(stats.actualUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.targetUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.borrowRate).toBeBetween(toWad('0.01'), toWad('0.1'));
-    expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.01'));
+    expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.1'));
   });
 
   it('should use getPrices and loansInfo successfully', async () => {

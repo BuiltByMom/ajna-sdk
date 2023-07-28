@@ -42,7 +42,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   async deploySubsetPool(
     signer: Signer,
     nftAddress: Address,
-    subset: any,
+    subset: Array<number>,
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
@@ -58,7 +58,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    */
   async getPool(
     collateralAddress: Address,
-    subset: any,
+    subset: Array<number>,
     quoteAddress: Address
   ): Promise<NonfungiblePool> {
     const poolAddress = await this.getPoolAddress(collateralAddress, subset, quoteAddress);
@@ -89,7 +89,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    */
   async getPoolAddress(
     collateralAddress: Address,
-    subset: any,
+    subset: any, // FIXME: should be Array<number>; needs conversion to Array<BigNumber>
     quoteAddress: Address
   ): Promise<Address> {
     const provider = this.getProvider();
