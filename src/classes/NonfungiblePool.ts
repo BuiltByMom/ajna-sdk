@@ -11,6 +11,8 @@ import { Address, Signer, SignerOrProvider } from 'types';
 import { getExpiry } from '../utils/time';
 
 class NonfungiblePool extends Pool {
+  isSubset: boolean;
+
   constructor(provider: SignerOrProvider, poolAddress: Address, ajnaAddress: Address) {
     super(
       provider,
@@ -19,6 +21,7 @@ class NonfungiblePool extends Pool {
       getErc721PoolContract(poolAddress, provider),
       getErc721PoolContractMulti(poolAddress)
     );
+    this.isSubset = false;
   }
 
   async initialize() {
@@ -26,11 +29,11 @@ class NonfungiblePool extends Pool {
     const collateralToken = getNftContract(this.collateralAddress, this.provider);
     this.collateralSymbol = (await collateralToken.symbol()).replace(/"+/g, '');
     this.name = this.collateralSymbol + '-' + this.quoteSymbol;
+    this.isSubset = await this.contract.isSubset();
   }
 
   toString() {
-    return this.name + ' pool';
-    // TODO: specify whether pool is collection or subset
+    return `${this.name} ${this.isSubset ? 'subset' : 'collection'} pool`;
   }
 
   /**

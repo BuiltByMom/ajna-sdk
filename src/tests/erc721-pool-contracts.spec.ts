@@ -58,7 +58,7 @@ describe('ERC721 Pool', () => {
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(TDUCK_ADDRESS);
     expect(pool.quoteAddress).toBe(TESTA_ADDRESS);
-    expect(pool.toString()).toContain('TDUCK-TESTA');
+    expect(pool.toString()).toEqual('TDUCK-TESTA subset pool');
   });
 
   it('existing subset pool should not be deployed', async () => {
@@ -89,7 +89,7 @@ describe('ERC721 Pool', () => {
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(TDUCK_ADDRESS);
     expect(pool.quoteAddress).toBe(TUSDC_ADDRESS);
-    expect(pool.toString()).toContain('TDUCK-TUSDC');
+    expect(pool.toString()).toEqual('TDUCK-TUSDC collection pool');
   });
 
   it('existing collection pool should not be deployed', async () => {
