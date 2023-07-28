@@ -32,7 +32,7 @@ let pool: FungiblePool;
 // Looks for pool, deploying it if it doesn't already exist
 async function getPool() {
   try {
-    pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
+    pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
     console.log('Using pool with address', pool.poolAddress);
   } catch (error) {
     pool = await deployPool(collateralAddress, quoteAddress);
@@ -42,9 +42,14 @@ async function getPool() {
 }
 
 async function deployPool(collateral: Address, quote: Address) {
-  const tx = await ajna.factory.deployPool(signerLender, collateral, quote, toWad('0.05'));
+  const tx = await ajna.fungiblePoolFactory.deployPool(
+    signerLender,
+    collateral,
+    quote,
+    toWad('0.05')
+  );
   await tx.verifyAndSubmit();
-  return await ajna.factory.getPool(collateralAddress, quoteAddress);
+  return await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
 }
 
 // Using fine-grained approval, add liquidity to the pool

@@ -34,7 +34,7 @@ describe('Liquidations', () => {
   let snapshotId: number;
 
   beforeAll(async () => {
-    pool = await ajna.factory.getPool(TESTB_ADDRESS, TDAI_ADDRESS);
+    pool = await ajna.fungiblePoolFactory.getPool(TESTB_ADDRESS, TDAI_ADDRESS);
 
     // approve
     let tx = await pool.quoteApprove(signerLender, toWad(40));

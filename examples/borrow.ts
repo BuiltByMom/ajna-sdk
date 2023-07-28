@@ -31,7 +31,7 @@ let pool: FungiblePool;
 
 // Gets instance of Pool object
 async function getPool() {
-  pool = await ajna.factory.getPool(collateralAddress, quoteAddress);
+  pool = await ajna.fungiblePoolFactory.getPool(collateralAddress, quoteAddress);
   if (pool.poolAddress === constants.AddressZero) {
     throw new Error('Pool not yet deployed; run lender script first');
   }

@@ -40,7 +40,7 @@ describe('LP Token and PositionManager', () => {
   const signerNotLender = addAccountFromKey(NOT_LENDER_KEY, provider);
 
   beforeAll(async () => {
-    pool = await ajna.factory.getPoolByAddress(TESTD_TDAI_POOL);
+    pool = await ajna.fungiblePoolFactory.getPoolByAddress(TESTD_TDAI_POOL);
   });
 
   it('should mint and burn LP token', async () => {
