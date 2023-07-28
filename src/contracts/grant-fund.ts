@@ -63,9 +63,12 @@ export async function createProposal(
   );
   const contractInstance: Contract = getGrantsFundContract(signer);
   const description = JSON.stringify(rest);
+  // targets and values are the same for every recipient
+  const targets = recipientAddresses.map(() => Config.ajnaToken);
+  const values = recipientAddresses.map(() => 0);
   return await createTransaction(contractInstance, {
     methodName: 'propose',
-    args: [[Config.ajnaToken], [0], encodedTransferCalls, description],
+    args: [targets, values, encodedTransferCalls, description],
   });
 }
 
