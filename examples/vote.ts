@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 import { BigNumber, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
+import { DistributionPeriod } from '../src/classes/DistributionPeriod';
+import { SCREENING } from '../src/constants';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
-import { IDistributionPeriod } from '../src/types/classes';
 import { SdkError } from '../src/types/core';
 import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad } from '../src/utils/numeric';
@@ -35,7 +36,7 @@ async function run() {
   console.log('Delegatee is ', delegatee);
 
   const getDistributionPeriod = async () => {
-    let distributionPeriod: IDistributionPeriod;
+    let distributionPeriod: DistributionPeriod;
     try {
       distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
     } catch (e) {
@@ -57,11 +58,14 @@ async function run() {
 
   console.log('Distribution period', distributionPeriodData);
 
-  const screeningVotes = await ajna.grants.getVotingPower(delegatee);
+  const distributionPeriod = await ajna.grants.getDistributionPeriod(distributionPeriodData.id);
+
+  const screeningVotes = await distributionPeriod.getScreeningVotingPower(voterAddress);
+
   console.log('Voting power: ', fromWad(screeningVotes));
 
   async function castVotes() {
-    const tx = await ajna.grants.castVotes(voter, [
+    const tx = await distributionPeriod.castVotes(voter, [
       [
         BigNumber.from('0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e'),
         BigNumber.from(1),
@@ -77,23 +81,17 @@ async function run() {
 
   console.log('Current Voting Power: ', currentVotingPower);
 
-  const screeningVotesCastData = await ajna.grants.getScreeningVotesCast(
-    distributionPeriodData.id,
-    voterAddress
-  );
+  const screeningVotesCastData = await distributionPeriod.getScreeningVotesCast(voterAddress);
   console.log('Screening votes cast: ', screeningVotesCastData);
 
-  const fundingVotesCastData = await ajna.grants.getFundingVotesCast(
-    distributionPeriodData.id,
-    voterAddress
-  );
+  const fundingVotesCastData = await distributionPeriod.getFundingVotesCast(voterAddress);
   console.log('Funding votes cast: ', fundingVotesCastData);
 
   const isDistributionPeriodOnScreeningStage =
-    await ajna.grants.isDistributionPeriodOnScreeningStage();
+    (await distributionPeriod.distributionPeriodStage()) === SCREENING;
 
   if (!isDistributionPeriodOnScreeningStage) {
-    const voterInfo = await ajna.grants.getVoterInfo(distributionPeriodData.id, delegatee);
+    const voterInfo = await distributionPeriod.getVoterInfo(delegatee);
     console.log('Voter Info', voterInfo);
   }
 }

@@ -1,15 +1,14 @@
 import { expect } from '@jest/globals';
 import { BigNumber, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
+import { DistributionPeriod } from '../classes/DistributionPeriod';
+import { FUNDING, SCREENING } from '../constants/common';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine, timeJump } from '../utils/ganache';
 import { fromWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
-import { DistributionPeriod } from '../classes/DistributionPeriod';
-
-// dotenv.config();
 
 jest.setTimeout(1200000);
 
@@ -135,12 +134,13 @@ describe('Grants fund', () => {
       const tx = await startNewDistributionPeriod(signer);
       await tx.verifyAndSubmit();
       await mine(provider, 2);
-      distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
-      const isOnScreeningStage = await ajna.grants.isDistributionPeriodOnScreeningStage();
+      const currentDistributionPeriod = await ajna.grants.getActiveDistributionPeriod();
+      distributionPeriod = await ajna.grants.getDistributionPeriod(currentDistributionPeriod.id);
+      const isOnScreeningStage = (await distributionPeriod.distributionPeriodStage()) === SCREENING;
       expect(isOnScreeningStage).toBe(true);
     });
     it('should get votes screening', async () => {
-      const votes = await ajna.grants.getVotesScreening(distributionPeriod.id, VOTER_ADDRESS);
+      const votes = await distributionPeriod.getScreeningVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
       // expect(fromWad(votes)).toBe('700000000.0');
       expect(fromWad(votes)).toBe('699900000.0');
@@ -174,7 +174,7 @@ describe('Grants fund', () => {
       });
       receipt = await submitAndVerifyTransaction(tx);
       proposalId2 = getProposalIdFromReceipt(receipt);
-      const castVotes = await ajna.grants.castVotes(voter, [
+      const castVotes = await distributionPeriod.castVotes(voter, [
         [BigNumber.from(proposalId), BigNumber.from(1.0)],
         [BigNumber.from(proposalId2), BigNumber.from(1.0)],
       ]);
@@ -182,16 +182,20 @@ describe('Grants fund', () => {
       expect(transaction.from).toBe(VOTER_ADDRESS);
       expect(transaction.status).toBe(1);
     });
-    it('should get votes funding', async () => {
+    it('distribution period should be on funding stage', async () => {
       const SCREENING_PERIOD_LENGTH = 525_600;
       await mine(provider, SCREENING_PERIOD_LENGTH);
-      const votes = await ajna.grants.getVotesFunding(distributionPeriod.id, VOTER_ADDRESS);
+      const isOnFundingStage = (await distributionPeriod.distributionPeriodStage()) === FUNDING;
+      expect(isOnFundingStage).toBe(true);
+    });
+    it('should get votes funding', async () => {
+      const votes = await distributionPeriod.getFundingVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
       // expect(fromWad(votes)).toBe('490000000000000000.0');
       expect(fromWad(votes)).toBe('489860010000000000.0');
     });
     it('should cast funding votes', async () => {
-      const castVotes = await ajna.grants.castVotes(voter, [
+      const castVotes = await distributionPeriod.castVotes(voter, [
         [BigNumber.from(proposalId), BigNumber.from(1.0)],
         [BigNumber.from(proposalId2), BigNumber.from(1.0)],
       ]);
@@ -200,28 +204,22 @@ describe('Grants fund', () => {
       expect(transaction.status).toBe(1);
     });
     it('should get votes based on current distribution period stage', async () => {
-      const votes = await ajna.grants.getVotingPower(VOTER_ADDRESS);
+      const votes = await distributionPeriod.getVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
       // expect(fromWad(votes)).toBe('490000000000000000.0');
       expect(fromWad(votes)).toBe('489860010000000000.0');
     });
     it('should get cast votes', async () => {
-      const screeningVotes = await ajna.grants.getScreeningVotesCast(
-        distributionPeriod.id,
-        VOTER_ADDRESS
-      );
+      const screeningVotes = await distributionPeriod.getScreeningVotesCast(VOTER_ADDRESS);
       expect(screeningVotes).toBeDefined();
       expect(fromWad(BigNumber.from(screeningVotes))).toBe('0.000000000000000002');
-      const fundingVotes = await ajna.grants.getFundingVotesCast(
-        distributionPeriod.id,
-        VOTER_ADDRESS
-      );
+      const fundingVotes = await distributionPeriod.getFundingVotesCast(VOTER_ADDRESS);
       expect(fundingVotes).toBeDefined();
       expect(fromWad(fundingVotes[0].votesUsed)).toBe('0.000000000000000001');
       expect(fromWad(fundingVotes[1].votesUsed)).toBe('0.000000000000000001');
     });
     it('should get voter info', async () => {
-      const voterInfo = await ajna.grants.getVoterInfo(distributionPeriod.id, VOTER_ADDRESS);
+      const voterInfo = await distributionPeriod.getVoterInfo(VOTER_ADDRESS);
       expect(voterInfo).toBeDefined();
       expect(fromWad(voterInfo[0])).toBe('489860010000000000.0');
       expect(fromWad(voterInfo[1])).toBe('489860010000000000.0');
