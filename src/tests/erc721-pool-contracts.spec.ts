@@ -207,6 +207,13 @@ describe('ERC721 Pool', () => {
   });
 
   it('debt may be drawn and repaid', async () => {
+    // confirm existing state
+    let lastStats = await poolDuckDai.getStats();
+    expect(lastStats.poolSize).toEqual(toWad(10_000));
+    expect(lastStats.debt).toBeBetween(toWad(400), toWad(500));
+    let loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.debt).toEqual(toWad(0));
+
     // draw debt
     const tokenId = 25;
     let tx = await poolDuckDai.collateralApprove(signerBorrower, tokenId);
@@ -215,8 +222,12 @@ describe('ERC721 Pool', () => {
     tx = await poolDuckDai.drawDebt(signerBorrower, debtToDraw, [tokenId]);
     await submitAndVerifyTransaction(tx);
     const stats = await poolDuckDai.getStats();
-    expect(stats.poolSize.gte(toWad(10_000))).toBe(true);
-    // TODO: account for existing debt, finish validating stats
-    // expect(stats.debt).toBeBetween(debtToDraw, debtToDraw.mul(2));
+    expect(stats.poolSize.gte(lastStats.poolSize)).toBe(true);
+    expect(stats.debt).toBeBetween(toWad(800), toWad(900));
+    lastStats = stats;
+    loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.debt).toBeBetween(toWad(400), toWad(450));
+
+    // TODO: repay debt
   });
 });
