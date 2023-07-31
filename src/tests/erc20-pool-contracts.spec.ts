@@ -13,7 +13,7 @@ import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
 
-jest.setTimeout(1200000);
+jest.setTimeout(80000);
 
 const TWETH_ADDRESS = '0xc17985054Cab9CEf76ec024820dAaaC50CE1ad85';
 const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
@@ -30,31 +30,10 @@ describe('ERC20 Pool', () => {
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerLender2 = addAccountFromKey(LENDER_2_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
-  const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
-  const TWETH = getErc20Contract(TWETH_ADDRESS, provider);
-  const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
   let poolA: FungiblePool = {} as FungiblePool;
 
   beforeAll(async () => {
-    // fund lender
-    let receipt = await TDAI.connect(signerDeployer).transfer(signerLender.address, toWad('100'));
-    expect(receipt.transactionHash).not.toBe('');
-    receipt = await TWETH.connect(signerDeployer).transfer(signerLender.address, toWad('1.0'));
-    expect(receipt.transactionHash).not.toBe('');
-
-    // fund lender2
-    receipt = await TDAI.connect(signerDeployer).transfer(signerLender2.address, toWad('100'));
-    expect(receipt.transactionHash).not.toBe('');
-    receipt = await TWETH.connect(signerDeployer).transfer(signerLender2.address, toWad('0.5'));
-    expect(receipt.transactionHash).not.toBe('');
-
-    // fund borrower
-    receipt = await TWETH.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
-    expect(receipt.transactionHash).not.toBe('');
-    receipt = await TDAI.connect(signerDeployer).transfer(signerBorrower.address, toWad('2'));
-    expect(receipt.transactionHash).not.toBe('');
-
     // initialize canned pool
     poolA = await ajna.fungiblePoolFactory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
   });

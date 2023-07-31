@@ -9,7 +9,7 @@ import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 
-jest.setTimeout(20000);
+jest.setTimeout(60000);
 
 const TDUCK_ADDRESS = '0x1fb7972C722716F39DADF20967c6345dA223D943';
 const TGOOSE_ADDRESS = '0xcc0ec11ED0B23bF63C00A5E138E1529598331d75';
