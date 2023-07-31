@@ -8,6 +8,7 @@ import {
   getErc721PoolContract,
   getErc721PoolContractMulti,
   removeCollateral,
+  repayDebt,
 } from 'contracts/erc721-pool';
 import { Pool } from './Pool';
 import { Address, Signer, SignerOrProvider } from 'types';
@@ -90,7 +91,7 @@ class NonfungiblePool extends Pool {
    * pledges collateral and draws debt
    * @param signer borrower
    * @param amountToBorrow new debt to draw
-   * @param collateralToPledge new collateral to deposit
+   * @param tokenIdsToPledge identifies NFTs to deposit as collateral
    * @param limitIndex revert if loan would drop LUP below this bucket (or pass MAX_FENWICK_INDEX)
    * @returns transaction
    */
@@ -109,6 +110,33 @@ class NonfungiblePool extends Pool {
       amountToBorrow,
       limitIndex ?? MAX_FENWICK_INDEX,
       tokenIdsToPledge
+    );
+  }
+
+  /**
+   * repays debt and pulls collateral
+   * @param signer borrower
+   * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
+   * @param noOfNFTsToPull number of NFTs to withdraw after repayment
+   * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
+   * @returns transaction
+   */
+  async repayDebt(
+    signer: Signer,
+    maxQuoteTokenAmountToRepay: BigNumber,
+    noOfNFTsToPull: number,
+    limitIndex?: number
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    const sender = await signer.getAddress();
+    return await repayDebt(
+      contractPoolWithSigner,
+      sender,
+      maxQuoteTokenAmountToRepay,
+      noOfNFTsToPull,
+      sender,
+      limitIndex ?? MAX_FENWICK_INDEX
     );
   }
 }

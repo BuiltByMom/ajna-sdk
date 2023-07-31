@@ -378,6 +378,55 @@ export abstract class Pool {
   }
 
   /**
+   * retrieve information for a list of loans
+   * @param borrowerAddresses identifies the loans
+   * @returns map of Loans, indexed by borrowerAddress
+   */
+  async getLoans(borrowerAddresses: Array<Address>): Promise<Map<Address, Loan>> {
+    const calls = [];
+    // push 3 pool-level requests followed by request for each loan
+    calls.push(this.contractUtilsMulti.poolPricesInfo(this.poolAddress));
+    calls.push(this.contractUtilsMulti.momp(this.poolAddress));
+    calls.push(this.contractUtilsMulti.poolLoansInfo(this.poolAddress));
+    for (const loan of borrowerAddresses) {
+      calls.push(this.contractUtilsMulti.borrowerInfo(this.poolAddress, loan));
+      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
+    }
+
+    // perform the multicall
+    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all(calls);
+
+    // since loan details depend upon pool-level data, parse pool data first
+    const retval = new Map<Address, Loan>();
+    let i = 0;
+    const [, , , , lup] = response[i];
+    const momp = BigNumber.from(response[++i]);
+    const [, , , pendingInflator] = response[++i];
+
+    // iterate through borrower info, offset by the 3 pool-level requests
+    let borrowerIndex = 0;
+    while (borrowerIndex < borrowerAddresses.length) {
+      const [debt, collateral, t0np] = response[++i];
+      const kickTimestamp = response[++i][0];
+
+      const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
+      const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
+      const np = wmul(t0np, pendingInflator);
+      retval.set(borrowerAddresses[borrowerIndex++], {
+        collateralization,
+        debt,
+        collateral,
+        thresholdPrice: tp,
+        neutralPrice: np,
+        liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
+        isKicked: !kickTimestamp.eq(BigNumber.from(0)),
+      });
+    }
+
+    return retval;
+  }
+
+  /**
    * calculates bond required to liquidate a borrower
    * @param momp most optimistic matching price of the pool
    * @param tp threshold price of the loan

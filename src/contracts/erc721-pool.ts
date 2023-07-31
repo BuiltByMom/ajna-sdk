@@ -75,3 +75,28 @@ export async function drawDebt(
     overrides
   );
 }
+
+export async function repayDebt(
+  contract: Contract,
+  borrowerAddress: Address,
+  maxQuoteTokenAmountToRepay: BigNumber,
+  noOfNFTsToPull: number,
+  collateralReceiver: Address,
+  limitIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    {
+      methodName: 'repayDebt',
+      args: [
+        borrowerAddress,
+        maxQuoteTokenAmountToRepay,
+        noOfNFTsToPull,
+        collateralReceiver,
+        limitIndex,
+      ],
+    },
+    overrides
+  );
+}

@@ -2,11 +2,14 @@ import { constants, providers } from 'ethers';
 import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
+import { getNftContract } from '../contracts/erc721';
 import { Address } from '../types';
 import { priceToIndex, toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
+
+jest.setTimeout(20000);
 
 const TDUCK_ADDRESS = '0x1fb7972C722716F39DADF20967c6345dA223D943';
 const TGOOSE_ADDRESS = '0xcc0ec11ED0B23bF63C00A5E138E1529598331d75';
@@ -22,6 +25,7 @@ describe('ERC721 Pool', () => {
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BOROWER_KEY, provider);
+  const tduck = getNftContract(TDUCK_ADDRESS, provider);
   let poolDuckDai: NonfungiblePool;
   let poolDuckDaiSubset: NonfungiblePool;
 
@@ -208,26 +212,44 @@ describe('ERC721 Pool', () => {
 
   it('debt may be drawn and repaid', async () => {
     // confirm existing state
-    let lastStats = await poolDuckDai.getStats();
-    expect(lastStats.poolSize).toEqual(toWad(10_000));
-    expect(lastStats.debt).toBeBetween(toWad(400), toWad(500));
+    const initialStats = await poolDuckDai.getStats();
+    expect(initialStats.poolSize).toEqual(toWad(10_000));
+    expect(initialStats.debt).toBeBetween(toWad(400), toWad(500));
     let loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toEqual(toWad(0));
+    const tokenId = 25;
+    expect(await tduck.ownerOf(tokenId)).toEqual(signerBorrower.address);
 
     // draw debt
-    const tokenId = 25;
     let tx = await poolDuckDai.collateralApprove(signerBorrower, tokenId);
     await submitAndVerifyTransaction(tx);
     const debtToDraw = toWad(400);
     tx = await poolDuckDai.drawDebt(signerBorrower, debtToDraw, [tokenId]);
     await submitAndVerifyTransaction(tx);
-    const stats = await poolDuckDai.getStats();
-    expect(stats.poolSize.gte(lastStats.poolSize)).toBe(true);
+    let stats = await poolDuckDai.getStats();
+    expect(stats.poolSize.gte(initialStats.poolSize)).toBe(true);
     expect(stats.debt).toBeBetween(toWad(800), toWad(900));
-    lastStats = stats;
     loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(400), toWad(450));
+    expect(await tduck.ownerOf(tokenId)).toEqual(poolDuckDai.contract.address);
 
-    // TODO: repay debt
+    // partially repay debt
+    tx = await poolDuckDai.quoteApprove(signerBorrower, constants.MaxUint256);
+    await submitAndVerifyTransaction(tx);
+    tx = await poolDuckDai.repayDebt(signerBorrower, toWad(100), 0);
+    await submitAndVerifyTransaction(tx);
+    loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.debt).toBeBetween(toWad(300), toWad(350));
+    expect(await tduck.ownerOf(tokenId)).toEqual(poolDuckDai.contract.address);
+
+    // fully repay debt and pull collateral
+    tx = await poolDuckDai.repayDebt(signerBorrower, constants.MaxUint256, 1);
+    await submitAndVerifyTransaction(tx);
+    stats = await poolDuckDai.getStats();
+    expect(stats.poolSize.gte(initialStats.poolSize)).toBe(true);
+    expect(stats.debt).toBeBetween(toWad(400), toWad(500));
+    loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.debt).toEqual(toWad(0));
+    expect(await tduck.ownerOf(tokenId)).toEqual(signerBorrower.address);
   });
 });
