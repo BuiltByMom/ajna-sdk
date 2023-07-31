@@ -1,4 +1,4 @@
-import { Contract, Signer, ethers } from 'ethers';
+import { BigNumber, Contract, Signer, ethers } from 'ethers';
 import { Contract as ContractMulti } from 'ethcall';
 import { getNftContract } from './erc721';
 import ERC721Pool from 'abis/ERC721Pool.json';
@@ -54,6 +54,24 @@ export async function removeCollateral(
   return await createTransaction(
     contract,
     { methodName: 'removeCollateral', args: [noOfNFTsToRemove, bucketIndex] },
+    overrides
+  );
+}
+
+export async function drawDebt(
+  contract: Contract,
+  borrowerAddress: Address,
+  amountToBorrow: BigNumber,
+  limitIndex: number,
+  tokenIdsToPledge: Array<number>,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    {
+      methodName: 'drawDebt',
+      args: [borrowerAddress, amountToBorrow, limitIndex, tokenIdsToPledge],
+    },
     overrides
   );
 }

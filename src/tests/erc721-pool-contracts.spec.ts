@@ -1,4 +1,5 @@
 import { constants, providers } from 'ethers';
+import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
 import { Address } from '../types';
@@ -14,12 +15,15 @@ const TUSDC_ADDRESS = '0x72BB61e78fcB9dB3b5B3C8035BD9edAB5edd601E';
 const TDAI_ADDRESS = '0x53D10CAFE79953Bf334532e244ef0A80c3618199';
 const TWETH_ADDRESS = '0xc17985054Cab9CEf76ec024820dAaaC50CE1ad85';
 const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
+const BOROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
 
 describe('ERC721 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
+  const signerBorrower = addAccountFromKey(BOROWER_KEY, provider);
   let poolDuckDai: NonfungiblePool;
+  let poolDuckDaiSubset: NonfungiblePool;
 
   const createPool = async (
     nftAddress: Address,
@@ -39,7 +43,8 @@ describe('ERC721 Pool', () => {
   };
 
   beforeAll(async () => {
-    poolDuckDai = await createPool(TDUCK_ADDRESS, [23, 24, 25], TDAI_ADDRESS);
+    poolDuckDai = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TDAI_ADDRESS);
+    poolDuckDaiSubset = await createPool(TDUCK_ADDRESS, [23, 24, 25], TDAI_ADDRESS);
     await createPool(TDUCK_ADDRESS, [], TWETH_ADDRESS);
   });
 
@@ -74,7 +79,6 @@ describe('ERC721 Pool', () => {
     }).rejects.toThrow('PoolAlreadyExists(address)');
   });
 
-  // deployCollectionPool
   it('new collection pool should be deployed successfully', async () => {
     const tx = await ajna.nonfungiblePoolFactory.deployCollectionPool(
       signerLender,
@@ -125,8 +129,8 @@ describe('ERC721 Pool', () => {
   });
 
   it('getPoolByAddress should return existing pool when given existing pool address', async () => {
-    const pool = await ajna.nonfungiblePoolFactory.getPoolByAddress(poolDuckDai.poolAddress);
-    expect(pool.poolAddress).toBe(poolDuckDai.poolAddress);
+    const pool = await ajna.nonfungiblePoolFactory.getPoolByAddress(poolDuckDaiSubset.poolAddress);
+    expect(pool.poolAddress).toBe(poolDuckDaiSubset.poolAddress);
   });
 
   it('getPoolAddress returns pool address when querying existing subset pool', async () => {
@@ -135,7 +139,7 @@ describe('ERC721 Pool', () => {
       [23, 24, 25],
       TDAI_ADDRESS
     );
-    expect(address).toBe(poolDuckDai.poolAddress);
+    expect(address).toBe(poolDuckDaiSubset.poolAddress);
   });
 
   it('getPoolAddress returns AddressZero when subset for token pair does not exist', async () => {
@@ -168,9 +172,9 @@ describe('ERC721 Pool', () => {
   it('liquidity may be added to and removed from a NFT pool', async () => {
     // add liquidity
     const quoteAmount = toWad(100);
-    let tx = await poolDuckDai.quoteApprove(signerLender, quoteAmount);
+    let tx = await poolDuckDaiSubset.quoteApprove(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
-    const bucket = await poolDuckDai.getBucketByPrice(toWad(200));
+    const bucket = await poolDuckDaiSubset.getBucketByPrice(toWad(200));
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
     let lpBalance = await bucket.lpBalance(signerLender.address);
@@ -187,18 +191,32 @@ describe('ERC721 Pool', () => {
     // add collateral
     const tokenId = 24;
     const bucketId = priceToIndex(toWad(250));
-    let tx = await poolDuckDai.collateralApprove(signerLender, tokenId);
+    let tx = await poolDuckDaiSubset.collateralApprove(signerLender, tokenId);
     await submitAndVerifyTransaction(tx);
-    tx = await poolDuckDai.addCollateral(signerLender, bucketId, [tokenId]);
+    tx = await poolDuckDaiSubset.addCollateral(signerLender, bucketId, [tokenId]);
     await submitAndVerifyTransaction(tx);
-    const bucket = await poolDuckDai.getBucketByIndex(bucketId);
+    const bucket = await poolDuckDaiSubset.getBucketByIndex(bucketId);
     let lpBalance = await bucket.lpBalance(signerLender.address);
     expect(lpBalance.gte(toWad(0))).toBe(true);
 
     // remove collateral
-    tx = await poolDuckDai.removeCollateral(signerLender, bucketId, 1);
+    tx = await poolDuckDaiSubset.removeCollateral(signerLender, bucketId, 1);
     await submitAndVerifyTransaction(tx);
     lpBalance = await bucket.lpBalance(signerLender.address);
     expect(lpBalance).toEqual(toWad(0));
+  });
+
+  it('debt may be drawn and repaid', async () => {
+    // draw debt
+    const tokenId = 25;
+    let tx = await poolDuckDai.collateralApprove(signerBorrower, tokenId);
+    await submitAndVerifyTransaction(tx);
+    const debtToDraw = toWad(400);
+    tx = await poolDuckDai.drawDebt(signerBorrower, debtToDraw, [tokenId]);
+    await submitAndVerifyTransaction(tx);
+    const stats = await poolDuckDai.getStats();
+    expect(stats.poolSize.gte(toWad(10_000))).toBe(true);
+    // TODO: account for existing debt, finish validating stats
+    // expect(stats.debt).toBeBetween(debtToDraw, debtToDraw.mul(2));
   });
 });

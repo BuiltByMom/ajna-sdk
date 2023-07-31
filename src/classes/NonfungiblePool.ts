@@ -1,7 +1,10 @@
+import { BigNumber } from 'ethers';
+import { MAX_FENWICK_INDEX } from '../constants';
 import { getNftContract } from 'contracts/erc721';
 import {
   addCollateral,
   approve,
+  drawDebt,
   getErc721PoolContract,
   getErc721PoolContractMulti,
   removeCollateral,
@@ -81,6 +84,32 @@ class NonfungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeCollateral(contractPoolWithSigner, noOfNFTsToRemove, bucketIndex);
+  }
+
+  /**
+   * pledges collateral and draws debt
+   * @param signer borrower
+   * @param amountToBorrow new debt to draw
+   * @param collateralToPledge new collateral to deposit
+   * @param limitIndex revert if loan would drop LUP below this bucket (or pass MAX_FENWICK_INDEX)
+   * @returns transaction
+   */
+  async drawDebt(
+    signer: Signer,
+    amountToBorrow: BigNumber,
+    tokenIdsToPledge: Array<number>,
+    limitIndex?: number
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+    const borrowerAddress = await signer.getAddress();
+
+    return await drawDebt(
+      contractPoolWithSigner,
+      borrowerAddress,
+      amountToBorrow,
+      limitIndex ?? MAX_FENWICK_INDEX,
+      tokenIdsToPledge
+    );
   }
 }
 
