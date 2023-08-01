@@ -1,4 +1,4 @@
-import { Address } from 'types';
+import { Address } from '../types';
 
 /**
  * manages static protocol configuration, particularly contract addresses for a single chain

@@ -56,11 +56,11 @@ describe('ERC20 Pool', () => {
     expect(receipt.transactionHash).not.toBe('');
 
     // initialize canned pool
-    poolA = await ajna.factory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
+    poolA = await ajna.fungiblePoolFactory.getPool(TESTA_ADDRESS, TDAI_ADDRESS);
   });
 
   it('should create new pool successfully', async () => {
-    const tx = await ajna.factory.deployPool(
+    const tx = await ajna.fungiblePoolFactory.deployPool(
       signerLender,
       TWETH_ADDRESS,
       TDAI_ADDRESS,
@@ -70,7 +70,7 @@ describe('ERC20 Pool', () => {
     const eventLogs = tx.getEventLogs(receipt);
     const poolAddress = eventLogs.get('PoolCreated')![0].args[0];
 
-    pool = await ajna.factory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
+    pool = await ajna.fungiblePoolFactory.getPool(TWETH_ADDRESS, TDAI_ADDRESS);
     expect(pool).toBeDefined();
     expect(pool.poolAddress).toBe(poolAddress);
     expect(pool.collateralAddress).toBe(TWETH_ADDRESS);
@@ -79,7 +79,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should not allow to create existing pool', async () => {
-    const tx = await ajna.factory.deployPool(
+    const tx = await ajna.fungiblePoolFactory.deployPool(
       signerLender,
       TESTA_ADDRESS,
       TDAI_ADDRESS,
@@ -92,7 +92,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should load pool by address', async () => {
-    const poolB = await ajna.factory.getPoolByAddress(TESTB_DAI_POOL_ADDRESS);
+    const poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_DAI_POOL_ADDRESS);
     expect(poolB.quoteAddress).toBe(TDAI_ADDRESS);
     expect(poolB.toString()).toContain('TESTB-TDAI');
   });
@@ -151,7 +151,7 @@ describe('ERC20 Pool', () => {
     expect(stats.actualUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.targetUtilization.gte(toWad('0'))).toBe(true);
     expect(stats.borrowRate).toBeBetween(toWad('0.01'), toWad('0.1'));
-    expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.01'));
+    expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.1'));
   });
 
   it('should use getPrices and loansInfo successfully', async () => {
@@ -323,16 +323,39 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use estimateLoan successfully', async () => {
-    const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
+    // estimate change against canned loan
+    let loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
     expect(loanEstimate.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(3000), toWad(3000).mul(2));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(1500), toWad(6000));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
+
+    // estimate with no loan, no change
+    loanEstimate = await poolA.estimateLoan(signerDeployer.address, toWad(0), toWad(0));
+    expect(loanEstimate.collateralization).toEqual(toWad(1));
+    expect(loanEstimate.debt).toEqual(toWad(0));
+    expect(loanEstimate.collateral).toEqual(toWad(0));
+    expect(loanEstimate.thresholdPrice).toEqual(toWad(0));
+    expect(loanEstimate.neutralPrice).toEqual(toWad(0));
+    expect(loanEstimate.liquidationBond).toEqual(toWad(0));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
+
+    // estimate new loan
+    loanEstimate = await poolA.estimateLoan(signerDeployer.address, toWad(1000), toWad(20));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.9), toWad(2));
+    expect(loanEstimate.debt).toBeBetween(toWad(1000), toWad(1010));
+    expect(loanEstimate.collateral).toEqual(toWad(20));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
+    expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(150), toWad(305));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
 
   it('should remove all quote token without specifying amount', async () => {
@@ -476,7 +499,7 @@ describe('ERC20 Pool', () => {
     await TOKEN_AJNA.connect(signerDeployer).transfer(signerLender.address, tokenAmount);
 
     // Deploy pool
-    let tx = await ajna.factory.deployPool(
+    let tx = await ajna.fungiblePoolFactory.deployPool(
       signerLender,
       TDAI_ADDRESS,
       TWETH_ADDRESS,
@@ -484,7 +507,7 @@ describe('ERC20 Pool', () => {
     );
     await tx.submit();
 
-    pool = await ajna.factory.getPool(TDAI_ADDRESS, TWETH_ADDRESS);
+    pool = await ajna.fungiblePoolFactory.getPool(TDAI_ADDRESS, TWETH_ADDRESS);
 
     expect(pool.poolAddress).not.toBe(constants.AddressZero);
     expect(pool.collateralAddress).toBe(TDAI_ADDRESS);

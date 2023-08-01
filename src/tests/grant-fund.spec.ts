@@ -101,6 +101,32 @@ describe('Grants fund', () => {
       expect(proposalInfo.fundingVotesReceived.isZero()).toBe(true);
       expect(proposalInfo.executed).toBe(false);
     });
+    it(`creates a new multi-recipient proposal`, async () => {
+      const tx = await ajna.grants.createProposal(signer, {
+        title: 'ajna proposal test',
+        recipientAddresses: [
+          {
+            address: PROPOSAL_TO_ADDRESS,
+            amount: '1000.00',
+          },
+          {
+            address: PROPOSAL_TO_ADDRESS,
+            amount: '2000.00',
+          },
+        ],
+        externalLink: 'https://example.com',
+        ipfsHash: '000000001',
+        arweaveTxid: '000000001',
+      });
+      const receipt = await submitAndVerifyTransaction(tx);
+      const proposalId = getProposalIdFromReceipt(receipt);
+      const proposal = ajna.grants.getProposal(proposalId);
+      const proposalInfo = await proposal.getInfo();
+      expect(proposalInfo.votesReceived.isZero()).toBe(true);
+      expect(fromWad(proposalInfo.tokensRequested)).toBe('3000.0');
+      expect(proposalInfo.fundingVotesReceived.isZero()).toBe(true);
+      expect(proposalInfo.executed).toBe(false);
+    });
   });
   describe('Delegates', () => {
     it('should delegate successfully', async () => {

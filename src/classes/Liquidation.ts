@@ -1,6 +1,6 @@
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from 'types';
+import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
 import { settle } from '../contracts/pool';

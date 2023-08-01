@@ -13,7 +13,7 @@ const CREATE_NEW_PROPOSAL = true;
 // sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
 const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e';
 // proposal description must be unique, select a different title each time
-const PROPOSAL_TITLE = 'ajna community courses 5';
+const PROPOSAL_TITLE = 'multi address transfers test';
 
 export const startDistributionPeriod = async (provider: Provider) => {
   // Use this for a real chain, such as Goerli or Mainnet.
@@ -34,6 +34,7 @@ async function run() {
   // Use this for a real chain, such as Goerli or Mainnet.
   const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
   const proposalToAddress = process.env.VOTER_ADDRESS ?? '';
+  const proposalToAddress2 = process.env.LENDER_ADDRESS ?? '';
 
   Config.fromEnvironment();
   const ajna = new AjnaSDK(provider);
@@ -41,7 +42,10 @@ async function run() {
   const propose = async () => {
     const tx = await ajna.grants.createProposal(caller, {
       title: PROPOSAL_TITLE,
-      recipientAddresses: [{ address: proposalToAddress, amount: '1000.00' }],
+      recipientAddresses: [
+        { address: proposalToAddress, amount: '100.00' },
+        { address: proposalToAddress2, amount: '200.00' },
+      ],
       externalLink: 'https://example.com',
     });
     const estimatedGas = await tx.verify();

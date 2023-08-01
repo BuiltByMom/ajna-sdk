@@ -35,7 +35,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
    * returns existing pool for two tokens
    * @param collateralAddress token address
    * @param quoteAddress token address
-   * @returns {@link Pool} modeling desired pool
+   * @returns {@link FungiblePool} modeling desired pool
    */
   async getPool(collateralAddress: Address, quoteAddress: Address) {
     const poolAddress = await this.getPoolAddress(collateralAddress, quoteAddress);
@@ -46,6 +46,11 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
     return await this.getPoolByAddress(poolAddress);
   }
 
+  /**
+   * returns existing pool
+   * @param poolAddress address of pool
+   * @returns {@link FungiblePool} modeling desired pool
+   */
   async getPoolByAddress(poolAddress: Address) {
     const newPool = new FungiblePool(this.getProvider(), poolAddress, Config.ajnaToken);
     await newPool.initialize();

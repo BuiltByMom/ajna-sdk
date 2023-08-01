@@ -327,10 +327,10 @@ export class FungiblePool extends Pool {
     // calculate the new amount of debt and collateralization
     const newDebt = borrowerDebt.add(debtAmount);
     const newCollateral = collateral.add(collateralAmount);
-    const thresholdPrice = wdiv(newDebt, newCollateral);
     const zero = constants.Zero;
-    const encumbered = lup === zero || newDebt === zero ? zero : wdiv(newDebt, lup);
-    const collateralization = encumbered === zero ? toWad(1) : wdiv(newCollateral, encumbered);
+    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
+    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical MOMP and neutral price
     const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);

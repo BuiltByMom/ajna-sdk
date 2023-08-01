@@ -1,5 +1,6 @@
 import erc20PoolFactoryAbi from '../abis/ERC20PoolFactory.json';
-import { Config } from '../classes/Config';
+import { Config } from '../constants';
+
 import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';

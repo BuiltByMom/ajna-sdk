@@ -1,10 +1,11 @@
-import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
-import { FungiblePool } from 'classes/FungiblePool';
 import { BigNumber, Signer } from 'ethers';
+import { FungiblePool } from '../classes/FungiblePool';
+import { NonfungiblePool } from '../classes/NonfungiblePool';
+import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
 
 export interface IERC20PoolFactory {
   /**
-   * Deploys a cloned pool for the given collateral and quote token and returns new pool instance.
+   * Creates a pool for the given collateral and quote token and returns new pool instance.
    */
   deployPool(
     signer: Signer,
@@ -20,6 +21,40 @@ export interface IERC20PoolFactory {
    * Returns pool address for the given collateral and quote tokens addresses.
    */
   getPoolAddress(collateralAddress: Address, quoteAddress: Address): Promise<Address>;
+}
+
+export interface IERC721PoolFactory {
+  /**
+   * Creates a pool where any token in a particular NFT collection is valid collateral
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   */
+  deployCollectionPool(
+    signer: Signer,
+    nftAddress: Address,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction>;
+  /**
+   * Creates a pool where specific tokens in an NFT collection are whitelisted
+   * @param signer pool creator
+   * @param nftAddress address of the ERC721 collateral token
+   * @param subset list of whitelisted tokenIds
+   * @param quoteAddress address of the ERC20 quote token
+   * @param interestRate initial interest rate, between 1%-10%, as WAD
+   */
+  deploySubsetPool(
+    signer: Signer,
+    nftAddress: Address,
+    subset: Array<number>,
+    quoteAddress: Address,
+    interestRate: BigNumber
+  ): Promise<WrappedTransaction>;
+  // TODO: work in progress
+  getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<NonfungiblePool>;
+  getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address>;
 }
 
 export interface IBaseContract {
