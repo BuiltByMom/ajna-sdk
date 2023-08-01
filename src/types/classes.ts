@@ -1,7 +1,7 @@
 import { BigNumber, Signer } from 'ethers';
-import { FungiblePool } from 'classes/FungiblePool';
-import { NonfungiblePool } from 'classes/NonfungiblePool';
-import { Address, SignerOrProvider, WrappedTransaction } from 'types/core';
+import { FungiblePool } from '../classes/FungiblePool';
+import { NonfungiblePool } from '../classes/NonfungiblePool';
+import { Address, SignerOrProvider, WrappedTransaction } from '../types/core';
 
 export interface IERC20PoolFactory {
   /**

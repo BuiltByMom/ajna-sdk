@@ -1,6 +1,6 @@
-import { getErc721PoolContract, getErc721PoolContractMulti } from 'contracts/erc721-pool';
-import { getNftContract } from 'contracts/erc721';
-import { Address, SignerOrProvider } from 'types';
+import { getErc721PoolContract, getErc721PoolContractMulti } from '../contracts/erc721-pool';
+import { getNftContract } from '../contracts/erc721';
+import { Address, SignerOrProvider } from '../types';
 import { Pool } from './Pool';
 
 class NonfungiblePool extends Pool {

@@ -1,9 +1,9 @@
 import { ethers, BigNumber, Signer, Contract } from 'ethers';
-import erc721PoolFactoryAbi from 'abis/ERC721PoolFactory.json';
-import { Config } from 'classes/Config';
-import { Address, SignerOrProvider, TransactionOverrides } from 'types';
-import checksumAddress from 'utils/checksum-address';
-import { createTransaction } from 'utils';
+import erc721PoolFactoryAbi from '../abis/ERC721PoolFactory.json';
+import { Config } from '../classes/Config';
+import { Address, SignerOrProvider, TransactionOverrides } from '../types';
+import checksumAddress from '../utils/checksum-address';
+import { createTransaction } from '../utils';
 
 export const getErc721PoolFactoryContract = (provider: SignerOrProvider): Contract => {
   return new ethers.Contract(
@@ -13,7 +13,7 @@ export const getErc721PoolFactoryContract = (provider: SignerOrProvider): Contra
   );
 };
 
-export async function deployPool(
+export async function deployNFTPool(
   signer: Signer,
   collateralAddress: Address,
   tokenIds: Array<number>,

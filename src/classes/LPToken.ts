@@ -98,4 +98,6 @@ export class LPToken {
       throw new SdkError(error.message, error);
     }
   }
+
+  // TODO: implement moveLiquidity
 }

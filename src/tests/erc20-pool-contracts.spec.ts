@@ -323,7 +323,8 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use estimateLoan successfully', async () => {
-    const loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
+    // estimate change against canned loan
+    let loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
     expect(loanEstimate.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
@@ -333,6 +334,28 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.liquidationBond).toBeBetween(toWad(1500), toWad(6000));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
+
+    // estimate with no loan, no change
+    loanEstimate = await poolA.estimateLoan(signerDeployer.address, toWad(0), toWad(0));
+    expect(loanEstimate.collateralization).toEqual(toWad(1));
+    expect(loanEstimate.debt).toEqual(toWad(0));
+    expect(loanEstimate.collateral).toEqual(toWad(0));
+    expect(loanEstimate.thresholdPrice).toEqual(toWad(0));
+    expect(loanEstimate.neutralPrice).toEqual(toWad(0));
+    expect(loanEstimate.liquidationBond).toEqual(toWad(0));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
+
+    // estimate new loan
+    loanEstimate = await poolA.estimateLoan(signerDeployer.address, toWad(1000), toWad(20));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.9), toWad(2));
+    expect(loanEstimate.debt).toBeBetween(toWad(1000), toWad(1010));
+    expect(loanEstimate.collateral).toEqual(toWad(20));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
+    expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(150), toWad(305));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
 
   it('should remove all quote token without specifying amount', async () => {

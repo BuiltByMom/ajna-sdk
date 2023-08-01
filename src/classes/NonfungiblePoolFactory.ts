@@ -1,6 +1,12 @@
 import { BigNumber, constants, Signer } from 'ethers';
-import { deployPool, getDeployedPools, getSubsetHash } from 'contracts/erc721-pool-factory';
-import { Address, IERC721PoolFactory, SdkError, SignerOrProvider, WrappedTransaction } from 'types';
+import { deployNFTPool, getDeployedPools, getSubsetHash } from '../contracts/erc721-pool-factory';
+import {
+  Address,
+  IERC721PoolFactory,
+  SdkError,
+  SignerOrProvider,
+  WrappedTransaction,
+} from '../types';
 import { Config } from './Config';
 import { ContractBase } from './ContractBase';
 import { NonfungiblePool } from './NonfungiblePool';
@@ -27,7 +33,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployPool(signer, nftAddress, [], quoteAddress, interestRate);
+    return await deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
   }
 
   /**
@@ -46,7 +52,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployPool(signer, nftAddress, subset, quoteAddress, interestRate);
+    return await deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
   /**
