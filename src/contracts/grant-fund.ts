@@ -1,11 +1,11 @@
-import grantsFundAbi from '../abis/GrantFund.json';
+import { TransactionReceipt } from '@ethersproject/providers';
+import { BigNumber, Contract, Signer, ethers } from 'ethers';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
+import grantsFundAbi from '../abis/GrantFund.json';
 import { Config } from '../classes/Config';
-import { Address, ProposalParams, SignerOrProvider } from '../types';
+import { Address, ProposalParams, SignerOrProvider, VoteParams } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
-import { BigNumber, Contract, Signer, ethers } from 'ethers';
-import { TransactionReceipt } from '@ethersproject/providers';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
@@ -52,6 +52,11 @@ export async function getTreasury(provider: SignerOrProvider): Promise<BigNumber
   return await contractInstance.treasury();
 }
 
+export async function getStage(provider: SignerOrProvider) {
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getStage();
+}
+
 // Proposals
 export async function createProposal(
   signer: Signer,
@@ -88,19 +93,64 @@ export async function getProposalState(provider: SignerOrProvider, distributionI
   return await contractInstance.state(distributionId);
 }
 
-// Votes
-export async function getVotesFunding(
-  contract: Contract,
+// Voting
+export async function getVotesScreening(
+  provider: SignerOrProvider,
   distributionId: number,
   account: Address
 ) {
-  return await contract.getVotesFunding(distributionId, account);
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getVotesScreening(distributionId, account);
 }
 
-export async function getVotesScreening(
-  contract: Contract,
+export async function getVotesFunding(
+  provider: SignerOrProvider,
   distributionId: number,
   account: Address
 ) {
-  return await contract.getVotesScreening(distributionId, account);
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getVotesFunding(distributionId, account);
+}
+
+export async function getVoterInfo(
+  provider: SignerOrProvider,
+  distributionId: number,
+  account: Address
+) {
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getVoterInfo(distributionId, account);
+}
+
+export async function getScreeningVotesCast(
+  provider: SignerOrProvider,
+  distributionId: number,
+  account: Address
+) {
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getScreeningVotesCast(distributionId, account);
+}
+
+export async function getFundingVotesCast(
+  provider: SignerOrProvider,
+  distributionId: number,
+  account: Address
+) {
+  const contractInstance = getGrantsFundContract(provider);
+  return await contractInstance.getFundingVotesCast(distributionId, account);
+}
+
+export async function screeningVote(signer: Signer, votes: VoteParams[]) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'screeningVote',
+    args: [votes],
+  });
+}
+
+export async function fundingVote(signer: Signer, votes: VoteParams[]) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'fundingVote',
+    args: [votes],
+  });
 }
