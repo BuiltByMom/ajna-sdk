@@ -5,7 +5,7 @@ import { Signer, Wallet, providers } from 'ethers';
 import prompt from 'prompt';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
-import { fromWad } from '../src/utils';
+import { fromWad, mine } from '../src/utils';
 
 dotenv.config();
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -28,8 +28,10 @@ Please enter one of the options below:
 - 2: get delegates for address
 - 3: get treasury
 - 4: start a distribution period
-- 5: create a proposal
+- 5: get active distrituion period
+- 6: get voting power for address
 
+- 9: mine: mine a given number of blocks
 - 0: exit
 `;
 
@@ -82,6 +84,9 @@ const getWalletByIndex = (index: number): Wallet => {
 
 const getAddressByIndex = (index: number): string => publicKeys[index];
 
+// use the last address to sign transactions by default
+const defaultSigner = getWalletByIndex(privateKeys.length - 1);
+
 async function delegateVote(voter: Signer, delegatee: string) {
   const tx = await ajna.grants.delegateVote(voter, delegatee);
   const receipt = await tx.verifyAndSubmit();
@@ -132,6 +137,42 @@ const handleGetTreasury = async () => {
   console.log(`Treasury: ${fromWad(result)} AJNA`);
 };
 
+const handleStartDistributionPeriod = async () => {
+  const tx = await ajna.grants.startNewDistributionPeriod(defaultSigner);
+  const receipt = await tx.verifyAndSubmit();
+  console.log('tx receipt', receipt);
+  console.log('Distribution period started');
+};
+
+const handleGetActiveDistributionPeriod = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  console.log(dp);
+};
+
+const handleGetVotingPower = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  console.log(`Select an address:`);
+  const { addressIndex } = await promptAsync(['addressIndex']);
+  const address = getAddressByIndex(Number(addressIndex));
+  const votingPower = await dp.getVotingPower(address);
+  console.log(`${votingPower} for address ${address} (${addressIndex})`);
+};
+
+const handleMine = async () => {
+  console.log(`Current block: ${await provider.getBlockNumber()}`);
+  console.log(
+    'hints: mine 648.000 blocks to force the active distribution period to become unactive'
+  );
+  console.log(`Enter the number of blocks:`);
+  const { numberOfBlocks } = await promptAsync(['numberOfBlocks']);
+  console.log('Mining started, please wait...');
+  await mine(provider, Number(numberOfBlocks), 10_000, remainingBlocks => {
+    console.log(`${remainingBlocks} remaining blocks to be mined`);
+  });
+  console.log(`Current block after mine: ${await provider.getBlockNumber()}`);
+  console.log(`${numberOfBlocks} mined`);
+};
+
 const executeOption = async (option: string) => {
   switch (option) {
     case '1':
@@ -142,6 +183,18 @@ const executeOption = async (option: string) => {
       break;
     case '3':
       await handleGetTreasury();
+      break;
+    case '4':
+      await handleStartDistributionPeriod();
+      break;
+    case '5':
+      await handleGetActiveDistributionPeriod();
+      break;
+    case '6':
+      await handleGetVotingPower();
+      break;
+    case '9':
+      await handleMine();
       break;
     case '0':
       process.exit(0);
