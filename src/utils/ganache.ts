@@ -5,6 +5,11 @@ export async function takeSnapshot(provider: providers.JsonRpcProvider) {
 }
 
 export async function mine(provider: providers.JsonRpcProvider, blocks = 1) {
+  // HACK: https://github.com/trufflesuite/ganache/issues/4409
+  while (blocks > 100_000) {
+    await provider.send('evm_mine', [{ blocks: 100_000 }]);
+    blocks -= 100_000;
+  }
   await provider.send('evm_mine', [{ blocks: blocks }]);
 }
 
