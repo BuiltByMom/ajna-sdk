@@ -5,7 +5,8 @@ import { Signer, Wallet, providers } from 'ethers';
 import prompt from 'prompt';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
-import { fromWad, mine } from '../src/utils';
+import { fromWad, mine, toWad } from '../src/utils';
+import { getBalance, transfer } from '../src/contracts/ajna-token';
 
 dotenv.config();
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -30,6 +31,8 @@ Please enter one of the options below:
 - 4: start a distribution period
 - 5: get active distrituion period
 - 6: get voting power for address
+- 7: get ETH/AJNA balances
+- 8: transfer AJNA
 
 - 9: mine: mine a given number of blocks
 - 0: exit
@@ -114,22 +117,31 @@ const handleDelegateVote = async () => {
   const delegatee = getAddressByIndex(Number(delegateeIndex));
   await delegateVote(delegator, delegatee);
   console.log(
-    `delegated vote from ${delegator.publicKey} {${getIndexByAddress(
-      delegator.publicKey
-    )}} to ${delegatee} (${getIndexByAddress(delegatee)})`
+    `delegated vote from ${delegator.address} (${getIndexByAddress(
+      delegator.address
+    )}) to ${delegatee} (${getIndexByAddress(delegatee)})`
   );
 };
 
 const handleGetDelegates = async () => {
-  console.log(`Select an address:`);
+  console.log(`Select an address (or press enter to view all):`);
   const { addressIndex } = await promptAsync(['addressIndex']);
-  const address = getAddressByIndex(Number(addressIndex));
-  const result = await ajna.grants.getDelegates(address);
-  console.log(
-    `Adress ${address} (${getIndexByAddress(address)}) delegates to: ${result} (${getIndexByAddress(
-      result
-    )})`
-  );
+  const printAdressDelegation = async (address: string) => {
+    const result = await ajna.grants.getDelegates(address);
+    console.log(
+      `Adress ${address} (${getIndexByAddress(
+        address
+      )}) delegates to: ${result} (${getIndexByAddress(result)})`
+    );
+  };
+  if (addressIndex === '') {
+    for (const address of publicKeys) {
+      await printAdressDelegation(address);
+    }
+  } else {
+    const address = getAddressByIndex(Number(addressIndex));
+    await printAdressDelegation(address);
+  }
 };
 
 const handleGetTreasury = async () => {
@@ -146,16 +158,69 @@ const handleStartDistributionPeriod = async () => {
 
 const handleGetActiveDistributionPeriod = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
-  console.log(dp);
+  console.log(dp.toString());
+  console.log(`stage: ${await dp.distributionPeriodStage()}`);
 };
 
 const handleGetVotingPower = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
-  console.log(`Select an address:`);
+  console.log(`Select an address (or press enter to view all):`);
+  // hint: if voting power is 0, make sure that you delegated 33 blocks before the current DP started and that the delegator has AJNA to delegate
   const { addressIndex } = await promptAsync(['addressIndex']);
-  const address = getAddressByIndex(Number(addressIndex));
-  const votingPower = await dp.getVotingPower(address);
-  console.log(`${votingPower} for address ${address} (${addressIndex})`);
+  const printVotingPower = async (address: string) => {
+    const votingPower = await dp.getVotingPower(address);
+    console.log(`${votingPower} for address ${address} (${getIndexByAddress(address)})`);
+  };
+  if (addressIndex === '') {
+    for (const address of publicKeys) {
+      await printVotingPower(address);
+    }
+  } else {
+    const address = getAddressByIndex(Number(addressIndex));
+    await printVotingPower(address);
+  }
+};
+
+const printBalance = async (address: string) => {
+  const [ethBalance, ajnaBalance] = await Promise.all([
+    provider.getBalance(address),
+    getBalance(provider, address),
+  ]);
+  console.log(
+    `address ${address} (${getIndexByAddress(address)}) has ${fromWad(ethBalance)} ETH, ${fromWad(
+      ajnaBalance
+    )} AJNA`
+  );
+};
+
+const handleGetBalances = async () => {
+  console.log(`Select an address (or press enter to view all):`);
+  const { addressIndex } = await promptAsync(['addressIndex']);
+  if (addressIndex === '') {
+    for (const address of publicKeys) {
+      await printBalance(address);
+    }
+  } else {
+    const address = getAddressByIndex(Number(addressIndex));
+    await printBalance(address);
+  }
+};
+
+const handleTransfer = async () => {
+  console.log(`Select an address from, to and AJNA amount:`);
+  const { fromAddressIndex, toAddressIndex, amount } = await promptAsync([
+    'fromAddressIndex',
+    'toAddressIndex',
+    'amount',
+  ]);
+  const fromWallet = getWalletByIndex(Number(fromAddressIndex));
+  const toAdress = getAddressByIndex(Number(toAddressIndex));
+  const tx = await transfer(fromWallet, toAdress, toWad(Number(amount)));
+  const receipt = await tx.verifyAndSubmit();
+  console.log(receipt);
+  console.log(`balances after transfer:`);
+  await printBalance(fromWallet.address);
+  await printBalance(toAdress);
 };
 
 const handleMine = async () => {
@@ -192,6 +257,12 @@ const executeOption = async (option: string) => {
       break;
     case '6':
       await handleGetVotingPower();
+      break;
+    case '7':
+      await handleGetBalances();
+      break;
+    case '8':
+      await handleTransfer();
       break;
     case '9':
       await handleMine();
