@@ -1,13 +1,11 @@
 #!/usr/bin/env ts-node
 
-import { AjnaSDK } from '../src/classes/AjnaSDK';
-import { Config } from '../src/classes/Config';
-import { addAccountFromKeystore } from '../src/utils/add-account';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber } from 'ethers';
 import dotenv from 'dotenv';
 import { fromWad } from '../src/utils/numeric';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../src/contracts/grant-fund';
-import { Provider, SdkError } from '../src/types';
+import { SdkError } from '../src/types';
+import { initAjna } from './utils';
 
 const CREATE_NEW_PROPOSAL = true;
 // sample RC5 proposal id for goerli network: 0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e
@@ -15,9 +13,10 @@ const EXISTING_PROPOSAL_ID = '0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221
 // proposal description must be unique, select a different title each time
 const PROPOSAL_TITLE = 'multi address transfers test';
 
-export const startDistributionPeriod = async (provider: Provider) => {
+export const startDistributionPeriod = async () => {
   // Use this for a real chain, such as Goerli or Mainnet.
-  const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
+  const { signer: caller } = await initAjna('voter');
+
   const tx = await startNewDistributionPeriod(caller);
   const receipt = await tx.verify();
   console.log(fromWad(receipt), 'estimated gas required for this transaction');
@@ -27,20 +26,13 @@ export const startDistributionPeriod = async (provider: Provider) => {
 
 async function run() {
   dotenv.config();
-  // Configure from environment
-  const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-  // Use this for local testnets, where JSON keystores are unavailable.
-  // const voter = addAccountFromKey(process.env.ETH_KEY || '', provider);
-  // Use this for a real chain, such as Goerli or Mainnet.
-  const caller = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
   const proposalToAddress = process.env.VOTER_ADDRESS ?? '';
   const proposalToAddress2 = process.env.LENDER_ADDRESS ?? '';
 
-  Config.fromEnvironment();
-  const ajna = new AjnaSDK(provider);
+  const { ajna, signer: signerVoter } = await initAjna('voter');
 
   const propose = async () => {
-    const tx = await ajna.grants.createProposal(caller, {
+    const tx = await ajna.grants.createProposal(signerVoter, {
       title: PROPOSAL_TITLE,
       recipientAddresses: [
         { address: proposalToAddress, amount: '100.00' },
@@ -62,7 +54,7 @@ async function run() {
   } catch (e) {
     if (e instanceof SdkError && e.message === 'There is no active distribution period') {
       console.log('There is no active distribution period, starting a new one');
-      await ajna.grants.startNewDistributionPeriod(caller);
+      await ajna.grants.startNewDistributionPeriod(signerVoter);
     } else {
       throw e;
     }
