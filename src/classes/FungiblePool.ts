@@ -16,8 +16,9 @@ import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
 import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
-import { max, min, toWad, wdiv, wmul } from '../utils/numeric';
+import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
+import { borrowerInfo, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -352,7 +353,74 @@ export class FungiblePool extends Pool {
     };
   }
 
-  // TODO: implement estimateRepay, to see how repaying debt or pulling collateral would impact loan
+  /**
+   * estimates how repaying debt and/or pulling collateral would impact loan
+   * @param borrowerAddress identifies the loan
+   * @param debtAmount amount of debt to repay (or 0)
+   * @param collateralAmount amount of collateral to pull (or 0)
+   * @returns {@link LoanEstimate}
+   */
+  async estimateRepay(
+    borrowerAddress: Address,
+    debtAmount: BigNumber,
+    collateralAmount: BigNumber
+  ): Promise<LoanEstimate> {
+    // obtain the borrower debt
+    const utilsContract = getPoolInfoUtilsContract(this.provider);
+    const [borrowerDebt, collateral] = await borrowerInfo(
+      utilsContract,
+      this.poolAddress,
+      borrowerAddress
+    );
+
+    // determine pool debt
+    const [poolDebt, ,] = await debtInfo(this.contract);
+
+    // determine where this would push the LUP, the current interest rate, and loan count
+    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.sub(debtAmount));
+    const rateCall = this.contractMulti.interestRateInfo();
+    const loansInfoCall = this.contractMulti.loansInfo();
+    const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
+    const response: BigNumber[][] = await this.ethcallProvider.all([
+      lupIndexCall,
+      rateCall,
+      loansInfoCall,
+      totalAuctionsInPoolCall,
+    ]);
+    const lupIndex: number = +response[0];
+    const rate = BigNumber.from(response[1][0]);
+    let noOfLoans = +response[2][2];
+    const noOfAuctions = +response[3];
+    noOfLoans += noOfAuctions;
+    const lup = indexToPrice(lupIndex);
+
+    // calculate the new amount of debt and collateralization
+    const newDebt = borrowerDebt.sub(debtAmount);
+    const newCollateral = collateral.sub(collateralAmount);
+    const zero = constants.Zero;
+    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
+    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
+
+    // calculate the hypothetical MOMP and neutral price
+    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
+    const mompIndex = await depositIndex(this.contract, mompDebt);
+    const momp = indexToPrice(mompIndex);
+    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
+    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
+
+    return {
+      collateralization,
+      debt: newDebt,
+      collateral: newCollateral,
+      thresholdPrice,
+      neutralPrice,
+      isKicked: collateralization.lt(constants.One),
+      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
+      lup: indexToPrice(lupIndex),
+      lupIndex: lupIndex,
+    };
+  }
 
   /**
    * @param borrowerAddress identifies the loan under liquidation
