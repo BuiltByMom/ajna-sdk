@@ -29,7 +29,7 @@ Please enter one of the options below:
 - 2: get delegates for address
 - 3: get treasury
 - 4: start a distribution period
-- 5: get active distrituion period
+- 5: get distrituion period
 - 6: get voting power for address
 - 7: get ETH/AJNA balances
 - 8: transfer AJNA
@@ -156,8 +156,14 @@ const handleStartDistributionPeriod = async () => {
   console.log('Distribution period started');
 };
 
-const handleGetActiveDistributionPeriod = async () => {
-  const dp = await ajna.grants.getActiveDistributionPeriod();
+const handleGetDistributionPeriod = async () => {
+  console.log(
+    'Enter distribution period id (or press enter to get the active distribution period)'
+  );
+  const { id } = await promptAsync(['id']);
+  const dp = await (id === ''
+    ? ajna.grants.getActiveDistributionPeriod()
+    : ajna.grants.getDistributionPeriod(Number(id)));
   console.log(dp.toString());
   console.log(`stage: ${await dp.distributionPeriodStage()}`);
 };
@@ -253,7 +259,7 @@ const executeOption = async (option: string) => {
       await handleStartDistributionPeriod();
       break;
     case '5':
-      await handleGetActiveDistributionPeriod();
+      await handleGetDistributionPeriod();
       break;
     case '6':
       await handleGetVotingPower();
