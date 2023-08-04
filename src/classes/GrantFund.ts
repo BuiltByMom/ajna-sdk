@@ -97,7 +97,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
       startBlockNumber,
       startDate,
       endBlockNumber,
-      endBlock ? endBlock.timestamp : startDate + DISTRIBUTION_PERIOD_DURATION,
+      endBlock ? endBlock.timestamp * 1000 : startDate + DISTRIBUTION_PERIOD_DURATION,
       fundsAvailable,
       fundingVotePowerCast
     );
