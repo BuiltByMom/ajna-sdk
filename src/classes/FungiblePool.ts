@@ -16,7 +16,7 @@ import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
 import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
-import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
+import { max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { borrowerInfo, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 
