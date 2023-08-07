@@ -6,7 +6,7 @@ import prompt from 'prompt';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { fromWad, mine, toWad } from '../src/utils';
-import { getBalance, transfer } from '../src/contracts/ajna-token';
+import { getAjnaBalance, transferAjna } from '../src/contracts/erc20';
 
 dotenv.config({ path: './testnet/.env' });
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -206,7 +206,7 @@ const handleGetVotingPower = async () => {
 const printBalance = async (address: string) => {
   const [ethBalance, ajnaBalance] = await Promise.all([
     provider.getBalance(address),
-    getBalance(provider, address),
+    getAjnaBalance(provider, address),
   ]);
   console.log(
     `address ${address} (${getIndexByAddress(address)}) has ${fromWad(ethBalance)} ETH, ${fromWad(
@@ -237,7 +237,7 @@ const handleTransfer = async () => {
   ]);
   const fromWallet = getWalletByIndex(Number(fromAddressIndex));
   const toAdress = getAddressByIndex(Number(toAddressIndex));
-  const tx = await transfer(fromWallet, toAdress, toWad(Number(amount)));
+  const tx = await transferAjna(fromWallet, toAdress, toWad(Number(amount)));
   const receipt = await tx.verifyAndSubmit();
   console.log(receipt);
   console.log(`balances after transfer:`);
