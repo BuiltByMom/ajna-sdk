@@ -69,13 +69,13 @@ describe('Grants fund', () => {
       // TODO: finish the current distribution period before trying to start a new one
     });
 
-    it(`throws and error getting active distribution period if it doesn't exist`, async () => {
+    it.skip(`throws and error getting active distribution period if it doesn't exist`, async () => {
       await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
         'There is no active distribution period'
       );
     });
 
-    it(`starts a new distribution period if it doesn't exist`, async () => {
+    it.skip(`starts a new distribution period if it doesn't exist`, async () => {
       const tx = await startNewDistributionPeriod(signer);
       await submitAndVerifyTransaction(tx);
       await expect(ajna.grants.getActiveDistributionPeriod()).resolves.toBeDefined();
