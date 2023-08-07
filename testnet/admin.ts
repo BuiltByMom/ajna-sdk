@@ -8,7 +8,7 @@ import { Config } from '../src/classes/Config';
 import { fromWad, mine, toWad } from '../src/utils';
 import { getBalance, transfer } from '../src/contracts/ajna-token';
 
-dotenv.config();
+dotenv.config({ path: './testnet/.env' });
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
@@ -75,6 +75,22 @@ const privateKeys = [
   '0x447bca6c40103b20b6a63bc967f379819cd8f82436ecb54704b3fd8011e74d00',
   '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8',
 ];
+
+const checkRequiredEnv = () => {
+  const requiredValues = ['ETH_RPC_URL', 'AJNA_TOKEN_ADDRESS', 'AJNA_GRANT_FUND'];
+  const errors: string[] = [];
+  for (const key of requiredValues) {
+    const value = process.env[key];
+    if (value === undefined || value === '') {
+      errors.push(key);
+    }
+  }
+  if (errors.length > 0) {
+    throw new Error(
+      `Improperly configured: the following environment variables are missing ${errors.join(', ')}`
+    );
+  }
+};
 
 const numberOfAccounts = publicKeys.length;
 const indexOptions = `(0-${numberOfAccounts - 1})`;
@@ -281,6 +297,7 @@ const executeOption = async (option: string) => {
 };
 
 const main = async () => {
+  checkRequiredEnv();
   console.log(mainMenuAsciiArt);
   while (true) {
     console.log(mainMenuOptions);
