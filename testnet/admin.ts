@@ -2,18 +2,16 @@
 
 import dotenv from 'dotenv';
 import { Signer, Wallet, providers } from 'ethers';
-import prompt from 'prompt';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { fromWad, mine, toWad } from '../src/utils';
 import { getAjnaBalance, transferAjna } from '../src/contracts/erc20';
+import { input } from '@inquirer/prompts';
 
 dotenv.config({ path: './testnet/.env' });
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
 Config.fromEnvironment();
 const ajna = new AjnaSDK(provider);
-
-prompt.start();
 
 const mainMenuAsciiArt = `
 
@@ -112,23 +110,9 @@ async function delegateVote(voter: Signer, delegatee: string) {
   console.log('tx receipt', receipt);
 }
 
-const promptAsync = (args: string[]): Promise<prompt.Properties> =>
-  new Promise((resolve, reject) => {
-    prompt.get(args, (error, result) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve(result);
-    });
-  });
-
 const handleDelegateVote = async () => {
-  console.log(`Select a delegator and a delegatee address by index ${indexOptions}`);
-  const { delegatorIndex, delegateeIndex } = await promptAsync([
-    'delegatorIndex',
-    'delegateeIndex',
-  ]);
+  const delegatorIndex = await input({ message: `Select a delegator by index ${indexOptions}` });
+  const delegateeIndex = await input({ message: `Select a delegatee by index ${indexOptions}` });
   const delegator = getWalletByIndex(Number(delegatorIndex));
   const delegatee = getAddressByIndex(Number(delegateeIndex));
   await delegateVote(delegator, delegatee);
@@ -140,8 +124,7 @@ const handleDelegateVote = async () => {
 };
 
 const handleGetDelegates = async () => {
-  console.log(`Select an address (or press enter to view all):`);
-  const { addressIndex } = await promptAsync(['addressIndex']);
+  const addressIndex = await input({ message: `Select an address (or press enter to view all):` });
   const printAdressDelegation = async (address: string) => {
     const result = await ajna.grants.getDelegates(address);
     console.log(
@@ -173,10 +156,9 @@ const handleStartDistributionPeriod = async () => {
 };
 
 const handleGetDistributionPeriod = async () => {
-  console.log(
-    'Enter distribution period id (or press enter to get the active distribution period)'
-  );
-  const { id } = await promptAsync(['id']);
+  const id = await input({
+    message: 'Enter distribution period id (or press enter to get the active distribution period)',
+  });
   const dp = await (id === ''
     ? ajna.grants.getActiveDistributionPeriod()
     : ajna.grants.getDistributionPeriod(Number(id)));
@@ -186,9 +168,8 @@ const handleGetDistributionPeriod = async () => {
 
 const handleGetVotingPower = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
-  console.log(`Select an address (or press enter to view all):`);
   // hint: if voting power is 0, make sure that you delegated 33 blocks before the current DP started and that the delegator has AJNA to delegate
-  const { addressIndex } = await promptAsync(['addressIndex']);
+  const addressIndex = await input({ message: `Select an address (or press enter to view all):` });
   const printVotingPower = async (address: string) => {
     const votingPower = await dp.getVotingPower(address);
     console.log(`${votingPower} for address ${address} (${getIndexByAddress(address)})`);
@@ -216,8 +197,7 @@ const printBalance = async (address: string) => {
 };
 
 const handleGetBalances = async () => {
-  console.log(`Select an address (or press enter to view all):`);
-  const { addressIndex } = await promptAsync(['addressIndex']);
+  const addressIndex = await input({ message: `Select an address (or press enter to view all):` });
   if (addressIndex === '') {
     for (const address of publicKeys) {
       await printBalance(address);
@@ -229,12 +209,9 @@ const handleGetBalances = async () => {
 };
 
 const handleTransfer = async () => {
-  console.log(`Select an address from, to and AJNA amount:`);
-  const { fromAddressIndex, toAddressIndex, amount } = await promptAsync([
-    'fromAddressIndex',
-    'toAddressIndex',
-    'amount',
-  ]);
+  const fromAddressIndex = await input({ message: `Select a from address` });
+  const toAddressIndex = await input({ message: `Select a to address` });
+  const amount = await input({ message: `Select an AJNA amount:` });
   const fromWallet = getWalletByIndex(Number(fromAddressIndex));
   const toAdress = getAddressByIndex(Number(toAddressIndex));
   const tx = await transferAjna(fromWallet, toAdress, toWad(Number(amount)));
@@ -250,8 +227,7 @@ const handleMine = async () => {
   console.log(
     'hints: mine 648.000 blocks to force the active distribution period to become unactive'
   );
-  console.log(`Enter the number of blocks:`);
-  const { numberOfBlocks } = await promptAsync(['numberOfBlocks']);
+  const numberOfBlocks = await input({ message: 'Enter the number of blocks' });
   console.log('Mining started, please wait...');
   await mine(provider, Number(numberOfBlocks), 10_000, remainingBlocks => {
     console.log(`${remainingBlocks} remaining blocks to be mined`);
@@ -301,7 +277,7 @@ const main = async () => {
   console.log(mainMenuAsciiArt);
   while (true) {
     console.log(mainMenuOptions);
-    const { option } = await promptAsync(['option']);
+    const option = await input({ message: 'option:' });
     // wrap execute in a loop so errors in specific handlers don't crash the admin
     try {
       await executeOption(option as string);
