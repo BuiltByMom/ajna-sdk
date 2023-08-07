@@ -1,31 +1,21 @@
 #!/usr/bin/env ts-node
 
 import dotenv from 'dotenv';
-import { BigNumber, providers } from 'ethers';
-import { AjnaSDK } from '../src/classes/AjnaSDK';
-import { Config } from '../src/classes/Config';
+import { BigNumber } from 'ethers';
 import { DistributionPeriod } from '../src/classes/DistributionPeriod';
 import { SCREENING } from '../src/constants';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
 import { SdkError } from '../src/types/core';
-import { addAccountFromKeystore } from '../src/utils/add-account';
 import { fromWad } from '../src/utils/numeric';
+import { initAjna } from './utils';
 
 async function run() {
   dotenv.config();
-  // Configure from environment
-  const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-  // Use this for local testnets, where JSON keystores are unavailable.
-  // const voter = addAccountFromKey(process.env.ETH_KEY || '', provider);
-  // Use this for a real chain, such as Goerli or Mainnet.
-  const voter = addAccountFromKeystore(process.env.VOTER_KEYSTORE || '', provider);
-  const voterAddress: string = process.env.VOTER_ADDRESS ?? '';
-
-  Config.fromEnvironment();
-  const ajna = new AjnaSDK(provider);
+  const { ajna, signer: signerVoter } = await initAjna('voter');
+  const voterAddress: string = signerVoter.address;
 
   async function delegateVote() {
-    const tx = await ajna.grants.delegateVote(voter, voterAddress);
+    const tx = await ajna.grants.delegateVote(signerVoter, voterAddress);
     const rece = await tx.verifyAndSubmit();
     console.log('RECEIPT', rece);
   }
@@ -44,7 +34,7 @@ async function run() {
         e instanceof SdkError &&
         e.message === 'There is no active distribution period, starting a new one'
       ) {
-        const tx = await startNewDistributionPeriod(voter);
+        const tx = await startNewDistributionPeriod(signerVoter);
         await tx.verifyAndSubmit();
         distributionPeriod = await ajna.grants.getActiveDistributionPeriod();
       } else {
@@ -65,7 +55,7 @@ async function run() {
   console.log('Voting power: ', fromWad(screeningVotes));
 
   async function castVotes() {
-    const tx = await distributionPeriod.castVotes(voter, [
+    const tx = await distributionPeriod.castVotes(signerVoter, [
       [
         BigNumber.from('0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e'),
         BigNumber.from(1),
