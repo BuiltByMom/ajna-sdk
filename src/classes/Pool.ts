@@ -27,7 +27,7 @@ import {
 } from '../contracts/pool-info-utils';
 import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
 import { Address, CallData, PoolInfoUtils, Provider, SdkError, SignerOrProvider } from '../types';
-import { toWad, wmul } from '../utils/numeric';
+import { fromWad, toWad, wmul } from '../utils/numeric';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
@@ -363,6 +363,29 @@ export abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
     const recipient = await signer.getAddress();
     return await withdrawBonds(contractPoolWithSigner, recipient, maxAmount);
+  }
+
+  /**
+   * determines whether interest rate will increase, decrease, or remain the same as a result of
+   * updating the interest rate, without regard to the 12-hour rate update interval
+   * @param poolStats pool statistics obtained from @link{Pool.getStats}
+   */
+  estimateUpdateInterest(poolStats: Stats) {
+    // calculating as numbers because squaring a WAD is complicated
+    const mau = +fromWad(poolStats.actualUtilization);
+    const mau102 = mau * 1.02;
+    const tu = +fromWad(poolStats.targetUtilization);
+
+    if (4 * (tu - mau102) < (tu + mau102 - 1) ** 2 - 1) {
+      // raise rates
+      return wmul(poolStats.borrowRate, toWad('1.1'));
+    } else if (4 * (tu - mau) > 1 - (tu + mau - 1) ** 2) {
+      // lower rates
+      return wmul(poolStats.borrowRate, toWad('0.9'));
+    } else {
+      // rates remain unchanged
+      return poolStats.borrowRate;
+    }
   }
 
   /**

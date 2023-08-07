@@ -41,7 +41,6 @@ class Config {
    */
   static fromEnvironment() {
     return new Config(
-      // TODO: remove "CONTRACT" from env var names
       process.env.AJNA_ERC20_POOL_FACTORY || '',
       process.env.AJNA_ERC721_POOL_FACTORY || '',
       process.env.AJNA_POOL_UTILS || '',

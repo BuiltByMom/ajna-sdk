@@ -12,6 +12,7 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
+import { Stats } from '../classes/Pool';
 
 jest.setTimeout(1200000);
 
@@ -128,6 +129,41 @@ describe('ERC20 Pool', () => {
     await tx.verifyAndSubmit();
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
     await submitAndVerifyTransaction(tx);
+  });
+
+  it('should estimate interest rate change successfully', async () => {
+    const poolStats: Stats = {
+      poolSize: constants.Zero,
+      debt: constants.Zero,
+      liquidationDebt: constants.Zero,
+      loansCount: 0,
+      minDebtAmount: constants.Zero,
+      collateralization: constants.Zero,
+      actualUtilization: toWad('0.5'),
+      targetUtilization: toWad('0.5'),
+      reserves: constants.Zero,
+      claimableReserves: constants.Zero,
+      claimableReservesRemaining: constants.Zero,
+      reserveAuctionPrice: constants.Zero,
+      borrowRate: toWad(1.53),
+      pendingInflator: constants.Zero,
+    };
+
+    // rates should stay the same
+    let newRate = poolA.estimateUpdateInterest(poolStats);
+    expect(newRate).toEqual(poolStats.borrowRate);
+
+    // rates should increase
+    poolStats.actualUtilization = toWad('0.8');
+    poolStats.targetUtilization = toWad('0.4');
+    newRate = poolA.estimateUpdateInterest(poolStats);
+    expect(newRate).toEqual(wmul(poolStats.borrowRate, toWad(1.1)));
+
+    // rates should decrease
+    poolStats.actualUtilization = toWad('0.5');
+    poolStats.targetUtilization = toWad('0.9');
+    newRate = poolA.estimateUpdateInterest(poolStats);
+    expect(newRate).toEqual(wmul(poolStats.borrowRate, toWad(0.9)));
   });
 
   it('should update interest rate successfully', async () => {
