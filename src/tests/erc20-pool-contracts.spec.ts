@@ -5,7 +5,7 @@ import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine, timeJump } from '../utils/ganache';
-import { fromWad, toWad, wmul } from '../utils/numeric';
+import { fromWad, toWad, wdiv, wmul } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { getBlockTime, getExpiry } from '../utils/time';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -390,6 +390,61 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
     expect(loanEstimate.liquidationBond).toBeBetween(toWad(150), toWad(305));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
+  });
+
+  it('should use estimateRepay successfully', async () => {
+    const borrower = await signerBorrower.getAddress();
+    const loan = await poolA.getLoan(borrower);
+    const prices = await poolA.getPrices();
+
+    // estimate full repay loan
+    let loanEstimate = await poolA.estimateRepay(borrower, loan.debt, loan.collateral);
+    expect(loanEstimate.collateralization).toEqual(toWad(1));
+    expect(loanEstimate.debt).toEqual(toWad(0));
+    expect(loanEstimate.collateral).toEqual(toWad(0));
+    expect(loanEstimate.thresholdPrice).toEqual(toWad(0));
+    expect(loanEstimate.neutralPrice).toEqual(toWad(0));
+    expect(loanEstimate.liquidationBond).toEqual(toWad(0));
+    expect(loanEstimate.lup.gte(prices.lup));
+    expect(loanEstimate.lupIndex).toEqual(0);
+
+    // estimate with no repay, no change
+    loanEstimate = await poolA.estimateRepay(signerDeployer.address, toWad(0), toWad(0));
+    expect(loanEstimate.collateralization).toEqual(toWad(1));
+    expect(loanEstimate.debt).toEqual(toWad(0));
+    expect(loanEstimate.collateral).toEqual(toWad(0));
+    expect(loanEstimate.thresholdPrice).toEqual(toWad(0));
+    expect(loanEstimate.neutralPrice).toEqual(toWad(0));
+    expect(loanEstimate.liquidationBond).toEqual(toWad(0));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
+
+    // estimate partial repay
+    loanEstimate = await poolA.estimateRepay(borrower, loan.debt.div(2), loan.collateral.div(4));
+
+    expect(+fromWad(loanEstimate.collateralization)).toBeGreaterThan(
+      +fromWad(loan.collateralization)
+    );
+    expect(loanEstimate.debt).toEqual(wdiv(loan.debt, toWad(2)));
+    expect(loanEstimate.collateral).toEqual(loan.collateral.sub(loan.collateral.div(4)));
+    expect(+fromWad(loanEstimate.thresholdPrice)).toBeCloseTo(
+      +fromWad(wdiv(loan.thresholdPrice, toWad(1.5)))
+    );
+    expect(+fromWad(loanEstimate.neutralPrice)).toBeLessThan(+fromWad(loan.neutralPrice));
+    expect(+fromWad(loanEstimate.liquidationBond)).toBeLessThan(+fromWad(loan.liquidationBond));
+    expect(+fromWad(loanEstimate.lup)).toBeGreaterThan(+fromWad(prices.lup));
+    expect(loanEstimate.lupIndex).toBeLessThan(prices.lupIndex);
+
+    // estimate 0 change against canned loan
+    loanEstimate = await poolA.estimateRepay(borrower, toWad(0), toWad(0));
+    expect(+fromWad(loanEstimate.collateralization)).toBeCloseTo(+fromWad(loan.collateralization));
+    expect(+fromWad(loanEstimate.debt)).toBeCloseTo(+fromWad(loan.debt));
+    expect(loanEstimate.collateral).toEqual(loan.collateral);
+    expect(loanEstimate.thresholdPrice).toEqual(loan.thresholdPrice);
+    expect(+fromWad(loanEstimate.neutralPrice)).toBeCloseTo(+fromWad(loan.neutralPrice));
+    expect(+fromWad(loanEstimate.liquidationBond)).toBeCloseTo(+fromWad(loan.liquidationBond));
     expect(loanEstimate.lup).toEqual(prices.lup);
     expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
