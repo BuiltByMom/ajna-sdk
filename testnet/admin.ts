@@ -1,12 +1,15 @@
 #!/usr/bin/env ts-node
 
 import dotenv from 'dotenv';
-import { Signer, Wallet, providers } from 'ethers';
+import { BigNumber, Signer, Wallet, providers } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { Config } from '../src/classes/Config';
 import { fromWad, mine, toWad } from '../src/utils';
 import { getAjnaBalance, transferAjna } from '../src/contracts/erc20';
 import { input } from '@inquirer/prompts';
+import { Address } from '../src/types';
+import { DistributionPeriod } from '../src/classes/DistributionPeriod';
+import { getProposalIdFromReceipt } from '../src/contracts/grant-fund';
 
 dotenv.config({ path: './testnet/.env' });
 const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
@@ -31,6 +34,9 @@ Please enter one of the options below:
 - 6: get voting power for address
 - 7: get ETH/AJNA balances
 - 8: transfer AJNA
+- 10: create proposal
+- 11: cast votes
+- 12: get proposals
 
 - 9: mine: mine a given number of blocks
 - 0: exit
@@ -166,21 +172,22 @@ const handleGetDistributionPeriod = async () => {
   console.log(`stage: ${await dp.distributionPeriodStage()}`);
 };
 
+const printVotingPower = async (dp: DistributionPeriod, address: string) => {
+  const votingPower = await dp.getVotingPower(address);
+  console.log(`${votingPower} for address ${address} (${getIndexByAddress(address)})`);
+};
+
 const handleGetVotingPower = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
   // hint: if voting power is 0, make sure that you delegated 33 blocks before the current DP started and that the delegator has AJNA to delegate
   const addressIndex = await input({ message: `Select an address (or press enter to view all):` });
-  const printVotingPower = async (address: string) => {
-    const votingPower = await dp.getVotingPower(address);
-    console.log(`${votingPower} for address ${address} (${getIndexByAddress(address)})`);
-  };
   if (addressIndex === '') {
     for (const address of publicKeys) {
-      await printVotingPower(address);
+      await printVotingPower(dp, address);
     }
   } else {
     const address = getAddressByIndex(Number(addressIndex));
-    await printVotingPower(address);
+    await printVotingPower(dp, address);
   }
 };
 
@@ -222,6 +229,81 @@ const handleTransfer = async () => {
   await printBalance(toAdress);
 };
 
+const handlePropose = async () => {
+  const title = await input({ message: `Enter a title` });
+  const recipientAddresses: Array<{
+    address: Address;
+    amount: string;
+  }> = [];
+  while (true) {
+    const canSkip = recipientAddresses.length >= 1;
+    const skipText = '(or press enter to continue)';
+    const addressIndex = await input({
+      message: `Select a recipient address ${indexOptions} ${canSkip ? skipText : ''}`,
+    });
+    if (addressIndex === '' && canSkip) {
+      break;
+    }
+    const amount = await input({ message: `Enter an amount for this address` });
+    recipientAddresses.push({
+      address: getAddressByIndex(Number(addressIndex)),
+      amount,
+    });
+  }
+  const externalLink = await input({
+    message: `Enter an external link (or press enter to leave blank)`,
+  });
+  const ipfsHash = await input({ message: `Enter an ipfsHash (or press enter to leave blank)` });
+  const arweaveTxid = await input({
+    message: `Enter an arweaveTxid (or press enter to leave blank)`,
+  });
+
+  const params = {
+    title,
+    recipientAddresses,
+    externalLink,
+    ipfsHash,
+    arweaveTxid,
+  };
+
+  const tx = await ajna.grants.createProposal(defaultSigner, params);
+  const receipt = await tx.verifyAndSubmit();
+  console.log('tx receipt', receipt);
+  console.log(`Proposal created with id: ${getProposalIdFromReceipt(receipt)}`);
+};
+
+const handleVote = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  const votesToCast: Array<[BigNumber, BigNumber]> = [];
+  dp.castVotes(defaultSigner, votesToCast);
+  const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
+  const voterAddress = getAddressByIndex(Number(addressIndex));
+  await printVotingPower(dp, voterAddress);
+  while (true) {
+    const canSkip = votesToCast.length >= 1;
+    const skipText = '(or press enter to continue)';
+    const proposalId = await input({
+      message: `Enter a proposal id ${canSkip ? skipText : ''}`,
+    });
+    if (proposalId === '' && canSkip) {
+      break;
+    }
+    const numberOfVotes = await input({ message: `Enter the number of votes for this proposal` });
+    votesToCast.push([BigNumber.from(proposalId), BigNumber.from(numberOfVotes)]);
+  }
+  const tx = await dp.castVotes(defaultSigner, votesToCast);
+  const receipt = await tx.verifyAndSubmit();
+  console.log('tx receipt', receipt);
+  console.log('Votes cast');
+};
+
+const handleGetProposal = async () => {
+  const proposalId = await input({ message: 'Enter proposalId' });
+  const id = BigNumber.from(proposalId);
+  const proposal = await ajna.grants.getProposal(id);
+  console.log(await proposal.getInfo());
+};
+
 const handleMine = async () => {
   console.log(`Current block: ${await provider.getBlockNumber()}`);
   console.log(
@@ -261,6 +343,15 @@ const executeOption = async (option: string) => {
       break;
     case '8':
       await handleTransfer();
+      break;
+    case '10':
+      await handlePropose();
+      break;
+    case '11':
+      await handleVote();
+      break;
+    case '12':
+      await handleGetProposal();
       break;
     case '9':
       await handleMine();
