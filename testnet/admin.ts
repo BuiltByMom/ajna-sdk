@@ -275,9 +275,9 @@ const handlePropose = async () => {
 const handleVote = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
   const votesToCast: Array<[BigNumber, BigNumber]> = [];
-  dp.castVotes(defaultSigner, votesToCast);
   const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
   const voterAddress = getAddressByIndex(Number(addressIndex));
+  const voter = getWalletByIndex(Number(addressIndex));
   await printVotingPower(dp, voterAddress);
   while (true) {
     const canSkip = votesToCast.length >= 1;
@@ -289,9 +289,9 @@ const handleVote = async () => {
       break;
     }
     const numberOfVotes = await input({ message: `Enter the number of votes for this proposal` });
-    votesToCast.push([BigNumber.from(proposalId), BigNumber.from(numberOfVotes)]);
+    votesToCast.push([BigNumber.from(proposalId), toWad(Number(numberOfVotes))]);
   }
-  const tx = await dp.castVotes(defaultSigner, votesToCast);
+  const tx = await dp.castVotes(voter, votesToCast);
   const receipt = await tx.verifyAndSubmit();
   console.log('tx receipt', receipt);
   console.log('Votes cast');
