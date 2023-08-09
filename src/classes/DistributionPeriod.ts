@@ -12,6 +12,7 @@ import {
 } from '../contracts/grant-fund';
 import { Address, IDistributionPeriod, SdkError, SignerOrProvider, VoteParams } from '../types';
 import { ContractBase } from './ContractBase';
+import { fromWad } from '../utils';
 
 /**
  * Class used to iteract with distribution periods.
@@ -46,6 +47,18 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     this.endDate = endDate;
     this.fundsAvailable = fundsAvailable;
     this.votesCount = votesCount;
+  }
+
+  toString() {
+    return `distribution period #${this.id}
+is active: ${this.isActive ? 'yes' : 'no'}
+start block: ${this.startBlock}
+start date: ${new Date(this.startDate)}
+end block: ${this.endBlock}
+end date: ${new Date(this.endDate)}
+funds available: ${fromWad(this.fundsAvailable)}
+votes count: ${fromWad(this.votesCount)}
+`;
   }
 
   /**
