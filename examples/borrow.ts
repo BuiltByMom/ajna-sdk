@@ -113,6 +113,7 @@ async function run() {
   const loan = await pool.getLoan(await signerBorrower.getAddress());
   console.log(
     `Borrower has ${fromWad(loan.debt)} debt with ${fromWad(loan.collateral)} pledged`,
+    `${fromWad(loan.neutralPrice)} neutral price`,
     `and is ${fromWad(loan.collateralization)} collateralized`
   );
 
