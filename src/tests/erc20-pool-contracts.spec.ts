@@ -371,6 +371,18 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
 
+    // estimate 0 change against canned loan
+    const loan = await poolA.getLoan(signerBorrower.address);
+    loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(0), toWad(0));
+    expect(+fromWad(loanEstimate.collateralization)).toBeCloseTo(+fromWad(loan.collateralization));
+    expect(+fromWad(loanEstimate.debt)).toBeCloseTo(+fromWad(loan.debt));
+    expect(loanEstimate.collateral).toEqual(loan.collateral);
+    expect(loanEstimate.thresholdPrice).toEqual(loan.thresholdPrice);
+    expect(+fromWad(loanEstimate.neutralPrice)).toBeCloseTo(+fromWad(loan.neutralPrice));
+    expect(+fromWad(loanEstimate.liquidationBond)).toBeCloseTo(+fromWad(loan.liquidationBond));
+    expect(loanEstimate.lup).toEqual(prices.lup);
+    expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
+
     // estimate with no loan, no change
     loanEstimate = await poolA.estimateLoan(signerDeployer.address, toWad(0), toWad(0));
     expect(loanEstimate.collateralization).toEqual(toWad(1));
