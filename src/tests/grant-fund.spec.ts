@@ -9,6 +9,7 @@ import { mine, timeJump } from '../utils/ganache';
 import { fromWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
+import { optimize } from '../utils/grant-fund';
 
 jest.setTimeout(1200000);
 
@@ -250,6 +251,93 @@ describe('Grants fund', () => {
       expect(fromWad(voterInfo[0])).toBe('489860010000000000.0');
       expect(fromWad(voterInfo[1])).toBe('489860010000000000.0');
       expect(fromWad(voterInfo[2])).toBe('0.000000000000000002');
+    });
+  });
+  describe('Optimize', () => {
+    it('should throw error when votes are equal to zero', async () => {
+      expect(
+        async () =>
+          await optimize(100, [
+            ['1', 0],
+            ['2', 0],
+          ])
+      ).rejects.toThrowError('Constraint not satisfied: all votes are 0');
+    });
+    it('should rescale votes correctly', async () => {
+      const optimizedVotes = await optimize(100, [
+        ['1', 12],
+        ['2', 0],
+      ]);
+      expect(optimizedVotes[0][1]).toBe(100);
+      expect(optimizedVotes[1][1]).toBe(0);
+      const resultSum = optimizedVotes.reduce((accumulator, vote) => {
+        return accumulator + vote[1];
+      }, 0);
+      expect(resultSum).toBe(100);
+    });
+    it('should work as expected when voting power is 100', async () => {
+      const optimizedVotes = await optimize(100, [
+        ['1', 1],
+        ['2', -2],
+        ['3', 3],
+        ['4', 4],
+        ['5', 0],
+        ['6', 6],
+        ['7', 7],
+        ['8', 8],
+        ['9', -9],
+        ['10', 10],
+      ]);
+      expect(optimizedVotes[0][1]).toBe(2.5641025641025643);
+      expect(optimizedVotes[1][1]).toBe(-5.128205128205129);
+      expect(optimizedVotes[2][1]).toBe(7.692307692307693);
+      expect(optimizedVotes[3][1]).toBe(10.256410256410257);
+      expect(optimizedVotes[4][1]).toBe(0);
+      expect(optimizedVotes[5][1]).toBe(15.384615384615387);
+      expect(optimizedVotes[6][1]).toBe(17.94871794871795);
+      expect(optimizedVotes[7][1]).toBe(20.512820512820515);
+      expect(optimizedVotes[8][1]).toBe(-23.07692307692308);
+      expect(optimizedVotes[9][1]).toBe(25.641025641025642);
+      let resultSum = optimizedVotes.reduce((accumulator, vote) => {
+        return accumulator + vote[1];
+      }, 0);
+      expect(resultSum).toBe(71.7948717948718);
+      const optimizedVotes2 = await optimize(10000, [
+        ['1', 1],
+        ['2', -1],
+        ['3', 1],
+        ['4', -1],
+        ['5', 1],
+        ['6', -1],
+        ['7', 1],
+        ['8', -1],
+        ['9', 1],
+        ['10', 0],
+      ]);
+      expect(optimizedVotes2[8][1]).toBe(2000);
+      resultSum = optimizedVotes2.reduce((accumulator, vote) => {
+        return accumulator + vote[1];
+      }, 0);
+      expect(resultSum).toBe(2000);
+    });
+    it('should work as expected when voting power is 10000', async () => {
+      const optimizedVotes = await optimize(10000, [
+        ['1', 0],
+        ['2', 1000000],
+        ['3', 0],
+        ['4', 0],
+        ['5', 0],
+        ['6', 0],
+        ['7', 0],
+        ['8', 0],
+        ['9', 0],
+        ['10', 0],
+      ]);
+      expect(optimizedVotes[1][1]).toBe(10000);
+      const resultSum = optimizedVotes.reduce((accumulator, vote) => {
+        return accumulator + vote[1];
+      }, 0);
+      expect(resultSum).toBe(10000);
     });
   });
 });
