@@ -81,6 +81,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
       _distributionId,
       startBlockNumber,
       endBlockNumber,
+      fundedSlateHash,
       fundsAvailable,
       fundingVotePowerCast,
     ] = await getDistributionPeriod(provider, distributionId);
@@ -98,6 +99,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
       startDate,
       endBlockNumber,
       endBlock ? endBlock.timestamp * 1000 : startDate + DISTRIBUTION_PERIOD_DURATION,
+      fundedSlateHash,
       fundsAvailable,
       fundingVotePowerCast
     );

@@ -151,3 +151,23 @@ export async function fundingVote(signer: Signer, votes: VoteParams[]) {
     args: [votes],
   });
 }
+
+export async function updateSlate(
+  signer: Signer,
+  proposalIds: BigNumber[],
+  distributionId: number
+) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'updateSlate',
+    args: [proposalIds, distributionId],
+  });
+}
+
+export async function getFundedProposalSlate(
+  provider: SignerOrProvider,
+  slateHash: string
+): Promise<BigNumber[]> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getFundedProposalSlate(slateHash);
+}

@@ -150,6 +150,7 @@ export interface IDistributionPeriod {
   startDate: number;
   endBlock: number;
   endDate: number;
+  fundedSlateHash: string;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
   /** retrieve a bytes32 hash of the current distribution period stage. */
@@ -174,6 +175,21 @@ export interface IDistributionPeriod {
   fundingVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of screening or funding votes (based on current distribution period stage). */
   castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals. */
+  updateSlate(signer: Signer, proposals: ProposalInfo[]): Promise<WrappedTransaction>;
+  /** get the funded proposal slate for the current distribution period */
+  getFundedProposalSlate(): Promise<ProposalInfo[]>;
+  /** get best proposals based on the combination of votes received and tokens requested over tokens available. */
+  getOptimalProposals(tokensAvailable: BigNumber): Promise<ProposalInfo[]>;
+}
+
+// export type DistributionPeriodStage = 'Screening' | 'Funding' | 'Challenge' | 'Finalize';
+
+export enum DistributionPeriodStage {
+  SCREENING = 'Screening',
+  FUNDING = 'Funding',
+  CHALLENGE = 'Challenge',
+  FINALIZE = 'Finalize',
 }
 
 export type ProposalParams = {
@@ -214,4 +230,11 @@ export interface IProposal {
     executed: boolean;
   }>;
   getState(): Promise<ProposalState>;
+}
+
+export type ProposalInfoArray = [BigNumber, number, BigNumber, BigNumber, BigNumber, boolean];
+export interface ProposalInfo {
+  proposalId: BigNumber;
+  votesReceived: BigNumber;
+  tokensRequested: BigNumber;
 }

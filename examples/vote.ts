@@ -3,11 +3,11 @@
 import dotenv from 'dotenv';
 import { BigNumber } from 'ethers';
 import { DistributionPeriod } from '../src/classes/DistributionPeriod';
-import { SCREENING } from '../src/constants';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
 import { SdkError } from '../src/types/core';
-import { fromWad } from '../src/utils/numeric';
+import { fromWad, toWad } from '../src/utils/numeric';
 import { initAjna } from './utils';
+import { DistributionPeriodStage } from '../src/types/classes';
 
 async function run() {
   dotenv.config();
@@ -58,7 +58,7 @@ async function run() {
     const tx = await distributionPeriod.castVotes(signerVoter, [
       [
         BigNumber.from('0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e'),
-        BigNumber.from(1),
+        BigNumber.from(toWad(1)),
       ],
     ]);
     const estimatedGas = await tx.verify();
@@ -78,7 +78,7 @@ async function run() {
   console.log('Funding votes cast: ', fundingVotesCastData);
 
   const isDistributionPeriodOnScreeningStage =
-    (await distributionPeriod.distributionPeriodStage()) === SCREENING;
+    (await distributionPeriod.distributionPeriodStage()) === DistributionPeriodStage.SCREENING;
 
   if (!isDistributionPeriodOnScreeningStage) {
     const voterInfo = await distributionPeriod.getVoterInfo(delegatee);
