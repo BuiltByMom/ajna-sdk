@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, BigNumberish, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
@@ -296,7 +296,7 @@ export abstract class Pool {
     return await lpAllowance(this.contract, index, spender, owner);
   }
 
-  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumberish[]) {
+  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumber[]) {
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
     return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);

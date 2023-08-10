@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
+import { BigNumber, Contract, Signer } from 'ethers';
 import {
   getPositionManagerContract,
   isIndexInPosition,
@@ -40,14 +40,14 @@ export class LPToken {
     return await tokenURI(this.provider, this.tokenId);
   }
 
-  async isIndexInPosition(index: BigNumberish, tokenId: BigNumber = this.tokenId) {
+  async isIndexInPosition(index: number, tokenId: BigNumber = this.tokenId) {
     return await isIndexInPosition(this.provider, tokenId, index);
   }
 
   async memorializePositions(
     signer: Signer,
     pool: Contract,
-    tokenId: BigNumberish,
+    tokenId: BigNumber,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {

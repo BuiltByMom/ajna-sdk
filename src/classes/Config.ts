@@ -3,7 +3,6 @@ import { Address } from '../types';
 /**
  * manages static protocol configuration, particularly contract addresses for a single chain
  */
-
 class Config {
   static erc20PoolFactory: Address;
   static erc721PoolFactory: Address;
@@ -11,14 +10,16 @@ class Config {
   static positionManager: Address;
   static ajnaToken: Address;
   static grantFund: Address;
+  static burnWrapper: Address;
 
   /**
    * allows consumer to configure with their own addresses
    * @param erc20PoolFactory address of the factory contract which creates fungible pools
    * @param erc721PoolFactory address of the factory contract which creates NFT pools
    * @param poolUtils address of the readonly utility contract
-   * @param ajnaToken address of the Ajna token contract
-   * @param grantFund address of the Ajna token contract
+   * @param ajnaToken address of the AJNA token contract
+   * @param grantFund address of the ecosystem coordination contract
+   * @param burnWrapper address of the contract used to wrap AJNA for transferring across an L2 bridge
    */
   constructor(
     erc20PoolFactory: Address,
@@ -26,7 +27,8 @@ class Config {
     poolUtils: Address,
     positionManager: Address,
     ajnaToken: Address,
-    grantFund: Address
+    grantFund: Address,
+    burnWrapper: Address
   ) {
     Config.erc20PoolFactory = erc20PoolFactory;
     Config.erc721PoolFactory = erc721PoolFactory;
@@ -34,6 +36,7 @@ class Config {
     Config.positionManager = positionManager;
     Config.ajnaToken = ajnaToken;
     Config.grantFund = grantFund;
+    Config.burnWrapper = burnWrapper;
   }
 
   /**
@@ -46,7 +49,8 @@ class Config {
       process.env.AJNA_POOL_UTILS || '',
       process.env.AJNA_POSITION_MANAGER || '',
       process.env.AJNA_TOKEN_ADDRESS || '',
-      process.env.AJNA_GRANT_FUND || ''
+      process.env.AJNA_GRANT_FUND || '',
+      process.env.AJNA_BURN_WRAPPER || ''
     );
   }
 }

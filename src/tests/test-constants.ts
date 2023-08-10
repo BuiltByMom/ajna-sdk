@@ -20,5 +20,6 @@ export const testnetAddresses = new Config(
   poolUtilsAddress,
   positionManagerAddress,
   ajnaTokenAddress,
-  grantFundAddress
+  grantFundAddress,
+  '' // TODO: deploy burnWrapper to testnet
 );

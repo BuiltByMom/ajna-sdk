@@ -1,18 +1,15 @@
 import { TransactionReceipt } from '@ethersproject/providers';
 import { BigNumber, Contract, Signer, ethers } from 'ethers';
-import ajnaTokenAbi from '../abis/AjnaToken.json';
 import grantsFundAbi from '../abis/GrantFund.json';
+import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
+import { getAjnaTokenContract } from './common';
 import { Address, ProposalParams, SignerOrProvider, VoteParams } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 
 export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
-};
-
-export const getAjnaTokenContract = (provider: SignerOrProvider) => {
-  return new ethers.Contract(checksumAddress(Config.ajnaToken), ajnaTokenAbi, provider);
 };
 
 // Delegate

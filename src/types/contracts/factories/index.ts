@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export { AjnaToken__factory } from './AjnaToken__factory';
+export { BurnWrappedAjna__factory } from './BurnWrappedAjna__factory';
 export { ERC20__factory } from './ERC20__factory';
 export { ERC20Pool__factory } from './ERC20Pool__factory';
 export { ERC20PoolFactory__factory } from './ERC20PoolFactory__factory';

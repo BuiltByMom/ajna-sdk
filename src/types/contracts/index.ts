@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { AjnaToken } from './AjnaToken';
+export type { BurnWrappedAjna } from './BurnWrappedAjna';
 export type { ERC20 } from './ERC20';
 export type { ERC20Pool } from './ERC20Pool';
 export type { ERC20PoolFactory } from './ERC20PoolFactory';
@@ -14,6 +15,7 @@ export type { PositionManager } from './PositionManager';
 export type { RewardsManager } from './RewardsManager';
 export * as factories from './factories';
 export { AjnaToken__factory } from './factories/AjnaToken__factory';
+export { BurnWrappedAjna__factory } from './factories/BurnWrappedAjna__factory';
 export { ERC20__factory } from './factories/ERC20__factory';
 export { ERC20Pool__factory } from './factories/ERC20Pool__factory';
 export { ERC20PoolFactory__factory } from './factories/ERC20PoolFactory__factory';
