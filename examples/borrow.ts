@@ -7,7 +7,7 @@ import { BigNumber, Signer, constants } from 'ethers';
 import { indexToPrice, priceToIndex } from '../src/utils/pricing';
 import { Stats } from '../src/classes/Pool';
 import dotenv from 'dotenv';
-import { Loan } from '../src/types';
+import { Loan, WrappedTransaction } from '../src/types';
 import { initAjna } from './utils';
 
 dotenv.config();
@@ -61,31 +61,34 @@ async function adjustLoan(
 
   // determine how much collateral needed to achieve desired total collateralization
   const totalCollateralRequired = wmul(wdiv(proposedBorrowerDebt, price), collateralization);
-  const collateralToPledge = totalCollateralRequired.sub(currentLoan.collateral);
+  let collateralToPledge = totalCollateralRequired.sub(currentLoan.collateral);
 
+  let tx: WrappedTransaction;
   if (collateralToPledge.gt(toWad(0))) {
     console.log(
       `Will pledge ${fromWad(collateralToPledge)} collateral to achieve ${fromWad(
         collateralization
       )} borrower collateralization`
     );
-    // submit TXes to approve and draw new debt
-    let tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
+    // submit TX to approve collateral which will be added
+    tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
     await tx.verifyAndSubmit();
-    tx = await pool.drawDebt(signerBorrower, debtToDraw, collateralToPledge, limitIndex);
-    await tx.verifyAndSubmit();
-    console.log('Drew', fromWad(debtToDraw), 'debt');
   } else {
     // submit TX to pull collateral
     const collateralToPull = collateralToPledge.mul(-1);
-    const tx = await pool.repayDebt(signerBorrower, toWad(0), collateralToPull);
+    tx = await pool.repayDebt(signerBorrower, toWad(0), collateralToPull);
     await tx.verifyAndSubmit();
     console.log(
       `Pulled ${fromWad(collateralToPull)} collateral to reduce collateralization to ${fromWad(
         collateralization
       )}`
     );
+    collateralToPledge = toWad(0);
   }
+  // pledge collateral, draw debt if requested
+  tx = await pool.drawDebt(signerBorrower, debtToDraw, collateralToPledge, limitIndex);
+  await tx.verifyAndSubmit();
+  if (debtToDraw.gt(toWad(0))) console.log('Drew', fromWad(debtToDraw), 'debt');
 }
 
 async function repayLoan(

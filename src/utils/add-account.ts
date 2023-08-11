@@ -18,7 +18,7 @@ export const addAccountFromKeystore = async (
     pw !== ''
       ? pw
       : await password({
-          message: 'Enter a password to encrypt your new keystore wallet',
+          message: 'Please enter your keystore password',
           mask: '*',
         });
 
