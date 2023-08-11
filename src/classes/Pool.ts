@@ -97,7 +97,7 @@ export interface Stats {
   /** interest rate paid by borrowers */
   borrowRate: BigNumber;
   /** the timestamp of the last interest rate update. */
-  interestRateUpdate: BigNumber;
+  interestRateLastUpdated: number;
   /** can be multiplied by t0debt (obtained elsewhere) to determine current debt */
   pendingInflator: BigNumber;
 }
@@ -245,7 +245,7 @@ export abstract class Pool {
       claimableReservesRemaining: BigNumber.from(claimableReservesRemaining),
       reserveAuctionPrice: BigNumber.from(auctionPrice),
       borrowRate: rateInfo[0],
-      interestRateUpdate: rateInfo[1],
+      interestRateLastUpdated: +rateInfo[1],
       pendingInflator: BigNumber.from(pendingInflator),
     };
   }

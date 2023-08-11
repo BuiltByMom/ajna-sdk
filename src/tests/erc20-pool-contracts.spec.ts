@@ -146,6 +146,7 @@ describe('ERC20 Pool', () => {
       claimableReservesRemaining: constants.Zero,
       reserveAuctionPrice: constants.Zero,
       borrowRate: toWad(1.53),
+      interestRateLastUpdated: await getBlockTime(provider),
       pendingInflator: constants.Zero,
     };
 
