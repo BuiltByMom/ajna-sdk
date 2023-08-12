@@ -2,6 +2,9 @@
 
 A typescript SDK that can be used to create Dapps and keepers in the Ajna ecosystem.
 
+[![Unit Tests](https://github.com/ajna-finance/sdk/workflows/Unit%20Tests/badge.svg)](https://github.com/ajna-finance/sdk/actions?query=workflow%3A%22Unit+Tests%22)
+[![Lint](https://github.com/ajna-finance/sdk/workflows/Lint/badge.svg)](https://github.com/ajna-finance/sdk/actions?query=workflow%3ALint)
+
 ## Setup
 
 - Install/select Node.js 14/16/18 using your preferred package/version manager. Note that CI runs against Node 14, but the linter requires ^16.14 or ^18.
@@ -61,3 +64,6 @@ This package offers a facility to translate ABIs as compiled to a format consuma
 This facility was tested against `brownie` compilation output.
 
 After updating ABIs, run `yarn typechain-abis` to generate typescript wrappers around contracts. Be sure to prettify generated code before committing.
+
+## Contributing
+If you have suggestions for how SDK library boilerplate could be improved, or want to report a bug, open an issue! We'd love all and any contributions.

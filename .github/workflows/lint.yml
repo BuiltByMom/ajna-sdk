@@ -1,0 +1,31 @@
+name: Lint
+
+on:
+  push:
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: yarn install
+
+      # ESLint and Prettier must be in `package.json`
+      - name: Run Eslint
+        run: yarn lint
+
+      - name: Run Prettier
+        run: yarn prettier
