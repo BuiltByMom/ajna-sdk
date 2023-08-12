@@ -64,7 +64,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    */
   async getPool(
     collateralAddress: Address,
-    subset: any,
+    subset: Array<number>,
     quoteAddress: Address
   ): Promise<NonfungiblePool> {
     const poolAddress = await this.getPoolAddress(collateralAddress, subset, quoteAddress);
@@ -95,12 +95,15 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    */
   async getPoolAddress(
     collateralAddress: Address,
-    subset: any,
+    subset: Array<number>,
     quoteAddress: Address
   ): Promise<Address> {
     const provider = this.getProvider();
 
-    const hash = await getSubsetHash(provider, subset);
+    const hash = await getSubsetHash(
+      provider,
+      subset.map(val => BigNumber.from(val))
+    );
     return await getDeployedPools(provider, collateralAddress, quoteAddress, hash);
   }
 }

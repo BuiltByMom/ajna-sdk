@@ -1,6 +1,6 @@
 import { BigNumber, Signer, constants } from 'ethers';
 import { getBlockTime, getExpiry } from '../utils/time';
-import { MAX_FENWICK_INDEX, ONE_PERCENT_WAD } from '../constants';
+import { MAX_FENWICK_INDEX } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
   addCollateral,
@@ -16,7 +16,7 @@ import { debtInfo, depositIndex } from '../contracts/pool';
 import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
 import { Liquidation } from './Liquidation';
 import { Pool } from './Pool';
-import { max, min, toWad, wdiv, wmul } from '../utils/numeric';
+import { toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { borrowerInfo, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 
@@ -157,126 +157,6 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
-  }
-
-  /**
-   * calculates bond required to liquidate a borrower
-   * @param momp most optimistic matching price of the pool
-   * @param tp threshold price of the loan
-   * @param borrowerDebt loan debt
-   * @returns required liquidation bond, in WAD precision
-   */
-  calculateLiquidationBond(momp: BigNumber, tp: BigNumber, borrowerDebt: BigNumber) {
-    // if threshold price > momp, bond factor is 1%
-    // otherwise, bond factor is 1-(tp/momp), bounded between 1% and 30%
-    const bondFactor = tp.gte(momp)
-      ? ONE_PERCENT_WAD
-      : min(toWad('0.3'), max(ONE_PERCENT_WAD, toWad(1).sub(wdiv(tp, momp))));
-    // bond = bondFactor * debt
-    return wmul(bondFactor, borrowerDebt);
-  }
-
-  /**
-    retrieves origination fee rate for this pool; multiply by new debt to get fee
-    @returns origination fee rate, in WAD precision
-   */
-  async getOriginationFeeRate() {
-    return await this.poolInfoContractUtils.borrowFeeRate(this.poolAddress);
-  }
-
-  /**
-   * retrieve information for a specific loan
-   * @param borrowerAddress identifies the loan
-   * @returns {@link Loan}
-   */
-  async getLoan(borrowerAddress: Address): Promise<Loan> {
-    const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
-    const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
-    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
-      this.poolAddress,
-      borrowerAddress
-    );
-    const auctionStatusCall = this.contractUtilsMulti.auctionStatus(
-      this.poolAddress,
-      borrowerAddress
-    );
-
-    const response: BigNumber[][] = await this.ethcallProvider.all([
-      poolPricesInfoCall,
-      poolMompCall,
-      poolLoansInfoCall,
-      borrowerInfoCall,
-      auctionStatusCall,
-    ]);
-
-    const [, , , , lup] = response[0];
-    const momp = BigNumber.from(response[1]);
-    const [, , , pendingInflator] = response[2];
-    const [debt, collateral, t0np] = response[3];
-    const [kickTimestamp] = response[4];
-    const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
-    const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
-    const np = wmul(t0np, pendingInflator);
-
-    return {
-      collateralization,
-      debt,
-      collateral,
-      thresholdPrice: tp,
-      neutralPrice: np,
-      liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
-      isKicked: !kickTimestamp.eq(BigNumber.from(0)),
-    };
-  }
-
-  /**
-   * retrieve information for a list of loans
-   * @param borrowerAddresses identifies the loans
-   * @returns map of Loans, indexed by borrowerAddress
-   */
-  async getLoans(borrowerAddresses: Array<Address>): Promise<Map<Address, Loan>> {
-    const calls = [];
-    // push 3 pool-level requests followed by request for each loan
-    calls.push(this.contractUtilsMulti.poolPricesInfo(this.poolAddress));
-    calls.push(this.contractUtilsMulti.momp(this.poolAddress));
-    calls.push(this.contractUtilsMulti.poolLoansInfo(this.poolAddress));
-    for (const loan of borrowerAddresses) {
-      calls.push(this.contractUtilsMulti.borrowerInfo(this.poolAddress, loan));
-      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
-    }
-
-    // perform the multicall
-    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all(calls);
-
-    // since loan details depend upon pool-level data, parse pool data first
-    const retval = new Map<Address, Loan>();
-    let i = 0;
-    const [, , , , lup] = response[i];
-    const momp = BigNumber.from(response[++i]);
-    const [, , , pendingInflator] = response[++i];
-
-    // iterate through borrower info, offset by the 3 pool-level requests
-    let borrowerIndex = 0;
-    while (borrowerIndex < borrowerAddresses.length) {
-      const [debt, collateral, t0np] = response[++i];
-      const kickTimestamp = response[++i][0];
-
-      const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
-      const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
-      const np = wmul(t0np, pendingInflator);
-      retval.set(borrowerAddresses[borrowerIndex++], {
-        collateralization,
-        debt,
-        collateral,
-        thresholdPrice: tp,
-        neutralPrice: np,
-        liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
-        isKicked: !kickTimestamp.eq(BigNumber.from(0)),
-      });
-    }
-
-    return retval;
   }
 
   /**

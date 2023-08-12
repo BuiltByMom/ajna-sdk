@@ -42,12 +42,14 @@ To build documentation, run `yarn document`. HTML will be generated in the `sdk-
 ### Unit testing
 
 Unit tests run against a dockerized Ajna testnet.
-**Addresses and keys in test configuration are publicly known. Do not attempt to use these addresses on a public network!**
+**Addresses and keys in test configuration are publicly known. Do not attempt to use those addresses on a public network!**
 
 `yarn test` runs `jest` tests once.
 `yarn test:dev` runs the `jest` tests in watch mode, waiting for file changes.
 
 To pass parameters to `jest`, run using `npx`.
+
+Note that test suites must be `--runInBand` because ganache requests to jump time, mine empty blocks, and reset to a checkpoint will impact unrelated tests. It also enables us to use the same account in multiple suites without worrying about nonce conflicts.
 
 ### Maintenance
 
