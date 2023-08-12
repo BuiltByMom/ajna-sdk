@@ -24,8 +24,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: yarn install
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -35,8 +38,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Runs a single command using the runners shell
-      - name: Run test for "sdk-api"
-        run: |
-          cd sdk-api
-          yarn install
-          yarn test --silent=false --runInBand
+      - name: Run tests
+        run: yarn test --silent=false --runInBand
