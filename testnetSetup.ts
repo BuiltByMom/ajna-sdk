@@ -5,7 +5,7 @@ dotenv.config();
 
 export default async function setup() {
   // Create docker container with an Ajna deployment.
-  const setupProcess = spawnSync('docker-compose up --force-recreate -d; sleep 3', [], {
+  const setupProcess = spawnSync('docker compose up --force-recreate -d; sleep 3', [], {
     shell: true,
     stdio: 'pipe',
     encoding: 'utf-8',
