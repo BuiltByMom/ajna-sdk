@@ -1,26 +1,14 @@
 #!/usr/bin/env ts-node
 
-import { BigNumber, providers } from 'ethers';
-import { AjnaSDK } from '../src/classes/AjnaSDK';
-import { Config } from '../src/classes/Config';
-import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
+import { BigNumber, Contract, Signer } from 'ethers';
 import { fromWad, toWad } from '../src/utils';
 import { getAjnaTokenContract } from '../src/contracts/common';
+import { initAjna } from './utils';
+import { BurnWrapper } from '../src/classes/BurnWrapper';
 
-// Configure from environment
-const provider = new providers.JsonRpcProvider(process.env.ETH_RPC_URL);
-const signerVoter = process.env.VOTER_KEY
-  ? addAccountFromKey(process.env.VOTER_KEY || '', provider)
-  : addAccountFromKeystore(
-      process.env.VOTER_KEYSTORE || '',
-      provider,
-      process.env.VOTER_PASSWORD || ''
-    );
-
-Config.fromEnvironment();
-const ajna = new AjnaSDK(provider);
-const ajnaToken = getAjnaTokenContract(provider);
-const burnWrapper = ajna.burnWrapper;
+let ajnaToken: Contract;
+let burnWrapper: BurnWrapper;
+let signerVoter: Signer;
 
 async function wrapAjna(amount: BigNumber) {
   let tx = await burnWrapper.ajnaApprove(signerVoter, amount);
@@ -31,9 +19,15 @@ async function wrapAjna(amount: BigNumber) {
 }
 
 async function run() {
-  const ajnaBalance = await ajnaToken.balanceOf(signerVoter.address);
+  const { ajna, provider, signer } = await initAjna('voter');
+  ajnaToken = getAjnaTokenContract(provider);
+  burnWrapper = ajna.burnWrapper;
+  signerVoter = signer;
+  const voterAddress = await signerVoter.getAddress();
+
+  const ajnaBalance = await ajnaToken.balanceOf(voterAddress);
   console.log('AJNA token balance', fromWad(ajnaBalance));
-  const wrappedBalance = await burnWrapper.contract.balanceOf(signerVoter.address);
+  const wrappedBalance = await burnWrapper.contract.balanceOf(voterAddress);
   console.log('Wrapped balance   ', fromWad(wrappedBalance));
 
   const action = process.argv.length > 2 ? process.argv[2] : '';
