@@ -39,4 +39,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run tests
-        run: yarn test --silent=false --runInBand
+        run: yarn test

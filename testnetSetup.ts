@@ -15,5 +15,7 @@ export default async function setup() {
   if (!setupProcess || setupProcess.status !== 0 || setupProcess.output[2]?.includes('ERROR')) {
     console.info(setupProcess.output[2]);
     process.exit(1);
+  } else {
+    console.info('started', setupProcess);
   }
 }
