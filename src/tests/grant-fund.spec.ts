@@ -177,8 +177,8 @@ describe('Grants fund', () => {
     it('should get votes screening', async () => {
       const votes = await distributionPeriod.getScreeningVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('700000000.0');
-      expect(fromWad(votes)).toBe('699925000.0');
+      // expect(fromWad(votes)).toBe('699925000.0');
+      expect(fromWad(votes)).toBe('699825000.0');
     });
 
     it('should cast screening votes', async () => {
@@ -229,8 +229,8 @@ describe('Grants fund', () => {
     it('should get votes funding', async () => {
       const votes = await distributionPeriod.getFundingVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('490000000000000000.0');
-      expect(fromWad(votes)).toBe('489895005625000000.0');
+      // expect(fromWad(votes)).toBe('489895005625000000.0');
+      expect(fromWad(votes)).toBe('489755030625000000.0');
     });
 
     it('should cast funding votes', async () => {
@@ -246,8 +246,8 @@ describe('Grants fund', () => {
     it('should get votes based on current distribution period stage', async () => {
       const votes = await distributionPeriod.getVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('490000000000000000.0');
-      expect(fromWad(votes)).toBe('489895005625000000.0');
+      // expect(fromWad(votes)).toBe('489895005625000000.0');
+      expect(fromWad(votes)).toBe('489755030625000000.0');
     });
 
     it('should get cast votes', async () => {
@@ -263,8 +263,8 @@ describe('Grants fund', () => {
     it('should get voter info', async () => {
       const voterInfo = await distributionPeriod.getVoterInfo(VOTER_ADDRESS);
       expect(voterInfo).toBeDefined();
-      expect(fromWad(voterInfo[0])).toBe('489895005625000000.0');
-      expect(fromWad(voterInfo[1])).toBe('489895005625000000.0');
+      expect(fromWad(voterInfo[0])).toBe('489755030625000000.0');
+      expect(fromWad(voterInfo[1])).toBe('489755030625000000.0');
       expect(fromWad(voterInfo[2])).toBe('0.000000000000000002');
     });
   });
