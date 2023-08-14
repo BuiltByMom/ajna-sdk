@@ -1,7 +1,7 @@
 {
-  "name": "@ajna-finance/sdk",
+  "name": "@ajna-finance/v1-sdk",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.3.19",
+  "version": "0.1.0-dev",
   "repository": {
     "type": "git",
     "url": "https://github.com/ajna-finance/v1-sdk.git"
@@ -35,7 +35,7 @@
     "lint": "eslint --resolve-plugins-relative-to . --ext .ts,.tsx --fix",
     "prettier": "prettier --config .prettierrc --check **/*.{json,js,ts}",
     "prettier-format": "prettier --config .prettierrc **/*.{json,js,ts} --write",
-    "postinstall": "husky install"
+    "prepare": "husky install"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
