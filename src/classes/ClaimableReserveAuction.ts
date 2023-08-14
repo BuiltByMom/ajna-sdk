@@ -84,7 +84,7 @@ export class ClaimableReserveAuction {
     const ajnaToBurn = wmul(claimableReservesRemaining, price).add(toWad(1));
 
     return {
-      lastKickTime: new Date(lastKickTimestamp.toNumber()),
+      lastKickTime: new Date(lastKickTimestamp.toNumber() * 1000),
       ajnaToBurn,
       reserves,
       claimableReserves,
