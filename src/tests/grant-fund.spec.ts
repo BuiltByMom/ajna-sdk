@@ -33,6 +33,7 @@ describe('Grants fund', () => {
       expect(fromWad(treasury)).toBe('291000000.0');
     });
   });
+
   describe('Distribution Period', () => {
     it(`fails to start a new distribution period if an active one already exists`, async () => {
       const tx = await startNewDistributionPeriod(signer);
@@ -81,6 +82,7 @@ describe('Grants fund', () => {
       await expect(ajna.grants.getActiveDistributionPeriod()).resolves.toBeDefined();
     });
   });
+
   describe('Proposals', () => {
     it(`creates a new proposal`, async () => {
       const tx = await ajna.grants.createProposal(signer, {
@@ -104,6 +106,7 @@ describe('Grants fund', () => {
       expect(proposalInfo.fundingVotesReceived.isZero()).toBe(true);
       expect(proposalInfo.executed).toBe(false);
     });
+
     it(`creates a new multi-recipient proposal`, async () => {
       const tx = await ajna.grants.createProposal(signer, {
         title: 'ajna proposal test',
@@ -131,6 +134,7 @@ describe('Grants fund', () => {
       expect(proposalInfo.executed).toBe(false);
     });
   });
+
   describe('Delegates and voting', () => {
     let distributionPeriod: DistributionPeriod;
     beforeAll(async () => {
@@ -138,6 +142,7 @@ describe('Grants fund', () => {
       const DISTRIBUTION_PERIOD_LENGTH = 648_000;
       await mine(provider, DISTRIBUTION_PERIOD_LENGTH);
     });
+
     it('should delegate successfully', async () => {
       await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
         'There is no active distribution period'
@@ -150,11 +155,13 @@ describe('Grants fund', () => {
       expect(transaction.to).toBe('0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d');
       expect(transaction.status).toBe(1);
     });
+
     it('should get delegate', async () => {
       const delegate = await ajna.grants.getDelegates(VOTER_ADDRESS);
       expect(delegate).toBeDefined();
       expect(delegate).toBe(VOTER_ADDRESS);
     });
+
     it('distribution period should be on screening stage', async () => {
       await mine(provider, 34);
       // start new distribution period
@@ -166,12 +173,14 @@ describe('Grants fund', () => {
       const isOnScreeningStage = (await distributionPeriod.distributionPeriodStage()) === SCREENING;
       expect(isOnScreeningStage).toBe(true);
     });
+
     it('should get votes screening', async () => {
       const votes = await distributionPeriod.getScreeningVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('700000000.0');
-      expect(fromWad(votes)).toBe('699900000.0');
+      // expect(fromWad(votes)).toBe('699925000.0');
+      expect(fromWad(votes)).toBe('699825000.0');
     });
+
     it('should cast screening votes', async () => {
       let tx = await ajna.grants.createProposal(signer, {
         title: 'ajna proposal test',
@@ -209,18 +218,21 @@ describe('Grants fund', () => {
       expect(transaction.from).toBe(VOTER_ADDRESS);
       expect(transaction.status).toBe(1);
     });
+
     it('distribution period should be on funding stage', async () => {
       const SCREENING_PERIOD_LENGTH = 525_600;
       await mine(provider, SCREENING_PERIOD_LENGTH);
       const isOnFundingStage = (await distributionPeriod.distributionPeriodStage()) === FUNDING;
       expect(isOnFundingStage).toBe(true);
     });
+
     it('should get votes funding', async () => {
       const votes = await distributionPeriod.getFundingVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('490000000000000000.0');
-      expect(fromWad(votes)).toBe('489860010000000000.0');
+      // expect(fromWad(votes)).toBe('489895005625000000.0');
+      expect(fromWad(votes)).toBe('489755030625000000.0');
     });
+
     it('should cast funding votes', async () => {
       const castVotes = await distributionPeriod.castVotes(voter, [
         [BigNumber.from(proposalId), BigNumber.from(1.0)],
@@ -230,12 +242,14 @@ describe('Grants fund', () => {
       expect(transaction.from).toBe(VOTER_ADDRESS);
       expect(transaction.status).toBe(1);
     });
+
     it('should get votes based on current distribution period stage', async () => {
       const votes = await distributionPeriod.getVotingPower(VOTER_ADDRESS);
       expect(votes).toBeDefined();
-      // expect(fromWad(votes)).toBe('490000000000000000.0');
-      expect(fromWad(votes)).toBe('489860010000000000.0');
+      // expect(fromWad(votes)).toBe('489895005625000000.0');
+      expect(fromWad(votes)).toBe('489755030625000000.0');
     });
+
     it('should get cast votes', async () => {
       const screeningVotes = await distributionPeriod.getScreeningVotesCast(VOTER_ADDRESS);
       expect(screeningVotes).toBeDefined();
@@ -245,14 +259,16 @@ describe('Grants fund', () => {
       expect(fromWad(fundingVotes[0].votesUsed)).toBe('0.000000000000000001');
       expect(fromWad(fundingVotes[1].votesUsed)).toBe('0.000000000000000001');
     });
+
     it('should get voter info', async () => {
       const voterInfo = await distributionPeriod.getVoterInfo(VOTER_ADDRESS);
       expect(voterInfo).toBeDefined();
-      expect(fromWad(voterInfo[0])).toBe('489860010000000000.0');
-      expect(fromWad(voterInfo[1])).toBe('489860010000000000.0');
+      expect(fromWad(voterInfo[0])).toBe('489755030625000000.0');
+      expect(fromWad(voterInfo[1])).toBe('489755030625000000.0');
       expect(fromWad(voterInfo[2])).toBe('0.000000000000000002');
     });
   });
+
   describe('Optimize', () => {
     it('should throw error when votes are equal to zero', async () => {
       expect(
@@ -263,6 +279,7 @@ describe('Grants fund', () => {
           ])
       ).rejects.toThrowError('Constraint not satisfied: all votes are 0');
     });
+
     it('should rescale votes correctly', async () => {
       const optimizedVotes = await optimize(100, [
         ['1', 12],
@@ -275,6 +292,7 @@ describe('Grants fund', () => {
       }, 0);
       expect(resultSum).toBe(100);
     });
+
     it('should work as expected when voting power is 100', async () => {
       const optimizedVotes = await optimize(100, [
         ['1', 1],
@@ -320,6 +338,7 @@ describe('Grants fund', () => {
       }, 0);
       expect(resultSum).toBe(2000);
     });
+
     it('should work as expected when voting power is 10000', async () => {
       const optimizedVotes = await optimize(10000, [
         ['1', 0],
