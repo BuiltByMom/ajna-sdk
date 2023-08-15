@@ -104,7 +104,9 @@ export interface Loan {
   isKicked: boolean;
 }
 
-export type VoteParams = [proposalId: BigNumber, votesUsed: BigNumber];
+export type VoteParams = [proposalId: string, votesUsed: string];
+
+export type FormattedVoteParams = [proposalId: BigNumber, votesUsed: BigNumber];
 
 export type VoterInfo = [
   // The voter's voting power in the funding round. Equal to the square of their tokens in the voting snapshot.
@@ -170,17 +172,17 @@ export interface IDistributionPeriod {
   /** get the current state of a given voter in the funding stage. */
   getVoterInfo(address: Address): Promise<VoterInfo>;
   /** cast an array of screening votes in one transaction. */
-  screeningVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of funding votes in one transaction. */
-  fundingVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of screening or funding votes (based on current distribution period stage). */
   castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
   /** check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals. */
-  updateSlate(signer: Signer, proposals: ProposalInfo[]): Promise<WrappedTransaction>;
+  updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction>;
   /** get the funded proposal slate for the current distribution period */
-  getFundedProposalSlate(): Promise<ProposalInfo[]>;
+  getFundedProposalSlate(): Promise<string[]>;
   /** get best proposals based on the combination of votes received and tokens requested over tokens available. */
-  getOptimalProposals(tokensAvailable: BigNumber): Promise<ProposalInfo[]>;
+  getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]>;
 }
 
 // export type DistributionPeriodStage = 'Screening' | 'Funding' | 'Challenge' | 'Finalize';

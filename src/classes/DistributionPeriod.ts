@@ -16,6 +16,7 @@ import {
 import {
   Address,
   DistributionPeriodStage,
+  FormattedVoteParams,
   IDistributionPeriod,
   ProposalInfo,
   SdkError,
@@ -24,7 +25,7 @@ import {
   WrappedTransaction,
 } from '../types';
 import { fromWad } from '../utils';
-import { findBestProposals, formatProposalInfo } from '../utils/grant-fund';
+import { findBestProposals, formatProposalInfo, formatVotes } from '../utils/grant-fund';
 import { ContractBase } from './ContractBase';
 
 /**
@@ -173,7 +174,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async screeningVote(signer: Signer, votes: VoteParams[]) {
+  async screeningVote(signer: Signer, votes: FormattedVoteParams[]) {
     return await screeningVote(signer, votes);
   }
 
@@ -183,7 +184,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async fundingVote(signer: Signer, votes: VoteParams[]) {
+  async fundingVote(signer: Signer, votes: FormattedVoteParams[]) {
     return await fundingVote(signer, votes);
   }
 
@@ -194,12 +195,20 @@ votes count: ${fromWad(this.votesCount)}
    * @returns votesCast The total number of votes cast across all of the proposals.
    */
   async castVotes(signer: Signer, votes: VoteParams[]) {
+    const distributionPeriodStage = await this.distributionPeriodStage();
     const isDistributionPeriodOnScreeningStage =
-      (await this.distributionPeriodStage()) === DistributionPeriodStage.SCREENING;
+      distributionPeriodStage === DistributionPeriodStage.SCREENING;
+
+    let formattedVotes: FormattedVoteParams[] = [];
+
+    formattedVotes = await Promise.all(
+      votes.map(vote => formatVotes(vote, isDistributionPeriodOnScreeningStage))
+    );
+
     if (isDistributionPeriodOnScreeningStage) {
-      return await screeningVote(signer, votes);
+      return await screeningVote(signer, formattedVotes);
     } else {
-      return await fundingVote(signer, votes);
+      return await fundingVote(signer, formattedVotes);
     }
   }
 
@@ -208,8 +217,8 @@ votes count: ${fromWad(this.votesCount)}
    * @param proposals Array of proposals to check.
    * @returns newTopSlate Boolean indicating whether the new proposal slate was set as the new top slate for distribution.
    */
-  async updateSlate(signer: Signer, proposals: ProposalInfo[]): Promise<WrappedTransaction> {
-    const proposalsIds = proposals.map(proposal => BigNumber.from(proposal.proposalId));
+  async updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction> {
+    const proposalsIds = proposals.map(proposalId => BigNumber.from(proposalId));
     return await updateSlate(signer, proposalsIds, this.id);
   }
 
@@ -217,21 +226,15 @@ votes count: ${fromWad(this.votesCount)}
    * get the funded proposal slate for a given distributionId, and slate hash.
    * @returns The array of proposalIds that are in the funded slate hash.
    */
-  async getFundedProposalSlate(): Promise<ProposalInfo[]> {
-    const proposalsIds = await getFundedProposalSlate(
+  async getFundedProposalSlate(): Promise<string[]> {
+    const proposals = await getFundedProposalSlate(
       this.getProvider(),
       utils.keccak256(utils.toUtf8Bytes(BigNumber.from(this.fundedSlateHash).toHexString()))
     );
-    let proposals: ProposalInfo[] = [];
 
-    const getEachProposalInfo = async (proposalId: BigNumber): Promise<ProposalInfo> => {
-      const proposalInfo = await getProposalInfo(this.getProvider(), proposalId);
-      return formatProposalInfo(proposalInfo);
-    };
+    const proposalIds = proposals.map(id => id.toString());
 
-    proposals = await Promise.all(proposalsIds.map(getEachProposalInfo));
-
-    return proposals;
+    return proposalIds;
   }
 
   /**
@@ -239,16 +242,25 @@ votes count: ${fromWad(this.votesCount)}
    * @param tokensAvailable treasury.
    * @returns proposals[] a new slate of proposals
    */
-  async getOptimalProposals(tokensAvailable: BigNumber): Promise<ProposalInfo[]> {
-    const proposals = await this.getFundedProposalSlate();
+  async getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]> {
     let bestProposals: ProposalInfo[];
+    let proposals: ProposalInfo[] = [];
+
+    const getEachProposalInfo = async (proposalId: string): Promise<ProposalInfo> => {
+      const proposalInfo = await getProposalInfo(this.getProvider(), BigNumber.from(proposalId));
+      return formatProposalInfo(proposalInfo);
+    };
+
+    proposals = await Promise.all(proposalIds.map(getEachProposalInfo));
 
     if (proposals.length > 0) {
-      bestProposals = findBestProposals(proposals, tokensAvailable.toNumber());
+      bestProposals = findBestProposals(proposals, Number(tokensAvailable));
     } else {
       throw new SdkError('There is no funded proposal slate');
     }
 
-    return bestProposals;
+    const optimalProposalsIds = bestProposals.flatMap(proposal => proposal.proposalId.toString());
+
+    return optimalProposalsIds;
   }
 }

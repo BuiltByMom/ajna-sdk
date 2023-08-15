@@ -1,11 +1,10 @@
 #!/usr/bin/env ts-node
 
 import dotenv from 'dotenv';
-import { BigNumber } from 'ethers';
 import { DistributionPeriod } from '../src/classes/DistributionPeriod';
 import { startNewDistributionPeriod } from '../src/contracts/grant-fund';
 import { SdkError } from '../src/types/core';
-import { fromWad, toWad } from '../src/utils/numeric';
+import { fromWad } from '../src/utils/numeric';
 import { initAjna } from './utils';
 import { DistributionPeriodStage } from '../src/types/classes';
 
@@ -56,10 +55,7 @@ async function run() {
 
   async function castVotes() {
     const tx = await distributionPeriod.castVotes(signerVoter, [
-      [
-        BigNumber.from('0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e'),
-        BigNumber.from(toWad(1)),
-      ],
+      ['0x22bf669502c9c2673093a4ef1dede6c878e1157eb773c221b87db4fed622256e', '1'],
     ]);
     const estimatedGas = await tx.verify();
     console.log(fromWad(estimatedGas), 'estimated gas required for this transaction');
