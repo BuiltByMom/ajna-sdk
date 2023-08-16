@@ -1,18 +1,34 @@
-import { BigNumber, Signer } from 'ethers';
-import { FINALIZE, FUNDING, FUNDING_STAGE, SCREENING, SCREENING_STAGE } from '../constants/common';
+import { BigNumber, Signer, utils } from 'ethers';
+import { CHALLENGE_STAGE, FUNDING_STAGE, SCREENING_STAGE } from '../constants/common';
 import {
   fundingVote,
+  getFundedProposalSlate,
   getFundingVotesCast,
+  getProposalInfo,
   getScreeningVotesCast,
   getStage,
   getVoterInfo,
   getVotesFunding,
   getVotesScreening,
   screeningVote,
+  updateSlate,
 } from '../contracts/grant-fund';
-import { Address, IDistributionPeriod, SdkError, SignerOrProvider, VoteParams } from '../types';
-import { ContractBase } from './ContractBase';
+import {
+  Address,
+  DistributionPeriodStage,
+  FormattedVoteParams,
+  FundingVotes,
+  IDistributionPeriod,
+  ProposalInfo,
+  SdkError,
+  SignerOrProvider,
+  VoteParams,
+  VoterInfo,
+  WrappedTransaction,
+} from '../types';
 import { fromWad } from '../utils';
+import { findBestProposals, formatProposalInfo, formatVotes } from '../utils/grant-fund';
+import { ContractBase } from './ContractBase';
 
 /**
  * Class used to iteract with distribution periods.
@@ -24,6 +40,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
   startDate: number;
   endBlock: number;
   endDate: number;
+  fundedSlateHash: string;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
 
@@ -35,6 +52,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     startDate: number,
     endBlock: number,
     endDate: number,
+    fundedSlateHash: string,
     fundsAvailable: BigNumber,
     votesCount: BigNumber
   ) {
@@ -45,6 +63,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     this.startDate = startDate;
     this.endBlock = endBlock;
     this.endDate = endDate;
+    this.fundedSlateHash = fundedSlateHash;
     this.fundsAvailable = fundsAvailable;
     this.votesCount = votesCount;
   }
@@ -64,7 +83,7 @@ votes count: ${fromWad(this.votesCount)}
   /**
    * Retrieve a bytes32 hash of the current distribution period stage.
    */
-  async getStage() {
+  async getStage(): Promise<string> {
     return await getStage(this.getProvider());
   }
 
@@ -72,15 +91,17 @@ votes count: ${fromWad(this.votesCount)}
    * Get current distribution period stage
    * @returns string, distribution period stage
    */
-  async distributionPeriodStage() {
+  async distributionPeriodStage(): Promise<DistributionPeriodStage> {
     const distributionPeriodStage = await this.getStage();
     switch (distributionPeriodStage) {
       case SCREENING_STAGE:
-        return SCREENING;
+        return DistributionPeriodStage.SCREENING;
       case FUNDING_STAGE:
-        return FUNDING;
+        return DistributionPeriodStage.FUNDING;
+      case CHALLENGE_STAGE:
+        return DistributionPeriodStage.CHALLENGE;
       default:
-        return FINALIZE;
+        return DistributionPeriodStage.FINALIZE;
     }
   }
 
@@ -90,7 +111,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's voting power
    */
-  async getScreeningVotingPower(address: Address) {
+  async getScreeningVotingPower(address: Address): Promise<BigNumber> {
     return await getVotesScreening(this.getProvider(), this.id, address);
   }
 
@@ -100,7 +121,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's remaining quadratic voting power
    */
-  async getFundingVotingPower(address: Address) {
+  async getFundingVotingPower(address: Address): Promise<BigNumber> {
     return await getVotesFunding(this.getProvider(), this.id, address);
   }
 
@@ -109,11 +130,11 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's voting power
    */
-  async getVotingPower(address: Address) {
+  async getVotingPower(address: Address): Promise<BigNumber> {
     const distributionPeriodStage = await this.distributionPeriodStage();
-    if (distributionPeriodStage === SCREENING) {
+    if (distributionPeriodStage === DistributionPeriodStage.SCREENING) {
       return await this.getScreeningVotingPower(address);
-    } else if (distributionPeriodStage === FUNDING) {
+    } else if (distributionPeriodStage === DistributionPeriodStage.FUNDING) {
       return await this.getFundingVotingPower(address);
     } else {
       throw new SdkError("Couldn't get voting power. Distribution Period is already finalized");
@@ -126,7 +147,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  address        the address of the voter to check.
    * @return {@link VoterInfo} * voter's voting information.
    */
-  async getVoterInfo(address: Address) {
+  async getVoterInfo(address: Address): Promise<VoterInfo> {
     return await getVoterInfo(this.getProvider(), this.id, address);
   }
 
@@ -136,7 +157,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  account The address of the voter to check.
    * @return The number of screening votes successfully cast the voter.
    */
-  async getScreeningVotesCast(address: Address) {
+  async getScreeningVotesCast(address: Address): Promise<string> {
     return await getScreeningVotesCast(this.getProvider(), this.id, address);
   }
 
@@ -146,7 +167,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  account_          The address of the voter to check.
    * @return FundingVoteParams The list of FundingVoteParams structs that have been successfully cast the voter.
    */
-  async getFundingVotesCast(address: Address) {
+  async getFundingVotesCast(address: Address): Promise<FundingVotes[]> {
     return await getFundingVotesCast(this.getProvider(), this.id, address);
   }
   /**
@@ -155,7 +176,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async screeningVote(signer: Signer, votes: VoteParams[]) {
+  async screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
     return await screeningVote(signer, votes);
   }
 
@@ -165,7 +186,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async fundingVote(signer: Signer, votes: VoteParams[]) {
+  async fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
     return await fundingVote(signer, votes);
   }
 
@@ -175,13 +196,71 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @returns votesCast The total number of votes cast across all of the proposals.
    */
-  async castVotes(signer: Signer, votes: VoteParams[]) {
+  async castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction> {
+    const distributionPeriodStage = await this.distributionPeriodStage();
     const isDistributionPeriodOnScreeningStage =
-      (await this.distributionPeriodStage()) === SCREENING;
+      distributionPeriodStage === DistributionPeriodStage.SCREENING;
+
+    const formattedVotes: FormattedVoteParams[] = await Promise.all(
+      votes.map(vote => formatVotes(vote, isDistributionPeriodOnScreeningStage))
+    );
+
     if (isDistributionPeriodOnScreeningStage) {
-      return await screeningVote(signer, votes);
+      return await screeningVote(signer, formattedVotes);
     } else {
-      return await fundingVote(signer, votes);
+      return await fundingVote(signer, formattedVotes);
     }
+  }
+
+  /**
+   * check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals.
+   * @param proposals Array of proposals to check.
+   * @returns newTopSlate Boolean indicating whether the new proposal slate was set as the new top slate for distribution.
+   */
+  async updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction> {
+    const proposalsIds = proposals.map(proposalId => BigNumber.from(proposalId));
+    return await updateSlate(signer, proposalsIds, this.id);
+  }
+
+  /**
+   * get the funded proposal slate for a given distributionId, and slate hash.
+   * @returns The array of proposalIds that are in the funded slate hash.
+   */
+  async getFundedProposalSlate(): Promise<string[]> {
+    const proposals = await getFundedProposalSlate(
+      this.getProvider(),
+      utils.keccak256(utils.toUtf8Bytes(BigNumber.from(this.fundedSlateHash).toHexString()))
+    );
+
+    const proposalIds = proposals.map(id => id.toString());
+
+    return proposalIds;
+  }
+
+  /**
+   * get best proposals based on the combination of votes received and tokens requested over tokens available.
+   * @param tokensAvailable treasury.
+   * @returns proposals[] a new slate of proposals
+   */
+  async getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]> {
+    let bestProposals: ProposalInfo[];
+    let proposals: ProposalInfo[] = [];
+
+    const getEachProposalInfo = async (proposalId: string): Promise<ProposalInfo> => {
+      const proposalInfo = await getProposalInfo(this.getProvider(), BigNumber.from(proposalId));
+      return formatProposalInfo(proposalInfo);
+    };
+
+    proposals = await Promise.all(proposalIds.map(getEachProposalInfo));
+
+    if (proposals.length > 0) {
+      bestProposals = findBestProposals(proposals, Number(tokensAvailable));
+    } else {
+      throw new SdkError('There is no funded proposal slate');
+    }
+
+    const optimalProposalsIds = bestProposals.flatMap(proposal => proposal.proposalId.toString());
+
+    return optimalProposalsIds;
   }
 }

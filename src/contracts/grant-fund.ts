@@ -4,7 +4,7 @@ import grantsFundAbi from '../abis/GrantFund.json';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
 import { getAjnaTokenContract } from './common';
-import { Address, ProposalParams, SignerOrProvider, VoteParams } from '../types';
+import { Address, FormattedVoteParams, ProposalParams, SignerOrProvider } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 
@@ -136,7 +136,7 @@ export async function getFundingVotesCast(
   return await contractInstance.getFundingVotesCast(distributionId, account);
 }
 
-export async function screeningVote(signer: Signer, votes: VoteParams[]) {
+export async function screeningVote(signer: Signer, votes: FormattedVoteParams[]) {
   const contractInstance: Contract = getGrantsFundContract(signer);
   return await createTransaction(contractInstance, {
     methodName: 'screeningVote',
@@ -144,10 +144,30 @@ export async function screeningVote(signer: Signer, votes: VoteParams[]) {
   });
 }
 
-export async function fundingVote(signer: Signer, votes: VoteParams[]) {
+export async function fundingVote(signer: Signer, votes: FormattedVoteParams[]) {
   const contractInstance: Contract = getGrantsFundContract(signer);
   return await createTransaction(contractInstance, {
     methodName: 'fundingVote',
     args: [votes],
   });
+}
+
+export async function updateSlate(
+  signer: Signer,
+  proposalIds: BigNumber[],
+  distributionId: number
+) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'updateSlate',
+    args: [proposalIds, distributionId],
+  });
+}
+
+export async function getFundedProposalSlate(
+  provider: SignerOrProvider,
+  slateHash: string
+): Promise<BigNumber[]> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getFundedProposalSlate(slateHash);
 }

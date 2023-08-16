@@ -104,7 +104,9 @@ export interface Loan {
   isKicked: boolean;
 }
 
-export type VoteParams = [proposalId: BigNumber, votesUsed: BigNumber];
+export type VoteParams = [proposalId: string, votesUsed: string];
+
+export type FormattedVoteParams = [proposalId: BigNumber, votesUsed: BigNumber];
 
 export type VoterInfo = [
   // The voter's voting power in the funding round. Equal to the square of their tokens in the voting snapshot.
@@ -115,9 +117,7 @@ export type VoterInfo = [
   votesCast: BigNumber
 ];
 
-export type FundingVotes = [
-  [BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }
-];
+export type FundingVotes = [BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber };
 export interface IGrantFund {
   /**
    * Handles grant fund methods
@@ -150,6 +150,7 @@ export interface IDistributionPeriod {
   startDate: number;
   endBlock: number;
   endDate: number;
+  fundedSlateHash: string;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
   /** retrieve a bytes32 hash of the current distribution period stage. */
@@ -157,7 +158,7 @@ export interface IDistributionPeriod {
   /** check if current distribution period is on screening stage */
   distributionPeriodStage(): Promise<string>;
   /** get the voter's voting power based on current distribution period stage */
-  getVotingPower(address: Address): Promise<string>;
+  getVotingPower(address: Address): Promise<BigNumber>;
   /** get the voter's voting power in the screening stage of a distribution period */
   getScreeningVotingPower(address: Address): Promise<BigNumber>;
   /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
@@ -165,15 +166,28 @@ export interface IDistributionPeriod {
   /** get the number of screening votes cast by an account in a given distribution period. */
   getScreeningVotesCast(address: Address): Promise<string>;
   /** get the list of funding votes cast by an account in a given distribution period. */
-  getFundingVotesCast(address: Address): Promise<FundingVotes>;
+  getFundingVotesCast(address: Address): Promise<FundingVotes[]>;
   /** get the current state of a given voter in the funding stage. */
   getVoterInfo(address: Address): Promise<VoterInfo>;
   /** cast an array of screening votes in one transaction. */
-  screeningVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of funding votes in one transaction. */
-  fundingVote(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of screening or funding votes (based on current distribution period stage). */
   castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals. */
+  updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction>;
+  /** get current top proposal slate */
+  getFundedProposalSlate(): Promise<string[]>;
+  /** get best proposals based on the combination of votes received and tokens requested over tokens available. */
+  getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]>;
+}
+
+export enum DistributionPeriodStage {
+  SCREENING = 'Screening',
+  FUNDING = 'Funding',
+  CHALLENGE = 'Challenge',
+  FINALIZE = 'Finalize',
 }
 
 export type ProposalParams = {
@@ -214,4 +228,11 @@ export interface IProposal {
     executed: boolean;
   }>;
   getState(): Promise<ProposalState>;
+}
+
+export type ProposalInfoArray = [BigNumber, number, BigNumber, BigNumber, BigNumber, boolean];
+export interface ProposalInfo {
+  proposalId: BigNumber;
+  votesReceived: BigNumber;
+  tokensRequested: BigNumber;
 }

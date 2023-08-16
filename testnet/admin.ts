@@ -235,6 +235,7 @@ const handlePropose = async () => {
     address: Address;
     amount: string;
   }> = [];
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const canSkip = recipientAddresses.length >= 1;
     const skipText = '(or press enter to continue)';
@@ -274,11 +275,12 @@ const handlePropose = async () => {
 
 const handleVote = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
-  const votesToCast: Array<[BigNumber, BigNumber]> = [];
+  const votesToCast: Array<[string, string]> = [];
   const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
   const voterAddress = getAddressByIndex(Number(addressIndex));
   const voter = getWalletByIndex(Number(addressIndex));
   await printVotingPower(dp, voterAddress);
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const canSkip = votesToCast.length >= 1;
     const skipText = '(or press enter to continue)';
@@ -289,7 +291,7 @@ const handleVote = async () => {
       break;
     }
     const numberOfVotes = await input({ message: `Enter the number of votes for this proposal` });
-    votesToCast.push([BigNumber.from(proposalId), toWad(Number(numberOfVotes))]);
+    votesToCast.push([proposalId, numberOfVotes]);
   }
   const tx = await dp.castVotes(voter, votesToCast);
   const receipt = await tx.verifyAndSubmit();
@@ -358,6 +360,7 @@ const executeOption = async (option: string) => {
       break;
     case '0':
       process.exit(0);
+    // eslint-disable-next-line no-fallthrough
     default:
       console.log('Invalid option, please try again');
   }
@@ -366,6 +369,7 @@ const executeOption = async (option: string) => {
 const main = async () => {
   checkRequiredEnv();
   console.log(mainMenuAsciiArt);
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     console.log(mainMenuOptions);
     const option = await input({ message: 'option:' });
