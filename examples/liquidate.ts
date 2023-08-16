@@ -115,7 +115,7 @@ async function run() {
       if (!borrowerAddress) throw new Error('Please identify liquidation to arbTake');
       const liquidation = pool.getLiquidation(borrowerAddress);
       const status = await liquidation.getStatus();
-      const bucket = await pool.getBucketByPrice(toWad(status.price));
+      const bucket = await pool.getBucketByPrice(status.price);
       const tx = await liquidation.arbTake(signerLender, bucket.index);
       const receipt = await tx.verifyAndSubmit();
       console.log(`successfully ran arbTake on bucket index ${bucket.index}:`, receipt);
@@ -126,7 +126,7 @@ async function run() {
       if (!borrowerAddress) throw new Error('Please identify liquidation to bucketTake');
       const liquidation = pool.getLiquidation(borrowerAddress);
       const status = await liquidation.getStatus();
-      const bucket = await pool.getBucketByPrice(toWad(status.price));
+      const bucket = await pool.getBucketByPrice(status.price);
       const tx = await liquidation.depositTake(signerLender, bucket.index);
       const receipt = await tx.verifyAndSubmit();
       console.log(`successfully ran bucketTake on bucket index ${bucket.index}:`, receipt);
