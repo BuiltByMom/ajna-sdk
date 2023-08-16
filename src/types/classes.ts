@@ -117,9 +117,7 @@ export type VoterInfo = [
   votesCast: BigNumber
 ];
 
-export type FundingVotes = [
-  [BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber }
-];
+export type FundingVotes = [BigNumber, BigNumber] & { proposalId: BigNumber; votesUsed: BigNumber };
 export interface IGrantFund {
   /**
    * Handles grant fund methods
@@ -160,7 +158,7 @@ export interface IDistributionPeriod {
   /** check if current distribution period is on screening stage */
   distributionPeriodStage(): Promise<string>;
   /** get the voter's voting power based on current distribution period stage */
-  getVotingPower(address: Address): Promise<string>;
+  getVotingPower(address: Address): Promise<BigNumber>;
   /** get the voter's voting power in the screening stage of a distribution period */
   getScreeningVotingPower(address: Address): Promise<BigNumber>;
   /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
@@ -168,7 +166,7 @@ export interface IDistributionPeriod {
   /** get the number of screening votes cast by an account in a given distribution period. */
   getScreeningVotesCast(address: Address): Promise<string>;
   /** get the list of funding votes cast by an account in a given distribution period. */
-  getFundingVotesCast(address: Address): Promise<FundingVotes>;
+  getFundingVotesCast(address: Address): Promise<FundingVotes[]>;
   /** get the current state of a given voter in the funding stage. */
   getVoterInfo(address: Address): Promise<VoterInfo>;
   /** cast an array of screening votes in one transaction. */
@@ -179,13 +177,11 @@ export interface IDistributionPeriod {
   castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
   /** check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals. */
   updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction>;
-  /** get the funded proposal slate for the current distribution period */
+  /** get current top proposal slate */
   getFundedProposalSlate(): Promise<string[]>;
   /** get best proposals based on the combination of votes received and tokens requested over tokens available. */
   getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]>;
 }
-
-// export type DistributionPeriodStage = 'Screening' | 'Funding' | 'Challenge' | 'Finalize';
 
 export enum DistributionPeriodStage {
   SCREENING = 'Screening',

@@ -17,11 +17,13 @@ import {
   Address,
   DistributionPeriodStage,
   FormattedVoteParams,
+  FundingVotes,
   IDistributionPeriod,
   ProposalInfo,
   SdkError,
   SignerOrProvider,
   VoteParams,
+  VoterInfo,
   WrappedTransaction,
 } from '../types';
 import { fromWad } from '../utils';
@@ -81,7 +83,7 @@ votes count: ${fromWad(this.votesCount)}
   /**
    * Retrieve a bytes32 hash of the current distribution period stage.
    */
-  async getStage() {
+  async getStage(): Promise<string> {
     return await getStage(this.getProvider());
   }
 
@@ -109,7 +111,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's voting power
    */
-  async getScreeningVotingPower(address: Address) {
+  async getScreeningVotingPower(address: Address): Promise<BigNumber> {
     return await getVotesScreening(this.getProvider(), this.id, address);
   }
 
@@ -119,7 +121,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's remaining quadratic voting power
    */
-  async getFundingVotingPower(address: Address) {
+  async getFundingVotingPower(address: Address): Promise<BigNumber> {
     return await getVotesFunding(this.getProvider(), this.id, address);
   }
 
@@ -128,7 +130,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param address the address of the voter to check
    * @returns the voter's voting power
    */
-  async getVotingPower(address: Address) {
+  async getVotingPower(address: Address): Promise<BigNumber> {
     const distributionPeriodStage = await this.distributionPeriodStage();
     if (distributionPeriodStage === DistributionPeriodStage.SCREENING) {
       return await this.getScreeningVotingPower(address);
@@ -145,7 +147,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  address        the address of the voter to check.
    * @return {@link VoterInfo} * voter's voting information.
    */
-  async getVoterInfo(address: Address) {
+  async getVoterInfo(address: Address): Promise<VoterInfo> {
     return await getVoterInfo(this.getProvider(), this.id, address);
   }
 
@@ -155,7 +157,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  account The address of the voter to check.
    * @return The number of screening votes successfully cast the voter.
    */
-  async getScreeningVotesCast(address: Address) {
+  async getScreeningVotesCast(address: Address): Promise<string> {
     return await getScreeningVotesCast(this.getProvider(), this.id, address);
   }
 
@@ -165,7 +167,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  account_          The address of the voter to check.
    * @return FundingVoteParams The list of FundingVoteParams structs that have been successfully cast the voter.
    */
-  async getFundingVotesCast(address: Address) {
+  async getFundingVotesCast(address: Address): Promise<FundingVotes[]> {
     return await getFundingVotesCast(this.getProvider(), this.id, address);
   }
   /**
@@ -174,7 +176,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async screeningVote(signer: Signer, votes: FormattedVoteParams[]) {
+  async screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
     return await screeningVote(signer, votes);
   }
 
@@ -184,7 +186,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return votesCast The total number of votes cast across all of the proposals.
    */
-  async fundingVote(signer: Signer, votes: FormattedVoteParams[]) {
+  async fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
     return await fundingVote(signer, votes);
   }
 
@@ -194,14 +196,12 @@ votes count: ${fromWad(this.votesCount)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @returns votesCast The total number of votes cast across all of the proposals.
    */
-  async castVotes(signer: Signer, votes: VoteParams[]) {
+  async castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction> {
     const distributionPeriodStage = await this.distributionPeriodStage();
     const isDistributionPeriodOnScreeningStage =
       distributionPeriodStage === DistributionPeriodStage.SCREENING;
 
-    let formattedVotes: FormattedVoteParams[] = [];
-
-    formattedVotes = await Promise.all(
+    const formattedVotes: FormattedVoteParams[] = await Promise.all(
       votes.map(vote => formatVotes(vote, isDistributionPeriodOnScreeningStage))
     );
 
