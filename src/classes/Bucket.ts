@@ -296,7 +296,8 @@ export class Bucket {
     // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
     // arbitrary future block where the TX will be processed.
     const withdrawCollateral =
-      estimatedDepositWithdrawal.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
+      (bucketStatus.deposit.eq(0) || estimatedDepositWithdrawal.gt(bucketStatus.deposit)) &&
+      bucketStatus.collateral.gt(0);
     if (withdrawCollateral) {
       callData.push({
         methodName: 'removeCollateral',

@@ -607,7 +607,8 @@ export abstract class Pool {
       // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
       // arbitrary future block where the TX will be processed.
       const withdrawCollateral =
-        depositWithdrawnEstimate.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
+        (bucketStatus.deposit.eq(0) || depositWithdrawnEstimate.gt(bucketStatus.deposit)) &&
+        bucketStatus.collateral.gt(0);
 
       if (withdrawCollateral) {
         callData.push({
