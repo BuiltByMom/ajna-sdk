@@ -59,7 +59,7 @@ async function run() {
   const stats = await pool.getStats();
   console.log('Pool is', +fromWad(stats.collateralization) * 100 + '% collateralized');
 
-  const [, , action, borrowerAddress, amount] = process.argv;
+  const [, , action, borrowerAddress, param3] = process.argv;
 
   switch (action as Action) {
     case 'kick': {
@@ -98,7 +98,7 @@ async function run() {
       // take maximum amount of collateral if no amount specified
       const liquidation = pool.getLiquidation(borrowerAddress);
       const auctionStatus = await liquidation.getStatus();
-      const collateral = process.argv.length > 4 ? toWad(amount) : auctionStatus.collateral;
+      const collateral = process.argv.length > 4 ? toWad(param3) : auctionStatus.collateral;
       take(pool, signerLender, liquidation, collateral);
       return;
     }
@@ -113,7 +113,7 @@ async function run() {
     case 'arbTake': {
       if (!borrowerAddress) throw new Error('Please identify liquidation to arbTake');
       const liquidation = pool.getLiquidation(borrowerAddress);
-      const bucket = await pool.getBucketByIndex(+amount);
+      const bucket = await pool.getBucketByIndex(+param3);
       const tx = await liquidation.arbTake(signerLender, bucket.index);
       const receipt = await tx.verifyAndSubmit();
       console.log(`successfully ran arbTake on bucket index ${bucket.index}:`, receipt);
@@ -123,7 +123,7 @@ async function run() {
     case 'depositTake': {
       if (!borrowerAddress) throw new Error('Please identify liquidation to depositTake');
       const liquidation = pool.getLiquidation(borrowerAddress);
-      const bucket = await pool.getBucketByIndex(+amount);
+      const bucket = await pool.getBucketByIndex(+param3);
       const tx = await liquidation.depositTake(signerLender, bucket.index);
       const receipt = await tx.verifyAndSubmit();
       console.log(`successfully ran depositTake on bucket index ${bucket.index}:`, receipt);
