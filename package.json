@@ -1,7 +1,7 @@
 {
   "name": "@ajna-finance/v1-sdk",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.1.1-dev",
+  "version": "0.1.1-debug",
   "repository": {
     "type": "git",
     "url": "https://github.com/ajna-finance/v1-sdk.git"

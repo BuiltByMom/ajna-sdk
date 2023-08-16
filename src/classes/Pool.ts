@@ -579,6 +579,8 @@ export abstract class Pool {
     const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
     const buckets = await Promise.all(bucketPromises);
 
+    console.log('SDK | START WITH BUCKETS', buckets);
+
     // get bucket details
     const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
     const bucketStatuses = await Promise.all(bucketStatusPromises);
@@ -593,9 +595,19 @@ export abstract class Pool {
       const [lpBalance] = lpBalances[i];
       const bucketStatus = bucketStatuses[i];
       const bucketIndex = bucketIndices[i];
+      console.log('SDK | BUCKET INDEX', bucketIndex);
+      console.log('SDK | BUCKET STATUS', bucketStatus);
+      console.log('SDK | LP BALANCE', lpBalance);
 
       // if there is any quote token in the bucket, redeem LP for deposit first
       if (lpBalance && bucketStatus.deposit.gt(0)) {
+        console.log(
+          `SDK | LP BALANCE EXISTS AND DEPOSIT IS GT 0 -> sending removeQuoteToken(${[
+            constants.MaxUint256,
+            bucketIndex,
+          ]})`
+        );
+
         callData.push({
           methodName: 'removeQuoteToken',
           args: [constants.MaxUint256, bucketIndex],
@@ -604,12 +616,15 @@ export abstract class Pool {
 
       const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
 
+      console.log('SDK | DEPOSIT WITHDRAW ESTIMATE', depositWithdrawnEstimate);
+
       // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
       // arbitrary future block where the TX will be processed.
       const withdrawCollateral =
         depositWithdrawnEstimate.gt(bucketStatus.deposit) && bucketStatus.collateral.gt(0);
 
       if (withdrawCollateral) {
+        console.log(`SDK | sending removeCollateral(${(constants.MaxUint256, bucketIndex)})`);
         callData.push({
           methodName: 'removeCollateral',
           args: [constants.MaxUint256, bucketIndex],
