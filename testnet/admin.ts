@@ -168,8 +168,8 @@ const handleGetDistributionPeriod = async () => {
   const dp = await (id === ''
     ? ajna.grants.getActiveDistributionPeriod()
     : ajna.grants.getDistributionPeriod(Number(id)));
-  console.log(dp.toString());
-  console.log(`stage: ${await dp.distributionPeriodStage()}`);
+  console.log(dp?.toString());
+  console.log(`stage: ${await dp?.distributionPeriodStage()}`);
 };
 
 const printVotingPower = async (dp: DistributionPeriod, address: string) => {
@@ -181,13 +181,15 @@ const handleGetVotingPower = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
   // hint: if voting power is 0, make sure that you delegated 33 blocks before the current DP started and that the delegator has AJNA to delegate
   const addressIndex = await input({ message: `Select an address (or press enter to view all):` });
-  if (addressIndex === '') {
-    for (const address of publicKeys) {
+  if (dp) {
+    if (addressIndex === '') {
+      for (const address of publicKeys) {
+        await printVotingPower(dp, address);
+      }
+    } else {
+      const address = getAddressByIndex(Number(addressIndex));
       await printVotingPower(dp, address);
     }
-  } else {
-    const address = getAddressByIndex(Number(addressIndex));
-    await printVotingPower(dp, address);
   }
 };
 
@@ -279,24 +281,26 @@ const handleVote = async () => {
   const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
   const voterAddress = getAddressByIndex(Number(addressIndex));
   const voter = getWalletByIndex(Number(addressIndex));
-  await printVotingPower(dp, voterAddress);
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const canSkip = votesToCast.length >= 1;
-    const skipText = '(or press enter to continue)';
-    const proposalId = await input({
-      message: `Enter a proposal id ${canSkip ? skipText : ''}`,
-    });
-    if (proposalId === '' && canSkip) {
-      break;
+  if (dp) {
+    await printVotingPower(dp, voterAddress);
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const canSkip = votesToCast.length >= 1;
+      const skipText = '(or press enter to continue)';
+      const proposalId = await input({
+        message: `Enter a proposal id ${canSkip ? skipText : ''}`,
+      });
+      if (proposalId === '' && canSkip) {
+        break;
+      }
+      const numberOfVotes = await input({ message: `Enter the number of votes for this proposal` });
+      votesToCast.push([proposalId, numberOfVotes]);
     }
-    const numberOfVotes = await input({ message: `Enter the number of votes for this proposal` });
-    votesToCast.push([proposalId, numberOfVotes]);
+    const tx = await dp.castVotes(voter, votesToCast);
+    const receipt = await tx.verifyAndSubmit();
+    console.log('tx receipt', receipt);
+    console.log('Votes cast');
   }
-  const tx = await dp.castVotes(voter, votesToCast);
-  const receipt = await tx.verifyAndSubmit();
-  console.log('tx receipt', receipt);
-  console.log('Votes cast');
 };
 
 const handleGetProposal = async () => {
