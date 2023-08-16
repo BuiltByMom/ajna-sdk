@@ -1,7 +1,7 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
-import { toWad, wmul } from '../utils/numeric';
+import { wmul } from '../utils/numeric';
 
 export interface CRAStatus {
   /** time a reserve auction was last kicked */
@@ -69,7 +69,7 @@ export class ClaimableReserveAuction {
 
   /**
    * retrieves claimable reserve auction statistics
-   * @returns {@link CRAStats}
+   * @returns {@link CRAStatus}
    */
   async getStatus(): Promise<CRAStatus> {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
@@ -81,10 +81,10 @@ export class ClaimableReserveAuction {
     const [reserves, claimableReserves, claimableReservesRemaining, price] = reservesInfoResponse;
     const [, , lastKickTimestamp] = kickTimeResponse;
 
-    const ajnaToBurn = wmul(claimableReservesRemaining, price).add(toWad(1));
+    const ajnaToBurn = wmul(claimableReservesRemaining, price);
 
     return {
-      lastKickTime: new Date(lastKickTimestamp.toNumber()),
+      lastKickTime: new Date(lastKickTimestamp.toNumber() * 1000),
       ajnaToBurn,
       reserves,
       claimableReserves,
