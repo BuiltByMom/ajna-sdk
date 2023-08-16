@@ -4,7 +4,7 @@ import { BigNumber, Signer, constants } from 'ethers';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { fromWad, toWad, wdiv, wmul } from '../src/utils/numeric';
 import { initAjna } from './utils';
-import { ClaimableReserveAuction } from '../src/classes/ClaimableReserveAuction';
+import { CRAStatus, ClaimableReserveAuction } from '../src/classes/ClaimableReserveAuction';
 import { Pool } from '../src/classes/Pool';
 import { getAjnaTokenContract } from '../src/contracts/common';
 
@@ -23,8 +23,8 @@ async function getPool(ajna: AjnaSDK) {
 }
 
 // Approves AJNA and takes reserves
-async function takeReserves(signerLender: Signer, maxAmount: BigNumber) {
-  let tx = await pool.ajnaApprove(signerLender, maxAmount);
+async function takeReserves(signerLender: Signer, maxAmount: BigNumber, status: CRAStatus) {
+  let tx = await pool.ajnaApprove(signerLender, wmul(maxAmount, status.price));
   await tx.verifyAndSubmit();
   tx = await cra.takeAndBurn(signerLender, maxAmount);
   const receipt = await tx.verifyAndSubmit();
@@ -74,8 +74,10 @@ async function run() {
     case 'take': {
       let takeAmount = amount ? toWad(amount) : status.claimableReservesRemaining;
       const ajnaRequiredToTake = wdiv(takeAmount, status.price);
-      if (ajnaRequiredToTake.lt(ajnaBalance)) takeAmount = wmul(ajnaBalance, status.price);
-      await takeReserves(signerLender, takeAmount);
+      if (ajnaRequiredToTake.gt(ajnaBalance)) takeAmount = wdiv(ajnaBalance, status.price);
+      const cost = wmul(takeAmount, status.price);
+      console.log('Taking', fromWad(takeAmount), 'reserves with', fromWad(cost), 'AJNA');
+      await takeReserves(signerLender, takeAmount, status);
       return;
     }
   }
