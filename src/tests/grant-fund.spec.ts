@@ -99,6 +99,13 @@ describe('Grants fund', () => {
     });
   });
 
+  describe('Total supply', () => {
+    it('should get total supply', async () => {
+      const totalSupply = await ajna.grants.getTotalSupply();
+      expect(fromWad(totalSupply)).toBeDefined();
+    });
+  });
+
   describe('Treasury', () => {
     it('gets the treasury balance', async () => {
       const treasury = await ajna.grants.getTreasury();

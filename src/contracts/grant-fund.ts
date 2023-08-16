@@ -12,6 +12,11 @@ export const getGrantsFundContract = (provider: SignerOrProvider) => {
   return new ethers.Contract(checksumAddress(Config.grantFund), grantsFundAbi, provider);
 };
 
+export async function getTotalSupply(provider: SignerOrProvider) {
+  const contractInstance: Contract = getAjnaTokenContract(provider);
+  return await contractInstance.totalSupply();
+}
+
 // Delegate
 export async function delegateVote(signer: Signer, delegatee: Address) {
   const contractInstance: Contract = getAjnaTokenContract(signer);

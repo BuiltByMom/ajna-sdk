@@ -122,6 +122,8 @@ export interface IGrantFund {
   /**
    * Handles grant fund methods
    */
+  /** get total token supply */
+  getTotalSupply(): Promise<BigNumber>;
   /** delegates vote to the given delegatee */
   delegateVote(signer: Signer, delegateToAdress: Address): Promise<WrappedTransaction>;
   /** get the address account is currently delegating to */
