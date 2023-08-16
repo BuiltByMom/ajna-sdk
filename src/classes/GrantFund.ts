@@ -7,6 +7,7 @@ import {
   getCurrentDistributionId,
   getDelegates,
   getDistributionPeriod,
+  getTotalSupply,
   getTreasury,
   startNewDistributionPeriod,
 } from '../contracts/grant-fund';
@@ -28,6 +29,14 @@ import { Proposal } from './Proposal';
 export class GrantFund extends ContractBase implements IGrantFund {
   constructor(signerOrProvider: SignerOrProvider) {
     super(signerOrProvider);
+  }
+
+  /**
+   * Get total token supply
+   * @returns BigNumber
+   */
+  async getTotalSupply() {
+    return getTotalSupply(this.getProvider());
   }
 
   /**
