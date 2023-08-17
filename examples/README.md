@@ -47,6 +47,9 @@ Ensure your accounts are funded with tokens. Scripts run fine-grained approvals 
 - `./lend.ts add 200 2007.0213` - add liquidity at lower price (index 2631)
 - `./lend.ts add 50` - add 50 tokens liquidity at the lowest utilized price (or highest deposit if no debt)
 - `./lend.ts remove 25 2007.0213` - remove 25 tokens from the lower price bucket
+- `./lend.ts addCollateral 1 3000.6` - add 1 token collateral at high-priced bucket to arb out overpriced quote token
+- `./lend.ts removeCollateral 1 3000.6` - remove collateral from bucket
+- `./lend.ts withdrawAll 2516,2519` - remove liquidity and/or collateral from two bucket indices
 
 ### Borrowing
 
