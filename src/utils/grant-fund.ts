@@ -6,7 +6,7 @@ import {
   SdkError,
   VoteParams,
 } from '../types';
-import { toWad } from './numeric';
+import { fromWad, toWad } from './numeric';
 
 type Votes = [proposalId: string, votesUsed: string];
 type FormattedVotes = [proposalId: string, votesUsed: number];
@@ -73,11 +73,11 @@ export function findBestProposals(
   for (let len = 1; len <= proposals.length; len++) {
     for (const combo of generateCombinations(proposals, 0, len)) {
       const totalVotes = combo.reduce(
-        (sum, proposal) => sum + proposal.votesReceived.toNumber(),
+        (sum, proposal) => sum + Number(fromWad(proposal.votesReceived)),
         0
       );
       const totalTokens = combo.reduce(
-        (sum, proposal) => sum + proposal.tokensRequested.toNumber(),
+        (sum, proposal) => sum + Number(fromWad(proposal.tokensRequested)),
         0
       );
 
@@ -106,7 +106,10 @@ export const formatVotes = async (
   if (isDistributionPeriodOnScreeningStage) {
     return [BigNumber.from(vote[0]), BigNumber.from(toWad(vote[1]))];
   } else {
-    const voteRoot = toWad(Math.sqrt(Number(vote[1])));
+    const voteRoot =
+      Number(vote[1]) < 0
+        ? toWad(-Math.sqrt(Math.abs(Number(vote[1]))))
+        : toWad(Math.sqrt(Number(vote[1])));
     return [BigNumber.from(vote[0]), BigNumber.from(voteRoot)];
   }
 };

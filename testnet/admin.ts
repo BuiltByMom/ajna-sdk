@@ -174,7 +174,7 @@ const handleGetDistributionPeriod = async () => {
 
 const printVotingPower = async (dp: DistributionPeriod, address: string) => {
   const votingPower = await dp.getVotingPower(address);
-  console.log(`${votingPower} for address ${address} (${getIndexByAddress(address)})`);
+  console.log(`${fromWad(votingPower)} for address ${address} (${getIndexByAddress(address)})`);
 };
 
 const handleGetVotingPower = async () => {

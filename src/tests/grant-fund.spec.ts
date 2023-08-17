@@ -235,6 +235,13 @@ describe('Grants fund', () => {
       expect(fromWad(votes)).toBe('489755030625000000.0');
     });
 
+    it('should get top ten proposals', async () => {
+      const topTen = await distributionPeriod.getTopTenProposals();
+      expect(topTen).toBeDefined();
+      expect(topTen[0]).toBe(proposalId.toString());
+      expect(topTen[1]).toBe(proposalId2.toString());
+    });
+
     it('should cast funding votes', async () => {
       const castVotes = await distributionPeriod.castVotes(voter, [
         [proposalId.toString(), '4000000.0'],
@@ -395,7 +402,7 @@ describe('Grants fund', () => {
         const tokensAvailable = 4000;
         const bestProposals = findBestProposals(proposals, tokensAvailable);
         const resultSum = bestProposals.reduce((accumulator, proposal) => {
-          return accumulator + proposal.tokensRequested.toNumber();
+          return accumulator + Number(fromWad(proposal.tokensRequested));
         }, 0);
         expect(resultSum).toBeLessThan(tokensAvailable);
       });

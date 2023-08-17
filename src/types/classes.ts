@@ -177,6 +177,8 @@ export interface IDistributionPeriod {
   fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction>;
   /** cast an array of screening or funding votes (based on current distribution period stage). */
   castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction>;
+  /** get top ten proposals on funding stage */
+  getTopTenProposals(): Promise<string[]>;
   /** check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals. */
   updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction>;
   /** get current top proposal slate */
