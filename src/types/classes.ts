@@ -158,7 +158,7 @@ export interface IDistributionPeriod {
   /** retrieve a bytes32 hash of the current distribution period stage. */
   getStage(address: Address): Promise<string>;
   /** check if current distribution period is on screening stage */
-  distributionPeriodStage(): Promise<string>;
+  distributionPeriodStage(): Promise<DistributionPeriodStage>;
   /** get the voter's voting power based on current distribution period stage */
   getVotingPower(address: Address): Promise<BigNumber>;
   /** get the voter's voting power in the screening stage of a distribution period */
@@ -166,7 +166,7 @@ export interface IDistributionPeriod {
   /** get the remaining quadratic voting power available to the voter in the funding stage of a distribution period */
   getFundingVotingPower(address: Address): Promise<BigNumber>;
   /** get the number of screening votes cast by an account in a given distribution period. */
-  getScreeningVotesCast(address: Address): Promise<string>;
+  getScreeningVotesCast(address: Address): Promise<BigNumber>;
   /** get the list of funding votes cast by an account in a given distribution period. */
   getFundingVotesCast(address: Address): Promise<FundingVotes[]>;
   /** get the current state of a given voter in the funding stage. */
