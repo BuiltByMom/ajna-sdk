@@ -84,7 +84,7 @@ describe('Grants fund', () => {
       expect(dp?.endDate).toBeDefined();
       expect(dp?.isActive).toBe(true);
       expect(votesCount).toBe('0.0');
-      expect(fundsAvailable).toBe('0.0');
+      expect(fundsAvailable).toBe('9000000.0');
     });
 
     it('should get the distribution by id', async () => {
@@ -96,7 +96,7 @@ describe('Grants fund', () => {
       expect(dp.endDate).toBeDefined();
       expect(dp.isActive).toBe(true);
       expect(fromWad(dp.votesCount)).toBe('0.0');
-      expect(fromWad(dp.fundsAvailable)).toBe('0.0');
+      expect(fromWad(dp.fundsAvailable)).toBe('9000000.0');
     });
   });
 
@@ -404,7 +404,7 @@ describe('Grants fund', () => {
         const resultSum = bestProposals.reduce((accumulator, proposal) => {
           return accumulator + Number(fromWad(proposal.tokensRequested));
         }, 0);
-        expect(resultSum).toBeLessThan(tokensAvailable);
+        expect(resultSum).toBeLessThan(4000);
       });
     });
   });

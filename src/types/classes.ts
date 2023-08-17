@@ -152,9 +152,9 @@ export interface IDistributionPeriod {
   startDate: number;
   endBlock: number;
   endDate: number;
-  fundedSlateHash: string;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
+  fundedSlateHash: BigNumber;
   /** retrieve a bytes32 hash of the current distribution period stage. */
   getStage(address: Address): Promise<string>;
   /** check if current distribution period is on screening stage */
@@ -193,6 +193,15 @@ export enum DistributionPeriodStage {
   CHALLENGE = 'Challenge',
   FINALIZE = 'Finalize',
 }
+
+export type DistributionPeriodInfo = [
+  id: number,
+  startBlock: number,
+  endBlock: number,
+  fundsAvailable: BigNumber,
+  fundingVotePowerCast: BigNumber,
+  fundedSlateHash: BigNumber
+];
 
 export type ProposalParams = {
   title: string;

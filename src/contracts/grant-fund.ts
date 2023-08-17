@@ -4,7 +4,13 @@ import grantsFundAbi from '../abis/GrantFund.json';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
 import { getAjnaTokenContract } from './common';
-import { Address, FormattedVoteParams, ProposalParams, SignerOrProvider } from '../types';
+import {
+  Address,
+  DistributionPeriodInfo,
+  FormattedVoteParams,
+  ProposalParams,
+  SignerOrProvider,
+} from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 
@@ -44,7 +50,10 @@ export async function startNewDistributionPeriod(signer: Signer) {
   });
 }
 
-export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
+export async function getDistributionPeriod(
+  provider: SignerOrProvider,
+  distributionId: number
+): Promise<DistributionPeriodInfo> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
 }
@@ -179,7 +188,7 @@ export async function updateSlate(
 
 export async function getFundedProposalSlate(
   provider: SignerOrProvider,
-  slateHash: string
+  slateHash: BigNumber
 ): Promise<BigNumber[]> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getFundedProposalSlate(slateHash);
