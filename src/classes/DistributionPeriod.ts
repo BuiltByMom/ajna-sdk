@@ -157,7 +157,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param  account The address of the voter to check.
    * @return The number of screening votes successfully cast the voter.
    */
-  async getScreeningVotesCast(address: Address): Promise<string> {
+  async getScreeningVotesCast(address: Address): Promise<BigNumber> {
     return await getScreeningVotesCast(this.getProvider(), this.id, address);
   }
 
