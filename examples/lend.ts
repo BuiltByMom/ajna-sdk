@@ -14,6 +14,8 @@ dotenv.config();
 
 const collateralAddress = process.env.COLLATERAL_TOKEN || '0x0';
 const quoteAddress = process.env.QUOTE_TOKEN || '0x0';
+let pool: FungiblePool;
+let signerLender: Signer;
 
 // Looks for pool, deploying it if it doesn't already exist
 async function getPool(ajna: AjnaSDK, signerLender: Signer) {
@@ -45,12 +47,7 @@ async function deployPool(
 }
 
 // Using fine-grained approval, add liquidity to the pool
-async function addLiquidity(
-  pool: FungiblePool,
-  signerLender: Signer,
-  amount: BigNumber,
-  price: BigNumber
-) {
+async function addLiquidity(amount: BigNumber, price: BigNumber) {
   // validate the user's price
   if (price.gt(indexToPrice(1)) || price.lte(indexToPrice(MAX_FENWICK_INDEX)))
     throw new SdkError('Please provide a valid price');
@@ -63,19 +60,14 @@ async function addLiquidity(
   console.log('Added', fromWad(amount), 'liquidity to bucket', bucket.index);
 }
 
-async function removeLiquidity(
-  pool: FungiblePool,
-  signerLender: Signer,
-  amount: BigNumber,
-  price: BigNumber
-) {
+async function removeLiquidity(amount: BigNumber, price: BigNumber) {
   const bucket = await pool.getBucketByPrice(price);
   const tx = await bucket.removeQuoteToken(signerLender, amount);
   await tx.verifyAndSubmit();
   console.log('Removed liquidity from bucket', bucket.index);
 }
 
-async function updateInterest(pool: FungiblePool, signerLender: Signer) {
+async function updateInterest() {
   await pool.updateInterest(signerLender);
   const stats = await pool.getStats();
   console.log('Borrow rate ', fromWad(stats.borrowRate), 'after updating');
@@ -83,7 +75,7 @@ async function updateInterest(pool: FungiblePool, signerLender: Signer) {
 
 async function run() {
   const { ajna, signer: signerLender } = await initAjna('lender');
-  const pool = await getPool(ajna, signerLender);
+  pool = await getPool(ajna, signerLender);
 
   const stats = await pool.getStats();
   const prices = await pool.getPrices();
@@ -99,15 +91,15 @@ async function run() {
   const price = process.argv.length > 4 ? toWad(process.argv[4]) : indexToPrice(poolPriceIndex);
 
   if (action === 'add') {
-    await addLiquidity(pool, signerLender, deposit, price);
+    await addLiquidity(deposit, price);
     return;
   }
   if (action === 'remove') {
-    await removeLiquidity(pool, signerLender, deposit, price);
+    await removeLiquidity(deposit, price);
     return;
   }
   if (action === 'updateInterest') {
-    await updateInterest(pool, signerLender);
+    await updateInterest();
     return;
   }
 }
