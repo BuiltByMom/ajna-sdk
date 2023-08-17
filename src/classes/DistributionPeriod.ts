@@ -7,6 +7,7 @@ import {
   getProposalInfo,
   getScreeningVotesCast,
   getStage,
+  getTopTenProposals,
   getVoterInfo,
   getVotesFunding,
   getVotesScreening,
@@ -133,7 +134,10 @@ votes count: ${fromWad(this.votesCount)}
   async getVotingPower(address: Address): Promise<BigNumber> {
     const distributionPeriodStage = await this.distributionPeriodStage();
     if (distributionPeriodStage === DistributionPeriodStage.SCREENING) {
-      return await this.getScreeningVotingPower(address);
+      const initialVotingPower = await this.getScreeningVotingPower(address);
+      const votingPowerUsed = await this.getScreeningVotesCast(address);
+      const remainingVotingPower = BigNumber.from(initialVotingPower).sub(votingPowerUsed);
+      return remainingVotingPower;
     } else if (distributionPeriodStage === DistributionPeriodStage.FUNDING) {
       return await this.getFundingVotingPower(address);
     } else {
@@ -210,6 +214,17 @@ votes count: ${fromWad(this.votesCount)}
     } else {
       return await fundingVote(signer, formattedVotes);
     }
+  }
+
+  /**
+   * Get top ten proposals on funding stage
+   * @param distributionId the distributionId of the distribution period to check
+   * @returns top ten proposals on funding stage
+   */
+  async getTopTenProposals(): Promise<string[]> {
+    const toTenProposals = await getTopTenProposals(this.getProvider(), this.id);
+    const formattedToTenProposals = toTenProposals.map(id => id.toString());
+    return formattedToTenProposals;
   }
 
   /**

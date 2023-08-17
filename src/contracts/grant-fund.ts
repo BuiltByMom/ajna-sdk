@@ -95,6 +95,14 @@ export async function getProposalState(provider: SignerOrProvider, distributionI
   return await contractInstance.state(distributionId);
 }
 
+export async function getTopTenProposals(
+  provider: SignerOrProvider,
+  distributionId: number
+): Promise<BigNumber[]> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getTopTenProposals(distributionId);
+}
+
 // Voting
 export async function getVotesScreening(
   provider: SignerOrProvider,
