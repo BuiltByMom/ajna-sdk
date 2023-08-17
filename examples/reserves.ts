@@ -24,7 +24,9 @@ async function getPool(ajna: AjnaSDK) {
 
 // Approves AJNA and takes reserves
 async function takeReserves(signerLender: Signer, maxAmount: BigNumber, status: CRAStatus) {
-  let tx = await pool.ajnaApprove(signerLender, wmul(maxAmount, status.price));
+  const approvalAmount = wmul(maxAmount, status.price);
+  console.log('Approving pool to spend', fromWad(approvalAmount), 'AJNA');
+  let tx = await pool.ajnaApprove(signerLender, approvalAmount);
   await tx.verifyAndSubmit();
   tx = await cra.takeAndBurn(signerLender, maxAmount);
   const receipt = await tx.verifyAndSubmit();
@@ -73,7 +75,7 @@ async function run() {
 
     case 'take': {
       let takeAmount = amount ? toWad(amount) : status.claimableReservesRemaining;
-      const ajnaRequiredToTake = wdiv(takeAmount, status.price);
+      const ajnaRequiredToTake = wmul(takeAmount, status.price);
       if (ajnaRequiredToTake.gt(ajnaBalance)) takeAmount = wdiv(ajnaBalance, status.price);
       const cost = wmul(takeAmount, status.price);
       console.log('Taking', fromWad(takeAmount), 'reserves with', fromWad(cost), 'AJNA');
