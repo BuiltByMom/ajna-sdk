@@ -116,6 +116,12 @@ describe('LP Token and PositionManager', () => {
     await submitAndVerifyTransaction(response);
   });
 
+  it('increaseLPAllowance should throw exception if indexes and amounts not the same length', async () => {
+    await expect(async () => {
+      await pool.increaseLPAllowance(signerLender, [2550, 2549], [toWad(200)]);
+    }).rejects.toThrow('indexes and amounts must be same length');
+  });
+
   it('should memorialize and redeem an LP position with multiple indexes', async () => {
     const indices = [2551, 2552, 2553];
     const amounts = [toWad(10), toWad(20), toWad(30)];

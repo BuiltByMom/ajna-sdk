@@ -305,6 +305,10 @@ export abstract class Pool {
   }
 
   async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumber[]) {
+    if (indexes.length !== amounts.length) {
+      throw new SdkError('indexes and amounts must be same length');
+    }
+
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
     return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
