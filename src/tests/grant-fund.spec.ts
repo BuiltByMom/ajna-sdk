@@ -54,10 +54,8 @@ describe('Grants fund', () => {
   });
 
   describe('Distribution Period', () => {
-    it(`throws and error getting active distribution period if it doesn't exist`, async () => {
-      await expect(ajna.grants.getActiveDistributionPeriod()).rejects.toThrow(
-        'There is no active distribution period'
-      );
+    it(`should return undefined if distribution period doesn't exist`, async () => {
+      expect(await ajna.grants.getActiveDistributionPeriod()).toBeUndefined();
     });
 
     it('start new distribution period', async () => {
@@ -76,14 +74,17 @@ describe('Grants fund', () => {
 
     it('should get the active distribution period', async () => {
       const dp = await ajna.grants.getActiveDistributionPeriod();
-      expect(dp.id).toBe(2);
-      expect(dp.startBlock).toBeDefined();
-      expect(dp.endBlock).toBeDefined();
-      expect(dp.startDate).toBeDefined();
-      expect(dp.endDate).toBeDefined();
-      expect(dp.isActive).toBe(true);
-      expect(fromWad(dp.votesCount)).toBe('0.0');
-      expect(fromWad(dp.fundsAvailable)).toBe('0.0');
+      expect(dp).toBeDefined();
+      const votesCount = fromWad(dp?.votesCount || 0);
+      const fundsAvailable = fromWad(dp?.fundsAvailable || 0);
+      expect(dp?.id).toBe(2);
+      expect(dp?.startBlock).toBeDefined();
+      expect(dp?.endBlock).toBeDefined();
+      expect(dp?.startDate).toBeDefined();
+      expect(dp?.endDate).toBeDefined();
+      expect(dp?.isActive).toBe(true);
+      expect(votesCount).toBe('0.0');
+      expect(fundsAvailable).toBe('0.0');
     });
 
     it('should get the distribution by id', async () => {
@@ -168,7 +169,9 @@ describe('Grants fund', () => {
   describe('Voting', () => {
     it('distribution period should be on screening stage', async () => {
       const currentDistributionPeriod = await ajna.grants.getActiveDistributionPeriod();
-      distributionPeriod = await ajna.grants.getDistributionPeriod(currentDistributionPeriod.id);
+      if (currentDistributionPeriod) {
+        distributionPeriod = await ajna.grants.getDistributionPeriod(currentDistributionPeriod.id);
+      }
       const isOnScreeningStage =
         (await distributionPeriod.distributionPeriodStage()) === DistributionPeriodStage.SCREENING;
       expect(isOnScreeningStage).toBe(true);

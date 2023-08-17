@@ -133,7 +133,7 @@ export interface IGrantFund {
   /** get the current grants treasury */
   getTreasury(): Promise<BigNumber>;
   /** get the active distribution period */
-  getActiveDistributionPeriod(): Promise<IDistributionPeriod>;
+  getActiveDistributionPeriod(): Promise<IDistributionPeriod | undefined>;
   /** get a distribution period by id */
   getDistributionPeriod(distributionId: number): Promise<IDistributionPeriod>;
   /** creates a proposal */
