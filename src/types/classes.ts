@@ -184,7 +184,7 @@ export interface IDistributionPeriod {
   /** get current top proposal slate */
   getFundedProposalSlate(): Promise<string[]>;
   /** get best proposals based on the combination of votes received and tokens requested over tokens available. */
-  getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]>;
+  getOptimalProposals(proposalIds: string[], tokensAvailable: BigNumber): Promise<string[]>;
 }
 
 export enum DistributionPeriodStage {

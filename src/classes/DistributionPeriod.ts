@@ -257,7 +257,7 @@ votes count: ${fromWad(this.votesCount)}
    * @param tokensAvailable treasury.
    * @returns proposals[] a new slate of proposals
    */
-  async getOptimalProposals(proposalIds: string[], tokensAvailable: string): Promise<string[]> {
+  async getOptimalProposals(proposalIds: string[], tokensAvailable: BigNumber): Promise<string[]> {
     let bestProposals: ProposalInfo[];
     let proposals: ProposalInfo[] = [];
 
@@ -269,7 +269,7 @@ votes count: ${fromWad(this.votesCount)}
     proposals = await Promise.all(proposalIds.map(getEachProposalInfo));
 
     if (proposals.length > 0) {
-      bestProposals = findBestProposals(proposals, Number(tokensAvailable));
+      bestProposals = findBestProposals(proposals, Number(fromWad(tokensAvailable)));
     } else {
       throw new SdkError('There is no funded proposal slate');
     }
