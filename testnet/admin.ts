@@ -29,14 +29,18 @@ Please enter one of the options below:
 - 1: delegates vote from signer to address
 - 2: get delegates for address
 - 3: get treasury
-- 4: start a distribution period
-- 5: get distrituion period
-- 6: get voting power for address
-- 7: get ETH/AJNA balances
-- 8: transfer AJNA
-- 10: create proposal
-- 11: cast votes
-- 12: get proposals
+- 4: get total supply
+- 5: start a distribution period
+- 6: get distrituion period
+- 7: get voting power for address
+- 8: get ETH/AJNA balances
+- 10: transfer AJNA
+- 11: create proposal
+- 12: cast votes
+- 13: get proposals
+- 14: get top ten proposals
+- 15: update top slate
+- 16: get funded proposal slate
 
 - 9: mine: mine a given number of blocks
 - 0: exit
@@ -152,6 +156,11 @@ const handleGetDelegates = async () => {
 const handleGetTreasury = async () => {
   const result = await ajna.grants.getTreasury();
   console.log(`Treasury: ${fromWad(result)} AJNA`);
+};
+
+const getTotalSupply = async () => {
+  const result = await ajna.grants.getTotalSupply();
+  console.log(`Total supply: ${fromWad(result)} AJNA`);
 };
 
 const handleStartDistributionPeriod = async () => {
@@ -310,6 +319,49 @@ const handleGetProposal = async () => {
   console.log(await proposal.getInfo());
 };
 
+const handleGetTopTenProposals = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  if (dp) {
+    const toptenproposals = await dp.getTopTenProposals();
+    toptenproposals.forEach((proposalId, index) => {
+      console.log(`proposal ${index + 1}: ${proposalId}`);
+    });
+  }
+};
+
+const handleUpdateSlate = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  const proposals: string[] = [];
+  if (dp) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const canSkip = proposals.length >= 1;
+      const skipText = '(or press enter to continue)';
+      const proposalId = await input({
+        message: `Enter a proposal id ${canSkip ? skipText : ''}`,
+      });
+      if (proposalId === '' && canSkip) {
+        break;
+      }
+      proposals.push(proposalId);
+    }
+    const tx = await dp?.updateSlate(defaultSigner, proposals);
+    const receipt = await tx.verifyAndSubmit();
+    console.log('tx receipt', receipt);
+    console.log('Slate updated');
+  }
+};
+
+const handleGetFundedProposalSlate = async () => {
+  const dp = await ajna.grants.getActiveDistributionPeriod();
+  if (dp) {
+    const fundedProposals = await dp.getFundedProposalSlate();
+    fundedProposals.forEach((proposalId, index) => {
+      console.log(`proposal ${index + 1}: ${proposalId}`);
+    });
+  }
+};
+
 const handleMine = async () => {
   console.log(`Current block: ${await provider.getBlockNumber()}`);
   console.log(
@@ -336,28 +388,40 @@ const executeOption = async (option: string) => {
       await handleGetTreasury();
       break;
     case '4':
-      await handleStartDistributionPeriod();
+      await getTotalSupply();
       break;
     case '5':
-      await handleGetDistributionPeriod();
+      await handleStartDistributionPeriod();
       break;
     case '6':
-      await handleGetVotingPower();
+      await handleGetDistributionPeriod();
       break;
     case '7':
-      await handleGetBalances();
+      await handleGetVotingPower();
       break;
     case '8':
-      await handleTransfer();
+      await handleGetBalances();
       break;
     case '10':
-      await handlePropose();
+      await handleTransfer();
       break;
     case '11':
-      await handleVote();
+      await handlePropose();
       break;
     case '12':
+      await handleVote();
+      break;
+    case '13':
       await handleGetProposal();
+      break;
+    case '14':
+      await handleGetTopTenProposals();
+      break;
+    case '15':
+      await handleUpdateSlate();
+      break;
+    case '16':
+      await handleGetFundedProposalSlate();
       break;
     case '9':
       await handleMine();

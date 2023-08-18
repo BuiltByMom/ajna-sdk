@@ -4,6 +4,7 @@ export * from './classes/Pool';
 export * from './classes/FungiblePool';
 
 export * from './utils/checksum-address';
+export * from './utils/grant-fund';
 export * from './utils/numeric';
 export * from './utils/pricing';
 export * from './utils/time';
