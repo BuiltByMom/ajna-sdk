@@ -2,17 +2,23 @@ import { Provider } from '@ethersproject/providers';
 import { BigNumber, Signer } from 'ethers';
 import { DISTRIBUTION_PERIOD_DURATION } from '../constants/common';
 import {
+  claimDelegateReward,
   createProposal,
   delegateVote,
+  executeProposal,
   getCurrentDistributionId,
+  getDelegateReward,
   getDelegates,
+  getDescriptionHash,
   getDistributionPeriod,
+  getHasClaimedRewards,
   getTotalSupply,
   getTreasury,
   startNewDistributionPeriod,
 } from '../contracts/grant-fund';
 import {
   Address,
+  ExecuteProposalParams,
   IGrantFund,
   ProposalParams,
   SdkError,
@@ -22,6 +28,7 @@ import {
 import { ContractBase } from './ContractBase';
 import { DistributionPeriod } from './DistributionPeriod';
 import { Proposal } from './Proposal';
+import { Config } from './Config';
 
 /**
  * Class used to iteract with grants fund contract.
@@ -149,5 +156,50 @@ export class GrantFund extends ContractBase implements IGrantFund {
    */
   getProposal(proposalId: BigNumber): Proposal {
     return new Proposal(this.getProvider(), proposalId);
+  }
+
+  /**
+   * distributes delegate reward based on delegatee Vote share.
+   * @param distributionId_ Id of distribution from which delegatee wants to claim their reward.
+   * @return rewardClaimed_  amount of reward claimed by delegatee.
+   */
+  async claimDelegateReward(signer: Signer, distributionId: number): Promise<WrappedTransaction> {
+    return await claimDelegateReward(signer, distributionId);
+  }
+
+  /**
+   * retrieve the delegate reward accrued to a voter in a given distribution period.
+   * @param  distributionId_ The distributionId to calculate rewards for.
+   * @param  voter_ the address of the voter to calculate rewards for.
+   * @return rewards_ the rewards earned by the voter for voting in that distribution period.
+   */
+  async getDelegateReward(distributionId: number, voter: Address): Promise<BigNumber> {
+    return await getDelegateReward(this.getProvider(), distributionId, voter);
+  }
+
+  /**
+   * get the reward claim status of an account in a given distribution period.
+   * @param  distributionId_ The distributionId of the distribution period to check.
+   * @param  voter_ the address of the voter to check.
+   * @return rewards_ the reward claim status of the account in the distribution period.
+   */
+  async getHasClaimedRewards(distributionId: number, voter: Address): Promise<boolean> {
+    return await getHasClaimedRewards(this.getProvider(), distributionId, voter);
+  }
+
+  /**
+   * Execute a proposal that has been approved by the community. Only proposals in the finalized top slate slate at the end of the challenge period can be executed.
+   * @param  targets_ list of contracts the proposal calldata will interact with. Should be the Ajna token contract for all proposals.
+   * @param  values_ list of values to be sent with the proposal calldata. Should be 0 for all proposals.
+   * @param  calldatas_ list of calldata to be executed. Should be the transfer() method.
+   * @param  descriptionHash_ hash of proposal's description string.
+   * @return proposalId_ the id of the executed proposal.
+   */
+  async executeProposal(signer: Signer, { params, description }: ExecuteProposalParams) {
+    const descriptionHash = await getDescriptionHash(this.getProvider(), description);
+    const targets = params.map(() => Config.ajnaToken);
+    const values = params.map(() => 0);
+    const calldata = params.map(({ calldata }) => calldata);
+    return await executeProposal(signer, targets, values, calldata, descriptionHash);
   }
 }
