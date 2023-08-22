@@ -93,9 +93,7 @@ describe('LP Token and PositionManager', () => {
     expect(inPosition).toBe(false);
 
     // memorialize positions
-    response = await lpToken.memorializePositions(signerLender, pool.contract, tokenId, [
-      bucketIndex,
-    ]);
+    response = await lpToken.memorializePositions(signerLender, pool.contract, [bucketIndex]);
     await submitAndVerifyTransaction(response);
 
     lp = await getLP(signerLender, tokenId, bucketIndex);
@@ -110,9 +108,7 @@ describe('LP Token and PositionManager', () => {
     expect(inPosition).toBe(false);
 
     // Redeem positions: with get the bucket id by calling `pm.getPositionIndexes`
-    response = await lpToken.redeemPositions(signerLender, pool.contract.address, tokenId, [
-      bucketIndex,
-    ]);
+    response = await lpToken.redeemPositions(signerLender, pool.contract.address, [bucketIndex]);
     await submitAndVerifyTransaction(response);
   });
 
@@ -149,7 +145,7 @@ describe('LP Token and PositionManager', () => {
       expect(inPosition).toBe(false);
     }
 
-    tx = await lpToken.memorializePositions(signerLender, pool.contract, tokenId, indices);
+    tx = await lpToken.memorializePositions(signerLender, pool.contract, indices);
     const receipt1 = await submitAndVerifyTransaction(tx);
     expect(receipt1).toHaveProperty('logs');
 
@@ -163,12 +159,12 @@ describe('LP Token and PositionManager', () => {
     expect(pis.length).toBe(3);
     expect(pis.map(pi => pi.toNumber())).toEqual(indices);
 
-    tx = await lpToken.redeemPositions(signerNotLender, pool.poolAddress, tokenId, indices);
+    tx = await lpToken.redeemPositions(signerNotLender, pool.poolAddress, indices);
     await expect(async () => {
       await tx.verify();
     }).rejects.toThrow(`NoAuth()`);
 
-    tx = await lpToken.redeemPositions(signerLender, pool.poolAddress, tokenId, indices);
+    tx = await lpToken.redeemPositions(signerLender, pool.poolAddress, indices);
     await submitAndVerifyTransaction(tx);
   });
 });

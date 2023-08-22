@@ -47,7 +47,6 @@ export class LPToken {
   async memorializePositions(
     signer: Signer,
     pool: Contract,
-    tokenId: BigNumber,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
@@ -71,7 +70,7 @@ export class LPToken {
         }
       }
 
-      return memorializePositions(signer, pool.address, tokenId, indexes, overrides);
+      return memorializePositions(signer, pool.address, this.tokenId, indexes, overrides);
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }
@@ -80,20 +79,19 @@ export class LPToken {
   async redeemPositions(
     signer: Signer,
     poolAddress: Address,
-    tokenId: BigNumber,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     try {
       if (indexes.length === 0) {
-        throw new SdkError(`No indexes in position for token id: ${tokenId}`);
+        throw new SdkError(`No indexes in position for token id: ${this.tokenId}`);
       }
 
       for (const index of indexes) {
-        await this.isIndexInPosition(index, tokenId);
+        await this.isIndexInPosition(index, this.tokenId);
       }
 
-      return await redeemPositions(signer, poolAddress, tokenId, indexes, overrides);
+      return await redeemPositions(signer, poolAddress, this.tokenId, indexes, overrides);
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }
