@@ -84,6 +84,20 @@ async function removeCollateral(amount: BigNumber, price: BigNumber) {
   console.log('Removed collateral from bucket', bucketIndex);
 }
 
+async function mint() {
+  const tx = await pool.mintLPToken(signerLender);
+  const receipt = await tx.verifyAndSubmit();
+  const mintEventLogs = tx.getEventLogs(receipt).get('Mint')![0];
+  const tokenId = mintEventLogs.args['tokenId'];
+  console.log('Minted tokenId', tokenId.toString());
+}
+
+async function burn(tokenId: BigNumber) {
+  const tx = await pool.burnLPToken(signerLender, tokenId);
+  await tx.verifyAndSubmit();
+  console.log('Burned tokenId', tokenId.toString());
+}
+
 async function withdrawAll(indices: Array<number>) {
   const tx = await pool.withdrawLiquidity(signerLender, indices);
   await tx.verifyAndSubmit();
@@ -113,9 +127,12 @@ async function run() {
   const action = process.argv.length > 2 ? process.argv[2] : '';
   let amount = toWad(0);
   let price = toWad(0);
-  if (action != 'withdrawAll' && action != 'updateInterest') {
+  let tokenId = BigNumber.from(0);
+  if (action.includes('add') || action.includes('remove')) {
     amount = process.argv.length > 3 ? toWad(process.argv[3]) : toWad('100');
     price = process.argv.length > 4 ? toWad(process.argv[4]) : indexToPrice(poolPriceIndex);
+  } else if (action === 'burn') {
+    tokenId = BigNumber.from(process.argv[3]);
   }
 
   switch (action) {
@@ -134,6 +151,16 @@ async function run() {
     }
     case 'removeCollateral': {
       await removeCollateral(amount, price);
+      return;
+    }
+
+    case 'mint': {
+      await mint();
+      return;
+    }
+
+    case 'burn': {
+      await burn(BigNumber.from(tokenId));
       return;
     }
 
