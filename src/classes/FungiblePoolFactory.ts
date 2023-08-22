@@ -20,7 +20,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
    * @param collateralAddress address of the ERC20 collateral token
    * @param quoteAddress address of the ERC20 quote token
    * @param interestRate initial interest rate, between 1%-10%, as WAD
-   * @returns transaction
+   * @returns promise to transaction
    */
   async deployPool(
     signer: Signer,
@@ -28,7 +28,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
     quoteAddress: Address,
     interestRate: BigNumber
   ) {
-    return await deployPool(signer, collateralAddress, quoteAddress, interestRate);
+    return deployPool(signer, collateralAddress, quoteAddress, interestRate);
   }
 
   /**

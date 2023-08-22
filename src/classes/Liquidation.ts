@@ -80,41 +80,36 @@ export class Liquidation {
    * performs arb take operation during debt liquidation auction
    * @param signer taker
    * @param bucketIndex identifies the price bucket
-   * @returns transaction
+   * @returns promise to transaction
    */
   async arbTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, false, bucketIndex);
+    return bucketTake(contractPoolWithSigner, this.borrowerAddress, false, bucketIndex);
   }
 
   /**
    * performs deposit take operation during debt liquidation auction
    * @param signer taker
    * @param bucketIndex identifies the price bucket
-   * @returns transaction
+   * @returns promise to transaction
    */
   async depositTake(signer: Signer, bucketIndex: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await bucketTake(contractPoolWithSigner, this.borrowerAddress, true, bucketIndex);
+    return bucketTake(contractPoolWithSigner, this.borrowerAddress, true, bucketIndex);
   }
 
   /**
    * called by actors to purchase collateral from the auction in exchange for quote token
    * @param signer taker
    * @param maxAmount max amount of collateral that will be taken from the auction
-   * @returns transaction
+   * @returns promise to transaction
    */
   async take(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await take(
-      contractPoolWithSigner,
-      this.borrowerAddress,
-      maxAmount,
-      await signer.getAddress()
-    );
+    return take(contractPoolWithSigner, this.borrowerAddress, maxAmount, await signer.getAddress());
   }
 
   /**
@@ -125,13 +120,13 @@ export class Liquidation {
    * @param callData if provided, take will assume the callee implements IERC*Taker. Take will send collateral to
    *                 callee before passing this data to IERC*Taker.atomicSwapCallback. If not provided,
    *                 the callback function will not be invoked.
-   * @returns transaction
+   * @returns promise to transaction
    */
   // TODO: needs to be tested properly
   async takeWithCall(signer: Signer, maxAmount: BigNumber, callee: Address, callData?: CallData) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await take(contractPoolWithSigner, this.borrowerAddress, maxAmount, callee, callData);
+    return take(contractPoolWithSigner, this.borrowerAddress, maxAmount, callee, callData);
   }
 
   /**
@@ -139,10 +134,11 @@ export class Liquidation {
    *  @param  signer settler
    *  @param  maxDepth  measured from HPB, maximum number of buckets deep to settle debt,
    *                    used to prevent unbounded iteration clearing large liquidations
+   *  @returns promise to transaction
    */
   async settle(signer: Signer, maxDepth = MAX_SETTLE_BUCKETS) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await settle(contractPoolWithSigner, this.borrowerAddress, maxDepth);
+    return settle(contractPoolWithSigner, this.borrowerAddress, maxDepth);
   }
 }
