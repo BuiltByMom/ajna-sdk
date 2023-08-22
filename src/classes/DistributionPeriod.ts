@@ -179,27 +179,27 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * Cast an array of screening votes in one transaction.
    * @param signer voter
    * @param {@link VoteParams} * the array of votes on proposals to cast.
-   * @return votesCast The total number of votes cast across all of the proposals.
+   * @return promise to transaction
    */
   async screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
-    return await screeningVote(signer, votes);
+    return screeningVote(signer, votes);
   }
 
   /**
    * Cast an array of funding votes in one transaction.
    * @param signer voter
    * @param {@link VoteParams} * the array of votes on proposals to cast.
-   * @return votesCast The total number of votes cast across all of the proposals.
+   * @return promise to transaction
    */
   async fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
-    return await fundingVote(signer, votes);
+    return fundingVote(signer, votes);
   }
 
   /**
    * Cast an array of screening or funding votes (based on current distribution period stage).
    * @param signer voter
    * @param {@link VoteParams} * the array of votes on proposals to cast.
-   * @returns votesCast The total number of votes cast across all of the proposals.
+   * @returns promise to transaction
    */
   async castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction> {
     const distributionPeriodStage = await this.distributionPeriodStage();
@@ -211,9 +211,9 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
     );
 
     if (isDistributionPeriodOnScreeningStage) {
-      return await screeningVote(signer, formattedVotes);
+      return screeningVote(signer, formattedVotes);
     } else {
-      return await fundingVote(signer, formattedVotes);
+      return fundingVote(signer, formattedVotes);
     }
   }
 
@@ -231,11 +231,11 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   /**
    * check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals.
    * @param proposals Array of proposals to check.
-   * @returns newTopSlate Boolean indicating whether the new proposal slate was set as the new top slate for distribution.
+   * @returns promise to transaction
    */
   async updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction> {
     const proposalsIds = proposals.map(proposalId => BigNumber.from(proposalId));
-    return await updateSlate(signer, proposalsIds, this.id);
+    return updateSlate(signer, proposalsIds, this.id);
   }
 
   /**
