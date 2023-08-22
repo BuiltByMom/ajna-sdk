@@ -7,7 +7,6 @@ import {
   tokenURI,
 } from '../contracts/position-manager';
 import {
-  Address,
   PositionManager,
   SdkError,
   SignerOrProvider,
@@ -78,7 +77,7 @@ export class LPToken {
 
   async redeemPositions(
     signer: Signer,
-    poolAddress: Address,
+    pool: Contract,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
@@ -91,7 +90,7 @@ export class LPToken {
         await this.isIndexInPosition(index, this.tokenId);
       }
 
-      return await redeemPositions(signer, poolAddress, this.tokenId, indexes, overrides);
+      return await redeemPositions(signer, pool.address, this.tokenId, indexes, overrides);
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }

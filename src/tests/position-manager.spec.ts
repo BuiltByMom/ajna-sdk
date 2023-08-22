@@ -108,7 +108,7 @@ describe('LP Token and PositionManager', () => {
     expect(inPosition).toBe(false);
 
     // Redeem positions: with get the bucket id by calling `pm.getPositionIndexes`
-    response = await lpToken.redeemPositions(signerLender, pool.contract.address, [bucketIndex]);
+    response = await lpToken.redeemPositions(signerLender, pool.contract, [bucketIndex]);
     await submitAndVerifyTransaction(response);
   });
 
@@ -159,12 +159,12 @@ describe('LP Token and PositionManager', () => {
     expect(pis.length).toBe(3);
     expect(pis.map(pi => pi.toNumber())).toEqual(indices);
 
-    tx = await lpToken.redeemPositions(signerNotLender, pool.poolAddress, indices);
+    tx = await lpToken.redeemPositions(signerNotLender, pool.contract, indices);
     await expect(async () => {
       await tx.verify();
     }).rejects.toThrow(`NoAuth()`);
 
-    tx = await lpToken.redeemPositions(signerLender, pool.poolAddress, indices);
+    tx = await lpToken.redeemPositions(signerLender, pool.contract, indices);
     await submitAndVerifyTransaction(tx);
   });
 });
