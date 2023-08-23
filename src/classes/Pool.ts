@@ -304,7 +304,7 @@ export abstract class Pool {
     return await lpAllowance(this.contract, index, spender, owner);
   }
 
-  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumber[]) {
+  async increaseLPAllowance(signer: Signer, indexes: Array<number>, amounts: Array<BigNumber>) {
     if (indexes.length !== amounts.length) {
       throw new SdkError('indexes and amounts must be same length');
     }
@@ -314,7 +314,13 @@ export abstract class Pool {
     return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
   }
 
-  async isLPAllowancesSufficient(signer: Signer, indices: number[]): Promise<boolean> {
+  /**
+   * Checks if LP allowance is sufficient to memorialize position.
+   * @param signer Consumer initiating transactions.
+   * @param indices Fenwick index of the desired bucket.
+   * @returns `true` if LP allowance is sufficient to memorialize position otherwise `false`.
+   */
+  async isLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
     const spender = getPositionManagerContract(signer).address;
     const poolWithSigner = this.contract.connect(signer);
     const signerAddress = await signer.getAddress();

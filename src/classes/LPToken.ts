@@ -78,7 +78,12 @@ export class LPToken {
     }
   }
 
-  async getPositionIndexes(signer: Signer): Promise<number[]> {
+  /**
+   * Returns an array of bucket indexes in which current token has liquidity.
+   * @param signer consumer initiating transactions
+   * @returns Array of bucket indexes.
+   */
+  async getPositionIndexes(signer: Signer): Promise<Array<number>> {
     const positionIndices = await getPositionIndexes(signer, this.tokenId);
     return positionIndices.map(x => x.toNumber());
   }
