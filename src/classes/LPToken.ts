@@ -1,5 +1,6 @@
 import { BigNumber, Contract, Signer } from 'ethers';
 import {
+  getPositionIndexes,
   getPositionManagerContract,
   isIndexInPosition,
   memorializePositions,
@@ -75,6 +76,11 @@ export class LPToken {
     } catch (error: any) {
       throw new SdkError(error.message, error);
     }
+  }
+
+  async getPositionIndexes(signer: Signer): Promise<number[]> {
+    const positionIndices = await getPositionIndexes(signer, this.tokenId);
+    return positionIndices.map(x => x.toNumber());
   }
 
   async redeemPositions(

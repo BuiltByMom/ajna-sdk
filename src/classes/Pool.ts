@@ -314,6 +314,29 @@ export abstract class Pool {
     return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
   }
 
+  async isLPAllowanceSufficient(signer: Signer, indices: number[]): Promise<boolean> {
+    const spender = getPositionManagerContract(signer).address;
+    const poolWithSigner = this.contract.connect(signer);
+    const signerAddress = await signer.getAddress();
+
+    const allowancePromises = indices.map(index =>
+      lpAllowance(poolWithSigner, index, spender, signerAddress)
+    );
+    const allowances = await Promise.all(allowancePromises);
+    const balancePromises = indices.map(index => lenderInfo(this.contract, signerAddress, index));
+    const balances = await Promise.all(balancePromises);
+
+    for (let i = 0; i < allowances.length; ++i) {
+      const allowance = allowances[i];
+      const [balance] = balances[i];
+      if (allowance.lt(balance)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /**
    * @param minPrice lowest desired price
    * @param maxPrice highest desired price

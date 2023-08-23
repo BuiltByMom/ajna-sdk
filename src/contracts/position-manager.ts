@@ -2,6 +2,7 @@ import { BigNumber, BigNumberish, BytesLike, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
+  PositionManager,
   PositionManager__factory,
   SignerOrProvider,
   TransactionOverrides,
@@ -73,6 +74,11 @@ export async function memorializePositions(
     { methodName: 'memorializePositions', args: [poolAddress, tokenId, indexes] },
     { ...overrides, from: await signer.getAddress() }
   );
+}
+
+export async function getPositionIndexes(signer: Signer, tokenId: BigNumber): Promise<BigNumber[]> {
+  const contract: PositionManager = getPositionManagerContract(signer);
+  return await contract.getPositionIndexes(tokenId);
 }
 
 export async function redeemPositions(
