@@ -11,6 +11,7 @@ jest.setTimeout(1200000);
 
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const NOT_LENDER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
+const TESTB_TDAI_POOL = '0x46f65d2c707ea9c15D398889cEF64C0C373bFdA7';
 const TESTD_TDAI_POOL = '0xe8dCc8FbAb00cF7911944dE5f9080Ecd9f25d3A9';
 
 async function addQuoteTokensByIndexes(
@@ -36,11 +37,13 @@ describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   let pool: Pool;
+  let poolB: Pool;
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerNotLender = addAccountFromKey(NOT_LENDER_KEY, provider);
 
   beforeAll(async () => {
     pool = await ajna.fungiblePoolFactory.getPoolByAddress(TESTD_TDAI_POOL);
+    poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_TDAI_POOL);
   });
 
   it('should mint and burn LP token', async () => {
@@ -176,24 +179,24 @@ describe('LP Token and PositionManager', () => {
     const indices = [2551, 2552, 2553];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
-    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+    await addQuoteTokensByIndexes(signerLender, poolB, indices, amounts);
 
-    const tx = await pool.mintLPToken(signerLender);
+    const tx = await poolB.mintLPToken(signerLender);
     const mintReceipt = await submitAndVerifyTransaction(tx);
 
     const mintEventLogs = tx.getEventLogs(mintReceipt).get('Mint')![0];
     const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
+    const lpToken = poolB.getLPToken(tokenId);
 
-    const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
+    const response = await poolB.increaseLPAllowance(signerLender, indices, amounts);
     await submitAndVerifyTransaction(response);
 
-    const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
+    const approveTx = await poolB.approvePositionManagerLPTransferor(signerLender);
     await submitAndVerifyTransaction(approveTx);
 
     const memorializeTx = await lpToken.memorializePositions(
       signerLender,
-      pool.contract,
+      poolB.contract,
       tokenId,
       indices
     );
@@ -231,13 +234,13 @@ describe('LP Token and PositionManager', () => {
     const indices = [2551, 2552, 2553];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
-    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+    await addQuoteTokensByIndexes(signerLender, poolB, indices, amounts);
 
     const sufficient = [toWad(10), toWad(25), toWad(30)];
-    const response = await pool.increaseLPAllowance(signerLender, indices, sufficient);
+    const response = await poolB.increaseLPAllowance(signerLender, indices, sufficient);
     await submitAndVerifyTransaction(response);
 
-    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    const actual = await poolB.isLPAllowancesSufficient(signerLender, indices);
     expect(actual).toBe(true);
   });
 });
