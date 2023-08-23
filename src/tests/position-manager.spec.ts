@@ -173,7 +173,7 @@ describe('LP Token and PositionManager', () => {
   });
 
   it('getPositionIndexes should return position indexes by the given tokenId', async () => {
-    const indices = [2551, 2552, 2553];
+    const indices = [2651, 2652, 2653];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
     await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
@@ -228,7 +228,7 @@ describe('LP Token and PositionManager', () => {
   });
 
   it('isLPAllowanceSufficient should return true if allowances is sufficient', async () => {
-    const indices = [2551, 2552, 2553];
+    const indices = [2751, 2752, 2753];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
     await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
