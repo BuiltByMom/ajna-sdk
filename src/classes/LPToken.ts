@@ -22,8 +22,7 @@ export class LPToken {
 
   /**
    * @param provider JSON-RPC endpoint.
-   * @param pool     Pool to which this bucket belongs.
-   * @param index    Price bucket index.
+   * @param tokenId uniquely identifies this LP token
    */
   constructor(provider: SignerOrProvider, tokenId: BigNumber) {
     this.provider = provider;
@@ -43,6 +42,13 @@ export class LPToken {
     return await isIndexInPosition(this.provider, tokenId, index);
   }
 
+  /**
+   * moves LP balance from one or more buckets into this position NFT
+   * @param signer lender
+   * @param pool pool in which lender added liquidity
+   * @param indexes identifies the buckets which lender wants their LP moved into this position NFT
+   * @returns promise to transaction
+   */
   async memorializePositions(
     signer: Signer,
     pool: Contract,
@@ -75,6 +81,13 @@ export class LPToken {
     }
   }
 
+  /**
+   * removes LP balance from position NFT, placing back into pool
+   * @param signer lender
+   * @param pool pool for which this position NFT is holding LP balance for the lender
+   * @param indexes identifies the buckets in which lender wants LP balance moved out of this position NFT
+   * @returns promise to transaction
+   */
   async redeemPositions(
     signer: Signer,
     pool: Contract,
