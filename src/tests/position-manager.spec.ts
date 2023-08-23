@@ -171,4 +171,27 @@ describe('LP Token and PositionManager', () => {
     tx = await lpToken.redeemPositions(signerLender, pool.poolAddress, tokenId, indices);
     await submitAndVerifyTransaction(tx);
   });
+
+  it('getPositionIndexes should return position indexes by the given tokenId', async () => {
+    const indices = [2551, 2552, 2553];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const tx = await pool.mintLPToken(signerLender);
+    const mintReceipt = await submitAndVerifyTransaction(tx);
+
+    const mintEventLogs = tx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
+    const lpToken = pool.getLPToken(tokenId);
+
+    const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
+    await submitAndVerifyTransaction(response);
+
+    const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
+    await submitAndVerifyTransaction(approveTx);
+
+    const indexes = lpToken.getPositionIndexes(signerLender);
+    expect(indexes).toBe(indices);
+  });
 });
