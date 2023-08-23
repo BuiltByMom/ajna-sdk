@@ -112,6 +112,44 @@ describe('LP Token and PositionManager', () => {
     await submitAndVerifyTransaction(response);
   });
 
+  it('should move liquidity', async () => {
+    const fromIndex = 1638;
+    const fromBucket = await pool.getBucketByIndex(fromIndex);
+    const toIndex = 1888;
+    const toBucket = await pool.getBucketByIndex(toIndex);
+    const amount = toWad(100);
+
+    // add, mint, and memorialize liquidity
+    await addQuoteTokensByIndexes(signerLender, pool, [fromIndex], [amount]);
+    expect(await fromBucket.lpBalance(signerLender.address)).toEqual(toWad(100));
+    expect(await toBucket.lpBalance(signerLender.address)).toEqual(toWad(0));
+    let tx = await pool.mintLPToken(signerLender);
+    const receipt = await submitAndVerifyTransaction(tx);
+    const mintEventLogs = tx.getEventLogs(receipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
+    const lpToken = pool.getLPToken(tokenId);
+    tx = await pool.increaseLPAllowance(signerLender, [fromIndex], [amount]);
+    await submitAndVerifyTransaction(tx);
+    tx = await pool.approvePositionManagerLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+    tx = await lpToken.memorializePositions(signerLender, pool.contract, [fromIndex]);
+    await submitAndVerifyTransaction(tx);
+
+    // move liquidity to another bucket
+    expect(await lpToken.isIndexInPosition(fromIndex, tokenId)).toBe(true);
+    expect(await lpToken.isIndexInPosition(toIndex, tokenId)).toBe(false);
+    tx = await lpToken.moveLiquidity(signerLender, pool.contract, fromIndex, toIndex, 33, true);
+    await submitAndVerifyTransaction(tx);
+    expect(await lpToken.isIndexInPosition(fromIndex, tokenId)).toBe(false);
+    expect(await lpToken.isIndexInPosition(toIndex, tokenId)).toBe(true);
+
+    // redeem position
+    tx = await lpToken.redeemPositions(signerLender, pool.contract, [toIndex]);
+    await submitAndVerifyTransaction(tx);
+    expect(await fromBucket.lpBalance(signerLender.address)).toEqual(toWad(0));
+    expect(await toBucket.lpBalance(signerLender.address)).toEqual(toWad(100));
+  });
+
   it('increaseLPAllowance should throw exception if indexes and amounts not the same length', async () => {
     await expect(async () => {
       await pool.increaseLPAllowance(signerLender, [2550, 2549], [toWad(200)]);

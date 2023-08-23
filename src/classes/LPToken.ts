@@ -3,6 +3,7 @@ import {
   getPositionManagerContract,
   isIndexInPosition,
   memorializePositions,
+  moveLiquidity,
   redeemPositions,
   tokenURI,
 } from '../contracts/position-manager';
@@ -14,6 +15,7 @@ import {
   WrappedTransaction,
 } from '../types';
 import { lenderInfo, lpAllowance } from '../contracts/pool';
+import { getExpiry } from '../utils/time';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -109,5 +111,34 @@ export class LPToken {
     }
   }
 
-  // TODO: implement moveLiquidity
+  /**
+   * moves memorialized liquidity to a different bucket, allowing LP token holder to adjust position for market price change
+   * @param signer lender
+   * @param pool pool in which memorialized liquidity should be moved
+   * @param fromIndex existing bucket in which lender's position is memorialized
+   * @param toIndex target bucket into which lender wants their liquidity moved
+   * @param ttlSeconds revert if not processed in this amount of time
+   * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
+   * @returns promise to transaction
+   */
+  async moveLiquidity(
+    signer: Signer,
+    pool: Contract,
+    fromIndex: number,
+    toIndex: number,
+    ttlSeconds?: number,
+    revertBelowLUP = false,
+    overrides?: TransactionOverrides
+  ): Promise<WrappedTransaction> {
+    return moveLiquidity(
+      signer,
+      pool.address,
+      this.tokenId,
+      fromIndex,
+      toIndex,
+      await getExpiry(this.provider, ttlSeconds),
+      revertBelowLUP,
+      overrides
+    );
+  }
 }
