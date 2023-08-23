@@ -1,4 +1,4 @@
-import { BigNumber, Signer, utils } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 import { CHALLENGE_STAGE, FUNDING_STAGE, SCREENING_STAGE } from '../constants/common';
 import {
   fundingVote,
@@ -41,9 +41,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
   startDate: number;
   endBlock: number;
   endDate: number;
-  fundedSlateHash: string;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
+  fundedSlateHash: string;
 
   constructor(
     signerOrProvider: SignerOrProvider,
@@ -53,9 +53,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     startDate: number,
     endBlock: number,
     endDate: number,
-    fundedSlateHash: string,
     fundsAvailable: BigNumber,
-    votesCount: BigNumber
+    votesCount: BigNumber,
+    fundedSlateHash: string
   ) {
     super(signerOrProvider);
     this.id = id;
@@ -64,9 +64,9 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     this.startDate = startDate;
     this.endBlock = endBlock;
     this.endDate = endDate;
-    this.fundedSlateHash = fundedSlateHash;
     this.fundsAvailable = fundsAvailable;
     this.votesCount = votesCount;
+    this.fundedSlateHash = fundedSlateHash;
   }
 
   toString() {
@@ -78,6 +78,7 @@ end block: ${this.endBlock}
 end date: ${new Date(this.endDate)}
 funds available: ${fromWad(this.fundsAvailable)}
 votes count: ${fromWad(this.votesCount)}
+funded slate hash: ${fromWad(this.fundedSlateHash)}
 `;
   }
 
@@ -242,10 +243,7 @@ votes count: ${fromWad(this.votesCount)}
    * @returns The array of proposalIds that are in the funded slate hash.
    */
   async getFundedProposalSlate(): Promise<string[]> {
-    const proposals = await getFundedProposalSlate(
-      this.getProvider(),
-      utils.keccak256(utils.toUtf8Bytes(BigNumber.from(this.fundedSlateHash).toHexString()))
-    );
+    const proposals = await getFundedProposalSlate(this.getProvider(), this.fundedSlateHash);
 
     const proposalIds = proposals.map(id => id.toString());
 
