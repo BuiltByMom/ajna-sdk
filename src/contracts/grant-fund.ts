@@ -4,7 +4,14 @@ import grantsFundAbi from '../abis/GrantFund.json';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { Config } from '../classes/Config';
 import { getAjnaTokenContract } from './common';
-import { Address, FormattedVoteParams, ProposalParams, SignerOrProvider } from '../types';
+import {
+  Address,
+  DistributionPeriodInfo,
+  FormattedVoteParams,
+  ProposalParams,
+  SignerOrProvider,
+  WrappedTransaction,
+} from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
 
@@ -44,7 +51,10 @@ export async function startNewDistributionPeriod(signer: Signer) {
   });
 }
 
-export async function getDistributionPeriod(provider: SignerOrProvider, distributionId: number) {
+export async function getDistributionPeriod(
+  provider: SignerOrProvider,
+  distributionId: number
+): Promise<DistributionPeriodInfo> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getDistributionPeriodInfo(distributionId);
 }
@@ -93,6 +103,25 @@ export async function getProposalInfo(provider: SignerOrProvider, distributionId
 export async function getProposalState(provider: SignerOrProvider, distributionId: BigNumber) {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.state(distributionId);
+}
+
+export async function getDescriptionHash(provider: SignerOrProvider, description: string) {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDescriptionHash(description);
+}
+
+export async function executeProposal(
+  signer: SignerOrProvider,
+  targets: Address[],
+  values: number[],
+  calldata: string[],
+  descriptionHash: string
+) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'execute',
+    args: [targets, values, calldata, descriptionHash],
+  });
 }
 
 export async function getTopTenProposals(
@@ -183,4 +212,33 @@ export async function getFundedProposalSlate(
 ): Promise<BigNumber[]> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getFundedProposalSlate(slateHash);
+}
+
+export async function claimDelegateReward(
+  signer: Signer,
+  distributionId: number
+): Promise<WrappedTransaction> {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'claimDelegateReward',
+    args: [distributionId],
+  });
+}
+
+export async function getDelegateReward(
+  provider: SignerOrProvider,
+  distributionId: number,
+  voter: Address
+): Promise<BigNumber> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDelegateReward(distributionId, voter);
+}
+
+export async function getHasClaimedRewards(
+  provider: SignerOrProvider,
+  distributionId: number,
+  voter: Address
+): Promise<boolean> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getHasClaimedRewards(distributionId, voter);
 }

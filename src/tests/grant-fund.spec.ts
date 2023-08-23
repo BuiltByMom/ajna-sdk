@@ -1,15 +1,16 @@
 import { expect } from '@jest/globals';
-import { BigNumber, providers } from 'ethers';
+import { BigNumber, providers, utils } from 'ethers';
+import ajnaTokenAbi from '../abis/AjnaToken.json';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { DistributionPeriod } from '../classes/DistributionPeriod';
 import { getProposalIdFromReceipt, startNewDistributionPeriod } from '../contracts/grant-fund';
+import { DistributionPeriodStage } from '../types/classes';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine } from '../utils/ganache';
 import { findBestProposals, optimize } from '../utils/grant-fund';
 import { fromWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
-import { DistributionPeriodStage } from '../types/classes';
 
 jest.setTimeout(1200000);
 
@@ -84,7 +85,7 @@ describe('Grants fund', () => {
       expect(dp?.endDate).toBeDefined();
       expect(dp?.isActive).toBe(true);
       expect(votesCount).toBe('0.0');
-      expect(fundsAvailable).toBe('0.0');
+      expect(fundsAvailable).toBe('9000000.0');
     });
 
     it('should get the distribution by id', async () => {
@@ -96,7 +97,7 @@ describe('Grants fund', () => {
       expect(dp.endDate).toBeDefined();
       expect(dp.isActive).toBe(true);
       expect(fromWad(dp.votesCount)).toBe('0.0');
-      expect(fromWad(dp.fundsAvailable)).toBe('0.0');
+      expect(fromWad(dp.fundsAvailable)).toBe('9000000.0');
     });
   });
 
@@ -292,6 +293,46 @@ describe('Grants fund', () => {
       const proposalSlate = await distributionPeriod.getFundedProposalSlate();
       expect(proposalSlate).toBeDefined();
     });
+    it('should execute proposal successfully', async () => {
+      const CHALLENGE_PERIOD_LENGTH = 50_401;
+      await mine(provider, CHALLENGE_PERIOD_LENGTH);
+      const iface = new utils.Interface(ajnaTokenAbi);
+      const executeProposal = await ajna.grants.executeProposal(voter, {
+        description: JSON.stringify({
+          title: 'ajna proposal test 1',
+          externalLink: 'https://example.com',
+          ipfsHash: '000000001',
+          arweaveTxid: '000000001',
+        }),
+        params: [
+          {
+            calldata: iface.encodeFunctionData('transfer', [
+              PROPOSAL_TO_ADDRESS,
+              utils.parseEther('1100.0'),
+            ]),
+          },
+        ],
+      });
+      const transaction = await executeProposal.verifyAndSubmit();
+      expect(transaction.status).toBe(1);
+    });
+    it('should claim rewards successfully', async () => {
+      const claimReward = await ajna.grants.claimDelegateReward(voter, distributionPeriod.id);
+      const transaction = await claimReward.verifyAndSubmit();
+      expect(transaction.status).toBe(1);
+    });
+    it('should get rewards info', async () => {
+      const delegateRewards = await ajna.grants.getDelegateReward(
+        distributionPeriod.id,
+        VOTER_ADDRESS
+      );
+      const hasClaimRewards = await ajna.grants.getHasClaimedRewards(
+        distributionPeriod.id,
+        VOTER_ADDRESS
+      );
+      expect(fromWad(delegateRewards)).toBe('900000.0');
+      expect(hasClaimRewards).toBe(true);
+    });
   });
   describe('Optimized proposals', () => {
     describe('Optimize util', () => {
@@ -404,7 +445,7 @@ describe('Grants fund', () => {
         const resultSum = bestProposals.reduce((accumulator, proposal) => {
           return accumulator + Number(fromWad(proposal.tokensRequested));
         }, 0);
-        expect(resultSum).toBeLessThan(tokensAvailable);
+        expect(resultSum).toBeLessThan(4000);
       });
     });
   });
