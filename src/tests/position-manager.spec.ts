@@ -191,7 +191,53 @@ describe('LP Token and PositionManager', () => {
     const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
     await submitAndVerifyTransaction(approveTx);
 
-    const indexes = lpToken.getPositionIndexes(signerLender);
-    expect(indexes).toBe(indices);
+    const memorializeTx = await lpToken.memorializePositions(
+      signerLender,
+      pool.contract,
+      tokenId,
+      indices
+    );
+    await submitAndVerifyTransaction(memorializeTx);
+
+    const actual = await lpToken.getPositionIndexes(signerLender);
+    expect(actual).toEqual(indices);
+  });
+
+  it('isLPAllowanceSufficient should return false if allowances not set', async () => {
+    const indices = [2551, 2552, 2553];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(false);
+  });
+
+  it('isLPAllowanceSufficient should return false if allowances not sufficient', async () => {
+    const indices = [2551, 2552, 2553];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const insufficient = [toWad(9), toWad(19), toWad(29)];
+    const response = await pool.increaseLPAllowance(signerLender, indices, insufficient);
+    await submitAndVerifyTransaction(response);
+
+    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(false);
+  });
+
+  it('isLPAllowanceSufficient should return true if allowances is sufficient', async () => {
+    const indices = [2551, 2552, 2553];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const sufficient = [toWad(10), toWad(25), toWad(30)];
+    const response = await pool.increaseLPAllowance(signerLender, indices, sufficient);
+    await submitAndVerifyTransaction(response);
+
+    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(true);
   });
 });

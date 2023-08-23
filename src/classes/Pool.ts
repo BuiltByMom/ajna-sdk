@@ -314,7 +314,7 @@ export abstract class Pool {
     return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
   }
 
-  async isLPAllowanceSufficient(signer: Signer, indices: number[]): Promise<boolean> {
+  async isLPAllowancesSufficient(signer: Signer, indices: number[]): Promise<boolean> {
     const spender = getPositionManagerContract(signer).address;
     const poolWithSigner = this.contract.connect(signer);
     const signerAddress = await signer.getAddress();
