@@ -76,7 +76,10 @@ export async function memorializePositions(
   );
 }
 
-export async function getPositionIndexes(signer: Signer, tokenId: BigNumber): Promise<BigNumber[]> {
+export async function getPositionIndexes(
+  signer: Signer,
+  tokenId: BigNumber
+): Promise<Array<BigNumber>> {
   const contract: PositionManager = getPositionManagerContract(signer);
   return await contract.getPositionIndexes(tokenId);
 }
