@@ -203,17 +203,17 @@ describe('LP Token and PositionManager', () => {
     expect(actual).toEqual(indices);
   });
 
-  it('isLPAllowanceSufficient should return false if allowances not set', async () => {
+  it('areLPAllowancesSufficient should return false if allowances not set', async () => {
     const indices = [2557, 2558, 2559];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
     await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
 
-    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
     expect(actual).toBe(false);
   });
 
-  it('isLPAllowanceSufficient should return false if allowances not sufficient', async () => {
+  it('areLPAllowancesSufficient should return false if allowances not sufficient', async () => {
     const indices = [2560, 2561, 2562];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
@@ -223,11 +223,11 @@ describe('LP Token and PositionManager', () => {
     const response = await pool.increaseLPAllowance(signerLender, indices, insufficient);
     await submitAndVerifyTransaction(response);
 
-    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
     expect(actual).toBe(false);
   });
 
-  it('isLPAllowanceSufficient should return true if allowances is sufficient', async () => {
+  it('areLPAllowancesSufficient should return true if allowances is sufficient', async () => {
     const indices = [2563, 2564, 2565];
     const amounts = [toWad(10), toWad(20), toWad(30)];
 
@@ -237,7 +237,7 @@ describe('LP Token and PositionManager', () => {
     const response = await pool.increaseLPAllowance(signerLender, indices, sufficient);
     await submitAndVerifyTransaction(response);
 
-    const actual = await pool.isLPAllowancesSufficient(signerLender, indices);
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
     expect(actual).toBe(true);
   });
 });

@@ -315,12 +315,12 @@ export abstract class Pool {
   }
 
   /**
-   * Checks if LP allowance is sufficient to memorialize position.
+   * Checks if LP allowances are sufficient to memorialize position.
    * @param signer Consumer initiating transactions.
    * @param indices Fenwick index of the desired bucket.
-   * @returns `true` if LP allowance is sufficient to memorialize position otherwise `false`.
+   * @returns `true` if LP allowances are sufficient to memorialize position otherwise `false`.
    */
-  async isLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
+  async areLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
     const spender = getPositionManagerContract(signer).address;
     const poolWithSigner = this.contract.connect(signer);
     const signerAddress = await signer.getAddress();
