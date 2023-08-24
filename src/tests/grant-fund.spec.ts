@@ -441,11 +441,12 @@ describe('Grants fund', () => {
           },
         ];
         const tokensAvailable = 4000;
+        const tokensAvailableToTake = (tokensAvailable * 9) / 10;
         const bestProposals = findBestProposals(proposals, tokensAvailable);
         const resultSum = bestProposals.reduce((accumulator, proposal) => {
           return accumulator + Number(fromWad(proposal.tokensRequested));
         }, 0);
-        expect(resultSum).toBeLessThan(4000);
+        expect(resultSum).toBeLessThan(tokensAvailableToTake);
       });
     });
   });
