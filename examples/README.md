@@ -84,3 +84,11 @@ Now that the LUP has moved to 1886.9, the first borrower is undercollateralized 
 - `./liquidate.ts take $BORROWER_ADDRESS 0.25` - perform a partial take
 - `./liquidate.ts take $BORROWER_ADDRESS` - take remainder of collateral
 - `./liquidate.ts settle $BORROWER_ADDRESS` - settle auction and reclaim liquidation bond
+
+### LP tokens
+
+- `./lend.ts add 100 2002.5` - add liquidity
+- `./lend.ts mint` - mint an empty position NFT (prints tokenId)
+- `./lend.ts memorialize 23 2631` - move LP balance from above bucket into position NFT with tokenId 23
+- `./lend.ts redeem 23 2631` - move LP balance from position NFT back into the bucket
+- `./lend.ts burn 23` - burn the empty position NFT
