@@ -98,3 +98,24 @@ export async function redeemPositions(
     { ...overrides, from: await signer.getAddress() }
   );
 }
+
+export async function moveLiquidity(
+  signer: Signer,
+  poolAddress: Address,
+  tokenId: BigNumberish,
+  fromIndex: number,
+  toIndex: number,
+  expiry: number,
+  revertBelowLUP: boolean,
+  overrides?: TransactionOverrides
+) {
+  const contractInstance = getPositionManagerContract(signer);
+  return await createTransaction(
+    contractInstance,
+    {
+      methodName: 'moveLiquidity',
+      args: [poolAddress, tokenId, fromIndex, toIndex, expiry, revertBelowLUP],
+    },
+    overrides
+  );
+}
