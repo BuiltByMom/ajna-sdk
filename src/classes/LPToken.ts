@@ -66,7 +66,7 @@ export class LPToken {
         index
       );
       if (allowance.lt(lpBalance)) {
-        throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}}`);
+        throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}`);
       }
     }
 
@@ -85,7 +85,9 @@ export class LPToken {
     }
 
     for (const index of indexes) {
-      await this.isIndexInPosition(index, tokenId);
+      if (!(await this.isIndexInPosition(index, tokenId))) {
+        throw new SdkError(`Index ${index} is not in position for token id: ${tokenId}`);
+      }
     }
 
     return await redeemPositions(signer, poolAddress, tokenId, indexes, overrides);
