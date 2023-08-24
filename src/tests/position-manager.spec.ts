@@ -225,12 +225,7 @@ describe('LP Token and PositionManager', () => {
     const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
     await submitAndVerifyTransaction(approveTx);
 
-    const memorializeTx = await lpToken.memorializePositions(
-      signerLender,
-      pool.contract,
-      tokenId,
-      indices
-    );
+    const memorializeTx = await lpToken.memorializePositions(signerLender, pool.contract, indices);
     await submitAndVerifyTransaction(memorializeTx);
 
     const actual = await lpToken.getPositionIndexes(signerLender);
