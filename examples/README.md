@@ -59,6 +59,10 @@ Ensure your accounts are funded with tokens. Scripts run fine-grained approvals 
 ### Management
 
 - `./lend.ts updateInterest` - update the interest rate of a stagnant pool
+- `./reserves.ts kick` - kick off a new claimable reserve auction
+- `./reserves.ts` - print reserves info, or CRA details (including auction price) if auction active
+- `./reserves.ts take` - take maximum amount of reserves in exchange for AJNA which is burned
+- `./reserves.ts take 5` - take 5 quote tokens from reserves
 
 ### Kickable loan
 
