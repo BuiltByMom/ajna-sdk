@@ -43,7 +43,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
   endDate: number;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
-  fundedSlateHash: BigNumber;
+  fundedSlateHash: string;
 
   constructor(
     signerOrProvider: SignerOrProvider,
@@ -55,7 +55,7 @@ export class DistributionPeriod extends ContractBase implements IDistributionPer
     endDate: number,
     fundsAvailable: BigNumber,
     votesCount: BigNumber,
-    fundedSlateHash: BigNumber
+    fundedSlateHash: string
   ) {
     super(signerOrProvider);
     this.id = id;

@@ -91,7 +91,7 @@ export function findBestProposals(
   return bestCombo;
 }
 
-export const formatProposalInfo = (proposalInfo: ProposalInfoArray) => {
+export const formatProposalInfo = (proposalInfo: ProposalInfoArray): ProposalInfo => {
   return {
     proposalId: proposalInfo[0],
     votesReceived: proposalInfo[2],

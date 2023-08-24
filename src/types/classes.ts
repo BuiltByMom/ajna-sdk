@@ -140,6 +140,14 @@ export interface IGrantFund {
   createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction>;
   /** gets a proposal object by id */
   getProposal(proposalId: BigNumber): IProposal;
+  /** distributes delegate reward based on delegatee Vote share. */
+  claimDelegateReward(signer: Signer, distributionId: number): Promise<WrappedTransaction>;
+  /** retrieve the delegate reward accrued to a voter in a given distribution period. */
+  getDelegateReward(distributionId: number, voter: Address): Promise<BigNumber>;
+  /** get the reward claim status of an account in a given distribution period. */
+  getHasClaimedRewards(distributionId: number, voter: Address): Promise<boolean>;
+  /** execute a proposal that has been approved by the community. Only proposals in the finalized top slate slate at the end of the challenge period can be executed. */
+  executeProposal(signer: Signer, params: ExecuteProposalParams): Promise<WrappedTransaction>;
 }
 
 export interface IDistributionPeriod {
@@ -154,7 +162,7 @@ export interface IDistributionPeriod {
   endDate: number;
   fundsAvailable: BigNumber;
   votesCount: BigNumber;
-  fundedSlateHash: BigNumber;
+  fundedSlateHash: string;
   /** retrieve a bytes32 hash of the current distribution period stage. */
   getStage(address: Address): Promise<string>;
   /** check if current distribution period is on screening stage */
@@ -200,7 +208,7 @@ export type DistributionPeriodInfo = [
   endBlock: number,
   fundsAvailable: BigNumber,
   fundingVotePowerCast: BigNumber,
-  fundedSlateHash: BigNumber
+  fundedSlateHash: string
 ];
 
 export type ProposalParams = {
@@ -212,6 +220,13 @@ export type ProposalParams = {
   externalLink?: string;
   ipfsHash?: string;
   arweaveTxid?: string;
+};
+
+export type ExecuteProposalParams = {
+  description: string;
+  params: Array<{
+    calldata: string;
+  }>;
 };
 
 export const proposalStates = [

@@ -10,6 +10,7 @@ import {
   FormattedVoteParams,
   ProposalParams,
   SignerOrProvider,
+  WrappedTransaction,
 } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils/transactions';
@@ -104,6 +105,25 @@ export async function getProposalState(provider: SignerOrProvider, distributionI
   return await contractInstance.state(distributionId);
 }
 
+export async function getDescriptionHash(provider: SignerOrProvider, description: string) {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDescriptionHash(description);
+}
+
+export async function executeProposal(
+  signer: SignerOrProvider,
+  targets: Address[],
+  values: number[],
+  calldata: string[],
+  descriptionHash: string
+) {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'execute',
+    args: [targets, values, calldata, descriptionHash],
+  });
+}
+
 export async function getTopTenProposals(
   provider: SignerOrProvider,
   distributionId: number
@@ -188,8 +208,37 @@ export async function updateSlate(
 
 export async function getFundedProposalSlate(
   provider: SignerOrProvider,
-  slateHash: BigNumber
+  slateHash: string
 ): Promise<BigNumber[]> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getFundedProposalSlate(slateHash);
+}
+
+export async function claimDelegateReward(
+  signer: Signer,
+  distributionId: number
+): Promise<WrappedTransaction> {
+  const contractInstance: Contract = getGrantsFundContract(signer);
+  return await createTransaction(contractInstance, {
+    methodName: 'claimDelegateReward',
+    args: [distributionId],
+  });
+}
+
+export async function getDelegateReward(
+  provider: SignerOrProvider,
+  distributionId: number,
+  voter: Address
+): Promise<BigNumber> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getDelegateReward(distributionId, voter);
+}
+
+export async function getHasClaimedRewards(
+  provider: SignerOrProvider,
+  distributionId: number,
+  voter: Address
+): Promise<boolean> {
+  const contractInstance: Contract = getGrantsFundContract(provider);
+  return await contractInstance.getHasClaimedRewards(distributionId, voter);
 }
