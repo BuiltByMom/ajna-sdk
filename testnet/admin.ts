@@ -41,6 +41,9 @@ Please enter one of the options below:
 - 14: get top ten proposals
 - 15: update top slate
 - 16: get funded proposal slate
+- 17: execute proposal
+- 18: claim rewards
+- 19: get rewards info
 
 - 9: mine: mine a given number of blocks
 - 0: exit
@@ -362,6 +365,59 @@ const handleGetFundedProposalSlate = async () => {
   }
 };
 
+const handleExecuteProposal = async () => {
+  const description = await input({ message: `Enter proposal description` });
+  const params: Array<{
+    calldata: string;
+  }> = [];
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const canSkip = params.length >= 1;
+    const skipText = '(or press enter to continue)';
+    const calldata = await input({
+      message: `Enter calldata ${canSkip ? skipText : ''}`,
+    });
+    if (calldata === '' && canSkip) {
+      break;
+    }
+    params.push({
+      calldata,
+    });
+  }
+
+  const executeParams = {
+    description,
+    params,
+  };
+
+  const tx = await ajna.grants.executeProposal(defaultSigner, executeParams);
+  const receipt = await tx.verifyAndSubmit();
+  console.log('tx receipt', receipt);
+  console.log('Proposal executed');
+};
+
+const handleClaimRewards = async () => {
+  const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
+  const voter = getWalletByIndex(Number(addressIndex));
+  const distributionId = await input({ message: `Enter distribution ID` });
+
+  const tx = await ajna.grants.claimDelegateReward(voter, Number(distributionId));
+  const receipt = await tx.verifyAndSubmit();
+  console.log('tx receipt', receipt);
+  console.log('Rewards claimed');
+};
+
+const handleGetRewardsInfo = async () => {
+  const distributionId = await input({ message: `Enter distribution ID` });
+  const addressIndex = await input({ message: `Select a voter address ${indexOptions}` });
+  const voter = getAddressByIndex(Number(addressIndex));
+
+  const hasClaimedReward = await ajna.grants.getHasClaimedRewards(Number(distributionId), voter);
+  const delegateReward = await ajna.grants.getDelegateReward(Number(distributionId), voter);
+  console.log(`Has claimed reward?: ${hasClaimedReward}`);
+  console.log(`Delegate reward accrued: ${fromWad(delegateReward)}`);
+};
+
 const handleMine = async () => {
   console.log(`Current block: ${await provider.getBlockNumber()}`);
   console.log(
@@ -422,6 +478,15 @@ const executeOption = async (option: string) => {
       break;
     case '16':
       await handleGetFundedProposalSlate();
+      break;
+    case '17':
+      await handleExecuteProposal();
+      break;
+    case '18':
+      await handleClaimRewards();
+      break;
+    case '19':
+      await handleGetRewardsInfo();
       break;
     case '9':
       await handleMine();

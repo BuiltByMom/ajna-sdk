@@ -45,6 +45,8 @@ export function findBestProposals(
   tokensAvailable: number
 ): ProposalInfo[] {
   if (!proposals || proposals.length === 0) return [];
+  // 90% of tokens available should be considered for this calculation
+  const tokensAvailableToTake = (tokensAvailable * 9) / 10;
 
   // Function to generate all combinations of proposals
   function* generateCombinations(
@@ -81,7 +83,7 @@ export function findBestProposals(
         0
       );
 
-      if (totalTokens <= tokensAvailable && totalVotes > bestVotes) {
+      if (totalTokens <= tokensAvailableToTake && totalVotes > bestVotes) {
         bestVotes = totalVotes;
         bestCombo = combo;
       }
