@@ -2,7 +2,7 @@ import { BigNumber, Contract, Signer, ethers } from 'ethers';
 import { Contract as ContractMulti } from 'ethcall';
 import { getNftContract } from './erc721';
 import ERC721Pool from '../abis/ERC721Pool.json';
-import { Address, SignerOrProvider, TransactionOverrides } from '../types';
+import { Address, CallData, SignerOrProvider, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 
 export const getErc721PoolContract = (poolAddress: Address, provider: SignerOrProvider) => {
@@ -42,8 +42,6 @@ export async function addCollateral(
     overrides
   );
 }
-
-// TODO: implement mergeOrRemoveCollateral once we have NFT liquidations and can test
 
 export async function removeCollateral(
   contract: Contract,
@@ -97,6 +95,53 @@ export async function repayDebt(
         limitIndex,
       ],
     },
+    overrides
+  );
+}
+
+export async function bucketTake(
+  contract: Contract,
+  borrowerAddress: Address,
+  depositTake: boolean,
+  bucketIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'bucketTake', args: [borrowerAddress, depositTake, bucketIndex] },
+    overrides
+  );
+}
+
+export async function take(
+  contract: Contract,
+  borrowerAddress: Address,
+  collateral: number, // whole number of NFTs to take, converted to WAD by the contract
+  callee: Address,
+  callData?: CallData,
+  overrides?: TransactionOverrides
+) {
+  const encodedCallData = callData
+    ? contract.interface.encodeFunctionData(callData.methodName, callData.args)
+    : [];
+
+  return await createTransaction(
+    contract,
+    { methodName: 'take', args: [borrowerAddress, collateral, callee, encodedCallData] },
+    overrides
+  );
+}
+
+export async function mergeOrRemoveCollateral(
+  contract: Contract,
+  removalIndexes: Array<number>,
+  noOfNFTsToRemove: number, // whole number of NFTs to remove, converted to WAD by the contract
+  toIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'mergeOrRemoveCollateral', args: [removalIndexes, noOfNFTsToRemove, toIndex] },
     overrides
   );
 }

@@ -9,7 +9,6 @@ import { submitAndVerifyTransaction } from './test-utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot } from '../utils/ganache';
 import { toWad, wmul } from '../utils/numeric';
-import { log } from 'console';
 import { indexToPrice } from '../utils/pricing';
 // import { getBlockTime } from '../utils/time';
 
@@ -30,7 +29,6 @@ describe('ERC721 pool liquidations', () => {
   const signerBorrower2 = addAccountFromKey(BORROWER2_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
   const TDUCK = getNftContract(TDUCK_ADDRESS, provider);
-  //   const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   const testTokenIds = [1, 2, 3, 4, 5];
   let poolDuckDai: NonfungiblePool;
   let snapshotId: number;

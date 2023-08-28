@@ -100,6 +100,7 @@ export class Liquidation {
     return await bucketTake(contractPoolWithSigner, this.borrowerAddress, true, bucketIndex);
   }
 
+  // TODO: update this to support both pool types
   /**
    * called by actors to purchase collateral from the auction in exchange for quote token
    * @param signer taker
