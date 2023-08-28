@@ -48,23 +48,23 @@ export class ClaimableReserveAuction {
   /**
    *  purchases claimable reserves during a `CRA` using `Ajna` token
    *  @param maxAmount maximum amount of quote token to purchase at the current auction price
-   *  @return actual amount of reserves taken.
+   *  @return promise to transaction
    */
   async takeAndBurn(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await takeReserves(contractPoolWithSigner, maxAmount);
+    return takeReserves(contractPoolWithSigner, maxAmount);
   }
 
   /**
    *  called by actor to start a `Claimable Reserve Auction` (`CRA`)
    *  @param signer auction initiator
-   *  @return transaction
+   *  @return promise to transaction
    */
   async kick(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await kickReserveAuction(contractPoolWithSigner);
+    return kickReserveAuction(contractPoolWithSigner);
   }
 
   /**

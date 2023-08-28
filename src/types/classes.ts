@@ -37,6 +37,7 @@ export interface IERC721PoolFactory {
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction>;
+
   /**
    * Creates a pool where specific tokens in an NFT collection are whitelisted
    * @param signer pool creator
@@ -52,7 +53,6 @@ export interface IERC721PoolFactory {
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction>;
-  // TODO: work in progress
   getPool(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<NonfungiblePool>;
   getPoolAddress(collateralAddress: Address, subset: any, quoteAddress: Address): Promise<Address>;
 }
