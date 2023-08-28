@@ -100,10 +100,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   ): Promise<Address> {
     const provider = this.getProvider();
 
-    const hash = await getSubsetHash(
-      provider,
-      subset.map(val => BigNumber.from(val))
-    );
+    const hash = getSubsetHash(subset.map(val => BigNumber.from(val)));
     return await getDeployedPools(provider, collateralAddress, quoteAddress, hash);
   }
 }
