@@ -108,7 +108,7 @@ describe('Liquidations', () => {
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();
-    expect(lupPrice && lupPrice.lt(toWad(loan.thresholdPrice))).toBeTruthy();
+    expect(lupPrice && lupPrice.lt(loan.thresholdPrice)).toBeTruthy();
 
     snapshotId = await takeSnapshot(provider);
   });
@@ -154,7 +154,7 @@ describe('Liquidations', () => {
 
     isKickable = await pool.isKickable(signerBorrower2.address);
     expect(isKickable).toBeTruthy();
-    liquidation = pool.getLiquidation(signerBorrower.address);
+    liquidation = pool.getLiquidation(signerBorrower2.address);
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isTakeable).toBeFalsy();
 

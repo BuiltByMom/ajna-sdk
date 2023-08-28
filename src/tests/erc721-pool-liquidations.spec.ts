@@ -1,4 +1,4 @@
-import { Wallet, providers } from 'ethers';
+import { constants, Wallet, providers } from 'ethers';
 import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
@@ -7,10 +7,10 @@ import { getNftContract } from '../contracts/erc721';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { addAccountFromKey } from '../utils/add-account';
-// import { revertToSnapshot, takeSnapshot } from '../utils/ganache';
-import { toWad } from '../utils/numeric';
+import { revertToSnapshot, takeSnapshot } from '../utils/ganache';
+import { toWad, wmul } from '../utils/numeric';
 import { log } from 'console';
-// import { indexToPrice } from '../utils/pricing';
+import { indexToPrice } from '../utils/pricing';
 // import { getBlockTime } from '../utils/time';
 
 jest.setTimeout(1200000);
@@ -61,25 +61,25 @@ describe('ERC721 pool liquidations', () => {
     poolDuckDai = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TDAI_ADDRESS);
 
     // approve
-    let tx = await poolDuckDai.quoteApprove(signerLender, toWad(5000));
+    let tx = await poolDuckDai.quoteApprove(signerLender, toWad(50000));
     await submitAndVerifyTransaction(tx);
 
     // add 10 quote tokens to 1501 bucket
     const higherBucket = await poolDuckDai.getBucketByIndex(2001);
-    let quoteAmount = toWad(2100);
+    let quoteAmount = toWad(21000);
     tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
     // add 50 quote tokens to 2000 bucket
     const lowerBucket = await poolDuckDai.getBucketByIndex(2500);
-    quoteAmount = toWad(500);
+    quoteAmount = toWad(5000);
     tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
     // draw debt as borrower2
     const bucketIndex = 2001;
-    let amountToBorrow = toWad(1500);
-    const collateralToPledge = 1;
+    let amountToBorrow = toWad(18000);
+    const collateralToPledge = 2;
     let tokenIdsToPledge = testTokenIds.slice(0, collateralToPledge);
     await fundAndApproveCollateral(signerBorrower2, poolDuckDai, tokenIdsToPledge);
     tx = await poolDuckDai.drawDebt(signerBorrower2, amountToBorrow, tokenIdsToPledge);
@@ -102,7 +102,7 @@ describe('ERC721 pool liquidations', () => {
     expect(isKickable).toBeFalsy();
 
     // draw debt as borrower1 to pull the lup down
-    amountToBorrow = toWad(600);
+    amountToBorrow = toWad(6000);
     tokenIdsToPledge = testTokenIds.slice(collateralToPledge);
     await fundAndApproveCollateral(signerBorrower, poolDuckDai, tokenIdsToPledge);
     tx = await poolDuckDai.drawDebt(signerBorrower, amountToBorrow, tokenIdsToPledge);
@@ -118,16 +118,15 @@ describe('ERC721 pool liquidations', () => {
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();
-    expect(lupPrice && lupPrice.lt(toWad(loan.thresholdPrice))).toBeTruthy();
+    expect(lupPrice && lupPrice.lt(loan.thresholdPrice)).toBeTruthy();
 
-    // TODO: implement snapshotting
-    // snapshotId = await takeSnapshot(provider);
+    snapshotId = await takeSnapshot(provider);
   });
 
   afterEach(async () => {
-    // expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
-    // // Re-take snapshot after every test, as same snapshot couldn't be used twice
-    // snapshotId = await takeSnapshot(provider);
+    expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
+    // Re-take snapshot after every test, as same snapshot couldn't be used twice
+    snapshotId = await takeSnapshot(provider);
   });
 
   it('should get multiple loans', async () => {
@@ -154,5 +153,50 @@ describe('ERC721 pool liquidations', () => {
     expect(loan2multi.neutralPrice.eq(loan2.neutralPrice)).toBe(true);
     expect(loan2multi.liquidationBond.eq(loan2.liquidationBond)).toBe(true);
     expect(loan2multi.isKicked).toBe(loan2.isKicked);
+  });
+
+  it('should use kick and isKickable', async () => {
+    let isKickable = await poolDuckDai.isKickable(signerBorrower.address);
+    expect(isKickable).toBeFalsy();
+    let liquidation = poolDuckDai.getLiquidation(signerBorrower.address);
+    let auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isTakeable).toBeFalsy();
+
+    isKickable = await poolDuckDai.isKickable(signerBorrower2.address);
+    expect(isKickable).toBeTruthy();
+    liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
+    auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isTakeable).toBeFalsy();
+
+    const tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+  });
+
+  it('should use lenderKick', async () => {
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
+
+    // check state prior to the lenderKick
+    const loan = await poolDuckDai.getLoan(signerBorrower2.address);
+    let kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
+
+    const tx = await bucket.lenderKick(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    // ensure the liquidation bond estimate was accurate
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
+    expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(kickerInfo.locked).toBeBetween(
+      loan.liquidationBond,
+      wmul(loan.liquidationBond, toWad('1.0001'))
+    );
+
+    // confirm liquidation locked bucket is conveyed
+    const prices = await poolDuckDai.getPrices();
+    expect(prices.hpb).toEqual(indexToPrice(2001));
+    expect(prices.hpbIndex).toEqual(2001);
+    expect(prices.llb).toEqual(prices.hpb);
+    expect(prices.llbIndex).toEqual(prices.hpbIndex);
   });
 });

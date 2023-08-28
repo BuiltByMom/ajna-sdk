@@ -13,6 +13,7 @@ import {
 import { Pool } from './Pool';
 import { Address, Signer, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
+import { Liquidation } from './Liquidation';
 
 class NonfungiblePool extends Pool {
   isSubset: boolean;
@@ -138,6 +139,15 @@ class NonfungiblePool extends Pool {
       sender,
       limitIndex ?? MAX_FENWICK_INDEX
     );
+  }
+
+  // TODO: move this to base pool class
+  /**
+   * @param borrowerAddress identifies the loan under liquidation
+   * @returns {@link Liquidation} models liquidation of a specific loan
+   */
+  getLiquidation(borrowerAddress: Address) {
+    return new Liquidation(this.provider, this.contract, borrowerAddress);
   }
 }
 

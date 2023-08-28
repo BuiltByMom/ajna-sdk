@@ -307,6 +307,7 @@ export class FungiblePool extends Pool {
     };
   }
 
+  // TODO: move to base Pool class
   /**
    * @param borrowerAddress identifies the loan under liquidation
    * @returns {@link Liquidation} models liquidation of a specific loan
@@ -315,6 +316,7 @@ export class FungiblePool extends Pool {
     return new Liquidation(this.provider, this.contract, borrowerAddress);
   }
 
+  // TODO: move to base Pool class
   /**
    * retrieve statuses for multiple liquidations
    * @param borrowerAddresses identifies loans under liquidation
