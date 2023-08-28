@@ -45,15 +45,6 @@ export async function getDeployedPools(
   return await contract.deployedPools(subset, collateralAddress, quoteAddress);
 }
 
-export async function getSubsetHash_(
-  provider: SignerOrProvider,
-  tokensIds: Array<BigNumber>
-): Promise<string> {
-  const contract: Contract = getErc721PoolFactoryContract(provider);
-
-  return await contract.getNFTSubsetHash(tokensIds);
-}
-
 export function getSubsetHash(tokensIds: Array<BigNumber>): string {
   //keccak256('ERC721_NON_SUBSET_HASH')
   const ERC721_NON_SUBSET_HASH =

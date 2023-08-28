@@ -173,6 +173,12 @@ describe('ERC721 Pool', () => {
     expect(address).toBe(constants.AddressZero);
   });
 
+  it('getPoolAddress should reject non sorted subset', async () => {
+    await expect(async () => {
+      await ajna.nonfungiblePoolFactory.getPoolAddress(TGOOSE_ADDRESS, [26, 24, 25], TWETH_ADDRESS);
+    }).rejects.toThrow('Token ids must be sorted');
+  });
+
   it('liquidity may be added to and removed from a NFT pool', async () => {
     // add liquidity
     const quoteAmount = toWad(100);
