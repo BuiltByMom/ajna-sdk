@@ -50,10 +50,10 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * Delegates vote to the given delegatee
    * @param signer vote delegator
    * @param delegatee address of the delegateee
-   * @returns transaction
+   * @returns promise to transaction
    */
   async delegateVote(signer: Signer, delegatee: Address) {
-    return await delegateVote(signer, delegatee);
+    return delegateVote(signer, delegatee);
   }
 
   /**
@@ -68,7 +68,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   /**
    * starts a new distribution period, ensuring the treasury is funded
    * @param signer transaction signer
-   * @returns transaction
+   * @returns promise to transaction
    */
   async startNewDistributionPeriod(signer: Signer) {
     if ((await getTreasury(signer)).isZero()) {
@@ -143,7 +143,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
    * creates a proposal in the current distribution period
    * @param signer caller
    * @param params ProposalParams object
-   * @returns transaction
+   * @returns promise to transaction
    */
   async createProposal(signer: Signer, params: ProposalParams): Promise<WrappedTransaction> {
     return createProposal(signer, params);

@@ -45,10 +45,10 @@ class NonfungiblePool extends Pool {
    * approve this pool to transfer an NFT
    * @param signer pool user
    * @param allowance normalized approval amount (or MaxUint256)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async collateralApprove(signer: Signer, tokenId: number) {
-    return await approve(signer, this.poolAddress, this.collateralAddress, tokenId);
+    return approve(signer, this.poolAddress, this.collateralAddress, tokenId);
   }
 
   /**
@@ -57,7 +57,7 @@ class NonfungiblePool extends Pool {
    * @param bucketIndex identifies the price bucket
    * @param tokenIdsToAdd identifies NFTs to deposit
    * @param ttlSeconds revert if not processed in this amount of time
-   * @returns transaction
+   * @returns promise to transaction
    */
   async addCollateral(
     signer: Signer,
@@ -67,7 +67,7 @@ class NonfungiblePool extends Pool {
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await addCollateral(
+    return addCollateral(
       contractPoolWithSigner,
       tokenIdsToAdd,
       bucketIndex,
@@ -80,12 +80,12 @@ class NonfungiblePool extends Pool {
    * @param signer address to redeem LP
    * @param bucketIndex identifies the price bucket
    * @param maxAmount optionally limits amount to remove
-   * @returns transaction
+   * @returns promise to transaction
    */
   async removeCollateral(signer: Signer, bucketIndex: number, noOfNFTsToRemove: number) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await removeCollateral(contractPoolWithSigner, noOfNFTsToRemove, bucketIndex);
+    return removeCollateral(contractPoolWithSigner, noOfNFTsToRemove, bucketIndex);
   }
 
   /**
@@ -94,7 +94,7 @@ class NonfungiblePool extends Pool {
    * @param amountToBorrow new debt to draw
    * @param tokenIdsToPledge identifies NFTs to deposit as collateral
    * @param limitIndex revert if loan would drop LUP below this bucket (or pass MAX_FENWICK_INDEX)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async drawDebt(
     signer: Signer,
@@ -105,7 +105,7 @@ class NonfungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
     const borrowerAddress = await signer.getAddress();
 
-    return await drawDebt(
+    return drawDebt(
       contractPoolWithSigner,
       borrowerAddress,
       amountToBorrow,
@@ -120,7 +120,7 @@ class NonfungiblePool extends Pool {
    * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
    * @param noOfNFTsToPull number of NFTs to withdraw after repayment
    * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
-   * @returns transaction
+   * @returns promise to transaction
    */
   async repayDebt(
     signer: Signer,
@@ -131,7 +131,7 @@ class NonfungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const sender = await signer.getAddress();
-    return await repayDebt(
+    return repayDebt(
       contractPoolWithSigner,
       sender,
       maxQuoteTokenAmountToRepay,

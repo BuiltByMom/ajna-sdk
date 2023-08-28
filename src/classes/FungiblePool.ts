@@ -56,13 +56,13 @@ export class FungiblePool extends Pool {
    * approve this pool to manage collateral token
    * @param signer pool user
    * @param allowance normalized approval amount (or MaxUint256)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async collateralApprove(signer: Signer, allowance: BigNumber) {
     const denormalizedAllowance = allowance.eq(constants.MaxUint256)
       ? allowance
       : allowance.div(await collateralScale(this.contract));
-    return await approve(signer, this.poolAddress, this.collateralAddress, denormalizedAllowance);
+    return approve(signer, this.poolAddress, this.collateralAddress, denormalizedAllowance);
   }
 
   /**
@@ -71,7 +71,7 @@ export class FungiblePool extends Pool {
    * @param amountToBorrow new debt to draw
    * @param collateralToPledge new collateral to deposit
    * @param limitIndex revert if loan would drop LUP below this bucket (or pass MAX_FENWICK_INDEX)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async drawDebt(
     signer: Signer,
@@ -82,7 +82,7 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
     const borrowerAddress = await signer.getAddress();
 
-    return await drawDebt(
+    return drawDebt(
       contractPoolWithSigner,
       borrowerAddress,
       amountToBorrow,
@@ -97,7 +97,7 @@ export class FungiblePool extends Pool {
    * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
    * @param collateralAmountToPull amount of collateral to withdraw after repayment
    * @param limitIndex revert if LUP has moved below this bucket by the time the transaction is processed
-   * @returns transaction
+   * @returns promise to transaction
    */
   async repayDebt(
     signer: Signer,
@@ -108,7 +108,7 @@ export class FungiblePool extends Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     const sender = await signer.getAddress();
-    return await repayDebt(
+    return repayDebt(
       contractPoolWithSigner,
       sender,
       maxQuoteTokenAmountToRepay,
@@ -124,7 +124,7 @@ export class FungiblePool extends Pool {
    * @param collateralAmountToAdd deposit amount
    * @param bucketIndex identifies the price bucket
    * @param ttlSeconds revert if not processed in this amount of time
-   * @returns transaction
+   * @returns promise to transaction
    */
   async addCollateral(
     signer: Signer,
@@ -134,7 +134,7 @@ export class FungiblePool extends Pool {
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await addCollateral(
+    return addCollateral(
       contractPoolWithSigner,
       collateralAmountToAdd,
       bucketIndex,
@@ -147,7 +147,7 @@ export class FungiblePool extends Pool {
    * @param signer address to redeem LP
    * @param bucketIndex identifies the price bucket
    * @param maxAmount optionally limits amount to remove
-   * @returns transaction
+   * @returns promise to transaction
    */
   async removeCollateral(
     signer: Signer,
@@ -156,7 +156,7 @@ export class FungiblePool extends Pool {
   ) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
+    return removeCollateral(contractPoolWithSigner, bucketIndex, maxAmount);
   }
 
   /**

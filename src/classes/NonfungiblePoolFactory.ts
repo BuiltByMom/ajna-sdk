@@ -25,7 +25,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    * @param nftAddress address of the ERC721 collateral token
    * @param quoteAddress address of the ERC20 quote token
    * @param interestRate initial interest rate, between 1%-10%, as WAD
-   * @returns transaction
+   * @returns promise to transaction
    */
   async deployCollectionPool(
     signer: Signer,
@@ -33,7 +33,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
+    return deployNFTPool(signer, nftAddress, [], quoteAddress, interestRate);
   }
 
   /**
@@ -43,7 +43,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
    * @param subset array of tokenIds to whitelist
    * @param quoteAddress address of the ERC20 quote token
    * @param interestRate initial interest rate, between 1%-10%, as WAD
-   * @returns transaction
+   * @returns promise to transaction
    */
   async deploySubsetPool(
     signer: Signer,
@@ -52,7 +52,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
     quoteAddress: Address,
     interestRate: BigNumber
   ): Promise<WrappedTransaction> {
-    return await deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
+    return deployNFTPool(signer, nftAddress, subset, quoteAddress, interestRate);
   }
 
   /**

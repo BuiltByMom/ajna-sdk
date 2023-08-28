@@ -78,11 +78,11 @@ export class Bucket {
    * enables signer to bundle transactions together atomically in a single request
    * @param signer consumer initiating transactions
    * @param callData array of transactions to sign and submit
-   * @returns transaction
+   * @returns promise to transaction
    */
   async multicall(signer: Signer, callData: Array<CallData>) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
-    return await multicall(contractPoolWithSigner, callData);
+    return multicall(contractPoolWithSigner, callData);
   }
 
   /**
@@ -110,7 +110,7 @@ export class Bucket {
    * @param amount amount to deposit
    * @param ttlSeconds revert if not processed in this amount of block time
    * @param revertBelowLUP revert if lowest utilized price is above this bucket when processed
-   * @returns transaction
+   * @returns promise to transaction
    */
   async addQuoteToken(
     signer: Signer,
@@ -120,7 +120,7 @@ export class Bucket {
   ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await addQuoteToken(
+    return addQuoteToken(
       contractPoolWithSigner,
       amount,
       this.index,
@@ -136,7 +136,7 @@ export class Bucket {
    * @param maxAmountToMove optionally limits amount to move
    * @param ttlSeconds revert if not processed in this amount of time
    * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
-   * @returns transaction
+   * @returns promise to transaction
    */
   async moveQuoteToken(
     signer: Signer,
@@ -147,7 +147,7 @@ export class Bucket {
   ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await moveQuoteToken(
+    return moveQuoteToken(
       contractPoolWithSigner,
       maxAmountToMove,
       this.index,
@@ -161,12 +161,12 @@ export class Bucket {
    * removes quote token from the bucket
    * @param signer lender
    * @param maxAmount optionally limits amount to remove
-   * @returns transaction
+   * @returns promise to transaction
    */
   async removeQuoteToken(signer: Signer, maxAmount = constants.MaxUint256) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await removeQuoteToken(contractPoolWithSigner, maxAmount, this.index);
+    return removeQuoteToken(contractPoolWithSigner, maxAmount, this.index);
   }
 
   /**
@@ -268,7 +268,7 @@ export class Bucket {
   /**
    * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
    * @param signer address to redeem LP
-   * @returns transaction
+   * @returns promise to transaction
    */
   async withdrawLiquidity(signer: Signer) {
     // get bucket details
@@ -305,18 +305,18 @@ export class Bucket {
       });
     }
 
-    return await this.multicall(signer, callData);
+    return this.multicall(signer, callData);
   }
 
   /**
    * allows lender to kick a loan based on a LUP calculated as if they withdraw liquidity
    * @param signer lender
    * @param limitIndex bucket in which lender has an LP balance
-   * @returns transaction
+   * @returns promise to transaction
    */
   async lenderKick(signer: Signer, limitIndex: number = MAX_FENWICK_INDEX) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
-    return await lenderKick(contractPoolWithSigner, this.index, limitIndex);
+    return lenderKick(contractPoolWithSigner, this.index, limitIndex);
   }
 }

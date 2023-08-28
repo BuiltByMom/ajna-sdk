@@ -1,7 +1,7 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
-import { toWad, wmul } from '../utils/numeric';
+import { wmul } from '../utils/numeric';
 
 export interface CRAStatus {
   /** time a reserve auction was last kicked */
@@ -48,28 +48,28 @@ export class ClaimableReserveAuction {
   /**
    *  purchases claimable reserves during a `CRA` using `Ajna` token
    *  @param maxAmount maximum amount of quote token to purchase at the current auction price
-   *  @return actual amount of reserves taken.
+   *  @return promise to transaction
    */
   async takeAndBurn(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await takeReserves(contractPoolWithSigner, maxAmount);
+    return takeReserves(contractPoolWithSigner, maxAmount);
   }
 
   /**
    *  called by actor to start a `Claimable Reserve Auction` (`CRA`)
    *  @param signer auction initiator
-   *  @return transaction
+   *  @return promise to transaction
    */
   async kick(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await kickReserveAuction(contractPoolWithSigner);
+    return kickReserveAuction(contractPoolWithSigner);
   }
 
   /**
    * retrieves claimable reserve auction statistics
-   * @returns {@link CRAStats}
+   * @returns {@link CRAStatus}
    */
   async getStatus(): Promise<CRAStatus> {
     const reservesInfoCall = this.contractUtils.poolReservesInfo(this.poolAddress);
@@ -81,7 +81,7 @@ export class ClaimableReserveAuction {
     const [reserves, claimableReserves, claimableReservesRemaining, price] = reservesInfoResponse;
     const [, , lastKickTimestamp] = kickTimeResponse;
 
-    const ajnaToBurn = wmul(claimableReservesRemaining, price).add(toWad(1));
+    const ajnaToBurn = wmul(claimableReservesRemaining, price);
 
     return {
       lastKickTime: new Date(lastKickTimestamp.toNumber() * 1000),

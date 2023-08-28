@@ -3,11 +3,11 @@ import {
   getPositionManagerContract,
   isIndexInPosition,
   memorializePositions,
+  moveLiquidity,
   redeemPositions,
   tokenURI,
 } from '../contracts/position-manager';
 import {
-  Address,
   PositionManager,
   SdkError,
   SignerOrProvider,
@@ -15,6 +15,7 @@ import {
   WrappedTransaction,
 } from '../types';
 import { lenderInfo, lpAllowance } from '../contracts/pool';
+import { getExpiry } from '../utils/time';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -23,8 +24,7 @@ export class LPToken {
 
   /**
    * @param provider JSON-RPC endpoint.
-   * @param pool     Pool to which this bucket belongs.
-   * @param index    Price bucket index.
+   * @param tokenId uniquely identifies this LP token
    */
   constructor(provider: SignerOrProvider, tokenId: BigNumber) {
     this.provider = provider;
@@ -44,60 +44,95 @@ export class LPToken {
     return await isIndexInPosition(this.provider, tokenId, index);
   }
 
+  /**
+   * moves LP balance from one or more buckets into this position NFT
+   * @param signer lender
+   * @param pool pool in which lender added liquidity
+   * @param indexes identifies the buckets which lender wants their LP moved into this position NFT
+   * @returns promise to transaction
+   */
   async memorializePositions(
     signer: Signer,
     pool: Contract,
-    tokenId: BigNumber,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     const poolContract = pool.connect(signer);
 
-    try {
-      for (const index of indexes) {
-        const allowance = await lpAllowance(
-          poolContract,
-          index,
-          this.contractPositionManager.address,
-          await signer.getAddress()
-        );
-        const [lpBalance] = await lenderInfo(
-          poolContract,
-          this.contractPositionManager.address,
-          index
-        );
-        if (allowance.lt(lpBalance)) {
-          throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}}`);
-        }
+    for (const index of indexes) {
+      const allowance = await lpAllowance(
+        poolContract,
+        index,
+        this.contractPositionManager.address,
+        await signer.getAddress()
+      );
+      const [lpBalance] = await lenderInfo(
+        poolContract,
+        this.contractPositionManager.address,
+        index
+      );
+      if (allowance.lt(lpBalance)) {
+        throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}`);
       }
-
-      return memorializePositions(signer, pool.address, tokenId, indexes, overrides);
-    } catch (error: any) {
-      throw new SdkError(error.message, error);
     }
+
+    return memorializePositions(signer, pool.address, this.tokenId, indexes, overrides);
   }
 
+  /**
+   * removes LP balance from position NFT, placing back into pool
+   * @param signer lender
+   * @param pool pool for which this position NFT is holding LP balance for the lender
+   * @param indexes identifies the buckets in which lender wants LP balance moved out of this position NFT
+   * @returns promise to transaction
+   */
   async redeemPositions(
     signer: Signer,
-    poolAddress: Address,
-    tokenId: BigNumber,
+    pool: Contract,
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
-    try {
-      if (indexes.length === 0) {
-        throw new SdkError(`No indexes in position for token id: ${tokenId}`);
-      }
-
-      for (const index of indexes) {
-        await this.isIndexInPosition(index, tokenId);
-      }
-
-      return await redeemPositions(signer, poolAddress, tokenId, indexes, overrides);
-    } catch (error: any) {
-      throw new SdkError(error.message, error);
+    if (indexes.length === 0) {
+      throw new SdkError(`No indexes in position for token id: ${this.tokenId}`);
     }
+
+    for (const index of indexes) {
+      if (!(await this.isIndexInPosition(index, this.tokenId))) {
+        throw new SdkError(`Index ${index} is not in position for token id: ${this.tokenId}`);
+      }
+    }
+
+    return await redeemPositions(signer, pool.address, this.tokenId, indexes, overrides);
   }
 
-  // TODO: implement moveLiquidity
+  /**
+   * moves memorialized liquidity to a different bucket, allowing LP token holder to adjust position for market price change
+   * @param signer lender
+   * @param pool pool in which memorialized liquidity should be moved
+   * @param fromIndex existing bucket in which lender's position is memorialized
+   * @param toIndex target bucket into which lender wants their liquidity moved
+   * @param ttlSeconds revert if not processed in this amount of time
+   * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
+   * @returns promise to transaction
+   */
+  async moveLiquidity(
+    signer: Signer,
+    pool: Contract,
+    fromIndex: number,
+    toIndex: number,
+    ttlSeconds?: number,
+    revertBelowLUP = false,
+    overrides?: TransactionOverrides
+  ): Promise<WrappedTransaction> {
+    return moveLiquidity(
+      signer,
+      pool.address,
+      this.tokenId,
+      fromIndex,
+      toIndex,
+      await getExpiry(this.provider, ttlSeconds),
+      revertBelowLUP,
+      overrides
+    );
+  }
 }
