@@ -322,13 +322,13 @@ export abstract class Pool {
    */
   async areLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
     const spender = getPositionManagerContract(signer).address;
-    const poolWithSigner = this.contract.connect(signer);
     const signerAddress = await signer.getAddress();
 
     const allowancePromises = indices.map(index =>
-      lpAllowance(poolWithSigner, index, spender, signerAddress)
+      this.contractMulti.lpAllowance(index, spender, signerAddress)
     );
-    const allowances = await Promise.all(allowancePromises);
+    const allowances: BigNumber[] = await this.ethcallProvider.all(allowancePromises);
+
     const balancePromises = indices.map(index => lenderInfo(this.contract, signerAddress, index));
     const balances = await Promise.all(balancePromises);
 
