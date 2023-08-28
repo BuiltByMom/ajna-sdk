@@ -273,7 +273,7 @@ describe('Liquidations', () => {
 
     // should not be able to withdraw bond prior to settlement
     await expect(async () => {
-      tx = await pool.withdrawBonds(signerBorrower);
+      tx = await pool.withdrawBonds(signerLender);
       await tx.verify();
     }).rejects.toThrow('InsufficientLiquidity()');
   });

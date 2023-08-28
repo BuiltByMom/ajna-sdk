@@ -3,8 +3,7 @@ import { BigNumber, Contract, Signer, constants } from 'ethers';
 import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { getBlockTime } from '../utils/time';
 import { MAX_SETTLE_BUCKETS } from '../constants';
-import { settle } from '../contracts/pool';
-import { bucketTake, take } from '../contracts/erc20-pool';
+import { bucketTake, settle, take } from '../contracts/pool';
 
 /**
  * Models an auction used to liquidate an undercollateralized borrower
@@ -100,7 +99,8 @@ export class Liquidation {
     return bucketTake(contractPoolWithSigner, this.borrowerAddress, true, bucketIndex);
   }
 
-  // TODO: update this to support both pool types
+  // TODO: update this to support both pool types -> erc721 pool will have problems with the default value
+  // ALTERNATIVE: create a new `take method for each pool type
   /**
    * called by actors to purchase collateral from the auction in exchange for quote token
    * @param signer taker

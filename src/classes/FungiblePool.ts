@@ -1,5 +1,5 @@
 import { BigNumber, Signer, constants } from 'ethers';
-import { getBlockTime, getExpiry } from '../utils/time';
+import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
@@ -13,8 +13,7 @@ import {
   collateralScale,
 } from '../contracts/erc20-pool';
 import { debtInfo, depositIndex } from '../contracts/pool';
-import { Address, AuctionStatus, Loan, SignerOrProvider } from '../types';
-import { Liquidation } from './Liquidation';
+import { Address, Loan, SignerOrProvider } from '../types';
 import { Pool } from './Pool';
 import { toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
@@ -305,54 +304,5 @@ export class FungiblePool extends Pool {
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex,
     };
-  }
-
-  // TODO: move to base Pool class
-  /**
-   * @param borrowerAddress identifies the loan under liquidation
-   * @returns {@link Liquidation} models liquidation of a specific loan
-   */
-  getLiquidation(borrowerAddress: Address) {
-    return new Liquidation(this.provider, this.contract, borrowerAddress);
-  }
-
-  // TODO: move to base Pool class
-  /**
-   * retrieve statuses for multiple liquidations
-   * @param borrowerAddresses identifies loans under liquidation
-   * @returns map of AuctionStatuses, indexed by borrower address
-   */
-  async getLiquidationStatuses(
-    borrowerAddresses: Array<Address>
-  ): Promise<Map<Address, AuctionStatus>> {
-    // assemble calldata for requests
-    const calls = [];
-    for (const loan of borrowerAddresses) {
-      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
-    }
-
-    // perform the multicall
-    const response: any[][] = await this.ethcallProvider.all(calls);
-
-    // prepare return value
-    const retval = new Map<Address, AuctionStatus>();
-    for (let i = 0; i < response.length; ++i) {
-      const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
-        response[i];
-
-      retval.set(
-        borrowerAddresses[i],
-        Liquidation._prepareAuctionStatus(
-          await getBlockTime(this.provider),
-          kickTimestamp,
-          collateral,
-          debtToCover,
-          isCollateralized,
-          price,
-          neutralPrice
-        )
-      );
-    }
-    return retval;
   }
 }

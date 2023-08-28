@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
-import { Address, TransactionOverrides } from '../types';
+import { Address, CallData, TransactionOverrides } from '../types';
 import { createTransaction } from '../utils/transactions';
 
 export async function addQuoteToken(
@@ -137,6 +137,40 @@ export async function kick(
   return await createTransaction(
     contract,
     { methodName: 'kick', args: [borrowerAddress, limitIndex] },
+    overrides
+  );
+}
+
+export async function bucketTake(
+  contract: Contract,
+  borrowerAddress: Address,
+  depositTake: boolean,
+  bucketIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'bucketTake', args: [borrowerAddress, depositTake, bucketIndex] },
+    overrides
+  );
+}
+
+// TODO: should maxAmount / collateral be renamed?
+export async function take(
+  contract: Contract,
+  borrowerAddress: Address,
+  collateralAmount: BigNumber, // maxAmount for ERC20Pools, amount for ERC721Pools
+  callee: Address,
+  callData?: CallData,
+  overrides?: TransactionOverrides
+) {
+  const encodedCallData = callData
+    ? contract.interface.encodeFunctionData(callData.methodName, callData.args)
+    : [];
+
+  return await createTransaction(
+    contract,
+    { methodName: 'take', args: [borrowerAddress, collateralAmount, callee, encodedCallData] },
     overrides
   );
 }
