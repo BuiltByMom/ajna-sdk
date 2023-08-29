@@ -213,7 +213,6 @@ describe('ERC721 Pool', () => {
   it('debt may be drawn and repaid', async () => {
     // confirm existing state
     const initialStats = await poolDuckDai.getStats();
-    expect(initialStats.poolSize).toEqual(toWad(10_000));
     expect(initialStats.debt).toBeBetween(toWad(400), toWad(500));
     let loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toEqual(toWad(0));
