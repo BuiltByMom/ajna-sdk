@@ -7,6 +7,7 @@ import {
   drawDebt,
   getErc721PoolContract,
   getErc721PoolContractMulti,
+  mergeOrRemoveCollateral,
   removeCollateral,
   repayDebt,
 } from '../contracts/erc721-pool';
@@ -71,6 +72,30 @@ class NonfungiblePool extends Pool {
       tokenIdsToAdd,
       bucketIndex,
       await getExpiry(this.provider, ttlSeconds)
+    );
+  }
+
+  /**
+   * Merge collateral accross a number of buckets, `removalIndexes_` reconstitute an `NFT`.
+   * @param signer address to merge LPB and potentially remove whole NFTs
+   * @param removalIndexes Array of bucket indexes to remove all collateral that the caller has ownership over.
+   * @param noOfNFTsToRemove Intergral number of `NFT`s to remove if collateral amount is met `noOfNFTsToRemove_`, else merge at bucket index, `toIndex_`.
+   * @param toIndex The bucket index to which merge collateral into.
+   * @returns promise to transaction
+   */
+  async mergeOrRemoveCollateral(
+    signer: Signer,
+    removalIndexes: Array<number>,
+    noOfNFTsToRemove: number,
+    toIndex: number
+  ) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+
+    return mergeOrRemoveCollateral(
+      contractPoolWithSigner,
+      removalIndexes,
+      noOfNFTsToRemove,
+      toIndex
     );
   }
 
