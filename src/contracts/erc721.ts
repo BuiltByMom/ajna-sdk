@@ -20,3 +20,21 @@ export async function transferFrom(
     args: [from, to, amount],
   });
 }
+
+export async function ownerOf(
+  signer: SignerOrProvider,
+  tokenId: number,
+  contractAddress: Address
+): Promise<Address> {
+  const contractInstance: Contract = getNftContract(contractAddress, signer);
+  return await contractInstance.ownerOf(tokenId);
+}
+
+export async function balanceOf(
+  signer: SignerOrProvider,
+  owner: Address,
+  contractAddress: Address
+): Promise<BigNumber> {
+  const contractInstance: Contract = getNftContract(contractAddress, signer);
+  return await contractInstance.balanceOf(owner);
+}

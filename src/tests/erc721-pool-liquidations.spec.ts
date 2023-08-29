@@ -3,7 +3,7 @@ import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
 // import { getErc20Contract } from '../contracts/erc20';
-import { getNftContract } from '../contracts/erc721';
+import { balanceOf, getNftContract } from '../contracts/erc721';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { AuctionStatus } from '../types';
@@ -272,7 +272,51 @@ describe('ERC721 pool liquidations', () => {
     const bucketTakeEventLogs = tx.getEventLogs(receipt).get('BucketTake')![0];
     const collateral = bucketTakeEventLogs.args['collateral'].toString();
     console.log('collateral in event', collateral);
-    // expect(BigInt(collateral)).toBeGreaterThan(0);
+    expect(BigInt(collateral)).toBeGreaterThan(0);
+  });
+
+  it('should use mergeOrRemoveCollateral', async () => {
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
+    const allowance = 100000000;
+    const quoteAmount = 30000;
+
+    // kick first
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
+    let auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
+
+    // check auction status after kicking and before bucketTake
+    expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
+
+    // wait 8 hours and check auction status
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
+
+    // lender adds liquidity
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    // deposit take
+    tx = await liquidation.depositTake(signerLender, bucket.index);
+    const receipt = await submitAndVerifyTransaction(tx);
+    const bucketTakeEventLogs = tx.getEventLogs(receipt).get('BucketTake')![0];
+    const collateral = bucketTakeEventLogs.args['collateral'].toString();
+    console.log('collateral in event', collateral);
+    expect(BigInt(collateral)).toBeGreaterThan(0);
+
+    // mergeOrRemoveCollateral
+    tx = await poolDuckDai.mergeOrRemoveCollateral(signerLender, [bucket.index], 1, 2001);
+    await submitAndVerifyTransaction(tx);
+
+    // check token balance after merge and remove
+    expect((await balanceOf(signerLender, signerLender.address, TDUCK_ADDRESS)).toNumber()).toEqual(
+      1
+    );
   });
 
   it('should use take', async () => {
