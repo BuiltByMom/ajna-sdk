@@ -76,10 +76,10 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * Merge collateral accross a number of buckets, `removalIndexes_` reconstitute an `NFT`.
+   * Merge collateral accross a number of buckets, `removalIndexes` reconstitute an `NFT`.
    * @param signer address to merge LPB and potentially remove whole NFTs
    * @param removalIndexes Array of bucket indexes to remove all collateral that the caller has ownership over.
-   * @param noOfNFTsToRemove Intergral number of `NFT`s to remove if collateral amount is met `noOfNFTsToRemove_`, else merge at bucket index, `toIndex_`.
+   * @param noOfNFTsToRemove Intergral number of `NFT`s to remove if collateral amount is met `noOfNFTsToRemove`, else merge at bucket index, `toIndex`.
    * @param toIndex The bucket index to which merge collateral into.
    * @returns promise to transaction
    */

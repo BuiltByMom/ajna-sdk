@@ -32,8 +32,12 @@ describe('Liquidations', () => {
   // const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
   let pool: FungiblePool = {} as FungiblePool;
   let snapshotId: number;
+  let originalSnapshot: number;
 
   beforeAll(async () => {
+    // take snapshot before all tests
+    originalSnapshot = await takeSnapshot(provider);
+
     pool = await ajna.fungiblePoolFactory.getPool(TESTB_ADDRESS, TDAI_ADDRESS);
 
     // approve
@@ -117,6 +121,11 @@ describe('Liquidations', () => {
     expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
     // Re-take snapshot after every test, as same snapshot couldn't be used twice
     snapshotId = await takeSnapshot(provider);
+  });
+
+  afterAll(async () => {
+    // revert state to before liquidations were setup
+    expect(await revertToSnapshot(provider, originalSnapshot)).toBeTruthy();
   });
 
   it('should get multiple loans', async () => {
