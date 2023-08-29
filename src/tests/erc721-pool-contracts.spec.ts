@@ -1,4 +1,4 @@
-import { constants, providers } from 'ethers';
+import { BigNumber, constants, providers } from 'ethers';
 import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
@@ -8,6 +8,7 @@ import { priceToIndex, toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
+import { getErc721PoolFactoryContract, getSubsetHash } from '../contracts/erc721-pool-factory';
 
 jest.setTimeout(60000);
 
@@ -177,6 +178,26 @@ describe('ERC721 Pool', () => {
     await expect(async () => {
       await ajna.nonfungiblePoolFactory.getPoolAddress(TGOOSE_ADDRESS, [26, 24, 25], TWETH_ADDRESS);
     }).rejects.toThrow('Token ids must be sorted');
+  });
+
+  it('calculated subsetHash should match the contract', async () => {
+    const subset = [23, 24, 25].map(val => BigNumber.from(val));
+    const poolFactoryContract = getErc721PoolFactoryContract(provider);
+
+    const subsetHash = await poolFactoryContract.getNFTSubsetHash(subset);
+    const calculatedSubsetHash = getSubsetHash(subset);
+
+    expect(subsetHash).toEqual(calculatedSubsetHash);
+  });
+
+  it('calculated subsetHash for empty array should match the contract', async () => {
+    const subset: BigNumber[] = [];
+    const poolFactoryContract = getErc721PoolFactoryContract(provider);
+
+    const subsetHash = await poolFactoryContract.getNFTSubsetHash(subset);
+    const calculatedSubsetHash = getSubsetHash(subset);
+
+    expect(subsetHash).toEqual(calculatedSubsetHash);
   });
 
   it('liquidity may be added to and removed from a NFT pool', async () => {
