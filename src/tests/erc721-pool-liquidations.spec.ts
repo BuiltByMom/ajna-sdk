@@ -60,7 +60,7 @@ describe('ERC721 pool liquidations', () => {
     poolDuckDai = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TDAI_ADDRESS);
 
     // approve
-    let tx = await poolDuckDai.quoteApprove(signerLender, toWad(50000));
+    let tx = await poolDuckDai.quoteApprove(signerLender, toWad(60000));
     await submitAndVerifyTransaction(tx);
 
     // add 21,000 quote tokens to 2001 bucket
@@ -200,39 +200,81 @@ describe('ERC721 pool liquidations', () => {
     expect(prices.llbIndex).toEqual(prices.hpbIndex);
   });
 
-  // FIXME: need to ensure there's available quote in the bucket being used for the arb take
-  // it('should use arb take', async () => {
-  // const bucketIndex = 2001;
+  it('should use arb take', async () => {
+    const bucketIndex = 2001;
 
-  // // kick first
-  // let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
-  // await submitAndVerifyTransaction(tx);
-  // const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
+    // kick first
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
 
-  // // wait 8 hours
-  // const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
-  // await timeJump(provider, jumpTimeSeconds);
+    // wait 8 hours
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    const statuses = await poolDuckDai.getLiquidationStatuses([signerBorrower2.address]);
+    expect(statuses.size).toEqual(1);
+    const auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
+    const blockTime = await getBlockTime(signerBorrower2);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeGreaterThan(0);
+    expect(auctionStatus.collateral).toEqual(toWad(2));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.isTakeable).toBe(true);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.isSettleable).toBe(false);
 
-  // // take
-  // tx = await liquidation.arbTake(signerLender, bucketIndex);
-  // await submitAndVerifyTransaction(tx);
+    // take
+    tx = await liquidation.arbTake(signerLender, bucketIndex);
+    await submitAndVerifyTransaction(tx);
+  });
 
-  // const statuses = await poolDuckDai.getLiquidationStatuses([signerBorrower2.address]);
-  // expect(statuses.size).toEqual(1);
-  // const auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
-  // const blockTime = await getBlockTime(signerBorrower2);
-  // expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
-  // expect(auctionStatus.collateral).toEqual(toWad(0));
-  // expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
-  // expect(auctionStatus.isTakeable).toBe(false);
-  // expect(auctionStatus.isCollateralized).toBe(false);
-  // // FIXME: figure out why auctionStatus.price === 0
-  // expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-  // expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
-  // expect(auctionStatus.isSettleable).toBe(true);
-  // });
+  it('should use deposit take', async () => {
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
+    const allowance = 100000000;
+    const quoteAmount = 30000;
 
-  // TODO: check debtToCover values
+    // kick first
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
+    let auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
+
+    // check auction status after kicking and before bucketTake
+    expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
+
+    // wait 8 hours and check auction status
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
+    const blockTime = await getBlockTime(signerBorrower2);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeGreaterThan(0);
+    expect(auctionStatus.collateral).toEqual(toWad(2));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.isTakeable).toBe(true);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.isSettleable).toBe(false);
+
+    // lender adds liquidity
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    // deposit take
+    tx = await liquidation.depositTake(signerLender, bucket.index);
+    const receipt = await submitAndVerifyTransaction(tx);
+    const bucketTakeEventLogs = tx.getEventLogs(receipt).get('BucketTake')![0];
+    const collateral = bucketTakeEventLogs.args['collateral'].toString();
+    console.log('collateral in event', collateral);
+    // expect(BigInt(collateral)).toBeGreaterThan(0);
+  });
+
   it('should use take', async () => {
     // kick first
     let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
@@ -259,21 +301,20 @@ describe('ERC721 pool liquidations', () => {
     let auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
     let blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
-    // expect(auctionStatus.collateral).toEqual(toWad(0));
+    expect(auctionStatus.collateral).toEqual(toWad(1));
     expect(auctionStatus.collateral.gt(toWad(0)) && auctionStatus.collateral.lt(toWad(2))).toBe(
       true
     );
-    console.log('auctionStatus.debtToCover 1', auctionStatus.debtToCover.toString());
-    // FIXME: update debtToCover
-    // expect(auctionStatus.debtToCover.lt(toWad(18000))).toBeTruthy();
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    // FIXME: update auction price and neutral price ranges
-    // expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    // expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(7200), toWad(10000));
     expect(auctionStatus.isSettleable).toBe(false);
 
-    // TODO: add an additional time jump?
+    // wait 50 hours
+    const jumpTimeSecondsTwo = 50 * 60 * 60; // 50 hours
+    await timeJump(provider, jumpTimeSecondsTwo);
+
     // take the remaining collateral
     tx = await liquidation.take(signerLender, BigNumber.from(1));
     await submitAndVerifyTransaction(tx);
@@ -284,13 +325,9 @@ describe('ERC721 pool liquidations', () => {
     blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
     expect(auctionStatus.collateral).toEqual(toWad(0));
-    console.log('auctionStatus.debtToCover 2', auctionStatus.debtToCover.toString());
-    // FIXME: update debtToCover
-    // expect(auctionStatus.debtToCover.lt(toWad(18000))).toBeTruthy();
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
-    // expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    // expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
     expect(auctionStatus.isSettleable).toBe(true);
   });
 

@@ -467,8 +467,6 @@ export abstract class Pool {
       const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
         response[i];
 
-      console.log('price', price.toString());
-
       retval.set(
         borrowerAddresses[i],
         Liquidation._prepareAuctionStatus(
