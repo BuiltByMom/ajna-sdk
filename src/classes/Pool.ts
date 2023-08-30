@@ -34,6 +34,7 @@ import {
   Provider,
   SdkError,
   SignerOrProvider,
+  WrappedTransaction,
 } from '../types';
 import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
@@ -608,9 +609,17 @@ export abstract class Pool {
     return burn(signer, tokenId, this.poolAddress);
   }
 
-  async approvePositionManagerLPTransferor(signer: Signer) {
-    const addr = getPositionManagerContract(signer).address;
-    return approveLPTransferors(signer, this.contract, [addr]);
+  approvePositionManagerLPTransferor(
+    signer: Signer,
+    transferor: Address
+  ): Promise<WrappedTransaction> {
+    return approveLPTransferors(signer, this.contract, [transferor]);
+  }
+
+  async isLPTransferorApproved(signer: Signer, transferor: Address): Promise<boolean> {
+    const signerAddress = await signer.getAddress();
+    const isApproved = await this.contract.approvedTransferors(signerAddress, transferor);
+    return isApproved;
   }
 
   async revokePositionManagerLPTransferor(signer: Signer) {

@@ -9,6 +9,7 @@ import {
   tokenURI,
 } from '../contracts/position-manager';
 import {
+  CallData,
   PositionManager,
   SdkError,
   SignerOrProvider,
@@ -17,6 +18,7 @@ import {
 } from '../types';
 import { lenderInfo, lpAllowance } from '../contracts/pool';
 import { getExpiry } from '../utils/time';
+import { multicall } from '../contracts/common';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -145,5 +147,17 @@ export class LPToken {
       revertBelowLUP,
       overrides
     );
+  }
+
+  /**
+   * Enables signer to bundle transactions together atomically in a single request
+   * @param signer consumer initiating transactions
+   * @param callData array of transactions to sign and submit
+   * @returns transaction
+   */
+  async multicall(signer: Signer, callData: Array<CallData>) {
+    const contractPoolWithSigner = this.contractPositionManager.connect(signer);
+
+    return await multicall(contractPoolWithSigner, callData);
   }
 }
