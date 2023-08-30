@@ -1,4 +1,4 @@
-import { ONE_HALF_WAD } from '../constants/common';
+import { ONE_HALF_WAD, ONE_WAD } from '../constants/common';
 import { BigNumber, BigNumberish, constants, ethers } from 'ethers';
 
 // converts from WAD precision to human-readable string
@@ -31,3 +31,7 @@ export const min = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.lte(rhs) 
 
 // returns the maximum of two WADs
 export const max = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.gte(rhs) ? lhs : rhs);
+
+export const wadToIntRoundingDown = (wad: BigNumber): number => {
+  return wdiv(wad, ONE_WAD).div(ONE_WAD).toNumber();
+};

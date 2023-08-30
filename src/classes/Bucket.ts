@@ -12,9 +12,10 @@ import {
   getPoolInfoUtilsContract,
   lpToQuoteTokens,
   lpToCollateral,
+  bucketInfo,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { fromWad } from '../utils/numeric';
+import { fromWad, toWad } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
@@ -86,6 +87,25 @@ export class Bucket {
   }
 
   /**
+   * retrieve current state of the bucket.
+   * @returns {@link BucketStatus}
+   */
+  async getStatus(): Promise<BucketStatus> {
+    const [, deposit, collateral, bucketLP, , exchangeRate] = await bucketInfo(
+      this.contractUtils,
+      this.poolContract.address,
+      this.index
+    );
+
+    return {
+      deposit,
+      collateral,
+      bucketLP,
+      exchangeRate,
+    };
+  }
+
+  /**
    * deposits quote token into the bucket
    * @param signer lender
    * @param amount amount to deposit
@@ -148,6 +168,63 @@ export class Bucket {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
     return removeQuoteToken(contractPoolWithSigner, maxAmount, this.index);
+  }
+
+  /**
+   * shows a lender's position in a single bucket
+   * @returns {@link Position}
+   */
+  async getPosition(lenderAddress: Address): Promise<Position> {
+    // pool contract multicall to find pending debt and LPB
+    let data: string[] = await this.pool.ethcallProvider.all([
+      this.pool.contractMulti.debtInfo(),
+      this.pool.contractMulti.lenderInfo(this.index, lenderAddress),
+    ]);
+    const lpBalance = BigNumber.from(data[1][0]);
+
+    // info contract multicall to get htp and calculate token amounts for LPB
+    const pricesInfoCall = this.pool.contractUtilsMulti.poolPricesInfo(this.poolContract.address);
+    const lpToQuoteCall = this.pool.contractUtilsMulti.lpToQuoteTokens(
+      this.poolContract.address,
+      lpBalance,
+      this.index
+    );
+    const lpToCollateralCall = this.pool.contractUtilsMulti.lpToCollateral(
+      this.poolContract.address,
+      lpBalance,
+      this.index
+    );
+    data = await this.pool.ethcallProvider.all([pricesInfoCall, lpToQuoteCall, lpToCollateralCall]);
+    const htpIndex = +data[0][3];
+    const lupIndex = +data[0][5];
+    const depositRedeemable = BigNumber.from(data[1]);
+    const collateralRedeemable = BigNumber.from(data[2]);
+
+    let depositWithdrawable;
+    if (this.index > lupIndex) {
+      // if withdrawing below the LUP (higher index), the withdrawal cannot affect the LUP
+      depositWithdrawable = depositRedeemable;
+    } else {
+      let liquidityBetweenLupAndHtp = toWad(0);
+      // if pool is collateralized (LUP above HTP), find debt between current LUP and HTP
+      if (lupIndex < htpIndex) {
+        data = await this.pool.ethcallProvider.all([
+          this.pool.contractMulti.depositUpToIndex(lupIndex),
+          this.pool.contractMulti.depositUpToIndex(htpIndex),
+        ]);
+        liquidityBetweenLupAndHtp = BigNumber.from(data[1]).sub(BigNumber.from(data[0]));
+      }
+      depositWithdrawable = liquidityBetweenLupAndHtp.lt(depositRedeemable)
+        ? liquidityBetweenLupAndHtp
+        : depositRedeemable;
+    }
+
+    return {
+      lpBalance,
+      depositRedeemable,
+      collateralRedeemable,
+      depositWithdrawable,
+    };
   }
 
   /**

@@ -112,3 +112,7 @@ export async function mergeOrRemoveCollateral(
     overrides
   );
 }
+
+export async function isSubset(contract: Contract): Promise<boolean> {
+  return await contract.isSubset();
+}

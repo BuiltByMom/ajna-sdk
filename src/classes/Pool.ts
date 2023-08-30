@@ -601,6 +601,7 @@ export abstract class Pool {
     return revokeLPTransferors(signer, this.contract, [addr]);
   }
 
+  // TODO: remove this? doesn't seem to belong on the pool instance
   /**
    * returns an instance to an existing LP token
    * @param tokenId identifies the token

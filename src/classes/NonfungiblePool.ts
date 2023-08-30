@@ -202,6 +202,16 @@ class NonfungiblePool extends Pool {
 
     return buckets;
   }
+
+  async totalBorrowerTokens(borrower: Address): Promise<number> {
+    const contractPool = this.contract.connect(this.provider);
+    return await contractPool.totalBorrowerTokens(borrower);
+  }
+
+  async totalBucketTokens(borrower: Address): Promise<number> {
+    const contractPool = this.contract.connect(this.provider);
+    return await contractPool.totalBucketTokens(borrower);
+  }
 }
 
 export { NonfungiblePool };

@@ -60,6 +60,21 @@ export async function isIndexInPosition(
   return await contractInstance.isIndexInPosition(tokenId, index);
 }
 
+export async function poolKey(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.poolKey(tokenId);
+}
+
+export async function getPositionIndexes(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.getPositionIndexes(tokenId);
+}
+
+export async function getPositionIndexesFiltered(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.getPositionIndexesFiltered(tokenId);
+}
+
 export async function memorializePositions(
   signer: Signer,
   poolAddress: Address,

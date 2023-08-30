@@ -4,8 +4,9 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
 import { toWad } from '../utils';
-import { Pool } from '../classes/Pool';
+// import { Pool } from '../classes/Pool';
 import { getLP, getPositionManagerContract } from '../contracts/position-manager';
+import { FungiblePool } from '../classes/FungiblePool';
 
 jest.setTimeout(1200000);
 
@@ -15,7 +16,7 @@ const TESTD_TDAI_POOL = '0xe8dCc8FbAb00cF7911944dE5f9080Ecd9f25d3A9';
 
 async function addQuoteTokensByIndexes(
   signer: Signer,
-  pool: Pool,
+  pool: FungiblePool,
   indexes: Array<number>,
   amounts: Array<BigNumber>
 ) {
@@ -35,7 +36,7 @@ async function addQuoteTokensByIndexes(
 describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  let pool: Pool;
+  let pool: FungiblePool; // TODO: change this to an instance of FungiblePool or NonfungiblePool?
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerNotLender = addAccountFromKey(NOT_LENDER_KEY, provider);
 
@@ -57,6 +58,19 @@ describe('LP Token and PositionManager', () => {
     const burnTx = await pool.burnLPToken(signerLender, tokenId);
     const burnReceipt = await submitAndVerifyTransaction(burnTx);
     expect(burnReceipt).toHaveProperty('logs');
+  });
+
+  it('should get the appropriate pool class for LP token', async () => {
+    const mintTx = await pool.mintLPToken(signerLender);
+    const mintReceipt = await submitAndVerifyTransaction(mintTx);
+    expect(mintReceipt).toHaveProperty('logs');
+
+    const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
+    const lpToken = pool.getLPToken(tokenId);
+
+    const poolClass = await lpToken.getPositionPool();
+    expect(poolClass instanceof FungiblePool).toBe(true);
   });
 
   it('should memorialize and then redeem an LP position', async () => {
