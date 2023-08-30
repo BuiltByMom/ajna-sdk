@@ -33,6 +33,7 @@ describe('ERC721 pool liquidations', () => {
   const testTokenIds = [1, 2, 3, 4, 5];
   let poolDuckDai: NonfungiblePool;
   let snapshotId: number;
+  let originalSnapshot: number;
 
   const fundAndApproveCollateral = async (
     signer: Wallet,
@@ -57,6 +58,9 @@ describe('ERC721 pool liquidations', () => {
   };
 
   beforeAll(async () => {
+    // take snapshot before all tests
+    originalSnapshot = await takeSnapshot(provider);
+
     poolDuckDai = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TDAI_ADDRESS);
 
     // approve
@@ -126,6 +130,11 @@ describe('ERC721 pool liquidations', () => {
     expect(await revertToSnapshot(provider, snapshotId)).toBeTruthy();
     // Re-take snapshot after every test, as same snapshot couldn't be used twice
     snapshotId = await takeSnapshot(provider);
+  });
+
+  afterAll(async () => {
+    // revert state to before liquidations were setup
+    expect(await revertToSnapshot(provider, originalSnapshot)).toBeTruthy();
   });
 
   it('should get multiple loans', async () => {
