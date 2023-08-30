@@ -36,7 +36,7 @@ async function addQuoteTokensByIndexes(
 describe('LP Token and PositionManager', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
-  let pool: FungiblePool; // TODO: change this to an instance of FungiblePool or NonfungiblePool?
+  let pool: FungiblePool;
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerNotLender = addAccountFromKey(NOT_LENDER_KEY, provider);
 

@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, constants } from 'ethers';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { getNftContract } from '../contracts/erc721';
 import {
@@ -12,10 +12,12 @@ import {
   repayDebt,
 } from '../contracts/erc721-pool';
 import { Pool } from './Pool';
-import { Address, SdkError, Signer, SignerOrProvider } from '../types';
+import { Address, CallData, SdkError, Signer, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
 import { priceToIndex } from '../utils/pricing';
 import { NonfungibleBucket } from './NonfungibleBucket';
+import { lenderInfo } from '../contracts/pool';
+import { wadToIntRoundingDown, wmul } from '../utils/numeric';
 
 class NonfungiblePool extends Pool {
   isSubset: boolean;
@@ -211,6 +213,66 @@ class NonfungiblePool extends Pool {
   async totalBucketTokens(borrower: Address): Promise<number> {
     const contractPool = this.contract.connect(this.provider);
     return await contractPool.totalBucketTokens(borrower);
+  }
+
+  /**
+   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
+   * @param signer address to redeem LP
+   * @param bucketIndices array of bucket indices to withdraw liquidity from
+   * @returns promise to transaction
+   */
+  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
+    const signerAddress = await signer.getAddress();
+    const callData: Array<CallData> = [];
+
+    // get buckets
+    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
+    const buckets = await Promise.all(bucketPromises);
+
+    // get bucket details
+    const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
+    const bucketStatuses = await Promise.all(bucketStatusPromises);
+
+    // determine lender's LP balance
+    const lpBalancePromises = bucketIndices.map(bucketIndex =>
+      lenderInfo(this.contract, signerAddress, bucketIndex)
+    );
+    const lpBalances = await Promise.all(lpBalancePromises);
+
+    for (let i = 0; i < bucketIndices.length; ++i) {
+      const [lpBalance] = lpBalances[i];
+      const bucketStatus = bucketStatuses[i];
+      const bucketIndex = bucketIndices[i];
+
+      // if there is any quote token in the bucket, redeem LP for deposit first
+      if (lpBalance && bucketStatus.deposit.gt(0)) {
+        callData.push({
+          methodName: 'removeQuoteToken',
+          args: [constants.MaxUint256, bucketIndex],
+        });
+      }
+
+      const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
+
+      // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
+      // arbitrary future block where the TX will be processed.
+      const withdrawCollateral =
+        (bucketStatus.deposit.eq(0) || depositWithdrawnEstimate.gt(bucketStatus.deposit)) &&
+        bucketStatus.collateral.gt(0);
+
+      const tokensToRemove = wadToIntRoundingDown(bucketStatus.collateral);
+      if (withdrawCollateral && tokensToRemove > 0) {
+        callData.push({
+          methodName: 'removeCollateral',
+          args: [tokensToRemove, bucketIndex],
+        });
+      }
+      // TODO: else track lpb in the bucket and add index to array of indexes to use for mergeOrRemoveCollateral
+    }
+
+    // TODO: implement mergeOrRemoveCollateral for any surplus lpb
+
+    return this.multicall(signer, callData);
   }
 }
 
