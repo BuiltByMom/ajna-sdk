@@ -17,7 +17,7 @@ import { getExpiry } from '../utils/time';
 import { priceToIndex } from '../utils/pricing';
 import { NonfungibleBucket } from './NonfungibleBucket';
 import { lenderInfo } from '../contracts/pool';
-import { wadToIntRoundingDown, wmul } from '../utils/numeric';
+import { toWad, wadToIntRoundingDown, wmul } from '../utils/numeric';
 
 class NonfungiblePool extends Pool {
   isSubset: boolean;
@@ -225,8 +225,13 @@ class NonfungiblePool extends Pool {
     const signerAddress = await signer.getAddress();
     const callData: Array<CallData> = [];
 
+    // sort bucketIndices in ascending index order (descendingPrice) for use in mergeOrRemoveCollateral
+    const sortedBucketIndexes = bucketIndices.sort((a, b) => a - b);
+
     // get buckets
-    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
+    const bucketPromises = sortedBucketIndexes.map(bucketIndex =>
+      this.getBucketByIndex(bucketIndex)
+    );
     const buckets = await Promise.all(bucketPromises);
 
     // get bucket details
@@ -234,15 +239,18 @@ class NonfungiblePool extends Pool {
     const bucketStatuses = await Promise.all(bucketStatusPromises);
 
     // determine lender's LP balance
-    const lpBalancePromises = bucketIndices.map(bucketIndex =>
+    const lpBalancePromises = sortedBucketIndexes.map(bucketIndex =>
       lenderInfo(this.contract, signerAddress, bucketIndex)
     );
     const lpBalances = await Promise.all(lpBalancePromises);
 
-    for (let i = 0; i < bucketIndices.length; ++i) {
+    let surplusCollateral: BigNumber = BigNumber.from(0);
+    const surplusIndexes: Array<number> = [];
+
+    for (let i = 0; i < sortedBucketIndexes.length; ++i) {
       const [lpBalance] = lpBalances[i];
       const bucketStatus = bucketStatuses[i];
-      const bucketIndex = bucketIndices[i];
+      const bucketIndex = sortedBucketIndexes[i];
 
       // if there is any quote token in the bucket, redeem LP for deposit first
       if (lpBalance && bucketStatus.deposit.gt(0)) {
@@ -254,23 +262,47 @@ class NonfungiblePool extends Pool {
 
       const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
 
+      // TODO: add slippage param to increase tx success likelihood?
       // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
       // arbitrary future block where the TX will be processed.
       const withdrawCollateral =
         (bucketStatus.deposit.eq(0) || depositWithdrawnEstimate.gt(bucketStatus.deposit)) &&
         bucketStatus.collateral.gt(0);
 
-      const tokensToRemove = wadToIntRoundingDown(bucketStatus.collateral);
-      if (withdrawCollateral && tokensToRemove > 0) {
-        callData.push({
-          methodName: 'removeCollateral',
-          args: [tokensToRemove, bucketIndex],
-        });
+      // attempt to remove collateral if there is an integer number of NFTs available for claiming
+      if (withdrawCollateral) {
+        // TODO: track the surplus tokens after
+        const tokensToRemove = wadToIntRoundingDown(bucketStatus.collateral);
+
+        if (tokensToRemove > 0) {
+          callData.push({
+            methodName: 'removeCollateral',
+            args: [tokensToRemove, bucketIndex],
+          });
+
+          // track any surplus collateral in the bucket after removal to be used for mergeOrRemoveCollateral
+          const postRemoveSurplus = bucketStatus.collateral.sub(toWad(tokensToRemove));
+          if (postRemoveSurplus.gt(0)) {
+            surplusCollateral = surplusCollateral.add(postRemoveSurplus);
+            surplusIndexes.push(bucketIndex);
+          }
+        } else {
+          // track any surplus collateral associated with the lender and bucket to be used for mergeOrRemoveCollateral
+          surplusCollateral = surplusCollateral.add(bucketStatus.collateral);
+          surplusIndexes.push(bucketIndex);
+        }
       }
-      // TODO: else track lpb in the bucket and add index to array of indexes to use for mergeOrRemoveCollateral
     }
 
-    // TODO: implement mergeOrRemoveCollateral for any surplus lpb
+    // if there was enough surplus collateral across the lender's buckets, call mergeOrRemoveCollateral on the surplus
+    if (surplusCollateral.gt(1)) {
+      const mergeOrRemoveToIndex = surplusIndexes[surplusIndexes.length - 1];
+      const tokensToRemove = wadToIntRoundingDown(surplusCollateral);
+      callData.push({
+        methodName: 'mergeOrRemoveCollateral',
+        args: [surplusIndexes, tokensToRemove, mergeOrRemoveToIndex],
+      });
+    }
 
     return this.multicall(signer, callData);
   }

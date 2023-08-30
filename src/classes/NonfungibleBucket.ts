@@ -43,13 +43,11 @@ export class NonfungibleBucket extends Bucket {
       });
     }
 
-    // TODO: implement mergeOrRemoveCollateral
     // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
     // arbitrary future block where the TX will be processed.
     const withdrawCollateral =
       (bucketStatus.deposit.eq(0) || estimatedDepositWithdrawal.gt(bucketStatus.deposit)) &&
       bucketStatus.collateral.gt(0);
-    // const tokensToRemove = wdiv(bucketStatus.collateral, ONE_WAD).div(BigNumber.from(10 ** 18))
     const tokensToRemove = wadToIntRoundingDown(bucketStatus.collateral);
     if (withdrawCollateral && tokensToRemove > 0) {
       callData.push({
