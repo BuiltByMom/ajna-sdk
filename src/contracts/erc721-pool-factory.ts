@@ -4,6 +4,7 @@ import { Config } from '../classes/Config';
 import { Address, SignerOrProvider, TransactionOverrides } from '../types';
 import checksumAddress from '../utils/checksum-address';
 import { createTransaction } from '../utils';
+import { keccak256 } from 'ethers/lib/utils';
 
 export const getErc721PoolFactoryContract = (provider: SignerOrProvider): Contract => {
   return new ethers.Contract(
@@ -44,11 +45,21 @@ export async function getDeployedPools(
   return await contract.deployedPools(subset, collateralAddress, quoteAddress);
 }
 
-export async function getSubsetHash(
-  provider: SignerOrProvider,
-  tokensIds: Array<BigNumber>
-): Promise<string> {
-  const contract: Contract = getErc721PoolFactoryContract(provider);
+export function getSubsetHash(tokensIds: Array<BigNumber>): string {
+  //keccak256('ERC721_NON_SUBSET_HASH')
+  const ERC721_NON_SUBSET_HASH =
+    '0x93e3b87db48beb11f82ff978661ba6e96f72f582300e9724191ab4b5d7964364';
 
-  return await contract.getNFTSubsetHash(tokensIds);
+  if (tokensIds.length == 0) return ERC721_NON_SUBSET_HASH;
+  else {
+    // check the array of token ids is sorted in ascending order
+    // revert if not sorted
+    for (let i = 0; i < tokensIds.length - 1; i++) {
+      if (tokensIds[i] >= tokensIds[i + 1]) throw new Error('Token ids must be sorted');
+    }
+    const abi = ethers.utils.defaultAbiCoder;
+
+    // hash the sorted array of tokenIds
+    return keccak256(abi.encode(['uint256[]'], [tokensIds]));
+  }
 }
