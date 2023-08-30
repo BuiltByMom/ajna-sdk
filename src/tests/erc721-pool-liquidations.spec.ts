@@ -2,7 +2,6 @@ import { constants, Wallet, providers, BigNumber } from 'ethers';
 import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
-// import { getErc20Contract } from '../contracts/erc20';
 import { balanceOf, getNftContract } from '../contracts/erc721';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';

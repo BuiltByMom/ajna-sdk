@@ -1,6 +1,5 @@
 import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
-import { Bucket } from '../classes/Bucket';
 import { FungiblePool } from '../classes/FungiblePool';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
@@ -13,6 +12,7 @@ import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { Config } from '../constants';
 import { Stats } from '../classes/Pool';
+import { FungibleBucket } from '../classes/FungibleBucket';
 
 jest.setTimeout(80000);
 
@@ -245,7 +245,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use getBucketByIndex successfully', async () => {
-    const bucket: Bucket = await poolA.getBucketByIndex(3220);
+    const bucket: FungibleBucket = await poolA.getBucketByIndex(3220);
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220');
     expect(bucket.index).toEqual(3220);
     expect(bucket.price).toEqual(toWad('106.520649069543057301'));
@@ -262,7 +262,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use getBucketByPrice successfully', async () => {
-    const bucket: Bucket = await pool.getBucketByPrice(toWad('0.1'));
+    const bucket: FungibleBucket = await pool.getBucketByPrice(toWad('0.1'));
     expect(bucket.toString()).toContain(`TWETH-TDAI bucket 4618 (0.099834`);
     expect(bucket.index).toEqual(4618);
     expect(bucket.price).toEqual(toWad('0.099834229041488465'));

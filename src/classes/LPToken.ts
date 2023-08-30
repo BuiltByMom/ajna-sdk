@@ -44,6 +44,10 @@ export class LPToken {
     return await isIndexInPosition(this.provider, tokenId, index);
   }
 
+  getPositionPool() {
+    // TODO: return instance of Fungible Pool or Nonfungible Pool
+  }
+
   /**
    * moves LP balance from one or more buckets into this position NFT
    * @param signer lender

@@ -13,7 +13,6 @@ import {
   quoteTokenAddress,
   quoteTokenScale,
   withdrawBonds,
-  lenderInfo,
   approveLPTransferors,
   revokeLPTransferors,
   lpAllowance,
@@ -37,9 +36,8 @@ import {
   SignerOrProvider,
 } from '../types';
 import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
-import { indexToPrice, priceToIndex } from '../utils/pricing';
+import { indexToPrice } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
-import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { LPToken } from './LPToken';
 import { Liquidation } from './Liquidation';
@@ -283,26 +281,6 @@ export abstract class Pool {
     return multicall(contractPoolWithSigner, callData);
   }
 
-  /**
-   * @param bucketIndex fenwick index of the desired bucket
-   * @returns {@link Bucket} modeling bucket at specified index
-   */
-  async getBucketByIndex(bucketIndex: number) {
-    const bucket = new Bucket(this.provider, this, bucketIndex);
-    return bucket;
-  }
-
-  /**
-   * @param price price within range supported by Ajna
-   * @returns {@link Bucket} modeling bucket at nearest to specified price
-   */
-  getBucketByPrice(price: BigNumber) {
-    const bucketIndex = priceToIndex(price);
-    // priceToIndex should throw upon invalid price
-    const bucket = new Bucket(this.provider, this, bucketIndex);
-    return bucket;
-  }
-
   async lpAllowance(index: BigNumber, spender: Address, owner: Address) {
     return await lpAllowance(this.contract, index, spender, owner);
   }
@@ -315,22 +293,6 @@ export abstract class Pool {
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
     return increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
-  }
-
-  /**
-   * @param minPrice lowest desired price
-   * @param maxPrice highest desired price
-   * @returns array of {@link Bucket}s between specified prices
-   */
-  getBucketsByPriceRange(minPrice: BigNumber, maxPrice: BigNumber) {
-    if (minPrice.gt(maxPrice)) throw new SdkError('maxPrice must exceed minPrice');
-
-    const buckets = new Array<Bucket>();
-    for (let index = priceToIndex(maxPrice); index <= priceToIndex(minPrice); index++) {
-      buckets.push(new Bucket(this.provider, this, index));
-    }
-
-    return buckets;
   }
 
   /**
@@ -646,61 +608,5 @@ export abstract class Pool {
    */
   getLPToken(tokenId: BigNumber) {
     return new LPToken(this.provider, tokenId);
-  }
-
-  /**
-   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
-   * @param signer address to redeem LP
-   * @param bucketIndices array of bucket indices to withdraw liquidity from
-   * @returns promise to transaction
-   */
-  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
-    const signerAddress = await signer.getAddress();
-    const callData: Array<CallData> = [];
-
-    // get buckets
-    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
-    const buckets = await Promise.all(bucketPromises);
-
-    // get bucket details
-    const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
-    const bucketStatuses = await Promise.all(bucketStatusPromises);
-
-    // determine lender's LP balance
-    const lpBalancePromises = bucketIndices.map(bucketIndex =>
-      lenderInfo(this.contract, signerAddress, bucketIndex)
-    );
-    const lpBalances = await Promise.all(lpBalancePromises);
-
-    for (let i = 0; i < bucketIndices.length; ++i) {
-      const [lpBalance] = lpBalances[i];
-      const bucketStatus = bucketStatuses[i];
-      const bucketIndex = bucketIndices[i];
-
-      // if there is any quote token in the bucket, redeem LP for deposit first
-      if (lpBalance && bucketStatus.deposit.gt(0)) {
-        callData.push({
-          methodName: 'removeQuoteToken',
-          args: [constants.MaxUint256, bucketIndex],
-        });
-      }
-
-      const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
-
-      // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
-      // arbitrary future block where the TX will be processed.
-      const withdrawCollateral =
-        (bucketStatus.deposit.eq(0) || depositWithdrawnEstimate.gt(bucketStatus.deposit)) &&
-        bucketStatus.collateral.gt(0);
-
-      if (withdrawCollateral) {
-        callData.push({
-          methodName: 'removeCollateral',
-          args: [constants.MaxUint256, bucketIndex],
-        });
-      }
-    }
-
-    return this.multicall(signer, callData);
   }
 }

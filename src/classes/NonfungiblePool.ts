@@ -12,8 +12,10 @@ import {
   repayDebt,
 } from '../contracts/erc721-pool';
 import { Pool } from './Pool';
-import { Address, Signer, SignerOrProvider } from '../types';
+import { Address, SdkError, Signer, SignerOrProvider } from '../types';
 import { getExpiry } from '../utils/time';
+import { priceToIndex } from '../utils/pricing';
+import { NonfungibleBucket } from './NonfungibleBucket';
 
 class NonfungiblePool extends Pool {
   isSubset: boolean;
@@ -163,6 +165,42 @@ class NonfungiblePool extends Pool {
       sender,
       limitIndex ?? MAX_FENWICK_INDEX
     );
+  }
+
+  /**
+   * @param bucketIndex fenwick index of the desired bucket
+   * @returns {@link NonfungibleBucket} modeling bucket at specified index
+   */
+  getBucketByIndex(bucketIndex: number) {
+    const bucket = new NonfungibleBucket(this.provider, this, bucketIndex);
+    return bucket;
+  }
+
+  /**
+   * @param price price within range supported by Ajna
+   * @returns {@link NonfungibleBucket} modeling bucket at nearest to specified price
+   */
+  getBucketByPrice(price: BigNumber) {
+    const bucketIndex = priceToIndex(price);
+    // priceToIndex should throw upon invalid price
+    const bucket = new NonfungibleBucket(this.provider, this, bucketIndex);
+    return bucket;
+  }
+
+  /**
+   * @param minPrice lowest desired price
+   * @param maxPrice highest desired price
+   * @returns array of {@link NonfungibleBucket}s between specified prices
+   */
+  getBucketsByPriceRange(minPrice: BigNumber, maxPrice: BigNumber) {
+    if (minPrice.gt(maxPrice)) throw new SdkError('maxPrice must exceed minPrice');
+
+    const buckets = new Array<NonfungibleBucket>();
+    for (let index = priceToIndex(maxPrice); index <= priceToIndex(minPrice); index++) {
+      buckets.push(new NonfungibleBucket(this.provider, this, index));
+    }
+
+    return buckets;
   }
 }
 
