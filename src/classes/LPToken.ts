@@ -60,28 +60,24 @@ export class LPToken {
   ): Promise<WrappedTransaction> {
     const poolContract = pool.connect(signer);
 
-    try {
-      for (const index of indexes) {
-        const allowance = await lpAllowance(
-          poolContract,
-          index,
-          this.contractPositionManager.address,
-          await signer.getAddress()
-        );
-        const [lpBalance] = await lenderInfo(
-          poolContract,
-          this.contractPositionManager.address,
-          index
-        );
-        if (allowance.lt(lpBalance)) {
-          throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}}`);
-        }
+    for (const index of indexes) {
+      const allowance = await lpAllowance(
+        poolContract,
+        index,
+        this.contractPositionManager.address,
+        await signer.getAddress()
+      );
+      const [lpBalance] = await lenderInfo(
+        poolContract,
+        this.contractPositionManager.address,
+        index
+      );
+      if (allowance.lt(lpBalance)) {
+        throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}`);
       }
-
-      return memorializePositions(signer, pool.address, this.tokenId, indexes, overrides);
-    } catch (error: any) {
-      throw new SdkError(error.message, error);
     }
+
+    return memorializePositions(signer, pool.address, this.tokenId, indexes, overrides);
   }
 
   /**
@@ -107,19 +103,17 @@ export class LPToken {
     indexes: number[],
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
-    try {
-      if (indexes.length === 0) {
-        throw new SdkError(`No indexes in position for token id: ${this.tokenId}`);
-      }
-
-      for (const index of indexes) {
-        await this.isIndexInPosition(index, this.tokenId);
-      }
-
-      return await redeemPositions(signer, pool.address, this.tokenId, indexes, overrides);
-    } catch (error: any) {
-      throw new SdkError(error.message, error);
+    if (indexes.length === 0) {
+      throw new SdkError(`No indexes in position for token id: ${this.tokenId}`);
     }
+
+    for (const index of indexes) {
+      if (!(await this.isIndexInPosition(index, this.tokenId))) {
+        throw new SdkError(`Index ${index} is not in position for token id: ${this.tokenId}`);
+      }
+    }
+
+    return await redeemPositions(signer, pool.address, this.tokenId, indexes, overrides);
   }
 
   /**

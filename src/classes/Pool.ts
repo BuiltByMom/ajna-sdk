@@ -169,23 +169,23 @@ export abstract class Pool {
    * approve this pool to manage Ajna token
    * @param signer pool user
    * @param allowance approval amount (or MaxUint256)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async ajnaApprove(signer: Signer, allowance: BigNumber) {
-    return await approve(signer, this.poolAddress, this.ajnaAddress, allowance);
+    return approve(signer, this.poolAddress, this.ajnaAddress, allowance);
   }
 
   /**
    * approve this pool to manage quote token
    * @param signer pool user
    * @param allowance normalized approval amount (or MaxUint256)
-   * @returns transaction
+   * @returns promise to transaction
    */
   async quoteApprove(signer: Signer, allowance: BigNumber) {
     const denormalizedAllowance = allowance.eq(constants.MaxUint256)
       ? allowance
       : allowance.div(await quoteTokenScale(this.contract));
-    return await approve(signer, this.poolAddress, this.quoteAddress, denormalizedAllowance);
+    return approve(signer, this.poolAddress, this.quoteAddress, denormalizedAllowance);
   }
 
   /**
@@ -272,12 +272,12 @@ export abstract class Pool {
    * enables signer to bundle transactions together atomically in a single request
    * @param signer consumer initiating transactions
    * @param callData array of transactions to sign and submit
-   * @returns transaction
+   * @returns promise to transaction
    */
   async multicall(signer: Signer, callData: Array<CallData>) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await multicall(contractPoolWithSigner, callData);
+    return multicall(contractPoolWithSigner, callData);
   }
 
   /**
@@ -293,7 +293,7 @@ export abstract class Pool {
    * @param price price within range supported by Ajna
    * @returns {@link Bucket} modeling bucket at nearest to specified price
    */
-  async getBucketByPrice(price: BigNumber) {
+  getBucketByPrice(price: BigNumber) {
     const bucketIndex = priceToIndex(price);
     // priceToIndex should throw upon invalid price
     const bucket = new Bucket(this.provider, this, bucketIndex);
@@ -311,7 +311,7 @@ export abstract class Pool {
 
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
-    return await increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
+    return increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
   }
 
   /**
@@ -479,12 +479,25 @@ export abstract class Pool {
     return wmul(bondFactor, borrowerDebt);
   }
 
+  /**
+   * initiates a liquidation of a loan
+   * @param signer kicker
+   * @param borrowerAddress identifies the loan to liquidate
+   * @param limitIndex reverts if neutral price of loan drops below this bucket before TX processed
+   * @returns promise to transaction
+   */
   async kick(signer: Signer, borrowerAddress: Address, limitIndex: number = MAX_FENWICK_INDEX) {
     const contractPoolWithSigner = this.contract.connect(signer);
 
-    return await kick(contractPoolWithSigner, borrowerAddress, limitIndex);
+    return kick(contractPoolWithSigner, borrowerAddress, limitIndex);
   }
 
+  /**
+   * checks whether threshold price of a loan is currently above the LUP;
+   * does NOT estimate whether it would be profitable to liquidate the loan
+   * @param borrowerAddress identifies the loan to check
+   * @returns true if loan may be liquidated, otherwise false
+   */
   async isKickable(borrowerAddress: Address) {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
@@ -521,12 +534,12 @@ export abstract class Pool {
    * called by kickers to withdraw liquidation bond from one or more auctions kicked
    * @param signer kicker
    * @param maxAmount optional amount of bond to withdraw; defaults to all
-   * @returns transaction
+   * @returns promise to transaction
    */
   async withdrawBonds(signer: Signer, maxAmount: BigNumber = constants.MaxUint256) {
     const contractPoolWithSigner = this.contract.connect(signer);
     const recipient = await signer.getAddress();
-    return await withdrawBonds(contractPoolWithSigner, recipient, maxAmount);
+    return withdrawBonds(contractPoolWithSigner, recipient, maxAmount);
   }
 
   /**
@@ -560,7 +573,7 @@ export abstract class Pool {
    */
   async updateInterest(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
-    return await updateInterest(contractPoolWithSigner);
+    return updateInterest(contractPoolWithSigner);
   }
 
   /**
@@ -576,10 +589,21 @@ export abstract class Pool {
     );
   }
 
+  /**
+   * create a new empty LP token for the purpose of memorializing lender position(s)
+   * @param signer lender
+   * @returns promise to transaction
+   */
   async mintLPToken(signer: Signer) {
     return mint(signer, await signer.getAddress(), this.poolAddress, ERC20_NON_SUBSET_HASH);
   }
 
+  /**
+   * burn an empty LP token which has already been redeemed for LP in all buckets
+   * @param signer LP token holder
+   * @param tokenId identifies the empty token to burn
+   * @returns promise to transaction
+   */
   async burnLPToken(signer: Signer, tokenId: BigNumber) {
     return burn(signer, tokenId, this.poolAddress);
   }
@@ -594,6 +618,11 @@ export abstract class Pool {
     return revokeLPTransferors(signer, this.contract, [addr]);
   }
 
+  /**
+   * returns an instance to an existing LP token
+   * @param tokenId identifies the token
+   * @returns LPToken instance
+   */
   getLPToken(tokenId: BigNumber) {
     return new LPToken(this.provider, tokenId);
   }
@@ -602,7 +631,7 @@ export abstract class Pool {
    * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
    * @param signer address to redeem LP
    * @param bucketIndices array of bucket indices to withdraw liquidity from
-   * @returns transaction
+   * @returns promise to transaction
    */
   async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
     const signerAddress = await signer.getAddress();
@@ -651,6 +680,6 @@ export abstract class Pool {
       }
     }
 
-    return await this.multicall(signer, callData);
+    return this.multicall(signer, callData);
   }
 }
