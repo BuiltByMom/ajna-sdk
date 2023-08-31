@@ -335,7 +335,7 @@ export abstract class Pool {
 
     for (let i = 0; i < allowances.length; ++i) {
       const allowance = allowances[i];
-      const [balance] = balances[i];
+      const balance = balances[i][0];
       if (allowance.lt(balance)) {
         return false;
       }

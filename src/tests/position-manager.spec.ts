@@ -85,7 +85,7 @@ describe('LP Token and PositionManager', () => {
     let response = await pool.increaseLPAllowance(signerLender, [bucketIndex], [amount]);
     await submitAndVerifyTransaction(response);
     // Approve position manager to transfer LP token on behalf of signerLender
-    response = await pool.approvePositionManagerLPTransferor(signerLender);
+    response = await pool.approvePositionManagerLPTransferor(signerLender, signerLender.address);
     await submitAndVerifyTransaction(response);
 
     // check in position (should still be false)
@@ -130,7 +130,7 @@ describe('LP Token and PositionManager', () => {
     const lpToken = pool.getLPToken(tokenId);
     tx = await pool.increaseLPAllowance(signerLender, [fromIndex], [amount]);
     await submitAndVerifyTransaction(tx);
-    tx = await pool.approvePositionManagerLPTransferor(signerLender);
+    tx = await pool.approvePositionManagerLPTransferor(signerLender, signerLender.address);
     await submitAndVerifyTransaction(tx);
     tx = await lpToken.memorializePositions(signerLender, pool.contract, [fromIndex]);
     await submitAndVerifyTransaction(tx);
@@ -173,7 +173,10 @@ describe('LP Token and PositionManager', () => {
     const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
     await submitAndVerifyTransaction(response);
 
-    const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
+    const approveTx = await pool.approvePositionManagerLPTransferor(
+      signerLender,
+      signerLender.address
+    );
     const approveReceipt = await submitAndVerifyTransaction(approveTx);
     expect(approveReceipt).toHaveProperty('logs');
 
@@ -222,7 +225,10 @@ describe('LP Token and PositionManager', () => {
     const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
     await submitAndVerifyTransaction(response);
 
-    const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
+    const approveTx = await pool.approvePositionManagerLPTransferor(
+      signerLender,
+      signerLender.address
+    );
     await submitAndVerifyTransaction(approveTx);
 
     const memorializeTx = await lpToken.memorializePositions(signerLender, pool.contract, indices);
