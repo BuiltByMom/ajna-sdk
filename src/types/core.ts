@@ -30,6 +30,8 @@ export interface WrappedTransaction {
   verifyAndSubmit(confirmations?: number): Promise<TransactionReceipt>;
   verifyAndSubmitResponse(): Promise<TransactionResponse>;
   getEventLogs(receipt: TransactionReceipt): Map<string, Array<EventLog>>;
+  from: string;
+  to: string;
 }
 
 export interface CallData {

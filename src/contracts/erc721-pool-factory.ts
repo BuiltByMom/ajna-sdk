@@ -1,17 +1,16 @@
 import { ethers, BigNumber, Signer, Contract } from 'ethers';
-import erc721PoolFactoryAbi from '../abis/ERC721PoolFactory.json';
 import { Config } from '../classes/Config';
-import { Address, SignerOrProvider, TransactionOverrides } from '../types';
-import checksumAddress from '../utils/checksum-address';
+import {
+  Address,
+  ERC721PoolFactory__factory,
+  SignerOrProvider,
+  TransactionOverrides,
+} from '../types';
 import { createTransaction } from '../utils';
 import { keccak256 } from 'ethers/lib/utils';
 
-export const getErc721PoolFactoryContract = (provider: SignerOrProvider): Contract => {
-  return new ethers.Contract(
-    checksumAddress(Config.erc721PoolFactory),
-    erc721PoolFactoryAbi,
-    provider
-  );
+export const getErc721PoolFactoryContract = (provider: SignerOrProvider) => {
+  return ERC721PoolFactory__factory.connect(Config.erc721PoolFactory, provider);
 };
 
 export async function deployNFTPool(
@@ -40,7 +39,7 @@ export async function getDeployedPools(
   quoteAddress: Address,
   subset: string
 ): Promise<Address> {
-  const contract: Contract = getErc721PoolFactoryContract(provider);
+  const contract = getErc721PoolFactoryContract(provider);
 
   return await contract.deployedPools(subset, collateralAddress, quoteAddress);
 }
@@ -55,7 +54,7 @@ export function getSubsetHash(tokensIds: Array<BigNumber>): string {
     // check the array of token ids is sorted in ascending order
     // revert if not sorted
     for (let i = 0; i < tokensIds.length - 1; i++) {
-      if (tokensIds[i] >= tokensIds[i + 1]) throw new Error('Token ids must be sorted');
+      if (tokensIds[i].gte(tokensIds[i + 1])) throw new Error('Token ids must be sorted');
     }
     const abi = ethers.utils.defaultAbiCoder;
 
