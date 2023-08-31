@@ -1,8 +1,9 @@
-import { constants, providers } from 'ethers';
+import { constants, Wallet, providers, BigNumber } from 'ethers';
 import { expect } from '@jest/globals';
 import { AjnaSDK } from '../classes/AjnaSDK';
-import { FungiblePool } from '../classes/FungiblePool';
-import { getErc20Contract } from '../contracts/erc20';
+import { NonfungiblePool } from '../classes/NonfungiblePool';
+// import { getErc20Contract } from '../contracts/erc20';
+import { balanceOf, getNftContract } from '../contracts/erc721';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 import { AuctionStatus } from '../types';
@@ -14,101 +15,109 @@ import { getBlockTime } from '../utils/time';
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
+const TDUCK_ADDRESS = '0xaf36Ce3FD234ba81A9d4676CD09fC6700f087146';
 const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
-const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
-const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
+const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
+const BORROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('Liquidations', () => {
+describe('ERC721 pool liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
   const signerBorrower = addAccountFromKey(BORROWER_KEY, provider);
   const signerBorrower2 = addAccountFromKey(BORROWER2_KEY, provider);
   const signerDeployer = addAccountFromKey(DEPLOYER_KEY, provider);
-  const TESTB = getErc20Contract(TESTB_ADDRESS, provider);
-  // const TDAI = getErc20Contract(TDAI_ADDRESS, provider);
-  let pool: FungiblePool = {} as FungiblePool;
+  const TDUCK = getNftContract(TDUCK_ADDRESS, provider);
+  const testTokenIds = [1, 2, 3, 4, 5];
+  let poolDuckDai: NonfungiblePool;
   let snapshotId: number;
   let originalSnapshot: number;
+
+  const fundAndApproveCollateral = async (
+    signer: Wallet,
+    pool: NonfungiblePool,
+    tokenIds: Array<number>
+  ) => {
+    for (let i = 0; i < tokenIds.length; i++) {
+      const tokenId = tokenIds[i];
+
+      // fund borrower
+      const receipt = await TDUCK.connect(signerDeployer).transferFrom(
+        signerDeployer.address,
+        signer.address,
+        tokenId
+      );
+      expect(receipt.transactionHash).not.toBe('');
+
+      // approve
+      const tx = await pool.collateralApprove(signer, tokenId);
+      await submitAndVerifyTransaction(tx);
+    }
+  };
 
   beforeAll(async () => {
     // take snapshot before all tests
     originalSnapshot = await takeSnapshot(provider);
 
-    pool = await ajna.fungiblePoolFactory.getPool(TESTB_ADDRESS, TDAI_ADDRESS);
+    poolDuckDai = await ajna.nonfungiblePoolFactory.getPool(TDUCK_ADDRESS, [], TDAI_ADDRESS);
 
     // approve
-    let tx = await pool.quoteApprove(signerLender, toWad(40));
+    let tx = await poolDuckDai.quoteApprove(signerLender, toWad(60000));
     await submitAndVerifyTransaction(tx);
 
-    // add 9 quote tokens to 2001 bucket
-    const higherBucket = await pool.getBucketByIndex(2001);
-    let quoteAmount = toWad(9);
+    // add 21,000 quote tokens to 2001 bucket
+    const higherBucket = await poolDuckDai.getBucketByIndex(2001);
+    let quoteAmount = toWad(21000);
     tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
-    // add 10 quote tokens to 2500 bucket (price 3863)
-    const lowerBucket = await pool.getBucketByIndex(2500);
-    quoteAmount = toWad(10);
+    // add 5000 quote tokens to 2500 bucket
+    const lowerBucket = await poolDuckDai.getBucketByIndex(2500);
+    quoteAmount = toWad(5000);
     tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
-    // fund borrower2
-    let receipt = await TESTB.connect(signerDeployer).transfer(
-      signerBorrower2.address,
-      toWad('10')
-    );
-    expect(receipt.transactionHash).not.toBe('');
-
     // draw debt as borrower2
     const bucketIndex = 2001;
-    let amountToBorrow = toWad(5);
-    let collateralToPledge = toWad(0.0003);
-
-    tx = await pool.collateralApprove(signerBorrower2, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
-
-    tx = await pool.drawDebt(signerBorrower2, amountToBorrow, collateralToPledge);
+    let amountToBorrow = toWad(18000);
+    const collateralToPledge = 2;
+    let tokenIdsToPledge = testTokenIds.slice(0, collateralToPledge);
+    await fundAndApproveCollateral(signerBorrower2, poolDuckDai, tokenIdsToPledge);
+    tx = await poolDuckDai.drawDebt(signerBorrower2, amountToBorrow, tokenIdsToPledge);
     await submitAndVerifyTransaction(tx);
 
     // check pool lup index
-    let stats = await pool.getStats();
-    let lupIndex = await pool.depositIndex(stats.debt);
+    let stats = await poolDuckDai.getStats();
+    let lupIndex = await poolDuckDai.depositIndex(stats.debt);
     expect(+lupIndex).toBe(bucketIndex);
 
     // check loan, make sure borrower2 threshold price is higher than lup price
-    let bucket = await pool.getBucketByIndex(lupIndex);
+    let bucket = await poolDuckDai.getBucketByIndex(lupIndex);
     let lupPrice = bucket.price;
-    const loan = await pool.getLoan(await signerBorrower2.getAddress());
+    const loan = await poolDuckDai.getLoan(await signerBorrower2.getAddress());
 
     expect(lupPrice).toBeDefined();
     expect(lupPrice && lupPrice.gt(loan.thresholdPrice)).toBeTruthy();
 
-    const isKickable = await pool.isKickable(signerBorrower2.address);
+    const isKickable = await poolDuckDai.isKickable(signerBorrower2.address);
     expect(isKickable).toBeFalsy();
 
-    // fund other borrower
-    receipt = await TESTB.connect(signerDeployer).transfer(signerBorrower.address, toWad('10'));
-    expect(receipt.transactionHash).not.toBe('');
-
-    // draw debt as another borrower to pull lup down
-    amountToBorrow = toWad(10);
-    collateralToPledge = toWad(1);
-    tx = await pool.collateralApprove(signerBorrower, collateralToPledge);
-    await submitAndVerifyTransaction(tx);
-    tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge);
+    // draw debt as borrower1 to pull the lup down
+    amountToBorrow = toWad(6000);
+    tokenIdsToPledge = testTokenIds.slice(collateralToPledge);
+    await fundAndApproveCollateral(signerBorrower, poolDuckDai, tokenIdsToPledge);
+    tx = await poolDuckDai.drawDebt(signerBorrower, amountToBorrow, tokenIdsToPledge);
     await submitAndVerifyTransaction(tx);
 
     // check pool lup index again, make sure lup went below bucket 2001
-    stats = await pool.getStats();
-    lupIndex = await pool.depositIndex(stats.debt);
+    stats = await poolDuckDai.getStats();
+    lupIndex = await poolDuckDai.depositIndex(stats.debt);
     expect(+lupIndex).toBeGreaterThan(bucketIndex);
 
     // check loan again, make sure borrower2 threshold price is lower than lup price
-    bucket = await pool.getBucketByIndex(lupIndex);
+    bucket = await poolDuckDai.getBucketByIndex(lupIndex);
     lupPrice = bucket.price;
 
     expect(lupPrice).toBeDefined();
@@ -129,10 +138,10 @@ describe('Liquidations', () => {
   });
 
   it('should get multiple loans', async () => {
-    const loan1 = await pool.getLoan(signerBorrower.address);
-    const loan2 = await pool.getLoan(signerBorrower2.address);
+    const loan1 = await poolDuckDai.getLoan(signerBorrower.address);
+    const loan2 = await poolDuckDai.getLoan(signerBorrower2.address);
 
-    const loans = await pool.getLoans([signerBorrower.address, signerBorrower2.address]);
+    const loans = await poolDuckDai.getLoans([signerBorrower.address, signerBorrower2.address]);
     expect(loans.size).toEqual(2);
 
     const loan1multi = loans.get(signerBorrower.address)!;
@@ -155,28 +164,28 @@ describe('Liquidations', () => {
   });
 
   it('should use kick and isKickable', async () => {
-    let isKickable = await pool.isKickable(signerBorrower.address);
+    let isKickable = await poolDuckDai.isKickable(signerBorrower.address);
     expect(isKickable).toBeFalsy();
-    let liquidation = pool.getLiquidation(signerBorrower.address);
+    let liquidation = poolDuckDai.getLiquidation(signerBorrower.address);
     let auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isTakeable).toBeFalsy();
 
-    isKickable = await pool.isKickable(signerBorrower2.address);
+    isKickable = await poolDuckDai.isKickable(signerBorrower2.address);
     expect(isKickable).toBeTruthy();
-    liquidation = pool.getLiquidation(signerBorrower2.address);
+    liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isTakeable).toBeFalsy();
 
-    const tx = await pool.kick(signerLender, signerBorrower2.address);
+    const tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
   });
 
   it('should use lenderKick', async () => {
-    const bucket = await pool.getBucketByIndex(2001);
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
 
     // check state prior to the lenderKick
-    const loan = await pool.getLoan(signerBorrower2.address);
-    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    const loan = await poolDuckDai.getLoan(signerBorrower2.address);
+    let kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
@@ -184,15 +193,16 @@ describe('Liquidations', () => {
     await submitAndVerifyTransaction(tx);
 
     // ensure the liquidation bond estimate was accurate
-    kickerInfo = await pool.kickerInfo(signerLender.address);
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    expect(loan.liquidationBond.gt(0)).toBe(true);
     expect(kickerInfo.locked).toBeBetween(
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
     );
 
     // confirm liquidation locked bucket is conveyed
-    const prices = await pool.getPrices();
+    const prices = await poolDuckDai.getPrices();
     expect(prices.hpb).toEqual(indexToPrice(2001));
     expect(prices.hpbIndex).toEqual(2001);
     expect(prices.llb).toEqual(prices.hpb);
@@ -203,97 +213,185 @@ describe('Liquidations', () => {
     const bucketIndex = 2001;
 
     // kick first
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
-    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
     await timeJump(provider, jumpTimeSeconds);
-
-    // take
-    tx = await liquidation.arbTake(signerLender, bucketIndex);
-    await submitAndVerifyTransaction(tx);
-
-    const statuses = await pool.getLiquidationStatuses([signerBorrower2.address]);
+    const statuses = await poolDuckDai.getLiquidationStatuses([signerBorrower2.address]);
     expect(statuses.size).toEqual(1);
     const auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
     const blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
-    expect(auctionStatus.collateral).toEqual(toWad(0));
-    expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeGreaterThan(0);
+    expect(auctionStatus.collateral).toEqual(toWad(2));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
-    expect(auctionStatus.isSettleable).toBe(true);
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.isSettleable).toBe(false);
+
+    // take
+    tx = await liquidation.arbTake(signerLender, bucketIndex);
+    await submitAndVerifyTransaction(tx);
   });
 
   it('should use deposit take', async () => {
-    const bucket = await pool.getBucketByIndex(2001);
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
     const allowance = 100000000;
-    const quoteAmount = 10;
+    const quoteAmount = 30000;
 
     // kick first
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
-    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
 
-    // wait 8 hours
+    // check auction status after kicking and before bucketTake
+    expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
+
+    // wait 8 hours and check auction status
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
     await timeJump(provider, jumpTimeSeconds);
     auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
-    expect(auctionStatus.collateral).toEqual(toWad(0.0003));
-    expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeGreaterThan(0);
+    expect(auctionStatus.collateral).toEqual(toWad(2));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity
-    tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
 
-    // take
+    // deposit take
     tx = await liquidation.depositTake(signerLender, bucket.index);
+    const receipt = await submitAndVerifyTransaction(tx);
+    const bucketTakeEventLogs = tx.getEventLogs(receipt).get('BucketTake')![0];
+    const collateral = bucketTakeEventLogs.args['collateral'].toString();
+    console.log('collateral in event', collateral);
+    expect(BigInt(collateral)).toBeGreaterThan(0);
+  });
+
+  it('should use mergeOrRemoveCollateral', async () => {
+    const bucket = await poolDuckDai.getBucketByIndex(2001);
+    const allowance = 100000000;
+    const quoteAmount = 30000;
+
+    // kick first
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
+    let auctionStatus = await liquidation.getStatus();
+    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
+
+    // check auction status after kicking and before bucketTake
+    expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
+
+    // wait 8 hours and check auction status
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
+
+    // lender adds liquidity
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    // deposit take
+    tx = await liquidation.depositTake(signerLender, bucket.index);
+    const receipt = await submitAndVerifyTransaction(tx);
+    const bucketTakeEventLogs = tx.getEventLogs(receipt).get('BucketTake')![0];
+    const collateral = bucketTakeEventLogs.args['collateral'].toString();
+    console.log('collateral in event', collateral);
+    expect(BigInt(collateral)).toBeGreaterThan(0);
+
+    // mergeOrRemoveCollateral
+    tx = await poolDuckDai.mergeOrRemoveCollateral(signerLender, [bucket.index], 1, 2001);
+    await submitAndVerifyTransaction(tx);
+
+    // check token balance after merge and remove
+    expect((await balanceOf(signerLender, signerLender.address, TDUCK_ADDRESS)).toNumber()).toEqual(
+      1
+    );
   });
 
   it('should use take', async () => {
     // kick first
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
-    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
     const jumpTimeSeconds = 12 * 3600; // 12 hours
     await timeJump(provider, jumpTimeSeconds);
 
-    // take
-    tx = await liquidation.take(signerLender);
+    // take some of the collateral
+    tx = await liquidation.take(signerLender, BigNumber.from(1));
     await submitAndVerifyTransaction(tx);
 
     // should not be able to withdraw bond prior to settlement
     await expect(async () => {
-      tx = await pool.withdrawBonds(signerLender);
+      tx = await poolDuckDai.withdrawBonds(signerLender);
       await tx.verify();
     }).rejects.toThrow('InsufficientLiquidity()');
-  });
 
-  it('should use settle', async () => {
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    // check auction status after take
+    let statuses = await poolDuckDai.getLiquidationStatuses([signerBorrower2.address]);
+    expect(statuses.size).toEqual(1);
+    let auctionStatus: AuctionStatus = statuses.get(signerBorrower2.address)!;
+    let blockTime = await getBlockTime(signerBorrower2);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
+    expect(auctionStatus.collateral).toEqual(toWad(1));
+    expect(auctionStatus.collateral.gt(toWad(0)) && auctionStatus.collateral.lt(toWad(2))).toBe(
+      true
+    );
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.isTakeable).toBe(true);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(7200), toWad(10000));
+    expect(auctionStatus.isSettleable).toBe(false);
+
+    // wait 50 hours
+    const jumpTimeSecondsTwo = 50 * 60 * 60; // 50 hours
+    await timeJump(provider, jumpTimeSecondsTwo);
+
+    // take the remaining collateral
+    tx = await liquidation.take(signerLender, BigNumber.from(1));
     await submitAndVerifyTransaction(tx);
 
-    let loan = await pool.getLoan(signerBorrower2.address);
+    statuses = await poolDuckDai.getLiquidationStatuses([signerBorrower2.address]);
+    expect(statuses.size).toEqual(1);
+    auctionStatus = statuses.get(signerBorrower2.address)!;
+    blockTime = await getBlockTime(signerBorrower2);
+    expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
+    expect(auctionStatus.collateral).toEqual(toWad(0));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isSettleable).toBe(true);
+  });
+
+  // settle liquidation after 72 hours have passed with no Takes
+  it('should use settle', async () => {
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
+    await submitAndVerifyTransaction(tx);
+
+    let loan = await poolDuckDai.getLoan(signerBorrower2.address);
     expect(loan.isKicked).toBe(true);
-    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
     let blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
@@ -316,26 +414,26 @@ describe('Liquidations', () => {
     expect(auctionStatus.kickTime.valueOf() / 1000 + three_days).toBeLessThanOrEqual(blockTime);
 
     // kicker's liquidation bond remains locked before settle
-    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    let kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.gt(constants.Zero)).toBe(true);
 
     tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
-    loan = await pool.getLoan(signerBorrower2.address);
+    loan = await poolDuckDai.getLoan(signerBorrower2.address);
     expect(loan.isKicked).toBe(false);
 
     // kicker's liquidation bond becomes claimable
-    kickerInfo = await pool.kickerInfo(signerLender.address);
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.gt(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
     // withdraw liquidation bond
-    tx = await pool.withdrawBonds(signerLender);
+    tx = await poolDuckDai.withdrawBonds(signerLender);
     await submitAndVerifyTransaction(tx);
 
     // kicker's liquidation bond has been claimed
-    kickerInfo = await pool.kickerInfo(signerLender.address);
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
@@ -346,12 +444,12 @@ describe('Liquidations', () => {
   });
 
   it('should use settle before 72 hours', async () => {
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    let tx = await poolDuckDai.kick(signerLender, signerBorrower2.address);
     await submitAndVerifyTransaction(tx);
 
-    let loan = await pool.getLoan(signerBorrower2.address);
+    let loan = await poolDuckDai.getLoan(signerBorrower2.address);
     expect(loan.isKicked).toBe(true);
-    const liquidation = pool.getLiquidation(signerBorrower2.address);
+    const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
@@ -370,12 +468,12 @@ describe('Liquidations', () => {
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 
-    // take
-    tx = await liquidation.take(signerLender);
+    // take all collateral
+    tx = await liquidation.take(signerLender, BigNumber.from(2));
     await submitAndVerifyTransaction(tx);
 
     // kicker's liquidation bond remains locked before settle
-    let kickerInfo = await pool.kickerInfo(signerLender.address);
+    let kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.gt(constants.Zero)).toBe(true);
 
@@ -388,20 +486,20 @@ describe('Liquidations', () => {
     // settle is called where debt != 0 and collateral == 0
     tx = await liquidation.settle(signerLender);
     await submitAndVerifyTransaction(tx);
-    loan = await pool.getLoan(signerBorrower2.address);
+    loan = await poolDuckDai.getLoan(signerBorrower2.address);
     expect(loan.isKicked).toBe(false);
 
     // kicker's liquidation bond becomes claimable
-    kickerInfo = await pool.kickerInfo(signerLender.address);
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.gt(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 
     // withdraw liquidation bond
-    tx = await pool.withdrawBonds(signerLender);
+    tx = await poolDuckDai.withdrawBonds(signerLender);
     await submitAndVerifyTransaction(tx);
 
     // kicker's liquidation bond has been claimed
-    kickerInfo = await pool.kickerInfo(signerLender.address);
+    kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(kickerInfo.locked.eq(constants.Zero)).toBe(true);
 

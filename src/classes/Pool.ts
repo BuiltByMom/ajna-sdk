@@ -28,6 +28,7 @@ import {
 import { burn, getPositionManagerContract, mint } from '../contracts/position-manager';
 import {
   Address,
+  AuctionStatus,
   CallData,
   Loan,
   PoolInfoUtils,
@@ -41,6 +42,8 @@ import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
 import { LPToken } from './LPToken';
+import { Liquidation } from './Liquidation';
+import { getBlockTime } from '../utils/time';
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -430,6 +433,53 @@ export abstract class Pool {
       });
     }
 
+    return retval;
+  }
+
+  /**
+   * @param borrowerAddress identifies the loan under liquidation
+   * @returns {@link Liquidation} models liquidation of a specific loan
+   */
+  getLiquidation(borrowerAddress: Address) {
+    return new Liquidation(this.provider, this.contract, borrowerAddress);
+  }
+
+  /**
+   * retrieve statuses for multiple liquidations from the PoolInfoUtils contract
+   * @param borrowerAddresses identifies loans under liquidation
+   * @returns map of AuctionStatuses, indexed by borrower address
+   */
+  async getLiquidationStatuses(
+    borrowerAddresses: Array<Address>
+  ): Promise<Map<Address, AuctionStatus>> {
+    // assemble calldata for requests
+    const calls = [];
+    for (const loan of borrowerAddresses) {
+      calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
+    }
+
+    // perform the multicall
+    const response: any[][] = await this.ethcallProvider.all(calls);
+
+    // prepare return value
+    const retval = new Map<Address, AuctionStatus>();
+    for (let i = 0; i < response.length; ++i) {
+      const [kickTimestamp, collateral, debtToCover, isCollateralized, price, neutralPrice] =
+        response[i];
+
+      retval.set(
+        borrowerAddresses[i],
+        Liquidation._prepareAuctionStatus(
+          await getBlockTime(this.provider),
+          kickTimestamp,
+          collateral,
+          debtToCover,
+          isCollateralized,
+          price,
+          neutralPrice
+        )
+      );
+    }
     return retval;
   }
 
