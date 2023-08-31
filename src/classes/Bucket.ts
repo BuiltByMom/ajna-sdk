@@ -233,15 +233,11 @@ export class Bucket {
     return await this.pool.utils.contract.unutilizedDepositFeeRate(this.pool.poolAddress);
   }
 
-  // TODO: replace wmul * ONE_WAD as we don't want to maintain precision
-  // TODO: implement mulDiv for collateralToLP and quoteTokenToLP
-  // https://github.com/gabrielfu/solidity-math#muldiv
-  // https://ethereum.stackexchange.com/questions/106648/best-approach-to-replicate-a-complex-piece-of-solidity-code-in-javascript-typesc
+  // TODO: add 0 checks
   async estimateCollateralToLP(collateral: BigNumber): Promise<BigNumber> {
     // get bucket details
     const bucketStatus = await this.getStatus();
 
-    // TODO: take the depositFeeRate if below lup
     const bucketLP = bucketStatus.bucketLP;
     const lpForCollateral = muldiv(
       wadToUint(bucketLP),
@@ -251,21 +247,20 @@ export class Bucket {
     return BigNumber.from(lpForCollateral.toString());
   }
 
-  // TODO: replace wmul * ONE_WAD as we don't want to maintain precision
+  // TODO: add 0 checks
   async estimateQuoteTokenToLP(quoteToken: BigNumber): Promise<BigNumber> {
     // get bucket details
     const bucketStatus = await this.getStatus();
 
     // get pool prices and check if the bucket is below the lup
-    // TODO: check if this deposit will push below the lup
-    // const poolPrices = await this.pool.getPrices();
-    const depositFeeRate = await this.estimateDepositFeeRate();
-    const quoteTokensToEstimate = min(
-      quoteToken,
-      quoteToken.sub(wmul(quoteToken, ONE_WAD.sub(depositFeeRate)))
-    );
+    let feeTaken: BigNumber = toWad(0);
+    const poolPrices = await this.pool.getPrices();
+    if (this.index > poolPrices.lupIndex) {
+      const depositFeeRate = await this.estimateDepositFeeRate();
+      feeTaken = wmul(quoteToken, ONE_WAD.sub(depositFeeRate));
+    }
+    const quoteTokensToEstimate = quoteToken.sub(feeTaken);
 
-    // TODO: take the depositFeeRate if below lup
     const bucketLP = bucketStatus.bucketLP;
     const lpForQuoteTokens = muldiv(
       wadToUint(bucketLP),
@@ -275,7 +270,17 @@ export class Bucket {
     return BigNumber.from(lpForQuoteTokens.toString());
   }
 
-  // async estimateLPToQuoteToken(lp: BigNumber): Promise<BigNumber> {}
+  async estimateLPToQuoteToken(lpb: BigNumber, bucketLpb: BigNumber): Promise<BigNumber> {
+    // get bucket details
+    const bucketStatus = await this.getStatus();
+
+    const quoteTokensForLP = muldiv(
+      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price))),
+      wadToUint(lpb),
+      wadToUint(bucketLpb.mul(ONE_WAD))
+    );
+    return BigNumber.from(quoteTokensForLP.toString());
+  }
 
   async estimateDepositRequiredToWithdrawCollateral(
     collateral: BigNumber
@@ -283,16 +288,27 @@ export class Bucket {
     // get bucket details
     const bucketStatus = await this.getStatus();
 
-    // const signerAddress = await signer.address;
     const bucketCollateral = bucketStatus.collateral;
     if (collateral > bucketCollateral) return null;
 
     // estimate lp required for desired collateral
     const lpRequired = await this.estimateCollateralToLP(collateral);
 
-    // TODO: add existing lp balance to the new bucket balance? => create estimateLPToQuoteToken local utility function
-    // TODO: take deposit fee of combined amount
-    const quoteTokensRequired = await this.lpToQuoteTokens(lpRequired);
+    // estimate the quote tokens that will be required in order to have enough LPB for the collateral
+    let quoteTokensRequired = await this.estimateLPToQuoteToken(
+      lpRequired,
+      bucketStatus.bucketLP.add(lpRequired)
+    );
+
+    // if the bucket is below the lup, add the deposit fee to the required amount of quote tokens
+    let feeTaken: BigNumber = toWad(0);
+    const poolPrices = await this.pool.getPrices();
+    if (this.index > poolPrices.lupIndex) {
+      const depositFeeRate = await this.estimateDepositFeeRate();
+      feeTaken = wmul(quoteTokensRequired, ONE_WAD.sub(depositFeeRate));
+    }
+    quoteTokensRequired = quoteTokensRequired.add(feeTaken);
+
     return quoteTokensRequired;
   }
 
