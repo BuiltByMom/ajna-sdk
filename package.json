@@ -27,7 +27,7 @@
     "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\"",
     "prepublishOnly": "yarn build && find dist -type f -name '*.map' -exec rimraf {} +",
     "document": "typedoc src/index.ts",
-    "test": "jest --silent --runInBand",
+    "test": "jest --runInBand",
     "test:dev": "yarn test --watchAll",
     "testnet-admin": "npx ts-node ./testnet/admin",
     "typechain-abis": "typechain --target ethers-v5 --discriminate-types --out-dir src/types/contracts './src/abis/*.json'",
@@ -44,6 +44,7 @@
     "ethers": "^5.7.2",
     "expect": "^29.6.1",
     "mathjs": "^11.8.2",
+    "solidity-math": "^0.1.0",
     "typedoc": "^0.24.8"
   },
   "devDependencies": {

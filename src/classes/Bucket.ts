@@ -1,5 +1,5 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { MAX_FENWICK_INDEX } from '../constants';
+import { MAX_FENWICK_INDEX, ONE_WAD } from '../constants';
 import { multicall } from '../contracts/common';
 import {
   addQuoteToken,
@@ -15,12 +15,11 @@ import {
   bucketInfo,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { fromWad, toWad } from '../utils/numeric';
+import { fromWad, min, muldiv, toWad, wadToUint, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
 
-// TODO: should this be modified to handle different pool types?
 export interface BucketStatus {
   /* amount of quote token, including accrued interest, owed to the bucket */
   deposit: BigNumber;
@@ -225,6 +224,76 @@ export class Bucket {
       collateralRedeemable,
       depositWithdrawable,
     };
+  }
+
+  async estimateDepositFeeRate(): Promise<BigNumber> {
+    // current annualized rate divided by 365 (24 hours of interest), capped at 10%
+    // return Maths.min(Maths.wdiv(interestRate_, 365 * 1e18), 0.1 * 1e18);
+    // return min(wdiv(interestRate, toWad(365)), toWad(0.1))
+    return await this.pool.utils.contract.unutilizedDepositFeeRate(this.pool.poolAddress);
+  }
+
+  // TODO: replace wmul * ONE_WAD as we don't want to maintain precision
+  // TODO: implement mulDiv for collateralToLP and quoteTokenToLP
+  // https://github.com/gabrielfu/solidity-math#muldiv
+  // https://ethereum.stackexchange.com/questions/106648/best-approach-to-replicate-a-complex-piece-of-solidity-code-in-javascript-typesc
+  async estimateCollateralToLP(collateral: BigNumber): Promise<BigNumber> {
+    // get bucket details
+    const bucketStatus = await this.getStatus();
+
+    // TODO: take the depositFeeRate if below lup
+    const bucketLP = bucketStatus.bucketLP;
+    const lpForCollateral = muldiv(
+      wadToUint(bucketLP),
+      wadToUint(wmul(collateral, this.price)),
+      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price)))
+    );
+    return BigNumber.from(lpForCollateral.toString());
+  }
+
+  // TODO: replace wmul * ONE_WAD as we don't want to maintain precision
+  async estimateQuoteTokenToLP(quoteToken: BigNumber): Promise<BigNumber> {
+    // get bucket details
+    const bucketStatus = await this.getStatus();
+
+    // get pool prices and check if the bucket is below the lup
+    // TODO: check if this deposit will push below the lup
+    // const poolPrices = await this.pool.getPrices();
+    const depositFeeRate = await this.estimateDepositFeeRate();
+    const quoteTokensToEstimate = min(
+      quoteToken,
+      quoteToken.sub(wmul(quoteToken, ONE_WAD.sub(depositFeeRate)))
+    );
+
+    // TODO: take the depositFeeRate if below lup
+    const bucketLP = bucketStatus.bucketLP;
+    const lpForQuoteTokens = muldiv(
+      wadToUint(bucketLP),
+      wadToUint(quoteTokensToEstimate.mul(ONE_WAD)),
+      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price)))
+    );
+    return BigNumber.from(lpForQuoteTokens.toString());
+  }
+
+  // async estimateLPToQuoteToken(lp: BigNumber): Promise<BigNumber> {}
+
+  async estimateDepositRequiredToWithdrawCollateral(
+    collateral: BigNumber
+  ): Promise<BigNumber | null> {
+    // get bucket details
+    const bucketStatus = await this.getStatus();
+
+    // const signerAddress = await signer.address;
+    const bucketCollateral = bucketStatus.collateral;
+    if (collateral > bucketCollateral) return null;
+
+    // estimate lp required for desired collateral
+    const lpRequired = await this.estimateCollateralToLP(collateral);
+
+    // TODO: add existing lp balance to the new bucket balance? => create estimateLPToQuoteToken local utility function
+    // TODO: take deposit fee of combined amount
+    const quoteTokensRequired = await this.lpToQuoteTokens(lpRequired);
+    return quoteTokensRequired;
   }
 
   /**

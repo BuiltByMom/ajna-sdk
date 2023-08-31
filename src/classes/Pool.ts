@@ -610,4 +610,8 @@ export abstract class Pool {
   getLPToken(tokenId: BigNumber) {
     return new LPToken(this.provider, tokenId);
   }
+
+  // getPoolType(address: Address) {
+  //   // return this.poolInfoContractUtils.poolType(address);
+  // }
 }

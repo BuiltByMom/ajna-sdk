@@ -15,6 +15,19 @@ export class NonfungibleBucket extends Bucket {
     super(provider, pool, index);
   }
 
+  //   TODO: should this account for surplus amount? We need to also support the use case of mergeOrRemoveCollateral
+  //   /**
+  //    * Calculate the amount of tokenIds that can be redeemed in the bucket for a given quoteTokenAmount
+  //    * @param signer address to redeem LP
+  //    * @returns promise to transaction
+  //    */
+  //   async tokensForQuoteTokenAmount(signer: Signer, quoteTokenAmount: number): number {
+  //   }
+
+  //   async tokensAvailableToWithdraw(signer: Signer): number {
+  //     // get bucket collateral info
+  //   }
+
   /**
    * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
    * @param signer address to redeem LP
