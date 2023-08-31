@@ -15,7 +15,7 @@ export class NonfungibleBucket extends Bucket {
     super(provider, pool, index);
   }
 
-  async tokensAvailableToWithdraw(signer: Signer): Promise<number> {
+  async tokensAvailableToWithdraw(): Promise<number> {
     const bucketStatus = await this.getStatus();
     return wadToIntRoundingDown(bucketStatus.collateral);
   }

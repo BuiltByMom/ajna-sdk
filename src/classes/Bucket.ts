@@ -15,7 +15,7 @@ import {
   bucketInfo,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { fromWad, min, muldiv, toWad, wadToUint, wmul } from '../utils/numeric';
+import { fromWad, muldiv, toWad, wadToUint, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
@@ -274,6 +274,7 @@ export class Bucket {
     // get bucket details
     const bucketStatus = await this.getStatus();
 
+    // TODO: need to scale the bucket deposit?
     const quoteTokensForLP = muldiv(
       wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price))),
       wadToUint(lpb),
