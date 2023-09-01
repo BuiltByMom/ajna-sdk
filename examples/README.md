@@ -92,3 +92,25 @@ Now that the LUP has moved to 1886.9, the first borrower is undercollateralized 
 - `./lend.ts memorialize 23 2631` - move LP balance from above bucket into position NFT with tokenId 23
 - `./lend.ts redeem 23 2631` - move LP balance from position NFT back into the bucket
 - `./lend.ts burn 23` - burn the empty position NFT
+
+### Deploying pools
+
+- `./pools` - will prompt you to select an option:
+
+```
+- 1: Deploy fungible pool
+- 2: Deploy NFT Collection pool
+- 3: Deploy NFT Subset pool
+```
+
+Another (optional) prompt will set the interest rate:
+
+```
+Enter Interest rate (default: 0.05)
+```
+
+If deploying a NFT subset pool, another prompt will set the token IDs used to create the subset hash
+
+```
+Enter subset token IDs separated by comma (<number,number>): 1,2,3
+```
