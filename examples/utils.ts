@@ -1,7 +1,8 @@
-import { providers } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 import { addAccountFromKey, addAccountFromKeystore } from '../src/utils/add-account';
 import { Config } from '../src/constants';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
+import { fromWad } from '../src/utils';
 
 export type Actor = 'lender' | 'borrower' | 'voter';
 
@@ -52,3 +53,15 @@ export async function initAjna(actor: Actor = 'lender') {
     signer,
   };
 }
+
+export function formatBNsInObjectFromWad(obj: any) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (BigNumber.isBigNumber(obj[key])) {
+        obj[key] = fromWad(obj[key]);
+      }
+    }
+  }
+  return obj;
+}
+
