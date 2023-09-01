@@ -1,4 +1,4 @@
-import { ethers, BigNumber, Signer, Contract } from 'ethers';
+import { ethers, BigNumber, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
@@ -21,7 +21,7 @@ export async function deployNFTPool(
   interestRate: BigNumber,
   overrides?: TransactionOverrides
 ) {
-  const contract: Contract = getErc721PoolFactoryContract(signer);
+  const contract = getErc721PoolFactoryContract(signer);
 
   return await createTransaction(
     contract,
@@ -37,11 +37,11 @@ export async function getDeployedPools(
   provider: SignerOrProvider,
   collateralAddress: Address,
   quoteAddress: Address,
-  subset: string
+  subsetHash: string
 ): Promise<Address> {
   const contract = getErc721PoolFactoryContract(provider);
 
-  return await contract.deployedPools(subset, collateralAddress, quoteAddress);
+  return await contract.deployedPools(subsetHash, collateralAddress, quoteAddress);
 }
 
 export function getSubsetHash(tokensIds: Array<BigNumber>): string {
