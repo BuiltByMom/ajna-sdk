@@ -3,7 +3,7 @@
 import { toWad } from '../src/utils/numeric';
 import { BigNumber, Signer } from 'ethers';
 import dotenv from 'dotenv';
-import { initAjna, parseNodeError, formatBNsInObjectFromWad } from './utils';
+import { initAjna, formatBNsInObjectFromWad } from './utils';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
 import { input } from '@inquirer/prompts';
 import { Address } from '../src/types';
@@ -15,7 +15,6 @@ dotenv.config();
 
 const collateralAddress = process.env.COLLATERAL_TOKEN || '0x0';
 const quoteAddress = process.env.QUOTE_TOKEN || '0x0';
-const nftAddress = process.env.NFT_TOKEN || '0x0';
 
 async function getPoolDetails(pool: Pool) {
   const stats = await pool.getStats();
@@ -33,9 +32,6 @@ async function deployFungiblePool(
   quote: Address,
   interestRate: BigNumber = BigNumber.from('0.05')
 ) {
-  console.log(
-    `Deploying fungible pool with\nCollateral token address: ${collateralAddress}\nQuote token address: ${quoteAddress}`
-  );
   const tx = await ajna.fungiblePoolFactory.deployPool(
     signerLender,
     collateral,
@@ -62,6 +58,9 @@ async function handleFungible(ajna: AjnaSDK, signer: Signer) {
   } catch (error) {
     const interest = await input({ message: 'Enter Interest rate (default: 0.05)' });
     const interestRate = toWad(interest || '0.05');
+    console.log(
+      `Deploying Fungible Pool from: ${await signer.getAddress()}\nCollateral token address: ${collateralAddress}\nQuote token address: ${quoteAddress}`
+    );
     pool = await deployFungiblePool(ajna, signer, collateralAddress, quoteAddress, interestRate);
     await printPoolDetails(pool);
     console.log('Deployed Fungible pool to:', pool.poolAddress);
@@ -76,26 +75,16 @@ async function handleCollectionPool(ajna: AjnaSDK, signer: Signer, interestRate:
     await printPoolDetails(pool);
     console.log(`Nonfungible Collection Pool already exists: ${pool.poolAddress}`);
   } catch (error: any) {
-    pool = await ajna.nonfungiblePoolFactory.getPool(collateralAddress, [], quoteAddress);
-    if (pool) {
-      const parsed = parseNodeError(pool.contract.interface, error);
-      console.log(`parsed:`, parsed);
-      return;
-    }
-
     const tx = await ajna.nonfungiblePoolFactory.deployCollectionPool(
       signer,
-      nftAddress || collateralAddress,
+      collateralAddress,
       quoteAddress,
       interestRate
     );
-    const txn = (tx as any)._transaction;
-    console.log(
-      `Deploying Collection Pool from: ${txn.from}\nNFT address: ${
-        nftAddress || collateralAddress
-      }\nQuote token address: ${quoteAddress}`
-    );
 
+    console.log(
+      `Deploying Collection Pool from: ${await signer.getAddress()}\nNFT address: ${collateralAddress}\nQuote token address: ${quoteAddress}`
+    );
     await tx.verifyAndSubmit();
 
     const addr = await ajna.nonfungiblePoolFactory.getPoolAddress(
@@ -107,51 +96,43 @@ async function handleCollectionPool(ajna: AjnaSDK, signer: Signer, interestRate:
   }
 }
 
-function formatTokenIds(tokenIds: Array<string>) {
-  return tokenIds.map(val => BigNumber.from(val).toNumber());
-}
-
 async function handleSubsetPool(ajna: AjnaSDK, signer: Signer, interestRate: BigNumber) {
   let pool: NonfungiblePool;
-  let tokenIdsInput = await input({
+  const tokenIdsInput = await input({
     message: 'Enter subset token IDs separated by comma (<number,number>): 1,2,3',
   });
-  const splitted = tokenIdsInput.split(',');
-  const subset = formatTokenIds(splitted);
+  const tokenIdsSplit = tokenIdsInput.split(',');
+  const subset = tokenIdsSplit.reduce((acc: Array<number>, val: any) => {
+    try {
+      return [...acc, parseInt(val)];
+    } catch (error) {
+      return acc;
+    }
+  }, []);
+
   try {
     pool = await ajna.nonfungiblePoolFactory.getPool(collateralAddress, subset, quoteAddress);
     await printPoolDetails(pool);
     console.log(`Nunfungible Subset Pool already exists: ${pool.poolAddress}`);
   } catch (error: any) {
-    pool = await ajna.nonfungiblePoolFactory.getPool(collateralAddress, subset, quoteAddress);
-
-    if (error) {
-      const parsed = parseNodeError(pool.contract.interface, error);
-      console.log(`parsed:`, parsed);
-      return;
-    }
-
     const tx = await ajna.nonfungiblePoolFactory.deploySubsetPool(
       signer,
-      nftAddress || collateralAddress,
+      collateralAddress,
       subset,
       quoteAddress,
       interestRate
     );
-    console.log(
-      `Deploying Subset Pool from: ${tx.from}\nNFT address: ${
-        nftAddress || collateralAddress
-      }\nQuote token address: ${quoteAddress}\nSubset: ${subset}`
-    );
 
+    console.log(
+      `Deploying Subset Pool from: ${await signer.getAddress()}\nNFT address: ${collateralAddress}\nQuote token address: ${quoteAddress}\nSubset: ${subset}`
+    );
     await tx.verifyAndSubmit();
 
     const addr = await ajna.nonfungiblePoolFactory.getPoolAddress(
-      nftAddress || collateralAddress,
+      collateralAddress,
       subset,
       quoteAddress
     );
-
     console.log(`Subset Pool deployed to: ${addr}`);
   }
 }
