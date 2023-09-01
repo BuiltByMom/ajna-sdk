@@ -38,12 +38,6 @@ class WrappedTransactionClass implements WrappedTransaction {
   readonly _contract: BaseContract;
 
   /**
-   * Transaction details
-   */
-  readonly from: string;
-  readonly to: string;
-
-  /**
    * Creates a new wrapped transaction instance.
    * @param transaction The populated transaction object.
    * @param contract The ethers.js contract instance.
@@ -51,8 +45,6 @@ class WrappedTransactionClass implements WrappedTransaction {
   constructor(transaction: PopulatedTransaction, contract: BaseContract) {
     this._transaction = transaction;
     this._contract = contract;
-    this.from = transaction.from || '';
-    this.to = transaction.to || '';
   }
 
   /**
