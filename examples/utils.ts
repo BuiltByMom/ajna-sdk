@@ -56,12 +56,9 @@ export async function initAjna(actor: Actor = 'lender') {
 
 export function formatBNsInObjectFromWad(obj: any) {
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (BigNumber.isBigNumber(obj[key])) {
-        obj[key] = fromWad(obj[key]);
-      }
+    if (BigNumber.isBigNumber(obj[key])) {
+      obj[key] = fromWad(obj[key]);
     }
   }
   return obj;
 }
-
