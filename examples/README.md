@@ -95,7 +95,7 @@ Now that the LUP has moved to 1886.9, the first borrower is undercollateralized 
 
 ### Deploying pools
 
-- `./pools` - will prompt you to select an option:
+- `./pools.ts` - will prompt you to select an option:
 
 ```
 - 1: Deploy fungible pool
