@@ -763,4 +763,60 @@ describe('ERC20 Pool', () => {
     bucket2Status = await bucket2.getStatus();
     expect(bucket2Status.bucketLP.eq(0)).toBe(true);
   });
+
+  it('should use estimateLPToQuoteTokens successfully', async () => {
+    const bucketIndex1 = 3695;
+    const bucket1 = await poolA.getBucketByIndex(bucketIndex1);
+    const lpbalance = toWad(3);
+
+    // lender adds quote token to bucket
+    const quoteAmount = toWad(100);
+    let tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
+    await tx.verifyAndSubmit();
+    tx = await bucket1.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    const bucketStatus = await bucket1.getStatus();
+
+    const expectedLPToQuoteAmount = await bucket1.lpToQuoteTokens(lpbalance);
+    const localLPToQuoteAmount = await bucket1.estimateLPToQuoteTokens(
+      lpbalance,
+      bucketStatus.bucketLP
+    );
+    expect(expectedLPToQuoteAmount).toEqual(localLPToQuoteAmount);
+  });
+
+  it('should use estimateCollateralToLP and estimateQuoteTokenToLP successfully', async () => {
+    const bucketIndex1 = 3695;
+    const bucket1 = await poolA.getBucketByIndex(bucketIndex1);
+
+    // lender adds quote token to bucket
+    const quoteAmount = toWad(100);
+    let tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
+    await tx.verifyAndSubmit();
+    tx = await bucket1.addQuoteToken(signerLender, quoteAmount);
+    await tx.verifyAndSubmit();
+
+    // lender adds collateral to bucket
+    const collateralAmount = toWad(10);
+    tx = await pool.collateralApprove(signerLender, collateralAmount);
+    await tx.verifyAndSubmit();
+    tx = await pool.addCollateral(signerLender, bucketIndex1, collateralAmount);
+    await submitAndVerifyTransaction(tx);
+
+    const bucketStatus = await bucket1.getStatus();
+
+    const estimateCollateralToLP = await bucket1.estimateCollateralToLP(collateralAmount);
+    const estimateQuoteTokenToLP = await bucket1.estimateQuoteTokenToLP(quoteAmount);
+
+    expect(bucketStatus.bucketLP).toEqual(estimateCollateralToLP.add(estimateQuoteTokenToLP));
+
+    await bucket1.estimateCollateralToLP(collateralAmount);
+    // FIXME: this method isn't working
+    // await bucket1.estimateQuoteTokenToLP(quoteAmount);
+  });
+
+  it('should use estimateDepositRequiredToWirthdrawCollateral successfully', async () => {
+    // TODO: implement this
+  });
 });

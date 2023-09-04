@@ -13,7 +13,7 @@ export const toWad = (value: BigNumberish): BigNumber => {
 };
 
 export const wadToUint = (wad: BigNumberish): Uint => {
-  return uint256(fromWad(wad));
+  return uint256(wad.toString());
 };
 
 // calculates product of two WADs
@@ -40,15 +40,6 @@ export const max = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.gte(rhs) 
 export const wadToIntRoundingDown = (wad: BigNumber): number => {
   return wdiv(wad, ONE_WAD).div(ONE_WAD).toNumber();
 };
-
-export function mod(a: BigNumber, b: BigNumber): BigNumber {
-  if (b.isZero()) return toWad(0);
-  return a.mod(b);
-}
-
-export function mulmod(a: BigNumber, b: BigNumber, m: BigNumber): BigNumber {
-  return mod(a.mul(b), m);
-}
 
 // https://github.com/gabrielfu/solidity-math#muldiv
 // Alternative implementation: https://ethereum.stackexchange.com/questions/106648/best-approach-to-replicate-a-complex-piece-of-solidity-code-in-javascript-typesc

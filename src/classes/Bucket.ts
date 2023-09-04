@@ -270,7 +270,7 @@ export class Bucket {
     return BigNumber.from(lpForQuoteTokens.toString());
   }
 
-  async estimateLPToQuoteToken(lpb: BigNumber, bucketLpb: BigNumber): Promise<BigNumber> {
+  async estimateLPToQuoteTokens(lpb: BigNumber, bucketLpb: BigNumber): Promise<BigNumber> {
     // get bucket details
     const bucketStatus = await this.getStatus();
 
@@ -296,7 +296,7 @@ export class Bucket {
     const lpRequired = await this.estimateCollateralToLP(collateral);
 
     // estimate the quote tokens that will be required in order to have enough LPB for the collateral
-    let quoteTokensRequired = await this.estimateLPToQuoteToken(
+    let quoteTokensRequired = await this.estimateLPToQuoteTokens(
       lpRequired,
       bucketStatus.bucketLP.add(lpRequired)
     );
