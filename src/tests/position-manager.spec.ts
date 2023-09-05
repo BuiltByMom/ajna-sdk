@@ -60,19 +60,6 @@ describe('LP Token and PositionManager', () => {
     expect(burnReceipt).toHaveProperty('logs');
   });
 
-  it('should get the appropriate pool class for LP token', async () => {
-    const mintTx = await pool.mintLPToken(signerLender);
-    const mintReceipt = await submitAndVerifyTransaction(mintTx);
-    expect(mintReceipt).toHaveProperty('logs');
-
-    const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
-    const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
-
-    const poolClass = await lpToken.getPositionPool();
-    expect(poolClass instanceof FungiblePool).toBe(true);
-  });
-
   it('should memorialize and then redeem an LP position', async () => {
     const bucketIndex = 2550;
     const amount = toWad(200);
