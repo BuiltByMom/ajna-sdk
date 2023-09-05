@@ -1,5 +1,5 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { MAX_FENWICK_INDEX, ONE_WAD } from '../constants';
+import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
 import {
   addQuoteToken,
@@ -15,7 +15,7 @@ import {
   bucketInfo,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
-import { fromWad, muldiv, toWad, wadToUint, wmul } from '../utils/numeric';
+import { fromWad, toWad } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
@@ -231,86 +231,6 @@ export class Bucket {
     // return Maths.min(Maths.wdiv(interestRate_, 365 * 1e18), 0.1 * 1e18);
     // return min(wdiv(interestRate, toWad(365)), toWad(0.1))
     return await this.pool.utils.contract.unutilizedDepositFeeRate(this.pool.poolAddress);
-  }
-
-  // TODO: add 0 checks
-  async estimateCollateralToLP(collateral: BigNumber): Promise<BigNumber> {
-    // get bucket details
-    const bucketStatus = await this.getStatus();
-
-    const bucketLP = bucketStatus.bucketLP;
-    const lpForCollateral = muldiv(
-      wadToUint(bucketLP),
-      wadToUint(wmul(collateral, this.price)),
-      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price)))
-    );
-    return BigNumber.from(lpForCollateral.toString());
-  }
-
-  // TODO: add 0 checks
-  async estimateQuoteTokenToLP(quoteToken: BigNumber): Promise<BigNumber> {
-    // get bucket details
-    const bucketStatus = await this.getStatus();
-
-    // get pool prices and check if the bucket is below the lup
-    let feeTaken: BigNumber = toWad(0);
-    const poolPrices = await this.pool.getPrices();
-    if (this.index > poolPrices.lupIndex) {
-      const depositFeeRate = await this.estimateDepositFeeRate();
-      feeTaken = wmul(quoteToken, ONE_WAD.sub(depositFeeRate));
-    }
-    const quoteTokensToEstimate = quoteToken.sub(feeTaken);
-
-    const bucketLP = bucketStatus.bucketLP;
-    const lpForQuoteTokens = muldiv(
-      wadToUint(bucketLP),
-      wadToUint(quoteTokensToEstimate.mul(ONE_WAD)),
-      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price)))
-    );
-    return BigNumber.from(lpForQuoteTokens.toString());
-  }
-
-  async estimateLPToQuoteTokens(lpb: BigNumber, bucketLpb: BigNumber): Promise<BigNumber> {
-    // get bucket details
-    const bucketStatus = await this.getStatus();
-
-    // TODO: need to scale the bucket deposit?
-    const quoteTokensForLP = muldiv(
-      wadToUint(bucketStatus.deposit.mul(ONE_WAD).add(wmul(bucketStatus.collateral, this.price))),
-      wadToUint(lpb),
-      wadToUint(bucketLpb.mul(ONE_WAD))
-    );
-    return BigNumber.from(quoteTokensForLP.toString());
-  }
-
-  async estimateDepositRequiredToWithdrawCollateral(
-    collateral: BigNumber
-  ): Promise<BigNumber | null> {
-    // get bucket details
-    const bucketStatus = await this.getStatus();
-
-    const bucketCollateral = bucketStatus.collateral;
-    if (collateral > bucketCollateral) return null;
-
-    // estimate lp required for desired collateral
-    const lpRequired = await this.estimateCollateralToLP(collateral);
-
-    // estimate the quote tokens that will be required in order to have enough LPB for the collateral
-    let quoteTokensRequired = await this.estimateLPToQuoteTokens(
-      lpRequired,
-      bucketStatus.bucketLP.add(lpRequired)
-    );
-
-    // if the bucket is below the lup, add the deposit fee to the required amount of quote tokens
-    let feeTaken: BigNumber = toWad(0);
-    const poolPrices = await this.pool.getPrices();
-    if (this.index > poolPrices.lupIndex) {
-      const depositFeeRate = await this.estimateDepositFeeRate();
-      feeTaken = wmul(quoteTokensRequired, ONE_WAD.sub(depositFeeRate));
-    }
-    quoteTokensRequired = quoteTokensRequired.add(feeTaken);
-
-    return quoteTokensRequired;
   }
 
   /**

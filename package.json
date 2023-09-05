@@ -44,7 +44,6 @@
     "ethers": "^5.7.2",
     "expect": "^29.6.1",
     "mathjs": "^11.8.2",
-    "solidity-math": "^0.1.0",
     "typedoc": "^0.24.8"
   },
   "devDependencies": {
