@@ -19,10 +19,6 @@ import {
 } from '../types';
 import { lenderInfo, lpAllowance } from '../contracts/pool';
 import { getExpiry } from '../utils/time';
-import { FungiblePool } from './FungiblePool';
-import { NonfungiblePool } from './NonfungiblePool';
-// import { getErc721PoolContract, isSubset } from '../contracts/erc721-pool';
-import { Config } from './Config';
 
 export class LPToken {
   provider: SignerOrProvider;
