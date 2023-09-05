@@ -1246,18 +1246,6 @@
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.12.tgz"
   integrity sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==
 
-"@types/lodash.memoize@^4.1.7":
-  version "4.1.7"
-  resolved "https://registry.npmjs.org/@types/lodash.memoize/-/lodash.memoize-4.1.7.tgz"
-  integrity sha512-lGN7WeO4vO6sICVpf041Q7BX/9k1Y24Zo3FY0aUezr1QlKznpjzsDk3T3wvH8ofYzoK0QupN9TWcFAFZlyPwQQ==
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash@*":
-  version "4.14.197"
-  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.197.tgz"
-  integrity sha512-BMVOiWs0uNxHVlHBgzTIqJYmj+PgCo4euloGF+5m4okL3rEYzM2EEv78mw8zWSMM57dM7kVIgJ2QDvwHSoCI5g==
-
 "@types/mute-stream@^0.0.1":
   version "0.0.1"
   resolved "https://registry.npmjs.org/@types/mute-stream/-/mute-stream-0.0.1.tgz"
@@ -3278,7 +3266,7 @@ lodash.camelcase@^4.3.0:
   resolved "https://registry.npmjs.org/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz"
   integrity sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==
 
-lodash.memoize@4.x, lodash.memoize@^4.1.2:
+lodash.memoize@4.x:
   version "4.1.2"
   resolved "https://registry.npmjs.org/lodash.memoize/-/lodash.memoize-4.1.2.tgz"
   integrity sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==
@@ -3968,15 +3956,6 @@ slice-ansi@^5.0.0:
   dependencies:
     ansi-styles "^6.0.0"
     is-fullwidth-code-point "^4.0.0"
-
-solidity-math@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/solidity-math/-/solidity-math-0.1.0.tgz"
-  integrity sha512-OeDTkji9xc0LRZeNX+lAnodSO5NissRzUT1WF3MXuB1gsTfz5PNiSQ1x2JwgQz67xJ9XgA9cEfwI1Crm7TuloA==
-  dependencies:
-    "@types/lodash.memoize" "^4.1.7"
-    bn.js "^5.2.1"
-    lodash.memoize "^4.1.2"
 
 source-map-support@0.5.13:
   version "0.5.13"

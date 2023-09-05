@@ -51,27 +51,6 @@ export class LPToken {
     return await isIndexInPosition(this.provider, tokenId, index);
   }
 
-  // get the appropriate pool class for this LP token
-  async getPositionPool(): Promise<FungiblePool | NonfungiblePool> {
-    const ajnaAddress = Config.ajnaToken;
-    const poolAddress = await poolKey(this.provider, this.tokenId);
-
-    // // check if the isSubset method is available at the pool
-    // // if so, assume it is a nonfungible pool
-    // // if not, assume it is a fungible pool
-    // const erc721PoolContract = getErc721PoolContract(poolAddress, this.provider);
-    // try {
-    //   const isSubsetPool = await isSubset(erc721PoolContract);
-    //   if (isSubsetPool != null) {
-    //     return new NonfungiblePool(this.provider, poolAddress, ajnaAddress);
-    //   }
-    //   return new FungiblePool(this.provider, poolAddress, ajnaAddress);
-    // } catch {
-    //   return new FungiblePool(this.provider, poolAddress, ajnaAddress);
-    // }
-    return new FungiblePool(this.provider, poolAddress, ajnaAddress);
-  }
-
   async getPositionIndexes() {
     return await getPositionIndexes(this.provider, this.tokenId);
   }
