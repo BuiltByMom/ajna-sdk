@@ -155,9 +155,9 @@ export class LPToken {
    * @param callData array of transactions to sign and submit
    * @returns transaction
    */
-  async multicall(signer: Signer, callData: Array<CallData>) {
+  multicall(signer: Signer, callData: Array<CallData>) {
     const contractPoolWithSigner = this.contractPositionManager.connect(signer);
 
-    return await multicall(contractPoolWithSigner, callData);
+    return multicall(contractPoolWithSigner, callData);
   }
 }
