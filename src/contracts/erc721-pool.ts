@@ -43,8 +43,6 @@ export async function addCollateral(
   );
 }
 
-// TODO: implement mergeOrRemoveCollateral once we have NFT liquidations and can test
-
 export async function removeCollateral(
   contract: Contract,
   noOfNFTsToRemove: number,
@@ -97,6 +95,20 @@ export async function repayDebt(
         limitIndex,
       ],
     },
+    overrides
+  );
+}
+
+export async function mergeOrRemoveCollateral(
+  contract: Contract,
+  removalIndexes: Array<number>,
+  noOfNFTsToRemove: number, // whole number of NFTs to remove, converted to WAD by the contract
+  toIndex: number,
+  overrides?: TransactionOverrides
+) {
+  return await createTransaction(
+    contract,
+    { methodName: 'mergeOrRemoveCollateral', args: [removalIndexes, noOfNFTsToRemove, toIndex] },
     overrides
   );
 }
