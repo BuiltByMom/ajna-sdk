@@ -717,13 +717,13 @@ describe('ERC20 Pool', () => {
   });
 
   it('should approve transferer address', async () => {
-    const isApproved = await pool.isLPTransferorApproved(signerLender, signerLender2.address);
+    const isApproved = await pool.isLPTransferorApproved(signerLender);
     expect(isApproved).toBe(false);
 
-    const tx = await pool.approvePositionManagerLPTransferor(signerLender, signerLender2.address);
+    const tx = await pool.approvePositionManagerLPTransferor(signerLender);
     await tx.verifyAndSubmit();
 
-    const isApproved2 = await pool.isLPTransferorApproved(signerLender, signerLender2.address);
+    const isApproved2 = await pool.isLPTransferorApproved(signerLender);
     expect(isApproved2).toBe(true);
   });
 

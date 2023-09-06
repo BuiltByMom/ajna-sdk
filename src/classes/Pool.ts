@@ -663,10 +663,10 @@ export abstract class Pool {
     return approveLPTransferors(signer, this.contract, [addr]);
   }
 
-  async isLPTransferorApproved(signer: Signer, transferor: Address): Promise<boolean> {
+  async isLPTransferorApproved(signer: Signer): Promise<boolean> {
+    const transferor = getPositionManagerContract(signer).address;
     const signerAddress = await signer.getAddress();
-    const isApproved = await this.contract.approvedTransferors(signerAddress, transferor);
-    return isApproved;
+    return await this.contract.approvedTransferors(signerAddress, transferor);
   }
 
   async revokePositionManagerLPTransferor(signer: Signer) {
