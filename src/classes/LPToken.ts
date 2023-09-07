@@ -150,4 +150,13 @@ export class LPToken {
       overrides
     );
   }
+
+  /**
+   * returns an instance to an existing LP token
+   * @param tokenId identifies the token
+   * @returns LPToken instance
+   */
+  static fromTokenId(provider: SignerOrProvider, tokenId: BigNumber) {
+    return new LPToken(provider, tokenId);
+  }
 }

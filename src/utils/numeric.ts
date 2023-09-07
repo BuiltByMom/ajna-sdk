@@ -1,5 +1,5 @@
 import { BigNumber, BigNumberish, constants, ethers } from 'ethers';
-import { ONE_HALF_WAD, ONE_WAD } from '../constants/common';
+import { ONE_HALF_WAD } from '../constants/common';
 
 // converts from WAD precision to human-readable string
 export const fromWad = (value: BigNumberish): string => {
@@ -33,5 +33,5 @@ export const min = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.lte(rhs) 
 export const max = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.gte(rhs) ? lhs : rhs);
 
 export const wadToIntRoundingDown = (wad: BigNumber): number => {
-  return wdiv(wad, ONE_WAD).div(ONE_WAD).toNumber();
+  return wdiv(wad, constants.One).div(constants.One).toNumber();
 };

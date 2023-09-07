@@ -4,9 +4,9 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { addAccountFromKey } from '../utils/add-account';
 import { submitAndVerifyTransaction } from './test-utils';
 import { toWad } from '../utils';
-// import { Pool } from '../classes/Pool';
 import { getLP, getPositionManagerContract } from '../contracts/position-manager';
 import { FungiblePool } from '../classes/FungiblePool';
+import { LPToken } from '../classes/LPToken';
 
 jest.setTimeout(1200000);
 
@@ -51,7 +51,7 @@ describe('LP Token and PositionManager', () => {
 
     const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
     const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
+    const lpToken = LPToken.fromTokenId(provider, tokenId);
     const tokenURI = await lpToken.tokenURI();
     expect(tokenURI).toContain('data:application/json;base64');
 
@@ -72,7 +72,7 @@ describe('LP Token and PositionManager', () => {
 
     const mintEventLogs = mintTx.getEventLogs(mintReceipt).get('Mint')![0];
     const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
+    const lpToken = LPToken.fromTokenId(provider, tokenId);
     expect(lpToken.tokenId.toString()).toBe(tokenId.toString());
 
     // check in position (should be false)
@@ -104,7 +104,7 @@ describe('LP Token and PositionManager', () => {
     inPosition = await lpToken.isIndexInPosition(bucketIndex, tokenId);
     expect(inPosition).toBe(true);
     // check in position for nonexistant tokenId
-    const wrongLpToken = pool.getLPToken(BigNumber.from(999));
+    const wrongLpToken = LPToken.fromTokenId(provider, BigNumber.from(999));
     inPosition = await wrongLpToken.isIndexInPosition(bucketIndex);
     expect(inPosition).toBe(false);
 
@@ -128,7 +128,7 @@ describe('LP Token and PositionManager', () => {
     const receipt = await submitAndVerifyTransaction(tx);
     const mintEventLogs = tx.getEventLogs(receipt).get('Mint')![0];
     const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
+    const lpToken = LPToken.fromTokenId(provider, tokenId);
     tx = await pool.increaseLPAllowance(signerLender, [fromIndex], [amount]);
     await submitAndVerifyTransaction(tx);
     tx = await pool.approvePositionManagerLPTransferor(signerLender);
@@ -169,7 +169,7 @@ describe('LP Token and PositionManager', () => {
 
     const mintEventLogs = tx.getEventLogs(mintReceipt).get('Mint')![0];
     const tokenId = mintEventLogs.args['tokenId'];
-    const lpToken = pool.getLPToken(tokenId);
+    const lpToken = LPToken.fromTokenId(provider, tokenId);
 
     const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
     await submitAndVerifyTransaction(response);

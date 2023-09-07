@@ -40,7 +40,6 @@ import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { PoolUtils } from './PoolUtils';
-import { LPToken } from './LPToken';
 import { Liquidation } from './Liquidation';
 import { getBlockTime } from '../utils/time';
 
@@ -755,15 +754,5 @@ export abstract class Pool {
   async revokePositionManagerLPTransferor(signer: Signer) {
     const addr = getPositionManagerContract(signer).address;
     return revokeLPTransferors(signer, this.contract, [addr]);
-  }
-
-  // TODO: remove this? doesn't seem to belong on the pool instance
-  /**
-   * returns an instance to an existing LP token
-   * @param tokenId identifies the token
-   * @returns LPToken instance
-   */
-  getLPToken(tokenId: BigNumber) {
-    return new LPToken(this.provider, tokenId);
   }
 }
