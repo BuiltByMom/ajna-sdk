@@ -1,5 +1,6 @@
 import { BigNumber, Contract, Signer } from 'ethers';
 import {
+  getPositionIndexes,
   getPositionManagerContract,
   isIndexInPosition,
   memorializePositions,
@@ -8,6 +9,7 @@ import {
   tokenURI,
 } from '../contracts/position-manager';
 import {
+  CallData,
   PositionManager,
   SdkError,
   SignerOrProvider,
@@ -16,6 +18,7 @@ import {
 } from '../types';
 import { lenderInfo, lpAllowance } from '../contracts/pool';
 import { getExpiry } from '../utils/time';
+import { multicall } from '../contracts/common';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -80,6 +83,16 @@ export class LPToken {
   }
 
   /**
+   * Returns an array of bucket indexes in which current token has liquidity.
+   * @param signer consumer initiating transactions
+   * @returns Array of bucket indexes.
+   */
+  async getPositionIndexes(signer: Signer): Promise<Array<number>> {
+    const positionIndices = await getPositionIndexes(signer, this.tokenId);
+    return positionIndices.map(x => x.toNumber());
+  }
+
+  /**
    * removes LP balance from position NFT, placing back into pool
    * @param signer lender
    * @param pool pool for which this position NFT is holding LP balance for the lender
@@ -134,5 +147,17 @@ export class LPToken {
       revertBelowLUP,
       overrides
     );
+  }
+
+  /**
+   * Enables signer to bundle transactions together atomically in a single request
+   * @param signer consumer initiating transactions
+   * @param callData array of transactions to sign and submit
+   * @returns transaction
+   */
+  multicall(signer: Signer, callData: Array<CallData>) {
+    const contractPoolWithSigner = this.contractPositionManager.connect(signer);
+
+    return multicall(contractPoolWithSigner, callData);
   }
 }

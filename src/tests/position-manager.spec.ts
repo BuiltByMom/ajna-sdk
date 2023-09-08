@@ -205,4 +205,68 @@ describe('LP Token and PositionManager', () => {
     tx = await lpToken.redeemPositions(signerLender, pool.contract, indices);
     await submitAndVerifyTransaction(tx);
   });
+
+  it('getPositionIndexes should return position indexes by the given tokenId', async () => {
+    const indices = [2554, 2555, 2556];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const tx = await pool.mintLPToken(signerLender);
+    const mintReceipt = await submitAndVerifyTransaction(tx);
+
+    const mintEventLogs = tx.getEventLogs(mintReceipt).get('Mint')![0];
+    const tokenId = mintEventLogs.args['tokenId'];
+    const lpToken = pool.getLPToken(tokenId);
+
+    const response = await pool.increaseLPAllowance(signerLender, indices, amounts);
+    await submitAndVerifyTransaction(response);
+
+    const approveTx = await pool.approvePositionManagerLPTransferor(signerLender);
+    await submitAndVerifyTransaction(approveTx);
+
+    const memorializeTx = await lpToken.memorializePositions(signerLender, pool.contract, indices);
+    await submitAndVerifyTransaction(memorializeTx);
+
+    const actual = await lpToken.getPositionIndexes(signerLender);
+    expect(actual).toEqual(indices);
+  });
+
+  it('areLPAllowancesSufficient should return false if allowances not set', async () => {
+    const indices = [2557, 2558, 2559];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(false);
+  });
+
+  it('areLPAllowancesSufficient should return false if allowances not sufficient', async () => {
+    const indices = [2560, 2561, 2562];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const insufficient = [toWad(9), toWad(19), toWad(29)];
+    const response = await pool.increaseLPAllowance(signerLender, indices, insufficient);
+    await submitAndVerifyTransaction(response);
+
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(false);
+  });
+
+  it('areLPAllowancesSufficient should return true if allowances is sufficient', async () => {
+    const indices = [2563, 2564, 2565];
+    const amounts = [toWad(10), toWad(20), toWad(30)];
+
+    await addQuoteTokensByIndexes(signerLender, pool, indices, amounts);
+
+    const sufficient = [toWad(10), toWad(25), toWad(30)];
+    const response = await pool.increaseLPAllowance(signerLender, indices, sufficient);
+    await submitAndVerifyTransaction(response);
+
+    const actual = await pool.areLPAllowancesSufficient(signerLender, indices);
+    expect(actual).toBe(true);
+  });
 });

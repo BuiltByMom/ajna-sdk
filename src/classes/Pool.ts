@@ -307,7 +307,7 @@ export abstract class Pool {
     return await lpAllowance(this.contract, index, spender, owner);
   }
 
-  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumber[]) {
+  async increaseLPAllowance(signer: Signer, indexes: Array<number>, amounts: Array<BigNumber>) {
     if (indexes.length !== amounts.length) {
       throw new SdkError('indexes and amounts must be same length');
     }
@@ -315,6 +315,35 @@ export abstract class Pool {
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
     return increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
+  }
+
+  /**
+   * Checks if LP allowances are sufficient to memorialize position.
+   * @param signer Consumer initiating transactions.
+   * @param indices Fenwick index of the desired bucket.
+   * @returns `true` if LP allowances are sufficient to memorialize position otherwise `false`.
+   */
+  async areLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
+    const spender = getPositionManagerContract(signer).address;
+    const signerAddress = await signer.getAddress();
+
+    const allowancePromises = indices.map(index =>
+      this.contractMulti.lpAllowance(index, spender, signerAddress)
+    );
+    const allowances: BigNumber[] = await this.ethcallProvider.all(allowancePromises);
+
+    const balancePromises = indices.map(index => lenderInfo(this.contract, signerAddress, index));
+    const balances = await Promise.all(balancePromises);
+
+    for (let i = 0; i < allowances.length; ++i) {
+      const allowance = allowances[i];
+      const balance = balances[i][0];
+      if (allowance.lt(balance)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -632,6 +661,12 @@ export abstract class Pool {
   async approvePositionManagerLPTransferor(signer: Signer) {
     const addr = getPositionManagerContract(signer).address;
     return approveLPTransferors(signer, this.contract, [addr]);
+  }
+
+  async isLPTransferorApproved(signer: Signer): Promise<boolean> {
+    const transferor = getPositionManagerContract(signer).address;
+    const signerAddress = await signer.getAddress();
+    return await this.contract.approvedTransferors(signerAddress, transferor);
   }
 
   async revokePositionManagerLPTransferor(signer: Signer) {
