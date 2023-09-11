@@ -13,14 +13,15 @@ import {
   quoteTokenAddress,
   quoteTokenScale,
   withdrawBonds,
-  lenderInfo,
   approveLPTransferors,
   revokeLPTransferors,
   lpAllowance,
   increaseLPAllowance,
   updateInterest,
+  lenderInfo,
 } from '../contracts/pool';
 import {
+  borrowerInfo,
   getPoolInfoUtilsContract,
   getPoolInfoUtilsContractMulti,
   poolPricesInfo,
@@ -39,11 +40,17 @@ import {
 import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
-import { Bucket } from './Bucket';
 import { PoolUtils } from './PoolUtils';
-import { LPToken } from './LPToken';
 import { Liquidation } from './Liquidation';
 import { getBlockTime } from '../utils/time';
+import { Bucket } from './Bucket';
+
+export interface LoanEstimate extends Loan {
+  /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
+  lup: BigNumber;
+  /** index of this hypothetical LUP */
+  lupIndex: number;
+}
 
 export interface DebtInfo {
   /** total unaccrued debt in pool at the current block height */
@@ -281,26 +288,6 @@ export abstract class Pool {
     const contractPoolWithSigner = this.contract.connect(signer);
 
     return multicall(contractPoolWithSigner, callData);
-  }
-
-  /**
-   * @param bucketIndex fenwick index of the desired bucket
-   * @returns {@link Bucket} modeling bucket at specified index
-   */
-  async getBucketByIndex(bucketIndex: number) {
-    const bucket = new Bucket(this.provider, this, bucketIndex);
-    return bucket;
-  }
-
-  /**
-   * @param price price within range supported by Ajna
-   * @returns {@link Bucket} modeling bucket at nearest to specified price
-   */
-  getBucketByPrice(price: BigNumber) {
-    const bucketIndex = priceToIndex(price);
-    // priceToIndex should throw upon invalid price
-    const bucket = new Bucket(this.provider, this, bucketIndex);
-    return bucket;
   }
 
   async lpAllowance(index: BigNumber, spender: Address, owner: Address) {
@@ -593,6 +580,154 @@ export abstract class Pool {
   }
 
   /**
+   * estimates how drawing more debt and/or pledging more collateral would impact loan
+   * @param borrowerAddress identifies the loan
+   * @param debtAmount additional amount of debt to draw (or 0)
+   * @param collateralAmount additional amount of collateral to pledge (or 0)
+   * @returns {@link LoanEstimate}
+   */
+  async estimateLoan(
+    borrowerAddress: Address,
+    debtAmount: BigNumber,
+    collateralAmount: BigNumber
+  ): Promise<LoanEstimate> {
+    // obtain the borrower debt, and origination fee
+    const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
+      this.poolAddress,
+      borrowerAddress
+    );
+    const origFeeCall = this.contractUtilsMulti.borrowFeeRate(this.poolAddress);
+    let response: BigNumber[][] = await this.ethcallProvider.all([borrowerInfoCall, origFeeCall]);
+    const [borrowerDebt, collateral] = response[0];
+    const originationFeeRate = BigNumber.from(response[1]);
+
+    // determine pool debt
+    const [poolDebt, ,] = await debtInfo(this.contract);
+
+    // add origination fee
+    debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
+
+    // determine where this would push the LUP, the current interest rate, and loan count
+    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.add(debtAmount));
+    const rateCall = this.contractMulti.interestRateInfo();
+    const loansInfoCall = this.contractMulti.loansInfo();
+    const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
+    response = await this.ethcallProvider.all([
+      lupIndexCall,
+      rateCall,
+      loansInfoCall,
+      totalAuctionsInPoolCall,
+    ]);
+    const lupIndex: number = +response[0];
+    const rate = BigNumber.from(response[1][0]);
+    let noOfLoans = +response[2][2];
+    const noOfAuctions = +response[3];
+    noOfLoans += noOfAuctions;
+    const lup = indexToPrice(lupIndex);
+
+    // calculate the new amount of debt and collateralization
+    const newDebt = borrowerDebt.add(debtAmount);
+    const newCollateral = collateral.add(collateralAmount);
+    const zero = constants.Zero;
+    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
+    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
+
+    // calculate the hypothetical MOMP and neutral price
+    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
+    const mompIndex = await depositIndex(this.contract, mompDebt);
+    const momp = indexToPrice(mompIndex);
+    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
+    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
+
+    return {
+      collateralization,
+      debt: newDebt,
+      collateral: newCollateral,
+      thresholdPrice,
+      neutralPrice,
+      isKicked: collateralization.lt(constants.One),
+      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
+      lup: indexToPrice(lupIndex),
+      lupIndex: lupIndex,
+    };
+  }
+
+  /**
+   * estimates how repaying debt and/or pulling collateral would impact loan
+   * @param borrowerAddress identifies the loan
+   * @param debtAmount amount of debt to repay (or 0)
+   * @param collateralAmount amount of collateral to pull (or 0)
+   * @returns {@link LoanEstimate}
+   */
+  async estimateRepay(
+    borrowerAddress: Address,
+    debtAmount: BigNumber,
+    collateralAmount: BigNumber
+  ): Promise<LoanEstimate> {
+    // obtain the borrower debt
+    const utilsContract = getPoolInfoUtilsContract(this.provider);
+    const [borrowerDebt, collateral] = await borrowerInfo(
+      utilsContract,
+      this.poolAddress,
+      borrowerAddress
+    );
+
+    // determine pool debt
+    const [poolDebt, ,] = await debtInfo(this.contract);
+
+    // determine where this would push the LUP, the current interest rate, and loan count
+    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.sub(debtAmount));
+    const rateCall = this.contractMulti.interestRateInfo();
+    const loansInfoCall = this.contractMulti.loansInfo();
+    const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
+    const response: BigNumber[][] = await this.ethcallProvider.all([
+      lupIndexCall,
+      rateCall,
+      loansInfoCall,
+      totalAuctionsInPoolCall,
+    ]);
+    const lupIndex: number = +response[0];
+    const rate = BigNumber.from(response[1][0]);
+    let noOfLoans = +response[2][2];
+    const noOfAuctions = +response[3];
+    noOfLoans += noOfAuctions;
+    const lup = indexToPrice(lupIndex);
+
+    const zero = constants.Zero;
+
+    // calculate the new amount of debt and collateralization
+    const newDebt = borrowerDebt.sub(debtAmount).isNegative() ? zero : borrowerDebt.sub(debtAmount);
+
+    const newCollateral = collateral.sub(collateralAmount).isNegative()
+      ? zero
+      : collateral.sub(collateralAmount);
+
+    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
+    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
+
+    // calculate the hypothetical MOMP and neutral price
+    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
+    const mompIndex = await depositIndex(this.contract, mompDebt);
+    const momp = indexToPrice(mompIndex);
+    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
+    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
+
+    return {
+      collateralization,
+      debt: newDebt,
+      collateral: newCollateral,
+      thresholdPrice,
+      neutralPrice,
+      isKicked: collateralization.lt(constants.One),
+      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
+      lup: indexToPrice(lupIndex),
+      lupIndex: lupIndex,
+    };
+  }
+
+  /**
    * determines whether interest rate will increase, decrease, or remain the same as a result of
    * updating the interest rate, without regard to the 12-hour rate update interval
    * @param poolStats pool statistics obtained from @link{Pool.getStats}
@@ -672,70 +807,5 @@ export abstract class Pool {
   async revokePositionManagerLPTransferor(signer: Signer) {
     const addr = getPositionManagerContract(signer).address;
     return revokeLPTransferors(signer, this.contract, [addr]);
-  }
-
-  /**
-   * returns an instance to an existing LP token
-   * @param tokenId identifies the token
-   * @returns LPToken instance
-   */
-  getLPToken(tokenId: BigNumber) {
-    return new LPToken(this.provider, tokenId);
-  }
-
-  /**
-   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
-   * @param signer address to redeem LP
-   * @param bucketIndices array of bucket indices to withdraw liquidity from
-   * @returns promise to transaction
-   */
-  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
-    const signerAddress = await signer.getAddress();
-    const callData: Array<CallData> = [];
-
-    // get buckets
-    const bucketPromises = bucketIndices.map(bucketIndex => this.getBucketByIndex(bucketIndex));
-    const buckets = await Promise.all(bucketPromises);
-
-    // get bucket details
-    const bucketStatusPromises = buckets.map(bucket => bucket.getStatus());
-    const bucketStatuses = await Promise.all(bucketStatusPromises);
-
-    // determine lender's LP balance
-    const lpBalancePromises = bucketIndices.map(bucketIndex =>
-      lenderInfo(this.contract, signerAddress, bucketIndex)
-    );
-    const lpBalances = await Promise.all(lpBalancePromises);
-
-    for (let i = 0; i < bucketIndices.length; ++i) {
-      const [lpBalance] = lpBalances[i];
-      const bucketStatus = bucketStatuses[i];
-      const bucketIndex = bucketIndices[i];
-
-      // if there is any quote token in the bucket, redeem LP for deposit first
-      if (lpBalance && bucketStatus.deposit.gt(0)) {
-        callData.push({
-          methodName: 'removeQuoteToken',
-          args: [constants.MaxUint256, bucketIndex],
-        });
-      }
-
-      const depositWithdrawnEstimate = wmul(lpBalance, bucketStatus.exchangeRate);
-
-      // CAUTION: This estimate may cause revert because we cannot predict exchange rate for an
-      // arbitrary future block where the TX will be processed.
-      const withdrawCollateral =
-        (bucketStatus.deposit.eq(0) || depositWithdrawnEstimate.gt(bucketStatus.deposit)) &&
-        bucketStatus.collateral.gt(0);
-
-      if (withdrawCollateral) {
-        callData.push({
-          methodName: 'removeCollateral',
-          args: [constants.MaxUint256, bucketIndex],
-        });
-      }
-    }
-
-    return this.multicall(signer, callData);
   }
 }

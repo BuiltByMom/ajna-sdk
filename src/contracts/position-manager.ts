@@ -2,7 +2,6 @@ import { BigNumber, BigNumberish, BytesLike, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
-  PositionManager,
   PositionManager__factory,
   SignerOrProvider,
   TransactionOverrides,
@@ -61,6 +60,21 @@ export async function isIndexInPosition(
   return await contractInstance.isIndexInPosition(tokenId, index);
 }
 
+export async function poolKey(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.poolKey(tokenId);
+}
+
+export async function getPositionIndexes(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.getPositionIndexes(tokenId);
+}
+
+export async function getPositionIndexesFiltered(provider: SignerOrProvider, tokenId: BigNumber) {
+  const contractInstance = getPositionManagerContract(provider);
+  return await contractInstance.getPositionIndexesFiltered(tokenId);
+}
+
 export async function memorializePositions(
   signer: Signer,
   poolAddress: Address,
@@ -74,14 +88,6 @@ export async function memorializePositions(
     { methodName: 'memorializePositions', args: [poolAddress, tokenId, indexes] },
     { ...overrides, from: await signer.getAddress() }
   );
-}
-
-export async function getPositionIndexes(
-  signer: Signer,
-  tokenId: BigNumber
-): Promise<Array<BigNumber>> {
-  const contract: PositionManager = getPositionManagerContract(signer);
-  return await contract.getPositionIndexes(tokenId);
 }
 
 export async function redeemPositions(

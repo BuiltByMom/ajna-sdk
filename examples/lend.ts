@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { MAX_FENWICK_INDEX } from '../src/constants';
 import { initAjna } from './utils';
 import { AjnaSDK } from '../src/classes/AjnaSDK';
+import { LPToken } from '../src/classes/LPToken';
 
 dotenv.config();
 
@@ -93,7 +94,7 @@ async function mint() {
 }
 
 async function memorialize(tokenId: BigNumber, bucketIndex: number) {
-  const token = pool.getLPToken(tokenId);
+  const token = LPToken.fromTokenId(signerLender, tokenId);
   const bucket = await pool.getBucketByIndex(bucketIndex);
   const position = await bucket.getPosition(await signerLender.getAddress());
   console.log('Increasing LP allowance to', fromWad(position.lpBalance), 'for bucket', bucketIndex);
@@ -107,7 +108,7 @@ async function memorialize(tokenId: BigNumber, bucketIndex: number) {
 }
 
 async function redeem(tokenId: BigNumber, bucketIndex: number) {
-  const token = pool.getLPToken(tokenId);
+  const token = LPToken.fromTokenId(signerLender, tokenId);
   const tx = await token.redeemPositions(signerLender, pool.contract, [bucketIndex]);
   await tx.verifyAndSubmit();
   console.log('Redeemed position in bucket', bucketIndex, 'from tokenId', tokenId.toString());

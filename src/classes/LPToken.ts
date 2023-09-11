@@ -1,10 +1,12 @@
 import { BigNumber, Contract, Signer } from 'ethers';
 import {
   getPositionIndexes,
+  getPositionIndexesFiltered,
   getPositionManagerContract,
   isIndexInPosition,
   memorializePositions,
   moveLiquidity,
+  poolKey,
   redeemPositions,
   tokenURI,
 } from '../contracts/position-manager';
@@ -45,6 +47,14 @@ export class LPToken {
 
   async isIndexInPosition(index: number, tokenId: BigNumber = this.tokenId) {
     return await isIndexInPosition(this.provider, tokenId, index);
+  }
+
+  async getPositionIndexesFiltered() {
+    return await getPositionIndexesFiltered(this.provider, this.tokenId);
+  }
+
+  async poolKey() {
+    return await poolKey(this.provider, this.tokenId);
   }
 
   /**
@@ -147,6 +157,15 @@ export class LPToken {
       revertBelowLUP,
       overrides
     );
+  }
+
+  /**
+   * returns an instance to an existing LP token
+   * @param tokenId identifies the token
+   * @returns LPToken instance
+   */
+  static fromTokenId(provider: SignerOrProvider, tokenId: BigNumber) {
+    return new LPToken(provider, tokenId);
   }
 
   /**
