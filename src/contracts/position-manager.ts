@@ -2,7 +2,6 @@ import { BigNumber, BigNumberish, BytesLike, Signer } from 'ethers';
 import { Config } from '../classes/Config';
 import {
   Address,
-  PositionManager,
   PositionManager__factory,
   SignerOrProvider,
   TransactionOverrides,
