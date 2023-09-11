@@ -716,6 +716,17 @@ describe('ERC20 Pool', () => {
     }).rejects.toThrow('no LP in bucket');
   });
 
+  it('should approve transferer address', async () => {
+    const isApproved = await pool.isLPTransferorApproved(signerLender);
+    expect(isApproved).toBe(false);
+
+    const tx = await pool.approvePositionManagerLPTransferor(signerLender);
+    await tx.verifyAndSubmit();
+
+    const isApproved2 = await pool.isLPTransferorApproved(signerLender);
+    expect(isApproved2).toBe(true);
+  });
+
   it('should use pool withdraw liquidity', async () => {
     const bucketIndex1 = 3695;
     const bucketIndex2 = 3696;

@@ -18,6 +18,7 @@ import {
   lpAllowance,
   increaseLPAllowance,
   updateInterest,
+  lenderInfo,
 } from '../contracts/pool';
 import {
   borrowerInfo,
@@ -37,11 +38,12 @@ import {
   SignerOrProvider,
 } from '../types';
 import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
-import { indexToPrice } from '../utils/pricing';
+import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { PoolUtils } from './PoolUtils';
 import { Liquidation } from './Liquidation';
 import { getBlockTime } from '../utils/time';
+import { Bucket } from './Bucket';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -292,7 +294,7 @@ export abstract class Pool {
     return await lpAllowance(this.contract, index, spender, owner);
   }
 
-  async increaseLPAllowance(signer: Signer, indexes: number[], amounts: BigNumber[]) {
+  async increaseLPAllowance(signer: Signer, indexes: Array<number>, amounts: Array<BigNumber>) {
     if (indexes.length !== amounts.length) {
       throw new SdkError('indexes and amounts must be same length');
     }
@@ -300,6 +302,51 @@ export abstract class Pool {
     const poolWithSigner = this.contract.connect(signer);
     const spender = getPositionManagerContract(signer).address;
     return increaseLPAllowance(poolWithSigner, spender, indexes, amounts);
+  }
+
+  /**
+   * Checks if LP allowances are sufficient to memorialize position.
+   * @param signer Consumer initiating transactions.
+   * @param indices Fenwick index of the desired bucket.
+   * @returns `true` if LP allowances are sufficient to memorialize position otherwise `false`.
+   */
+  async areLPAllowancesSufficient(signer: Signer, indices: Array<number>): Promise<boolean> {
+    const spender = getPositionManagerContract(signer).address;
+    const signerAddress = await signer.getAddress();
+
+    const allowancePromises = indices.map(index =>
+      this.contractMulti.lpAllowance(index, spender, signerAddress)
+    );
+    const allowances: BigNumber[] = await this.ethcallProvider.all(allowancePromises);
+
+    const balancePromises = indices.map(index => lenderInfo(this.contract, signerAddress, index));
+    const balances = await Promise.all(balancePromises);
+
+    for (let i = 0; i < allowances.length; ++i) {
+      const allowance = allowances[i];
+      const balance = balances[i][0];
+      if (allowance.lt(balance)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * @param minPrice lowest desired price
+   * @param maxPrice highest desired price
+   * @returns array of {@link Bucket}s between specified prices
+   */
+  getBucketsByPriceRange(minPrice: BigNumber, maxPrice: BigNumber) {
+    if (minPrice.gt(maxPrice)) throw new SdkError('maxPrice must exceed minPrice');
+
+    const buckets = new Array<Bucket>();
+    for (let index = priceToIndex(maxPrice); index <= priceToIndex(minPrice); index++) {
+      buckets.push(new Bucket(this.provider, this, index));
+    }
+
+    return buckets;
   }
 
   /**
@@ -749,6 +796,12 @@ export abstract class Pool {
   async approvePositionManagerLPTransferor(signer: Signer) {
     const addr = getPositionManagerContract(signer).address;
     return approveLPTransferors(signer, this.contract, [addr]);
+  }
+
+  async isLPTransferorApproved(signer: Signer): Promise<boolean> {
+    const transferor = getPositionManagerContract(signer).address;
+    const signerAddress = await signer.getAddress();
+    return await this.contract.approvedTransferors(signerAddress, transferor);
   }
 
   async revokePositionManagerLPTransferor(signer: Signer) {
