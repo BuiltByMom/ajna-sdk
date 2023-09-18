@@ -19,19 +19,16 @@ export const optimize = (votingPower: string, votes: Votes[]): Votes[] => {
   });
   const formattedVotingPower = Number(votingPower);
 
-  for (let i = 0; i < formattedVotes.length; ++i) {
-    const vote = formattedVotes[i][1];
-    if (vote > 0) {
-      currentVotes += formattedVotes[i][1];
-    }
-  }
+  formattedVotes.forEach(vote => (currentVotes += Math.abs(vote[1])));
+
   if (currentVotes === 0) {
     throw new SdkError('Constraint not satisfied: all votes are 0');
   }
+
   const scaleFactor = formattedVotingPower / currentVotes;
-  for (let i = 0; i < formattedVotes.length; ++i) {
-    formattedVotes[i][1] *= scaleFactor;
-  }
+
+  formattedVotes.forEach(vote => (vote[1] *= scaleFactor));
+
   // Format votes again to a string for UI usage
   const result: Votes[] = formattedVotes.map(vote => {
     return [vote[0], vote[1].toString()];
