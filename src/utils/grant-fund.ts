@@ -27,11 +27,10 @@ export const optimize = (votingPower: string, votes: Votes[]): Votes[] => {
 
   const scaleFactor = formattedVotingPower / currentVotes;
 
-  formattedVotes.forEach(vote => (vote[1] *= scaleFactor));
-
-  // Format votes again to a string for UI usage
+  // Scale, and format votes again to a string for UI usage
   const result: Votes[] = formattedVotes.map(vote => {
-    return [vote[0], vote[1].toString()];
+    const scaledVote = vote[1] * scaleFactor;
+    return [vote[0], scaledVote.toString()];
   });
 
   return result;
