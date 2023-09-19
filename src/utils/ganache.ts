@@ -1,5 +1,7 @@
 import { providers } from 'ethers';
 
+const BLOCK_LENGTH = 12;
+
 export async function takeSnapshot(provider: providers.JsonRpcProvider) {
   return +(await provider.send('evm_snapshot', []));
 }
@@ -12,10 +14,12 @@ export async function mine(
 ) {
   // HACK: https://github.com/trufflesuite/ganache/issues/4409
   while (blocks > batchSize) {
+    await provider.send('evm_increaseTime', [batchSize * BLOCK_LENGTH]);
     await provider.send('evm_mine', [{ blocks: batchSize }]);
     blocks -= batchSize;
     progressCb?.(blocks);
   }
+  await provider.send('evm_increaseTime', [blocks * BLOCK_LENGTH]);
   await provider.send('evm_mine', [{ blocks: blocks }]);
 }
 
