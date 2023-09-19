@@ -352,7 +352,7 @@ describe('Grants fund', () => {
         expect(optimizedVotes[0][1]).toBe('100');
         expect(optimizedVotes[1][1]).toBe('0');
         const resultSum = optimizedVotes.reduce((accumulator, vote) => {
-          return accumulator + Number(vote[1]);
+          return accumulator + Math.abs(Number(vote[1]));
         }, 0);
         expect(resultSum).toBe(100);
       });
@@ -369,20 +369,20 @@ describe('Grants fund', () => {
           ['9', '-9'],
           ['10', '10'],
         ]);
-        expect(optimizedVotes[0][1]).toBe('2.5641025641025643');
-        expect(optimizedVotes[1][1]).toBe('-5.128205128205129');
-        expect(optimizedVotes[2][1]).toBe('7.692307692307693');
-        expect(optimizedVotes[3][1]).toBe('10.256410256410257');
+        expect(optimizedVotes[0][1]).toBe('2');
+        expect(optimizedVotes[1][1]).toBe('-4');
+        expect(optimizedVotes[2][1]).toBe('6');
+        expect(optimizedVotes[3][1]).toBe('8');
         expect(optimizedVotes[4][1]).toBe('0');
-        expect(optimizedVotes[5][1]).toBe('15.384615384615387');
-        expect(optimizedVotes[6][1]).toBe('17.94871794871795');
-        expect(optimizedVotes[7][1]).toBe('20.512820512820515');
-        expect(optimizedVotes[8][1]).toBe('-23.07692307692308');
-        expect(optimizedVotes[9][1]).toBe('25.641025641025642');
+        expect(optimizedVotes[5][1]).toBe('12');
+        expect(optimizedVotes[6][1]).toBe('14');
+        expect(optimizedVotes[7][1]).toBe('16');
+        expect(optimizedVotes[8][1]).toBe('-18');
+        expect(optimizedVotes[9][1]).toBe('20');
         let resultSum = optimizedVotes.reduce((accumulator, vote) => {
-          return accumulator + Number(vote[1]);
+          return accumulator + Math.abs(Number(vote[1]));
         }, 0);
-        expect(resultSum).toBe(71.7948717948718);
+        expect(resultSum).toBe(100);
         const optimizedVotes2 = optimize('10000', [
           ['1', '1'],
           ['2', '-1'],
@@ -395,11 +395,20 @@ describe('Grants fund', () => {
           ['9', '1'],
           ['10', '0'],
         ]);
-        expect(optimizedVotes2[8][1]).toBe('2000');
+        expect(optimizedVotes2[0][1]).toBe('1111.111111111111');
+        expect(optimizedVotes2[1][1]).toBe('-1111.111111111111');
+        expect(optimizedVotes2[2][1]).toBe('1111.111111111111');
+        expect(optimizedVotes2[3][1]).toBe('-1111.111111111111');
+        expect(optimizedVotes2[4][1]).toBe('1111.111111111111');
+        expect(optimizedVotes2[5][1]).toBe('-1111.111111111111');
+        expect(optimizedVotes2[6][1]).toBe('1111.111111111111');
+        expect(optimizedVotes2[7][1]).toBe('-1111.111111111111');
+        expect(optimizedVotes2[8][1]).toBe('1111.111111111111');
+        expect(optimizedVotes2[9][1]).toBe('0');
         resultSum = optimizedVotes2.reduce((accumulator, vote) => {
-          return accumulator + Number(vote[1]);
+          return accumulator + Math.abs(Number(vote[1]));
         }, 0);
-        expect(resultSum).toBe(2000);
+        expect(resultSum).toBe(10000);
       });
       it('should work as expected when voting power is 10000', async () => {
         const optimizedVotes = await optimize('10000', [
@@ -416,7 +425,7 @@ describe('Grants fund', () => {
         ]);
         expect(optimizedVotes[1][1]).toBe('10000');
         const resultSum = optimizedVotes.reduce((accumulator, vote) => {
-          return accumulator + Number(vote[1]);
+          return accumulator + Math.abs(Number(vote[1]));
         }, 0);
         expect(resultSum).toBe(10000);
       });
