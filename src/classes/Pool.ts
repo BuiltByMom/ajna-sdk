@@ -602,13 +602,14 @@ export abstract class Pool {
     const originationFeeRate = BigNumber.from(response[1]);
 
     // determine pool debt
-    const [poolDebt, ,] = await debtInfo(this.contract);
+    let [poolDebt, ,] = await debtInfo(this.contract);
 
     // add origination fee
     debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
 
     // determine where this would push the LUP, the current interest rate, and loan count
-    const lupIndexCall = this.contractMulti.depositIndex(poolDebt.add(debtAmount));
+    poolDebt = poolDebt.add(debtAmount);
+    const lupIndexCall = this.contractMulti.depositIndex(poolDebt);
     const rateCall = this.contractMulti.interestRateInfo();
     const loansInfoCall = this.contractMulti.loansInfo();
     const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
