@@ -640,7 +640,6 @@ describe('ERC20 Pool', () => {
     expect(status.claimableReserves.lte(status.reserves)).toBe(true);
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
     expect(status.price.eq(constants.Zero)).toBe(true);
-    await timeJump(provider, 12); // ensure repay and kick blocks have different timestamps
     await mine(provider);
 
     // kick auction
