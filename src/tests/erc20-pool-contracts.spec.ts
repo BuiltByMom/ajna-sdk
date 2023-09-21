@@ -78,20 +78,20 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use addQuoteToken successfully', async () => {
-    const quoteAmount = 10;
+    const quoteAmount = toWad(10_000);
     const bucket = await pool.getBucketByIndex(2000);
 
-    let tx = await pool.quoteApprove(signerLender, toWad(quoteAmount));
+    let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
     const bucketStatus = await bucket.getStatus();
     expect(bucketStatus.bucketLP.gt(0)).toBe(true);
     expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance?.gt(0)).toBe(true);
+    expect(lpBalance).toEqual(quoteAmount);
   });
 
   it('should get origination fee rate', async () => {
@@ -100,7 +100,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use drawDebt successfully', async () => {
-    const amountToBorrow = toWad(1.0);
+    const amountToBorrow = toWad(5_000);
     const limitIndex = 2000;
     const collateralToPledge = toWad(3.0);
 
@@ -108,6 +108,10 @@ describe('ERC20 Pool', () => {
     await tx.verifyAndSubmit();
     tx = await pool.drawDebt(signerBorrower, amountToBorrow, collateralToPledge, limitIndex);
     await submitAndVerifyTransaction(tx);
+
+    const loan = await pool.getLoan(signerBorrower.address);
+    expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
+    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
   });
 
   it('should estimate interest rate change successfully', async () => {
@@ -184,15 +188,31 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use repayDebt successfully', async () => {
-    const collateralAmountToPull = toWad(1);
-
     let tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
     await submitAndVerifyTransaction(tx);
 
-    tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, collateralAmountToPull);
+    let loan = await pool.getLoan(signerBorrower.address);
+    expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
+    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
 
-    // known custom errors in the ABIs
+    // repay half of debt without impacting t0 neutral price
+    tx = await pool.repayDebt(signerBorrower, loan.debt.div(2), constants.Zero);
     await submitAndVerifyTransaction(tx);
+    loan = await pool.getLoan(signerBorrower.address);
+    expect(loan.debt).toBeBetween(toWad(2500), toWad(2525));
+    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+
+    // restamp loan, confirming neutral price has changed
+    tx = await pool.stampLoan(signerBorrower);
+    await submitAndVerifyTransaction(tx);
+    loan = await pool.getLoan(signerBorrower.address);
+    expect(loan.neutralPrice).toBeBetween(toWad(875), toWad(900));
+
+    // repay remaining debt
+    tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, loan.collateral);
+    await submitAndVerifyTransaction(tx);
+    loan = await pool.getLoan(signerBorrower.address);
+    expect(loan.debt).toEqual(constants.Zero);
   });
 
   it('should use removeQuoteToken successfully', async () => {
@@ -452,8 +472,8 @@ describe('ERC20 Pool', () => {
     const removeEventArgs = eventLogs.get('RemoveQuoteToken')![0].args;
     expect(removeEventArgs['lender']).toEqual(signerLender.address);
     expect(removeEventArgs['index'].eq(BigNumber.from(2000))).toBe(true);
-    expect(removeEventArgs['amount']).toBeBetween(toWad(4), toWad(4.1));
-    expect(removeEventArgs['lpRedeemed']).toBeBetween(toWad(4), toWad(4.1));
+    expect(removeEventArgs['amount']).toBeBetween(toWad(9_990), toWad(10_010));
+    expect(removeEventArgs['lpRedeemed']).toBeBetween(toWad(9_990), toWad(10_010));
     expect(removeEventArgs['lup']).toEqual(indexToPrice(0));
   });
 
