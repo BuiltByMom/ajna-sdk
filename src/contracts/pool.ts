@@ -115,6 +115,10 @@ export async function increaseLPAllowance(
   );
 }
 
+export async function stampLoan(contract: Contract, overrides?: TransactionOverrides) {
+  return await createTransaction(contract, { methodName: 'stampLoan', args: [] }, overrides);
+}
+
 export async function lenderKick(
   contract: Contract,
   index: number,

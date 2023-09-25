@@ -19,6 +19,7 @@ import {
   increaseLPAllowance,
   updateInterest,
   lenderInfo,
+  stampLoan,
 } from '../contracts/pool';
 import {
   borrowerInfo,
@@ -759,6 +760,15 @@ export abstract class Pool {
   async updateInterest(signer: Signer) {
     const contractPoolWithSigner = this.contract.connect(signer);
     return updateInterest(contractPoolWithSigner);
+  }
+
+  /**
+   * updates the neutral price of a borrower's own loan, often useful after partial repayment
+   * @param borrower borrower who wishes to stamp their own loan
+   */
+  async stampLoan(signer: Signer) {
+    const contractPoolWithSigner = this.contract.connect(signer);
+    return stampLoan(contractPoolWithSigner);
   }
 
   /**
