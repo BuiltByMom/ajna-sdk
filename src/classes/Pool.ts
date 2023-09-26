@@ -600,12 +600,10 @@ export abstract class Pool {
     let response: BigNumber[][] = await this.ethcallProvider.all([borrowerInfoCall, origFeeCall]);
     const [borrowerDebt, collateral] = response[0];
     const originationFeeRate = BigNumber.from(response[1]);
+    debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
 
     // determine pool debt
-    let [poolDebt, ,] = await debtInfo(this.contract);
-
-    // add origination fee
-    debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
+    let [poolDebt] = await debtInfo(this.contract);
 
     // determine where this would push the LUP, the current interest rate, and loan count
     poolDebt = poolDebt.add(debtAmount);
