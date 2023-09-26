@@ -51,8 +51,8 @@ class NonfungiblePool extends Pool {
    * @param allowance normalized approval amount (or MaxUint256)
    * @returns promise to transaction
    */
-  async collateralApprove(signer: Signer, tokenId: number) {
-    return approve(signer, this.poolAddress, this.collateralAddress, tokenId);
+  async collateralApprove(signer: Signer, tokenIds: Array<number>) {
+    return approve(signer, this.poolAddress, this.collateralAddress, tokenIds);
   }
 
   /**
