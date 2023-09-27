@@ -29,6 +29,21 @@ export async function approve(
   );
 }
 
+export async function approveAll(
+  signer: Signer,
+  poolAddress: Address,
+  tokenAddress: Address,
+  overrides?: TransactionOverrides
+) {
+  const contract = getNftContract(tokenAddress, signer);
+
+  return await createTransaction(
+    contract,
+    { methodName: 'setApprovalForAll', args: [poolAddress, true] },
+    overrides
+  );
+}
+
 export async function addCollateral(
   contract: Contract,
   tokenIds: Array<number>,
