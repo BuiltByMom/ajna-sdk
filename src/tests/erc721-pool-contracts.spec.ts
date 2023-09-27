@@ -222,7 +222,7 @@ describe('ERC721 Pool', () => {
     // add collateral
     const tokenId = 24;
     const bucketId = priceToIndex(toWad(250));
-    let tx = await poolDuckDaiSubset.collateralApprove(signerLender, [tokenId]);
+    let tx = await poolDuckDaiSubset.collateralApprove(signerLender, tokenId);
     await submitAndVerifyTransaction(tx);
     tx = await poolDuckDaiSubset.addCollateral(signerLender, bucketId, [tokenId]);
     await submitAndVerifyTransaction(tx);
@@ -248,7 +248,7 @@ describe('ERC721 Pool', () => {
     expect(await tduck.ownerOf(tokenId)).toEqual(signerBorrower.address);
 
     // draw debt
-    let tx = await poolDuckDai.collateralApprove(signerBorrower, [tokenId]);
+    let tx = await poolDuckDai.collateralApprove(signerBorrower, tokenId);
     await submitAndVerifyTransaction(tx);
     const debtToDraw = toWad(400);
     tx = await poolDuckDai.drawDebt(signerBorrower, debtToDraw, [tokenId]);

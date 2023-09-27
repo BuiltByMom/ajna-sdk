@@ -4,6 +4,7 @@ import { getNftContract } from '../contracts/erc721';
 import {
   addCollateral,
   approve,
+  approveAll,
   drawDebt,
   getErc721PoolContract,
   getErc721PoolContractMulti,
@@ -48,11 +49,20 @@ class NonfungiblePool extends Pool {
   /**
    * approve this pool to transfer an NFT
    * @param signer pool user
-   * @param allowance normalized approval amount (or MaxUint256)
+   * @param tokenId NFT token id
    * @returns promise to transaction
    */
-  async collateralApprove(signer: Signer, tokenIds: Array<number>) {
-    return approve(signer, this.poolAddress, this.collateralAddress, tokenIds);
+  async collateralApprove(signer: Signer, tokenId: number) {
+    return approve(signer, this.poolAddress, this.collateralAddress, tokenId);
+  }
+
+  /**
+   * approve this pool to transfer multiple NFTs
+   * @param signer pool user
+   * @returns promise to transaction
+   */
+  async collateralApproveAll(signer: Signer) {
+    return approveAll(signer, this.poolAddress, this.collateralAddress);
   }
 
   /**

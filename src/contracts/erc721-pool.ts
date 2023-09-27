@@ -17,18 +17,26 @@ export async function approve(
   signer: Signer,
   poolAddress: Address,
   tokenAddress: Address,
-  tokenIds: Array<number>,
+  tokenId: number,
   overrides?: TransactionOverrides
 ) {
   const contract = getNftContract(tokenAddress, signer);
 
-  if (tokenIds.length === 1) {
-    return await createTransaction(
-      contract,
-      { methodName: 'approve', args: [poolAddress, tokenIds[0]] },
-      overrides
-    );
-  }
+  return await createTransaction(
+    contract,
+    { methodName: 'approve', args: [poolAddress, tokenId] },
+    overrides
+  );
+}
+
+export async function approveAll(
+  signer: Signer,
+  poolAddress: Address,
+  tokenAddress: Address,
+  overrides?: TransactionOverrides
+) {
+  const contract = getNftContract(tokenAddress, signer);
+
   return await createTransaction(
     contract,
     { methodName: 'setApprovalForAll', args: [poolAddress, true] },

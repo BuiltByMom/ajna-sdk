@@ -51,7 +51,7 @@ describe('ERC721 pool liquidations', () => {
       expect(receipt.transactionHash).not.toBe('');
 
       // approve
-      const tx = await pool.collateralApprove(signer, [tokenId]);
+      const tx = await pool.collateralApprove(signer, tokenId);
       await submitAndVerifyTransaction(tx);
     }
   };
