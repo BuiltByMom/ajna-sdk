@@ -6,31 +6,35 @@ import {
   SdkError,
   VoteParams,
 } from '../types';
-import { fromWad, toWad } from './numeric';
+import { fromWad, toWad, wdiv, wmul } from './numeric';
 
 type Votes = [proposalId: string, votesUsed: string];
-type FormattedVotes = [proposalId: string, votesUsed: number];
+type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
 
-export const optimize = (votingPower: string, votes: Votes[]): Votes[] => {
-  let currentVotes = 0;
-  // Format votes to be a number
-  const formattedVotes: FormattedVotes[] = votes.map(vote => {
-    return [vote[0], Number(vote[1])];
+export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
+  let currentVotes = toWad('0');
+  const formattedVotes: FormattedVotes[] = votes.map(([id, vote]) => {
+    return [id, toWad(vote)];
   });
-  const formattedVotingPower = Number(votingPower);
 
-  formattedVotes.forEach(vote => (currentVotes += Math.abs(vote[1])));
+  formattedVotes.forEach(([, vote]) => {
+    if (vote.lt(0)) {
+      currentVotes = currentVotes.add(wmul(vote, toWad('-1')));
+    } else {
+      currentVotes = currentVotes.add(vote);
+    }
+  });
 
-  if (currentVotes === 0) {
+  if (currentVotes.eq(0)) {
     throw new SdkError('Constraint not satisfied: all votes are 0');
   }
 
-  const scaleFactor = formattedVotingPower / currentVotes;
+  const scaleFactor = wdiv(votingPower, currentVotes);
 
   // Scale, and format votes again to a string for UI usage
-  const result: Votes[] = formattedVotes.map(vote => {
-    const scaledVote = vote[1] * scaleFactor;
-    return [vote[0], scaledVote.toString()];
+  const result: Votes[] = formattedVotes.map(([id, vote]) => {
+    const scaledVote = wmul(vote, scaleFactor);
+    return [id, fromWad(scaledVote)];
   });
 
   return result;
