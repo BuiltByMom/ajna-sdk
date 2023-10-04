@@ -8,7 +8,7 @@ export const fromWad = (value: BigNumberish): string => {
 
 // converts from human-readable value to WAD precision
 export const toWad = (value: BigNumberish): BigNumber => {
-  return ethers.utils.parseUnits(String(value), 'ether');
+  return ethers.utils.parseEther(String(value));
 };
 
 // calculates product of two WADs
@@ -34,4 +34,16 @@ export const max = (lhs: BigNumber, rhs: BigNumber): BigNumber => (lhs.gte(rhs) 
 
 export const wadToIntRoundingDown = (wad: BigNumber): number => {
   return wdiv(wad, constants.One).div(constants.One).toNumber();
+};
+
+export const wsqrt = (value: BigNumberish) => {
+  const x = toWad(value);
+  let z = x.add(constants.One).div(constants.Two);
+  let y = x;
+
+  while (z.sub(y).isNegative()) {
+    y = z;
+    z = x.div(z).add(z).div(constants.Two);
+  }
+  return y;
 };

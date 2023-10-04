@@ -6,7 +6,7 @@ import {
   SdkError,
   VoteParams,
 } from '../types';
-import { fromWad, toWad, wdiv, wmul } from './numeric';
+import { fromWad, toWad, wsqrt, wdiv, wmul } from './numeric';
 
 type Votes = [proposalId: string, votesUsed: string];
 type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
@@ -102,16 +102,14 @@ export const formatProposalInfo = (proposalInfo: ProposalInfoArray): ProposalInf
 };
 
 export const formatVotes = async (
-  vote: VoteParams,
+  [proposalId, vote]: VoteParams,
   isDistributionPeriodOnScreeningStage: boolean
 ): Promise<FormattedVoteParams> => {
   if (isDistributionPeriodOnScreeningStage) {
-    return [BigNumber.from(vote[0]), BigNumber.from(toWad(vote[1]))];
+    return [BigNumber.from(proposalId), BigNumber.from(toWad(vote))];
   } else {
-    const voteRoot =
-      Number(vote[1]) < 0
-        ? toWad(-Math.sqrt(Math.abs(Number(vote[1]))))
-        : toWad(Math.sqrt(Number(vote[1])));
-    return [BigNumber.from(vote[0]), BigNumber.from(voteRoot)];
+    // Calculates square root of absolute value and multiplies by -1 if it was a negative vote before
+    const voteRoot = Number(vote) < 0 ? wsqrt(toWad(vote).abs()).mul(-1) : wsqrt(toWad(vote));
+    return [BigNumber.from(proposalId), BigNumber.from(voteRoot)];
   }
 };
