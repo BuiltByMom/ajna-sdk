@@ -11,27 +11,32 @@ import { fromWad, toWad, wsqrt, wdiv, wmul } from './numeric';
 type Votes = [proposalId: string, votesUsed: string];
 type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
 
+/**
+ * Scale the votes to use the full voting power based on a set of votes provided
+ * @param {BigNumber} votingPower Voting power
+ * @param {Votes[]} votes Array of proposalIds and vote used
+ * @returns {Votes[]} Array of proposalIds and new votes calculated
+ */
 export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
   let currentVotes = toWad('0');
+  // Format votes to WADs representations
   const formattedVotes: FormattedVotes[] = votes.map(([id, vote]) => {
     return [id, toWad(vote)];
   });
 
+  // Sum absolute value of votes
   formattedVotes.forEach(([, vote]) => {
-    if (vote.lt(0)) {
-      currentVotes = currentVotes.add(wmul(vote, toWad('-1')));
-    } else {
-      currentVotes = currentVotes.add(vote);
-    }
+    currentVotes = currentVotes.add(vote.abs());
   });
 
   if (currentVotes.eq(0)) {
     throw new SdkError('Constraint not satisfied: all votes are 0');
   }
 
+  // Calculates the scale factor of the votes based on voting power and sum of votes
   const scaleFactor = wdiv(votingPower, currentVotes);
 
-  // Scale, and format votes again to a string for UI usage
+  // Calculates new votes and format votes again to a string for UI usage
   const result: Votes[] = formattedVotes.map(([id, vote]) => {
     const scaledVote = wmul(vote, scaleFactor);
     return [id, fromWad(scaledVote)];
