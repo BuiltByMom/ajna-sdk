@@ -55,7 +55,7 @@ export function getSubsetHash(tokensIds: Array<BigNumber>): string {
     // check the array of token ids is sorted in ascending order
     // revert if not sorted
     for (let i = 0; i < tokensIds.length - 1; i++) {
-      if (tokensIds[i] >= tokensIds[i + 1]) throw new Error('Token ids must be sorted');
+      if (tokensIds[i].gte(tokensIds[i + 1])) throw new Error('Token ids must be sorted');
     }
     const abi = ethers.utils.defaultAbiCoder;
 
