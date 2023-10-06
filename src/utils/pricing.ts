@@ -54,16 +54,3 @@ export const priceToIndex = (price: BigNumber) => {
     return Number(4156 - ceilIndex);
   }
 };
-
-// This can be used to rebuild constants/prices.json, used by indexToPrice
-// jest.setTimeout(360 * 1000);
-// const createPriceList = async () => {
-//   let str = '';
-//   let result;
-//   for (let i = 1; i <= 7388; ++i) {
-//     result = await utils.indexToPrice(i);
-//     str += `'${result}', `;
-//   }
-//   const fs = require('fs');
-//   fs.writeFileSync('prices.json', JSON.stringify(prices));
-// };
