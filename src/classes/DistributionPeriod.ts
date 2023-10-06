@@ -27,8 +27,8 @@ import {
   VoterInfo,
   WrappedTransaction,
 } from '../types';
-import { fromWad } from '../utils';
-import { findBestProposals, formatProposalInfo, formatVotes } from '../utils/grant-fund';
+import { fromWad, toWad, wsqrt } from '../utils';
+import { findBestProposals, formatProposalInfo } from '../utils/grant-fund';
 import { ContractBase } from './ContractBase';
 
 /**
@@ -206,8 +206,17 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
     const isDistributionPeriodOnScreeningStage =
       distributionPeriodStage === DistributionPeriodStage.SCREENING;
 
-    const formattedVotes: FormattedVoteParams[] = await Promise.all(
-      votes.map(vote => formatVotes(vote, isDistributionPeriodOnScreeningStage))
+    // Format to what's expected by the contract
+    const formattedVotes = await Promise.all(
+      votes.map<FormattedVoteParams>(([proposalId, vote]) => {
+        if (isDistributionPeriodOnScreeningStage) {
+          return [BigNumber.from(proposalId), BigNumber.from(toWad(vote))];
+        } else {
+          // Calculates square root of absolute value and multiplies by -1 if it was a negative vote before
+          const voteRoot = Number(vote) < 0 ? wsqrt(toWad(vote).abs()).mul(-1) : wsqrt(toWad(vote));
+          return [BigNumber.from(proposalId), BigNumber.from(voteRoot)];
+        }
+      })
     );
 
     if (isDistributionPeriodOnScreeningStage) {

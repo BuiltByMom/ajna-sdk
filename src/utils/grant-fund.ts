@@ -1,12 +1,6 @@
 import { BigNumber } from 'ethers';
-import {
-  FormattedVoteParams,
-  ProposalInfo,
-  ProposalInfoArray,
-  SdkError,
-  VoteParams,
-} from '../types';
-import { fromWad, toWad, wsqrt, wdiv, wmul } from './numeric';
+import { ProposalInfo, ProposalInfoArray, SdkError } from '../types';
+import { fromWad, toWad, wdiv, wmul } from './numeric';
 
 type Votes = [proposalId: string, votesUsed: string];
 type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
@@ -104,17 +98,4 @@ export const formatProposalInfo = (proposalInfo: ProposalInfoArray): ProposalInf
     votesReceived: proposalInfo[2],
     tokensRequested: proposalInfo[3],
   };
-};
-
-export const formatVotes = async (
-  [proposalId, vote]: VoteParams,
-  isDistributionPeriodOnScreeningStage: boolean
-): Promise<FormattedVoteParams> => {
-  if (isDistributionPeriodOnScreeningStage) {
-    return [BigNumber.from(proposalId), BigNumber.from(toWad(vote))];
-  } else {
-    // Calculates square root of absolute value and multiplies by -1 if it was a negative vote before
-    const voteRoot = Number(vote) < 0 ? wsqrt(toWad(vote).abs()).mul(-1) : wsqrt(toWad(vote));
-    return [BigNumber.from(proposalId), BigNumber.from(voteRoot)];
-  }
 };
