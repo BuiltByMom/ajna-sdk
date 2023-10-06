@@ -1,36 +1,39 @@
 import { BigNumber } from 'ethers';
-import {
-  FormattedVoteParams,
-  ProposalInfo,
-  ProposalInfoArray,
-  SdkError,
-  VoteParams,
-} from '../types';
-import { fromWad, toWad } from './numeric';
+import { ProposalInfo, ProposalInfoArray, SdkError } from '../types';
+import { fromWad, toWad, wdiv, wmul } from './numeric';
 
 type Votes = [proposalId: string, votesUsed: string];
-type FormattedVotes = [proposalId: string, votesUsed: number];
+type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
 
-export const optimize = (votingPower: string, votes: Votes[]): Votes[] => {
-  let currentVotes = 0;
-  // Format votes to be a number
-  const formattedVotes: FormattedVotes[] = votes.map(vote => {
-    return [vote[0], Number(vote[1])];
+/**
+ * Scale the votes to use the full voting power based on a set of votes provided
+ * @param {BigNumber} votingPower Voting power
+ * @param {Votes[]} votes Array of proposalIds and vote used
+ * @returns {Votes[]} Array of proposalIds and new votes calculated
+ */
+export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
+  let currentVotes = toWad('0');
+  // Format votes to WADs representations
+  const formattedVotes: FormattedVotes[] = votes.map(([id, vote]) => {
+    return [id, toWad(vote)];
   });
-  const formattedVotingPower = Number(votingPower);
 
-  formattedVotes.forEach(vote => (currentVotes += Math.abs(vote[1])));
+  // Sum absolute value of votes
+  formattedVotes.forEach(([, vote]) => {
+    currentVotes = currentVotes.add(vote.abs());
+  });
 
-  if (currentVotes === 0) {
+  if (currentVotes.eq(0)) {
     throw new SdkError('Constraint not satisfied: all votes are 0');
   }
 
-  const scaleFactor = formattedVotingPower / currentVotes;
+  // Calculates the scale factor of the votes based on voting power and sum of votes
+  const scaleFactor = wdiv(votingPower, currentVotes);
 
-  // Scale, and format votes again to a string for UI usage
-  const result: Votes[] = formattedVotes.map(vote => {
-    const scaledVote = vote[1] * scaleFactor;
-    return [vote[0], scaledVote.toString()];
+  // Calculates new votes and format votes again to a string for UI usage
+  const result: Votes[] = formattedVotes.map(([id, vote]) => {
+    const scaledVote = wmul(vote, scaleFactor);
+    return [id, fromWad(scaledVote)];
   });
 
   return result;
@@ -95,19 +98,4 @@ export const formatProposalInfo = (proposalInfo: ProposalInfoArray): ProposalInf
     votesReceived: proposalInfo[2],
     tokensRequested: proposalInfo[3],
   };
-};
-
-export const formatVotes = async (
-  vote: VoteParams,
-  isDistributionPeriodOnScreeningStage: boolean
-): Promise<FormattedVoteParams> => {
-  if (isDistributionPeriodOnScreeningStage) {
-    return [BigNumber.from(vote[0]), BigNumber.from(toWad(vote[1]))];
-  } else {
-    const voteRoot =
-      Number(vote[1]) < 0
-        ? toWad(-Math.sqrt(Math.abs(Number(vote[1]))))
-        : toWad(Math.sqrt(Number(vote[1])));
-    return [BigNumber.from(vote[0]), BigNumber.from(voteRoot)];
-  }
 };

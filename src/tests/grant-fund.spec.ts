@@ -8,7 +8,7 @@ import { DistributionPeriodStage } from '../types/classes';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine } from '../utils/ganache';
 import { findBestProposals, optimize } from '../utils/grant-fund';
-import { fromWad } from '../utils/numeric';
+import { fromWad, toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
 
@@ -334,30 +334,33 @@ describe('Grants fund', () => {
       expect(hasClaimRewards).toBe(true);
     });
   });
+
   describe('Optimized proposals', () => {
     describe('Optimize util', () => {
       it('should throw error when votes are equal to zero', () => {
         expect(async () =>
-          optimize('100', [
+          optimize(toWad('100'), [
             ['1', '0'],
             ['2', '0'],
           ])
         ).rejects.toThrowError('Constraint not satisfied: all votes are 0');
       });
+
       it('should rescale votes correctly', () => {
-        const optimizedVotes = optimize('100', [
+        const optimizedVotes = optimize(toWad('100'), [
           ['1', '12'],
           ['2', '0'],
         ]);
-        expect(optimizedVotes[0][1]).toBe('100');
-        expect(optimizedVotes[1][1]).toBe('0');
+        expect(optimizedVotes[0][1]).toBe('99.999999999999999996');
+        expect(optimizedVotes[1][1]).toBe('0.0');
         const resultSum = optimizedVotes.reduce((accumulator, vote) => {
           return accumulator + Math.abs(Number(vote[1]));
         }, 0);
         expect(resultSum).toBe(100);
       });
+
       it('should work as expected when voting power is 100', () => {
-        const optimizedVotes = optimize('100', [
+        const optimizedVotes = optimize(toWad('100'), [
           ['1', '1'],
           ['2', '-2'],
           ['3', '3'],
@@ -369,21 +372,21 @@ describe('Grants fund', () => {
           ['9', '-9'],
           ['10', '10'],
         ]);
-        expect(optimizedVotes[0][1]).toBe('2');
-        expect(optimizedVotes[1][1]).toBe('-4');
-        expect(optimizedVotes[2][1]).toBe('6');
-        expect(optimizedVotes[3][1]).toBe('8');
-        expect(optimizedVotes[4][1]).toBe('0');
-        expect(optimizedVotes[5][1]).toBe('12');
-        expect(optimizedVotes[6][1]).toBe('14');
-        expect(optimizedVotes[7][1]).toBe('16');
-        expect(optimizedVotes[8][1]).toBe('-18');
-        expect(optimizedVotes[9][1]).toBe('20');
+        expect(optimizedVotes[0][1]).toBe('2.0');
+        expect(optimizedVotes[1][1]).toBe('-3.999999999999999999');
+        expect(optimizedVotes[2][1]).toBe('6.0');
+        expect(optimizedVotes[3][1]).toBe('8.0');
+        expect(optimizedVotes[4][1]).toBe('0.0');
+        expect(optimizedVotes[5][1]).toBe('12.0');
+        expect(optimizedVotes[6][1]).toBe('14.0');
+        expect(optimizedVotes[7][1]).toBe('16.0');
+        expect(optimizedVotes[8][1]).toBe('-17.999999999999999999');
+        expect(optimizedVotes[9][1]).toBe('20.0');
         let resultSum = optimizedVotes.reduce((accumulator, vote) => {
           return accumulator + Math.abs(Number(vote[1]));
         }, 0);
         expect(resultSum).toBe(100);
-        const optimizedVotes2 = optimize('10000', [
+        const optimizedVotes2 = optimize(toWad('10000'), [
           ['1', '1'],
           ['2', '-1'],
           ['3', '1'],
@@ -395,23 +398,23 @@ describe('Grants fund', () => {
           ['9', '1'],
           ['10', '0'],
         ]);
-        expect(optimizedVotes2[0][1]).toBe('1111.111111111111');
-        expect(optimizedVotes2[1][1]).toBe('-1111.111111111111');
-        expect(optimizedVotes2[2][1]).toBe('1111.111111111111');
-        expect(optimizedVotes2[3][1]).toBe('-1111.111111111111');
-        expect(optimizedVotes2[4][1]).toBe('1111.111111111111');
-        expect(optimizedVotes2[5][1]).toBe('-1111.111111111111');
-        expect(optimizedVotes2[6][1]).toBe('1111.111111111111');
-        expect(optimizedVotes2[7][1]).toBe('-1111.111111111111');
-        expect(optimizedVotes2[8][1]).toBe('1111.111111111111');
-        expect(optimizedVotes2[9][1]).toBe('0');
+        expect(optimizedVotes2[0][1]).toBe('1111.111111111111111111');
+        expect(optimizedVotes2[1][1]).toBe('-1111.11111111111111111');
+        expect(optimizedVotes2[2][1]).toBe('1111.111111111111111111');
+        expect(optimizedVotes2[3][1]).toBe('-1111.11111111111111111');
+        expect(optimizedVotes2[4][1]).toBe('1111.111111111111111111');
+        expect(optimizedVotes2[5][1]).toBe('-1111.11111111111111111');
+        expect(optimizedVotes2[6][1]).toBe('1111.111111111111111111');
+        expect(optimizedVotes2[7][1]).toBe('-1111.11111111111111111');
+        expect(optimizedVotes2[8][1]).toBe('1111.111111111111111111');
+        expect(optimizedVotes2[9][1]).toBe('0.0');
         resultSum = optimizedVotes2.reduce((accumulator, vote) => {
           return accumulator + Math.abs(Number(vote[1]));
         }, 0);
         expect(resultSum).toBe(10000);
       });
       it('should work as expected when voting power is 10000', async () => {
-        const optimizedVotes = await optimize('10000', [
+        const optimizedVotes = await optimize(toWad('10000'), [
           ['1', '0'],
           ['2', '1000000'],
           ['3', '0'],
@@ -423,7 +426,7 @@ describe('Grants fund', () => {
           ['9', '0'],
           ['10', '0'],
         ]);
-        expect(optimizedVotes[1][1]).toBe('10000');
+        expect(optimizedVotes[1][1]).toBe('10000.0');
         const resultSum = optimizedVotes.reduce((accumulator, vote) => {
           return accumulator + Math.abs(Number(vote[1]));
         }, 0);

@@ -1,5 +1,5 @@
 import { PoolUtils } from '../classes/PoolUtils';
-import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
+import { fromWad, max, min, toWad, wsqrt, wdiv, wmul } from '../utils/numeric';
 import {
   indexToPrice as indexToPriceLocal,
   priceToIndex as priceToIndexLocal,
@@ -94,5 +94,12 @@ describe('Utility tests', () => {
     expect(max(toWad('38.062'), toWad('22.6845977')).eq(toWad('38.062')));
     expect(max(toWad(4), toWad(0)).eq(toWad(4)));
     expect(max(toWad(37), toWad(74536)).eq(toWad(74536)));
+  });
+
+  it('should calculate square roots as expected', async () => {
+    expect(wsqrt(toWad('4'))).toEqual(toWad('2'));
+    expect(wsqrt(toWad(9))).toEqual(toWad(3));
+    expect(wsqrt(toWad('200702.13'))).toEqual(toWad('447.9979129415671731'));
+    expect(wsqrt(toWad('0.0923201'))).toEqual(toWad('0.303842228796459429'));
   });
 });
