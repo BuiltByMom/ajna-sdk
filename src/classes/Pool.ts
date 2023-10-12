@@ -45,6 +45,7 @@ import { PoolUtils } from './PoolUtils';
 import { Liquidation } from './Liquidation';
 import { getBlockTime } from '../utils/time';
 import { Bucket } from './Bucket';
+import { getSubsetHash } from '../contracts/erc721-pool-factory';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -786,10 +787,14 @@ export abstract class Pool {
   /**
    * create a new empty LP token for the purpose of memorializing lender position(s)
    * @param signer lender
+   * @param subset optional subset of NFT ids in pool
    * @returns promise to transaction
    */
-  async mintLPToken(signer: Signer) {
-    return mint(signer, await signer.getAddress(), this.poolAddress, ERC20_NON_SUBSET_HASH);
+  async mintLPToken(signer: Signer, subset?: Array<number>) {
+    const subsetHash = subset
+      ? getSubsetHash(subset.map(val => BigNumber.from(val)))
+      : ERC20_NON_SUBSET_HASH;
+    return mint(signer, await signer.getAddress(), this.poolAddress, subsetHash);
   }
 
   /**
