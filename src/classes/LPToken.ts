@@ -79,11 +79,7 @@ export class LPToken {
         this.contractPositionManager.address,
         await signer.getAddress()
       );
-      const [lpBalance] = await lenderInfo(
-        poolContract,
-        this.contractPositionManager.address,
-        index
-      );
+      const [lpBalance] = await lenderInfo(poolContract, await signer.getAddress(), index);
       if (allowance.lt(lpBalance)) {
         throw new SdkError(`Insufficient LP Balance: ${allowance} < ${lpBalance}`);
       }
