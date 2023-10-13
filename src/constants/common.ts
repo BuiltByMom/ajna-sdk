@@ -26,3 +26,9 @@ export const FUNDING_STAGE = utils.keccak256(utils.toUtf8Bytes(DistributionPerio
 export const CHALLENGE_STAGE = utils.keccak256(
   utils.toUtf8Bytes(DistributionPeriodStage.CHALLENGE)
 );
+
+/**
+ * The URI for the IPFS Ajna contract addresses JSON file.
+ */
+export const ipfsAjnaContractAddressesURI =
+  'https://bafybeihryas6vtxla7pp7us22ko4e7bt7beorzmlp6cj7dvhhr3nvxhqjm.ipfs.sphn.link/ajna-contract-addresses.json';

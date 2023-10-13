@@ -40,6 +40,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
+    "axios": "^1.5.1",
     "ethcall": "^4.8.13",
     "ethers": "^5.7.2",
     "expect": "^29.6.1",

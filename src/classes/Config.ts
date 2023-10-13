@@ -1,4 +1,5 @@
 import { Address } from '../types';
+import { fetchContractAddresses } from '../utils/fetch-contract-addresses';
 
 /**
  * manages static protocol configuration, particularly contract addresses for a single chain
@@ -51,6 +52,28 @@ class Config {
       process.env.AJNA_TOKEN_ADDRESS || '',
       process.env.AJNA_GRANT_FUND || '',
       process.env.AJNA_BURN_WRAPPER || ''
+    );
+  }
+
+  static async fetchFromIPFS(network: 'mainnet' | 'goerli' | 'polygon') {
+    const {
+      ERC20_POOL_FACTORY,
+      ERC721_POOL_FACTORY,
+      POOL_UTILS,
+      POSITION_MANAGER,
+      AJNA_TOKEN,
+      GRANT_FUND,
+      BURN_WRAPPER,
+    } = await fetchContractAddresses(network);
+
+    return new Config(
+      ERC20_POOL_FACTORY,
+      ERC721_POOL_FACTORY,
+      POOL_UTILS,
+      POSITION_MANAGER,
+      AJNA_TOKEN,
+      GRANT_FUND,
+      BURN_WRAPPER
     );
   }
 }
