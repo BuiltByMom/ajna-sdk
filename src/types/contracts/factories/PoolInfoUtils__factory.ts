@@ -459,24 +459,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'momp',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [
-      {
-        type: 'address',
-        name: 'ajnaPool_',
-      },
-    ],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
     name: 'poolLoansInfo',
     constant: true,
     stateMutability: 'view',

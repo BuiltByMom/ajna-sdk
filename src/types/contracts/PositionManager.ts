@@ -36,7 +36,6 @@ export interface PositionManagerInterface extends utils.Interface {
     'memorializePositions(address,uint256,uint256[])': FunctionFragment;
     'mint(address,address,bytes32)': FunctionFragment;
     'moveLiquidity(address,uint256,uint256,uint256,uint256,bool)': FunctionFragment;
-    'multicall(bytes[])': FunctionFragment;
     'name()': FunctionFragment;
     'nonces(uint256)': FunctionFragment;
     'ownerOf(uint256)': FunctionFragment;
@@ -71,7 +70,6 @@ export interface PositionManagerInterface extends utils.Interface {
       | 'memorializePositions'
       | 'mint'
       | 'moveLiquidity'
-      | 'multicall'
       | 'name'
       | 'nonces'
       | 'ownerOf'
@@ -122,7 +120,6 @@ export interface PositionManagerInterface extends utils.Interface {
     functionFragment: 'moveLiquidity',
     values: [string, BigNumberish, BigNumberish, BigNumberish, BigNumberish, boolean]
   ): string;
-  encodeFunctionData(functionFragment: 'multicall', values: [BytesLike[]]): string;
   encodeFunctionData(functionFragment: 'name', values?: undefined): string;
   encodeFunctionData(functionFragment: 'nonces', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'ownerOf', values: [BigNumberish]): string;
@@ -169,7 +166,6 @@ export interface PositionManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'memorializePositions', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'mint', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'moveLiquidity', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'multicall', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'nonces', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'ownerOf', data: BytesLike): Result;
@@ -408,11 +404,6 @@ export interface PositionManager extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    multicall(
-      data: BytesLike[],
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     name(overrides?: CallOverrides): Promise<[string]>;
 
     nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -550,11 +541,6 @@ export interface PositionManager extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  multicall(
-    data: BytesLike[],
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
   name(overrides?: CallOverrides): Promise<string>;
 
   nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -683,8 +669,6 @@ export interface PositionManager extends BaseContract {
       revertIfBelowLup_: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    multicall(data: BytesLike[], overrides?: CallOverrides): Promise<string[]>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -916,8 +900,6 @@ export interface PositionManager extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    multicall(data: BytesLike[], overrides?: Overrides & { from?: string }): Promise<BigNumber>;
-
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     nonces(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1064,11 +1046,6 @@ export interface PositionManager extends BaseContract {
       toIndex_: BigNumberish,
       expiry_: BigNumberish,
       revertIfBelowLup_: boolean,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    multicall(
-      data: BytesLike[],
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 

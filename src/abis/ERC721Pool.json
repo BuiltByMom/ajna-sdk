@@ -5,6 +5,7 @@
   { "type": "error", "name": "AuctionActive", "inputs": [] },
   { "type": "error", "name": "AuctionNotClearable", "inputs": [] },
   { "type": "error", "name": "AuctionNotCleared", "inputs": [] },
+  { "type": "error", "name": "AuctionNotTakeable", "inputs": [] },
   { "type": "error", "name": "AuctionPriceGtBucketPrice", "inputs": [] },
   { "type": "error", "name": "BorrowerNotSender", "inputs": [] },
   { "type": "error", "name": "BorrowerOk", "inputs": [] },
@@ -68,7 +69,6 @@
   { "type": "error", "name": "PriceBelowLUP", "inputs": [] },
   { "type": "error", "name": "RemoveDepositLockedByAuctionDebt", "inputs": [] },
   { "type": "error", "name": "ReserveAuctionTooSoon", "inputs": [] },
-  { "type": "error", "name": "TakeNotPastCooldown", "inputs": [] },
   { "type": "error", "name": "TransactionExpired", "inputs": [] },
   { "type": "error", "name": "TransferToSameOwner", "inputs": [] },
   { "type": "error", "name": "TransferorNotApproved", "inputs": [] },
@@ -429,12 +429,11 @@
       { "type": "uint256", "name": "bondFactor_" },
       { "type": "uint256", "name": "bondSize_" },
       { "type": "uint256", "name": "kickTime_" },
-      { "type": "uint256", "name": "kickMomp_" },
+      { "type": "uint256", "name": "referencePrice_" },
       { "type": "uint256", "name": "neutralPrice_" },
       { "type": "address", "name": "head_" },
       { "type": "address", "name": "next_" },
-      { "type": "address", "name": "prev_" },
-      { "type": "bool", "name": "alreadyTaken_" }
+      { "type": "address", "name": "prev_" }
     ]
   },
   {
@@ -908,7 +907,7 @@
       { "type": "address", "name": "collateralReceiver_" },
       { "type": "uint256", "name": "limitIndex_" }
     ],
-    "outputs": []
+    "outputs": [{ "type": "uint256", "name": "amountRepaid_" }]
   },
   {
     "type": "function",
@@ -973,7 +972,7 @@
       { "type": "address", "name": "callee_" },
       { "type": "bytes", "name": "data_" }
     ],
-    "outputs": []
+    "outputs": [{ "type": "uint256", "name": "collateralTaken_" }]
   },
   {
     "type": "function",

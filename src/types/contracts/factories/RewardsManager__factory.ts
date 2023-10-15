@@ -278,6 +278,28 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'getRewardsClaimed',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'epoch_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'getStakeInfo',
     constant: true,
     stateMutability: 'view',
@@ -295,6 +317,28 @@ const _abi = [
       {
         type: 'address',
       },
+      {
+        type: 'uint256',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'getUpdateRewardsClaimed',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'pool_',
+      },
+      {
+        type: 'uint256',
+        name: 'epoch_',
+      },
+    ],
+    outputs: [
       {
         type: 'uint256',
       },
@@ -361,23 +405,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'rewardsClaimed',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
     name: 'stake',
     constant: false,
     payable: false,
@@ -425,23 +452,6 @@ const _abi = [
       {
         type: 'uint256',
         name: 'updateReward',
-      },
-    ],
-  },
-  {
-    type: 'function',
-    name: 'updateRewardsClaimed',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-    outputs: [
-      {
-        type: 'uint256',
       },
     ],
   },

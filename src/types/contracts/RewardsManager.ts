@@ -24,15 +24,15 @@ export interface RewardsManagerInterface extends utils.Interface {
     'claimRewards(uint256,uint256,uint256)': FunctionFragment;
     'emergencyUnstake(uint256)': FunctionFragment;
     'getBucketStateStakeInfo(uint256,uint256)': FunctionFragment;
+    'getRewardsClaimed(address,uint256)': FunctionFragment;
     'getStakeInfo(uint256)': FunctionFragment;
+    'getUpdateRewardsClaimed(address,uint256)': FunctionFragment;
     'isBucketUpdated(address,uint256,uint256)': FunctionFragment;
     'isEpochClaimed(uint256,uint256)': FunctionFragment;
     'positionManager()': FunctionFragment;
-    'rewardsClaimed(uint256)': FunctionFragment;
     'stake(uint256)': FunctionFragment;
     'unstake(uint256)': FunctionFragment;
     'updateBucketExchangeRatesAndClaim(address,bytes32,uint256[])': FunctionFragment;
-    'updateRewardsClaimed(uint256)': FunctionFragment;
   };
 
   getFunction(
@@ -42,15 +42,15 @@ export interface RewardsManagerInterface extends utils.Interface {
       | 'claimRewards'
       | 'emergencyUnstake'
       | 'getBucketStateStakeInfo'
+      | 'getRewardsClaimed'
       | 'getStakeInfo'
+      | 'getUpdateRewardsClaimed'
       | 'isBucketUpdated'
       | 'isEpochClaimed'
       | 'positionManager'
-      | 'rewardsClaimed'
       | 'stake'
       | 'unstake'
       | 'updateBucketExchangeRatesAndClaim'
-      | 'updateRewardsClaimed'
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: 'ajnaToken', values?: undefined): string;
@@ -67,7 +67,12 @@ export interface RewardsManagerInterface extends utils.Interface {
     functionFragment: 'getBucketStateStakeInfo',
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: 'getRewardsClaimed', values: [string, BigNumberish]): string;
   encodeFunctionData(functionFragment: 'getStakeInfo', values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: 'getUpdateRewardsClaimed',
+    values: [string, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: 'isBucketUpdated',
     values: [string, BigNumberish, BigNumberish]
@@ -77,32 +82,30 @@ export interface RewardsManagerInterface extends utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'positionManager', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'rewardsClaimed', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'stake', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'unstake', values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: 'updateBucketExchangeRatesAndClaim',
     values: [string, BytesLike, BigNumberish[]]
   ): string;
-  encodeFunctionData(functionFragment: 'updateRewardsClaimed', values: [BigNumberish]): string;
 
   decodeFunctionResult(functionFragment: 'ajnaToken', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'calculateRewards', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'claimRewards', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'emergencyUnstake', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getBucketStateStakeInfo', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'getRewardsClaimed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getStakeInfo', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'getUpdateRewardsClaimed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isBucketUpdated', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'isEpochClaimed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'positionManager', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'rewardsClaimed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'stake', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'unstake', data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: 'updateBucketExchangeRatesAndClaim',
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: 'updateRewardsClaimed', data: BytesLike): Result;
 
   events: {
     'ClaimRewards(address,address,uint256,uint256[],uint256)': EventFragment;
@@ -229,10 +232,22 @@ export interface RewardsManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
+    getRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getStakeInfo(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string, BigNumber]>;
+
+    getUpdateRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     isBucketUpdated(
       pool_: string,
@@ -248,8 +263,6 @@ export interface RewardsManager extends BaseContract {
     ): Promise<[boolean]>;
 
     positionManager(overrides?: CallOverrides): Promise<[string]>;
-
-    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     stake(
       tokenId_: BigNumberish,
@@ -267,8 +280,6 @@ export interface RewardsManager extends BaseContract {
       indexes_: BigNumberish[],
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
-
-    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
   ajnaToken(overrides?: CallOverrides): Promise<string>;
@@ -297,10 +308,22 @@ export interface RewardsManager extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber]>;
 
+  getRewardsClaimed(
+    pool_: string,
+    epoch_: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getStakeInfo(
     tokenId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[string, string, BigNumber]>;
+
+  getUpdateRewardsClaimed(
+    pool_: string,
+    epoch_: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   isBucketUpdated(
     pool_: string,
@@ -316,8 +339,6 @@ export interface RewardsManager extends BaseContract {
   ): Promise<boolean>;
 
   positionManager(overrides?: CallOverrides): Promise<string>;
-
-  rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   stake(
     tokenId_: BigNumberish,
@@ -335,8 +356,6 @@ export interface RewardsManager extends BaseContract {
     indexes_: BigNumberish[],
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
-
-  updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     ajnaToken(overrides?: CallOverrides): Promise<string>;
@@ -362,10 +381,22 @@ export interface RewardsManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
+    getRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getStakeInfo(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string, BigNumber]>;
+
+    getUpdateRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     isBucketUpdated(
       pool_: string,
@@ -382,8 +413,6 @@ export interface RewardsManager extends BaseContract {
 
     positionManager(overrides?: CallOverrides): Promise<string>;
 
-    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
     stake(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     unstake(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
@@ -394,8 +423,6 @@ export interface RewardsManager extends BaseContract {
       indexes_: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {
@@ -488,7 +515,19 @@ export interface RewardsManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getStakeInfo(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getUpdateRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     isBucketUpdated(
       pool_: string,
@@ -505,8 +544,6 @@ export interface RewardsManager extends BaseContract {
 
     positionManager(overrides?: CallOverrides): Promise<BigNumber>;
 
-    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
     stake(tokenId_: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     unstake(tokenId_: BigNumberish, overrides?: Overrides & { from?: string }): Promise<BigNumber>;
@@ -517,8 +554,6 @@ export interface RewardsManager extends BaseContract {
       indexes_: BigNumberish[],
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
-
-    updateRewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -548,7 +583,19 @@ export interface RewardsManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getStakeInfo(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getUpdateRewardsClaimed(
+      pool_: string,
+      epoch_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     isBucketUpdated(
       pool_: string,
@@ -565,8 +612,6 @@ export interface RewardsManager extends BaseContract {
 
     positionManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    rewardsClaimed(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     stake(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string }
@@ -582,11 +627,6 @@ export interface RewardsManager extends BaseContract {
       subsetHash_: BytesLike,
       indexes_: BigNumberish[],
       overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    updateRewardsClaimed(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }
