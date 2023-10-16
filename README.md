@@ -2,8 +2,8 @@
 
 A typescript SDK that can be used to create Dapps and keepers in the Ajna ecosystem.
 
-[![Unit Tests](https://github.com/ajna-finance/sdk/workflows/Unit%20Tests/badge.svg)](https://github.com/ajna-finance/sdk/actions?query=workflow%3A%22Unit+Tests%22)
-[![Lint](https://github.com/ajna-finance/sdk/workflows/Lint/badge.svg)](https://github.com/ajna-finance/sdk/actions?query=workflow%3ALint)
+[![Unit Tests](https://github.com/ajna-finance/v1-sdk/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/ajna-finance/v1-sdk/actions?query=workflow%3A%22Unit+Tests%22)
+[![Lint](https://github.com/ajna-finance/v1-sdk/actions/workflows/lint.yml/badge.svg)](https://github.com/ajna-finance/v1-sdk/actions?query=workflow%3ALint)
 
 ## Setup
 
