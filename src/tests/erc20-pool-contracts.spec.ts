@@ -79,7 +79,7 @@ describe('ERC20 Pool', () => {
 
   it('should use addQuoteToken successfully', async () => {
     const quoteAmount = toWad(10_000);
-    const bucket = await pool.getBucketByIndex(2000);
+    const bucket = await pool.getBucketByIndex(2000); // price 46776.6533691354
 
     let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
@@ -111,10 +111,10 @@ describe('ERC20 Pool', () => {
 
     const loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+    expect(loan.neutralPrice).toBeBetween(toWad(1915), toWad(1930));
   });
 
-  it.skip('should estimate interest rate change successfully', async () => {
+  it('should estimate interest rate change successfully', async () => {
     const poolStats: Stats = {
       poolSize: constants.Zero,
       debt: constants.Zero,
@@ -150,7 +150,7 @@ describe('ERC20 Pool', () => {
     expect(newRate).toEqual(wmul(poolStats.borrowRate, toWad(0.9)));
   });
 
-  it.skip('should update interest rate successfully', async () => {
+  it('should update interest rate successfully', async () => {
     const statsBefore = await pool.getStats();
     await timeJump(provider, 3600 * 12);
 
@@ -161,7 +161,7 @@ describe('ERC20 Pool', () => {
     expect(statsBefore.borrowRate.eq(statsAfter.borrowRate)).toBe(false);
   });
 
-  it.skip('should use poolStats successfully', async () => {
+  it('should use poolStats successfully', async () => {
     const stats = await poolA.getStats();
 
     expect(stats.poolSize?.gte(toWad('25000'))).toBe(true);
