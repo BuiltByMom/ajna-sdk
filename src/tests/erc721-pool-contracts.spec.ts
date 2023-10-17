@@ -4,7 +4,7 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
 import { getNftContract } from '../contracts/erc721';
 import { Address } from '../types';
-import { priceToIndex, toWad } from '../utils';
+import { priceToIndex, timeJump, toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -259,6 +259,14 @@ describe('ERC721 Pool', () => {
     loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(400), toWad(450));
     expect(await tduck.ownerOf(tokenId)).toEqual(poolDuckDai.contract.address);
+
+    // restamp loan to update neutral price
+    await timeJump(provider, 24 * 3600);
+    const npBefore = loan.neutralPrice;
+    tx = await poolDuckDai.stampLoan(signerBorrower);
+    await submitAndVerifyTransaction(tx);
+    loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.neutralPrice).not.toEqual(npBefore);
 
     // partially repay debt
     tx = await poolDuckDai.quoteApprove(signerBorrower, constants.MaxUint256);

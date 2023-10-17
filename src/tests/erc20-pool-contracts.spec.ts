@@ -202,10 +202,6 @@ describe('ERC20 Pool', () => {
     expect(loan.debt).toBeBetween(toWad(2500), toWad(2525));
     expect(loan.neutralPrice).toBeBetween(toWad(950), toWad(975));
 
-    // TODO: no reason to restamp loan here anymore; find a new place to test it
-    // tx = await pool.stampLoan(signerBorrower);
-    // await submitAndVerifyTransaction(tx);
-
     // repay remaining debt
     loan = await pool.getLoan(signerBorrower.address);
     tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, loan.collateral);
