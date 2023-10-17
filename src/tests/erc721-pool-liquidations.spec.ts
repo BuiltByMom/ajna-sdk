@@ -21,7 +21,7 @@ const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f44
 const BORROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('ERC721 pool liquidations', () => {
+describe('ERC721 Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
@@ -195,7 +195,6 @@ describe('ERC721 pool liquidations', () => {
     kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(loan.liquidationBond.gt(0)).toBe(true);
-    // FIXME: why is only 49% of the liquidation bond locked?
     expect(kickerInfo.locked).toBeBetween(
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
@@ -231,7 +230,7 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // take
@@ -266,7 +265,7 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity
@@ -378,7 +377,7 @@ describe('ERC721 pool liquidations', () => {
     blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
     expect(auctionStatus.collateral).toEqual(toWad(0));
-    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(16000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(true);
@@ -463,8 +462,8 @@ describe('ERC721 pool liquidations', () => {
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
-    // wait 200 hours
-    const jumpTimeSeconds = 200 * 3600; // 200 hours
+    // wait 71 hours
+    const jumpTimeSeconds = 71 * 3600;
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 

@@ -20,6 +20,7 @@ import {
   updateInterest,
   lenderInfo,
   stampLoan,
+  interestRateInfo,
 } from '../contracts/pool';
 import {
   borrowerInfo,
@@ -391,11 +392,8 @@ export abstract class Pool {
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
 
-    // t0Np = t0Debt * npTpRatio / collateral
-    // t0Np * collateral / t0Debt = npTpRatio
-    const npTpRatio = debt.gt(0)
-      ? wdiv(wmul(t0np, collateral), wdiv(debt, pendingInflator))
-      : toWad(1);
+    const rate = (await interestRateInfo(this.contract))[0];
+    const npTpRatio = this.calculateNpTpRatio(rate);
 
     return {
       collateralization,
@@ -432,6 +430,10 @@ export abstract class Pool {
     const [, , , , lup] = response[i];
     const [, , , pendingInflator] = response[++i];
 
+    // calculate npTpRatio, needed for calculating liquidation bonds
+    const rate = (await interestRateInfo(this.contract))[0];
+    const npTpRatio = this.calculateNpTpRatio(rate);
+
     // iterate through borrower info, offset by the 3 pool-level requests
     let borrowerIndex = 0;
     while (borrowerIndex < borrowerAddresses.length) {
@@ -441,7 +443,6 @@ export abstract class Pool {
       const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
       const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
       const np = wmul(t0np, pendingInflator);
-      const npTpRatio = wdiv(wmul(t0np, collateral), wdiv(debt, pendingInflator));
       retval.set(borrowerAddresses[borrowerIndex++], {
         collateralization,
         debt,
@@ -511,8 +512,8 @@ export abstract class Pool {
    */
   calculateLiquidationBond(npTpRatio: BigNumber, borrowerDebt: BigNumber) {
     // bondFactor = min((NP-to-TP-ratio - 1)/10, 0.03)
-    const bondFactor = min(wdiv(npTpRatio.sub(constants.One), toWad(10)), toWad(0.03));
-    // bondSize_ = Maths.wmul(bondFactor_,  borrowerDebt_);
+    const bondFactor = min(wdiv(npTpRatio.sub(toWad(1)), toWad(10)), toWad(0.03));
+    // bondSize_ = Maths.wmul(bondFactor_, borrowerDebt_);
     return wmul(bondFactor, borrowerDebt);
   }
 
@@ -525,6 +526,15 @@ export abstract class Pool {
    */
   calculateNeutralPrice(thresholdPrice: BigNumber, npTpRatio: BigNumber) {
     return min(wmul(thresholdPrice, npTpRatio), MAX_INFLATED_PRICE_WAD);
+  }
+
+  /**
+   * calculate neutral price to threshold price "ratio"
+   * @param rate current pool "borrower" interest rate
+   * @returns relationship between the neutral price and threshold price
+   */
+  calculateNpTpRatio(rate: BigNumber) {
+    return toWad(1.04).add(wsqrt(rate).div(2));
   }
 
   /**
@@ -644,8 +654,7 @@ export abstract class Pool {
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical neutral price
-    // TODO: refactor this into a reusable method
-    const npTpRatio = toWad(1.04).add(wsqrt(rate).div(2));
+    const npTpRatio = this.calculateNpTpRatio(rate);
     const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {
@@ -716,7 +725,7 @@ export abstract class Pool {
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical neutral price
-    const npTpRatio = toWad(1.04).add(wsqrt(rate).div(2));
+    const npTpRatio = this.calculateNpTpRatio(rate);
     const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {

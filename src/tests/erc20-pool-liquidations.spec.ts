@@ -21,7 +21,7 @@ const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('Liquidations', () => {
+describe('ERC20 Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
@@ -186,7 +186,6 @@ describe('Liquidations', () => {
     // ensure the liquidation bond estimate was accurate
     kickerInfo = await pool.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
-    // FIXME: all the bond isn't locked
     expect(kickerInfo.locked).toBeBetween(
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
@@ -366,8 +365,8 @@ describe('Liquidations', () => {
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
-    // wait 200 hours
-    const jumpTimeSeconds = 200 * 3600; // 200 hours
+    // wait 71 hours
+    const jumpTimeSeconds = 71 * 3600;
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 
