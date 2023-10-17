@@ -16,14 +16,14 @@ import { FungibleBucket } from '../classes/FungibleBucket';
 
 jest.setTimeout(80000);
 
-const TWETH_ADDRESS = '0x0a02A6c7a0Be71683D99703F96425dEEe32a1C3B';
-const TDAI_ADDRESS = '0xC5F2CDB4c697Af6A304f3Aa3c35fa34cC2D904E6';
-const TESTA_ADDRESS = '0xd7D67a7038D738cBa93f45f730CB2D18CEB9EcD6';
+const TWETH_ADDRESS = '0xD61A64A9905bE9Bd60efa2E41E0e9B42f96d7d17';
+const TDAI_ADDRESS = '0x37f1003307FEC9e7Bdd77f94107229da272304a2';
+const TESTA_ADDRESS = '0xa177659315036754cd086fA9d4041Eaa19C57507';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTB_DAI_POOL_ADDRESS = '0x08783e7A089C0632f4D6E028aB87281122201C94';
+const TESTB_TDAI_POOL_ADDRESS = '0xACd09c94fc135ba12B63b53420502DbA4cDED27E';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -72,7 +72,7 @@ describe('ERC20 Pool', () => {
   });
 
   it('should load pool by address', async () => {
-    const poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_DAI_POOL_ADDRESS);
+    const poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_TDAI_POOL_ADDRESS);
     expect(poolB.quoteAddress).toBe(TDAI_ADDRESS);
     expect(poolB.toString()).toContain('TESTB-TDAI');
   });

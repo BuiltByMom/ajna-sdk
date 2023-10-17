@@ -7,13 +7,13 @@ export const TEST_CONFIG = {
 };
 
 // here just to name the parameters
-const erc20PoolFactoryAddress = '0x603066511bCe10Fe9c494bF20AEE64e0B9DF7943';
-const erc721PoolFactoryAddress = '0x8815C3349E5aE77F851E986b02eBC68613428030';
-const poolUtilsAddress = '0xBd4EBd9aA954FadCE1EA3C2Bf16C9AEf334fac44';
-const positionManagerAddress = '0x60205851A054184Fe0c51543d401bAfd2239AA1E';
-const ajnaTokenAddress = '0x3d96b9997E302a91bC946D31Ea80A228b1548543';
-const grantFundAddress = '0xBE5902a0c6CCf915e69332c3386A789739829506';
-const burnWrapperAddress = '0x4306638A0F6BD9C4A1EF9EbCFF8579688C9C16Ea';
+const erc20PoolFactoryAddress = '0xF05cDdE17A671957f4AA672bcB96329Ef514E114';
+const erc721PoolFactoryAddress = '0xE135E89909717DA4fDe24143F509118ceA5fc3f7';
+const poolUtilsAddress = '0x19156129c660883435Cad95100D025022443EDb2';
+const positionManagerAddress = '0x9a56e5e70373E4965AAAFB994CB58eDC577031D7';
+const ajnaTokenAddress = '0x93cDD7D6542E8Db00FFfe7Af39FB3245c3FCb19a';
+const burnWrapperAddress = '0xaCBDae8801983605EFC40f48812f7efF797504da';
+const grantFundAddress = '0xC01c2D208ebaA1678F14818Db7A698F11cd0B6AB';
 
 export const testnetAddresses = new Config(
   erc20PoolFactoryAddress,
