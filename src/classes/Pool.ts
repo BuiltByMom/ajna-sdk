@@ -393,7 +393,9 @@ export abstract class Pool {
 
     // t0Np = t0Debt * npTpRatio / collateral
     // t0Np * collateral / t0Debt = npTpRatio
-    const npTpRatio = wdiv(wmul(t0np, collateral), wdiv(debt, pendingInflator));
+    const npTpRatio = debt.gt(0)
+      ? wdiv(wmul(t0np, collateral), wdiv(debt, pendingInflator))
+      : toWad(1);
 
     return {
       collateralization,
@@ -643,7 +645,7 @@ export abstract class Pool {
 
     // calculate the hypothetical neutral price
     // TODO: refactor this into a reusable method
-    const npTpRatio = toWad(1.04).add(wdiv(wsqrt(rate), constants.Two));
+    const npTpRatio = toWad(1.04).add(wsqrt(rate).div(2));
     const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {
@@ -714,7 +716,7 @@ export abstract class Pool {
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical neutral price
-    const npTpRatio = toWad(1.04).add(wdiv(wsqrt(rate), constants.Two));
+    const npTpRatio = toWad(1.04).add(wsqrt(rate).div(2));
     const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {

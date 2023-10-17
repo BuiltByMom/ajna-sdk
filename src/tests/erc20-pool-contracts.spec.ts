@@ -174,7 +174,7 @@ describe('ERC20 Pool', () => {
     expect(stats.pendingInflator).toBeBetween(toWad('1'), toWad('1.1'));
   });
 
-  it.skip('should use getPrices and loansInfo successfully', async () => {
+  it('should use getPrices and loansInfo successfully', async () => {
     const prices = await poolA.getPrices();
 
     expect(prices.hpb).toEqual(indexToPrice(3236));
@@ -187,35 +187,34 @@ describe('ERC20 Pool', () => {
     expect(prices.llbIndex).toEqual(0);
   });
 
-  it.skip('should use repayDebt successfully', async () => {
+  it('should use repayDebt successfully', async () => {
     let tx = await pool.quoteApprove(signerBorrower, constants.MaxUint256);
     await submitAndVerifyTransaction(tx);
 
     let loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+    expect(loan.neutralPrice).toBeBetween(toWad(1915), toWad(1930));
 
     // repay half of debt without impacting t0 neutral price
     tx = await pool.repayDebt(signerBorrower, loan.debt.div(2), constants.Zero);
     await submitAndVerifyTransaction(tx);
     loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(2500), toWad(2525));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+    expect(loan.neutralPrice).toBeBetween(toWad(950), toWad(975));
 
-    // restamp loan, confirming neutral price has changed
-    tx = await pool.stampLoan(signerBorrower);
-    await submitAndVerifyTransaction(tx);
-    loan = await pool.getLoan(signerBorrower.address);
-    expect(loan.neutralPrice).toBeBetween(toWad(875), toWad(900));
+    // TODO: no reason to restamp loan here anymore; find a new place to test it
+    // tx = await pool.stampLoan(signerBorrower);
+    // await submitAndVerifyTransaction(tx);
 
     // repay remaining debt
+    loan = await pool.getLoan(signerBorrower.address);
     tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, loan.collateral);
     await submitAndVerifyTransaction(tx);
     loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toEqual(constants.Zero);
   });
 
-  it.skip('should use removeQuoteToken successfully', async () => {
+  it('should use removeQuoteToken successfully', async () => {
     const quoteAmount = toWad(1);
     const bucket = await pool.getBucketByIndex(2000);
     const lpBefore = (await bucket.getStatus()).bucketLP;
@@ -227,7 +226,7 @@ describe('ERC20 Pool', () => {
     expect(lpBefore.gt(lpAfter)).toBe(true);
   });
 
-  it.skip('should raise appropriate error if removeQuoteToken fails', async () => {
+  it('should raise appropriate error if removeQuoteToken fails', async () => {
     // attempt to remove liquidity from a bucket in which lender has no LP
     const bucket = await pool.getBucketByIndex(4444);
     const tx = await bucket.removeQuoteToken(signerLender, toWad('22.153'));
@@ -237,7 +236,7 @@ describe('ERC20 Pool', () => {
     }).rejects.toThrow('NoClaim()');
   });
 
-  it.skip('should use moveQuoteToken successfully', async () => {
+  it('should use moveQuoteToken successfully', async () => {
     const maxAmountToMove = toWad(5);
     const bucketIndexFrom = 2000;
     const bucketFrom = await pool.getBucketByIndex(bucketIndexFrom);
@@ -256,7 +255,7 @@ describe('ERC20 Pool', () => {
     expect(toLpAfter.gt(toLpBefore)).toBe(true);
   });
 
-  it.skip('should use getBucketsByPriceRange successfully', async () => {
+  it('should use getBucketsByPriceRange successfully', async () => {
     const buckets = poolA.getBucketsByPriceRange(toWad(0.01), toWad(0.1));
     expect(buckets.length).toBe(462);
     expect(fromWad(buckets[0].price)).toBe('0.099834229041488465');
@@ -264,7 +263,7 @@ describe('ERC20 Pool', () => {
     expect(fromWad(buckets[buckets.length - 1].price)).toBe('0.01001670765474992');
   });
 
-  it.skip('should use getBucketByIndex successfully', async () => {
+  it('should use getBucketByIndex successfully', async () => {
     const bucket: FungibleBucket = await poolA.getBucketByIndex(3220);
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220');
     expect(bucket.index).toEqual(3220);
@@ -281,7 +280,7 @@ describe('ERC20 Pool', () => {
     ).toBe(true);
   });
 
-  it.skip('should use getBucketByPrice successfully', async () => {
+  it('should use getBucketByPrice successfully', async () => {
     const bucket: FungibleBucket = await pool.getBucketByPrice(toWad('0.1'));
     expect(bucket.toString()).toContain(`TWETH-TDAI bucket 4618 (0.099834`);
     expect(bucket.index).toEqual(4618);
@@ -293,7 +292,7 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus.exchangeRate).toEqual(toWad('1'));
   });
 
-  it.skip('should use lpToQuoteTokens successfully', async () => {
+  it('should use lpToQuoteTokens successfully', async () => {
     const bucket = await poolA.getBucketByIndex(3261);
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3261 (86.821');
 
@@ -303,7 +302,7 @@ describe('ERC20 Pool', () => {
     expect(deposit.gte(toWad('5000'))).toBe(true);
   });
 
-  it.skip('should use lpToCollateral successfully', async () => {
+  it('should use lpToCollateral successfully', async () => {
     const bucket = await poolA.getBucketByIndex(3220);
     expect(bucket.toString()).toContain('TESTA-TDAI bucket 3220 (106.52');
 
@@ -313,7 +312,7 @@ describe('ERC20 Pool', () => {
     expect(collateral.eq(toWad(3.1))).toBe(true);
   });
 
-  it.skip('should use getPosition successfully', async () => {
+  it('should use getPosition successfully', async () => {
     // getPosition on bucket where lender has no LPB
     let bucket = await poolA.getBucketByIndex(4321);
     let position = await bucket.getPosition(signerLender.address);
@@ -347,18 +346,18 @@ describe('ERC20 Pool', () => {
     expect(position.depositWithdrawable).toEqual(toWad(5000));
   });
 
-  it.skip('should use getLoan successfully', async () => {
+  it('should use getLoan successfully', async () => {
     const loan = await poolA.getLoan(await signerBorrower.getAddress());
     expect(loan.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
     expect(loan.debt).toBeBetween(toWad(10000), toWad(10000).mul(2));
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(1000), toWad(1000).mul(2));
+    expect(loan.liquidationBond).toBeBetween(toWad(300), toWad(300).mul(2));
     expect(loan.isKicked).toBe(false);
   });
 
-  it.skip('should use estimateLoan successfully', async () => {
+  it('should use estimateLoan successfully', async () => {
     // estimate change against canned loan
     let loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
@@ -367,7 +366,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(1500), toWad(6000));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(425), toWad(475));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
 
@@ -401,12 +400,12 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(20));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(150), toWad(305));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(25), toWad(35));
     expect(loanEstimate.lup).toEqual(prices.lup);
     expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
 
-  it.skip('should use estimateRepay successfully', async () => {
+  it('should use estimateRepay successfully', async () => {
     const borrower = await signerBorrower.getAddress();
     const loan = await poolA.getLoan(borrower);
     const prices = await poolA.getPrices();
@@ -461,7 +460,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
 
-  it.skip('should remove all quote token without specifying amount', async () => {
+  it('should remove all quote token without specifying amount', async () => {
     const bucket = await pool.getBucketByIndex(2000);
 
     // remove all liquidity from bucket
@@ -477,14 +476,14 @@ describe('ERC20 Pool', () => {
     expect(removeEventArgs['lup']).toEqual(indexToPrice(0));
   });
 
-  it.skip('should use multicall successfully', async () => {
-    const quoteAmount = 10;
+  it('should use multicall successfully', async () => {
+    const quoteAmount = toWad(10);
     const bucketIndex1 = 3330;
     const bucketIndex2 = 3331;
     const allowance = 100000000;
 
-    const bucket1 = await pool.getBucketByIndex(bucketIndex1);
-    const bucket2 = await pool.getBucketByIndex(bucketIndex2);
+    const bucket1 = pool.getBucketByIndex(bucketIndex1);
+    const bucket2 = pool.getBucketByIndex(bucketIndex2);
     let bucketStatus1 = await bucket1.getStatus();
     let bucketStatus2 = await bucket2.getStatus();
 
@@ -501,11 +500,11 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex1, await getExpiry(provider), false],
       },
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex2, await getExpiry(provider), false],
       },
     ]);
     response = await tx.verifyAndSubmitResponse();
@@ -520,7 +519,7 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus2.deposit.gt(0)).toBe(true);
   });
 
-  it.skip('should use addCollateral successfully', async () => {
+  it('should use addCollateral successfully', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
 
