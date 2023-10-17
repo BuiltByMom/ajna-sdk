@@ -19,11 +19,6 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'AlreadyVoted',
-    inputs: [],
-  },
-  {
-    type: 'error',
     name: 'DelegateRewardInvalid',
     inputs: [],
   },

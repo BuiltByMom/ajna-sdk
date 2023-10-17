@@ -4,7 +4,6 @@
     "payable": false,
     "inputs": [{ "type": "address", "name": "ajnaToken_" }]
   },
-  { "type": "error", "name": "AlreadyVoted", "inputs": [] },
   { "type": "error", "name": "DelegateRewardInvalid", "inputs": [] },
   { "type": "error", "name": "DistributionPeriodStillActive", "inputs": [] },
   { "type": "error", "name": "ExecuteProposalInvalid", "inputs": [] },

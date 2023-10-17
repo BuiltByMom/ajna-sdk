@@ -12,4 +12,3 @@ export { ERC721PoolFactory__factory } from './ERC721PoolFactory__factory';
 export { GrantFund__factory } from './GrantFund__factory';
 export { PoolInfoUtils__factory } from './PoolInfoUtils__factory';
 export { PositionManager__factory } from './PositionManager__factory';
-export { RewardsManager__factory } from './RewardsManager__factory';

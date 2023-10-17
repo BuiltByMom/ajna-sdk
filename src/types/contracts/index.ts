@@ -12,7 +12,6 @@ export type { ERC721PoolFactory } from './ERC721PoolFactory';
 export type { GrantFund } from './GrantFund';
 export type { PoolInfoUtils } from './PoolInfoUtils';
 export type { PositionManager } from './PositionManager';
-export type { RewardsManager } from './RewardsManager';
 export * as factories from './factories';
 export { AjnaToken__factory } from './factories/AjnaToken__factory';
 export { BurnWrappedAjna__factory } from './factories/BurnWrappedAjna__factory';
@@ -25,4 +24,3 @@ export { ERC721PoolFactory__factory } from './factories/ERC721PoolFactory__facto
 export { GrantFund__factory } from './factories/GrantFund__factory';
 export { PoolInfoUtils__factory } from './factories/PoolInfoUtils__factory';
 export { PositionManager__factory } from './factories/PositionManager__factory';
-export { RewardsManager__factory } from './factories/RewardsManager__factory';
