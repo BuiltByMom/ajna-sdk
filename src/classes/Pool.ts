@@ -413,7 +413,7 @@ export abstract class Pool {
    */
   async getLoans(borrowerAddresses: Array<Address>): Promise<Map<Address, Loan>> {
     const calls = [];
-    // push pool-level request followed by request for each loan
+    // push pool-level requests followed by request for each loan
     calls.push(this.contractUtilsMulti.poolPricesInfo(this.poolAddress));
     calls.push(this.contractUtilsMulti.poolLoansInfo(this.poolAddress));
     for (const loan of borrowerAddresses) {
