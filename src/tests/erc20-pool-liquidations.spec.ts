@@ -14,8 +14,8 @@ import { getBlockTime } from '../utils/time';
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0xEBf56b01859CF1a75c7ff79BEBA2DBBC44213E9B';
-const TDAI_ADDRESS = '0x37f1003307FEC9e7Bdd77f94107229da272304a2';
+const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -186,6 +186,7 @@ describe('Liquidations', () => {
     // ensure the liquidation bond estimate was accurate
     kickerInfo = await pool.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
+    // FIXME: all the bond isn't locked
     expect(kickerInfo.locked).toBeBetween(
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
@@ -224,8 +225,8 @@ describe('Liquidations', () => {
     expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(true);
   });
 
@@ -251,8 +252,8 @@ describe('Liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity

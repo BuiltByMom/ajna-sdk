@@ -14,8 +14,8 @@ import { getBlockTime } from '../utils/time';
 
 jest.setTimeout(1200000);
 
-const TDUCK_ADDRESS = '0x67ee717097D3c640192fcDebFB36A7B372cE61a3';
-const TDAI_ADDRESS = '0x37f1003307FEC9e7Bdd77f94107229da272304a2';
+const TDUCK_ADDRESS = '0xaf36Ce3FD234ba81A9d4676CD09fC6700f087146';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
 const BORROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
@@ -195,6 +195,7 @@ describe('ERC721 pool liquidations', () => {
     kickerInfo = await poolDuckDai.kickerInfo(signerLender.address);
     expect(kickerInfo.claimable.eq(constants.Zero)).toBe(true);
     expect(loan.liquidationBond.gt(0)).toBe(true);
+    // FIXME: why is only 49% of the liquidation bond locked?
     expect(kickerInfo.locked).toBeBetween(
       loan.liquidationBond,
       wmul(loan.liquidationBond, toWad('1.0001'))
@@ -229,7 +230,7 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
+    expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
     expect(auctionStatus.isSettleable).toBe(false);
 
@@ -264,7 +265,7 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
+    expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
     expect(auctionStatus.isSettleable).toBe(false);
 
@@ -357,10 +358,10 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.collateral.gt(toWad(0)) && auctionStatus.collateral.lt(toWad(2))).toBe(
       true
     );
-    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(16700), toWad(16800));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(7200), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9000), toWad(11000));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // wait 50 hours

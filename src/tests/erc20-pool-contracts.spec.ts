@@ -16,14 +16,14 @@ import { FungibleBucket } from '../classes/FungibleBucket';
 
 jest.setTimeout(80000);
 
-const TWETH_ADDRESS = '0xD61A64A9905bE9Bd60efa2E41E0e9B42f96d7d17';
-const TDAI_ADDRESS = '0x37f1003307FEC9e7Bdd77f94107229da272304a2';
-const TESTA_ADDRESS = '0xa177659315036754cd086fA9d4041Eaa19C57507';
+const TWETH_ADDRESS = '0x844f3C269f301f89D81f29B91b8d8ED2C69Fa7Bc';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const TESTA_ADDRESS = '0xf6C45B3B42b910110B1c750C959D0a396470c520';
+const TESTB_TDAI_POOL_ADDRESS = '0x46f65d2c707ea9c15D398889cEF64C0C373bFdA7';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTB_TDAI_POOL_ADDRESS = '0xACd09c94fc135ba12B63b53420502DbA4cDED27E';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -541,7 +541,7 @@ describe('ERC20 Pool', () => {
     expect(lpBalance?.gt(0)).toBe(true);
   });
 
-  it.skip('should reject addCollateral if expired ttl set', async () => {
+  it('should reject addCollateral if expired ttl set', async () => {
     const collateralAmount = toWad(0.5);
     const bucketIndex = 1234;
 
@@ -555,7 +555,7 @@ describe('ERC20 Pool', () => {
     }).rejects.toThrow('TransactionExpired()');
   });
 
-  it.skip('should use removeCollateral successfully', async () => {
+  it('should use removeCollateral successfully', async () => {
     const collateralAmount = constants.MaxUint256;
     const bucketIndex = 1234;
 
@@ -569,7 +569,7 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus.collateral.eq(0)).toBe(true);
   });
 
-  it.skip('removeCollateral should reject if bucket has 0 collateral balance', async () => {
+  it('removeCollateral should reject if bucket has 0 collateral balance', async () => {
     const collateralAmount = toWad(1);
     const bucketIndex = 1234;
 
@@ -584,7 +584,7 @@ describe('ERC20 Pool', () => {
     }).rejects.toThrow('InsufficientCollateral()');
   });
 
-  it.skip('should kick and participate in claimable reserve auction', async () => {
+  it('should kick and participate in claimable reserve auction', async () => {
     let pool: FungiblePool = {} as FungiblePool;
 
     // Mint tokens to actors
@@ -690,7 +690,7 @@ describe('ERC20 Pool', () => {
     expect(status.claimableReservesRemaining.eq(constants.Zero)).toBe(true);
   });
 
-  it.skip('should use bucket withdraw liquidity', async () => {
+  it('should use bucket withdraw liquidity', async () => {
     const bucketIndex = priceToIndex(toWad(10)); // bucket 3694
     const bucket = await poolA.getBucketByIndex(bucketIndex);
     const quoteAmount = toWad(20);
@@ -734,7 +734,7 @@ describe('ERC20 Pool', () => {
     }).rejects.toThrow('no LP in bucket');
   });
 
-  it.skip('should approve transferer address', async () => {
+  it('should approve transferer address', async () => {
     const isApproved = await pool.isLPTransferorApproved(signerLender);
     expect(isApproved).toBe(false);
 
@@ -745,7 +745,7 @@ describe('ERC20 Pool', () => {
     expect(isApproved2).toBe(true);
   });
 
-  it.skip('should use pool withdraw liquidity', async () => {
+  it('should use pool withdraw liquidity', async () => {
     const bucketIndex1 = 3695;
     const bucketIndex2 = 3696;
     const bucket1 = await poolA.getBucketByIndex(bucketIndex1);
