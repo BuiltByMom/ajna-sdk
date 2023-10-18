@@ -1,10 +1,10 @@
 {
-  "name": "@ajna-finance/v1-sdk",
+  "name": "@ajna-finance/sdk",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.1.29-dev",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ajna-finance/v1-sdk.git"
+    "url": "https://github.com/ajna-finance/sdk.git"
   },
   "keywords": [
     "sdk",
@@ -74,9 +74,9 @@
     "typescript": "^5.1.6"
   },
   "bugs": {
-    "url": "https://github.com/ajna-finance/v1-sdk/issues"
+    "url": "https://github.com/ajna-finance/sdk/issues"
   },
-  "homepage": "https://github.com/ajna-finance/v1-sdk#readme",
+  "homepage": "https://github.com/ajna-finance/sdk#readme",
   "lint-staged": {
     "**/*.(ts|tsx)": "eslint --resolve-plugins-relative-to . --ext .ts,.tsx --fix"
   }
