@@ -392,7 +392,7 @@ export abstract class Pool {
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
 
-    const rate = (await interestRateInfo(this.contract))[0];
+    const [rate] = await interestRateInfo(this.contract);
     const npTpRatio = this.calculateNpTpRatio(rate);
 
     return {
@@ -431,7 +431,7 @@ export abstract class Pool {
     const [, , , pendingInflator] = response[++i];
 
     // calculate npTpRatio, needed for calculating liquidation bonds
-    const rate = (await interestRateInfo(this.contract))[0];
+    const [rate] = await interestRateInfo(this.contract);
     const npTpRatio = this.calculateNpTpRatio(rate);
 
     // iterate through borrower info, offset by the 3 pool-level requests
@@ -513,14 +513,13 @@ export abstract class Pool {
   calculateLiquidationBond(npTpRatio: BigNumber, borrowerDebt: BigNumber) {
     // bondFactor = min((NP-to-TP-ratio - 1)/10, 0.03)
     const bondFactor = min(wdiv(npTpRatio.sub(toWad(1)), toWad(10)), toWad(0.03));
-    // bondSize_ = Maths.wmul(bondFactor_, borrowerDebt_);
+    // bondSize = bondFactor * borrowerDebt
     return wmul(bondFactor, borrowerDebt);
   }
 
   /**
    * calculates a loan's neutral price
-   * @param debt loan debt
-   * @param collateral pledged amount
+   * @param thresholdPrice loan debt / pledged collateral
    * @param npTpRatio relationship between neutral price and threshold price
    * @returns neutral price, in WAD precision
    */
