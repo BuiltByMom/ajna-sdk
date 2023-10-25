@@ -7,6 +7,7 @@ export const GAS_MULTIPLIER = 3;
 // fractions and percentages
 export const ONE_PERCENT_WAD: BigNumber = BigNumber.from('10000000000000000');
 export const ONE_HALF_WAD: BigNumber = BigNumber.from('500000000000000000');
+export const ONE_WAD: BigNumber = BigNumber.from('1000000000000000000');
 
 // pool interactions
 export const ERC20_NON_SUBSET_HASH = utils.keccak256(utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH'));
