@@ -67,7 +67,7 @@ export class LPToken {
   async memorializePositions(
     signer: Signer,
     pool: Contract,
-    indexes: number[],
+    indexes: Array<number>,
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     const poolContract = pool.connect(signer);
@@ -108,7 +108,7 @@ export class LPToken {
   async redeemPositions(
     signer: Signer,
     pool: Contract,
-    indexes: number[],
+    indexes: Array<number>,
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     if (indexes.length === 0) {

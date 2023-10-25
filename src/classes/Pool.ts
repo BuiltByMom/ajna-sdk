@@ -234,7 +234,7 @@ export abstract class Pool {
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const poolUtilizationInfoCall = this.contractUtilsMulti.poolUtilizationInfo(this.poolAddress);
     const poolReservesInfo = this.contractUtilsMulti.poolReservesInfo(this.poolAddress);
-    const utilsData: string[] = await this.ethcallProvider.all([
+    const utilsData: Array<string> = await this.ethcallProvider.all([
       poolLoansInfoCall,
       poolUtilizationInfoCall,
       poolReservesInfo,
@@ -319,7 +319,7 @@ export abstract class Pool {
     const allowancePromises = indices.map(index =>
       this.contractMulti.lpAllowance(index, spender, signerAddress)
     );
-    const allowances: BigNumber[] = await this.ethcallProvider.all(allowancePromises);
+    const allowances: Array<BigNumber> = await this.ethcallProvider.all(allowancePromises);
 
     const balancePromises = indices.map(index => lenderInfo(this.contract, signerAddress, index));
     const balances = await Promise.all(balancePromises);
@@ -377,7 +377,7 @@ export abstract class Pool {
       borrowerAddress
     );
 
-    const response: BigNumber[][] = await this.ethcallProvider.all([
+    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
       poolPricesInfoCall,
       poolMompCall,
       poolLoansInfoCall,
@@ -477,7 +477,7 @@ export abstract class Pool {
     }
 
     // perform the multicall
-    const response: any[][] = await this.ethcallProvider.all(calls);
+    const response: Array<Array<any>> = await this.ethcallProvider.all(calls);
 
     // prepare return value
     const retval = new Map<Address, AuctionStatus>();
@@ -544,7 +544,7 @@ export abstract class Pool {
       borrowerAddress
     );
 
-    const response: BigNumber[][] = await this.ethcallProvider.all([
+    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
       poolPricesInfoCall,
       borrowerInfoCall,
     ]);
@@ -599,7 +599,10 @@ export abstract class Pool {
       borrowerAddress
     );
     const origFeeCall = this.contractUtilsMulti.borrowFeeRate(this.poolAddress);
-    let response: BigNumber[][] = await this.ethcallProvider.all([borrowerInfoCall, origFeeCall]);
+    let response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
+      borrowerInfoCall,
+      origFeeCall,
+    ]);
     const [borrowerDebt, collateral] = response[0];
     const originationFeeRate = BigNumber.from(response[1]);
     debtAmount = debtAmount.add(wmul(debtAmount, originationFeeRate));
@@ -682,7 +685,7 @@ export abstract class Pool {
     const rateCall = this.contractMulti.interestRateInfo();
     const loansInfoCall = this.contractMulti.loansInfo();
     const totalAuctionsInPoolCall = this.contractMulti.totalAuctionsInPool();
-    const response: BigNumber[][] = await this.ethcallProvider.all([
+    const response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
       lupIndexCall,
       rateCall,
       loansInfoCall,

@@ -172,7 +172,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param  account_          The address of the voter to check.
    * @return FundingVoteParams The list of FundingVoteParams structs that have been successfully cast the voter.
    */
-  async getFundingVotesCast(address: Address): Promise<FundingVotes[]> {
+  async getFundingVotesCast(address: Address): Promise<Array<FundingVotes>> {
     return await getFundingVotesCast(this.getProvider(), this.id, address);
   }
   /**
@@ -181,7 +181,10 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return promise to transaction
    */
-  async screeningVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
+  async screeningVote(
+    signer: Signer,
+    votes: Array<FormattedVoteParams>
+  ): Promise<WrappedTransaction> {
     return screeningVote(signer, votes);
   }
 
@@ -191,7 +194,10 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @return promise to transaction
    */
-  async fundingVote(signer: Signer, votes: FormattedVoteParams[]): Promise<WrappedTransaction> {
+  async fundingVote(
+    signer: Signer,
+    votes: Array<FormattedVoteParams>
+  ): Promise<WrappedTransaction> {
     return fundingVote(signer, votes);
   }
 
@@ -201,7 +207,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param {@link VoteParams} * the array of votes on proposals to cast.
    * @returns promise to transaction
    */
-  async castVotes(signer: Signer, votes: VoteParams[]): Promise<WrappedTransaction> {
+  async castVotes(signer: Signer, votes: Array<VoteParams>): Promise<WrappedTransaction> {
     const distributionPeriodStage = await this.distributionPeriodStage();
     const isDistributionPeriodOnScreeningStage =
       distributionPeriodStage === DistributionPeriodStage.SCREENING;
@@ -231,7 +237,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param distributionId the distributionId of the distribution period to check
    * @returns top ten proposals on funding stage
    */
-  async getTopTenProposals(): Promise<string[]> {
+  async getTopTenProposals(): Promise<Array<string>> {
     const toTenProposals = await getTopTenProposals(this.getProvider(), this.id);
     const formattedToTenProposals = toTenProposals.map(id => id.toString());
     return formattedToTenProposals;
@@ -242,7 +248,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param proposals Array of proposals to check.
    * @returns promise to transaction
    */
-  async updateSlate(signer: Signer, proposals: string[]): Promise<WrappedTransaction> {
+  async updateSlate(signer: Signer, proposals: Array<string>): Promise<WrappedTransaction> {
     const proposalsIds = proposals.map(proposalId => BigNumber.from(proposalId));
     return updateSlate(signer, proposalsIds, this.id);
   }
@@ -251,7 +257,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * get the funded proposal slate for a given distributionId, and slate hash.
    * @returns The array of proposalIds that are in the funded slate hash.
    */
-  async getFundedProposalSlate(): Promise<string[]> {
+  async getFundedProposalSlate(): Promise<Array<string>> {
     const proposals = await getFundedProposalSlate(this.getProvider(), this.fundedSlateHash);
 
     const proposalIds = proposals.map(id => id.toString());
@@ -264,9 +270,12 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
    * @param tokensAvailable treasury.
    * @returns proposals[] a new slate of proposals
    */
-  async getOptimalProposals(proposalIds: string[], tokensAvailable: BigNumber): Promise<string[]> {
-    let bestProposals: ProposalInfo[];
-    let proposals: ProposalInfo[] = [];
+  async getOptimalProposals(
+    proposalIds: Array<string>,
+    tokensAvailable: BigNumber
+  ): Promise<Array<string>> {
+    let bestProposals: Array<ProposalInfo>;
+    let proposals: Array<ProposalInfo> = [];
 
     const getEachProposalInfo = async (proposalId: string): Promise<ProposalInfo> => {
       const proposalInfo = await getProposalInfo(this.getProvider(), BigNumber.from(proposalId));

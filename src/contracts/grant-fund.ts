@@ -113,8 +113,8 @@ export async function getDescriptionHash(provider: SignerOrProvider, description
 export async function executeProposal(
   signer: SignerOrProvider,
   targets: Address[],
-  values: number[],
-  calldata: string[],
+  values: Array<number>,
+  calldata: Array<string>,
   descriptionHash: string
 ) {
   const contractInstance: Contract = getGrantsFundContract(signer);
@@ -127,7 +127,7 @@ export async function executeProposal(
 export async function getTopTenProposals(
   provider: SignerOrProvider,
   distributionId: number
-): Promise<BigNumber[]> {
+): Promise<Array<BigNumber>> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getTopTenProposals(distributionId);
 }
@@ -196,7 +196,7 @@ export async function fundingVote(signer: Signer, votes: FormattedVoteParams[]) 
 
 export async function updateSlate(
   signer: Signer,
-  proposalIds: BigNumber[],
+  proposalIds: Array<BigNumber>,
   distributionId: number
 ) {
   const contractInstance: Contract = getGrantsFundContract(signer);
@@ -209,7 +209,7 @@ export async function updateSlate(
 export async function getFundedProposalSlate(
   provider: SignerOrProvider,
   slateHash: string
-): Promise<BigNumber[]> {
+): Promise<Array<BigNumber>> {
   const contractInstance: Contract = getGrantsFundContract(provider);
   return await contractInstance.getFundedProposalSlate(slateHash);
 }

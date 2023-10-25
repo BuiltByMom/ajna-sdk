@@ -104,8 +104,8 @@ export async function lpAllowance(
 export async function increaseLPAllowance(
   contract: Contract,
   spender: Address,
-  indexes: BigNumberish[],
-  amounts: BigNumberish[],
+  indexes: Array<BigNumberish>,
+  amounts: Array<BigNumberish>,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(
@@ -159,7 +159,6 @@ export async function bucketTake(
   );
 }
 
-// TODO: should maxAmount / collateral be renamed?
 export async function take(
   contract: Contract,
   borrowerAddress: Address,

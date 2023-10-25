@@ -175,7 +175,7 @@ export class Bucket {
    */
   async getPosition(lenderAddress: Address): Promise<Position> {
     // pool contract multicall to find pending debt and LPB
-    let data: string[] = await this.pool.ethcallProvider.all([
+    let data: Array<string> = await this.pool.ethcallProvider.all([
       this.pool.contractMulti.debtInfo(),
       this.pool.contractMulti.lenderInfo(this.index, lenderAddress),
     ]);
