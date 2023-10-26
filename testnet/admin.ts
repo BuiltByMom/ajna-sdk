@@ -89,7 +89,7 @@ const privateKeys = [
 
 const checkRequiredEnv = () => {
   const requiredValues = ['ETH_RPC_URL', 'AJNA_TOKEN_ADDRESS', 'AJNA_GRANT_FUND'];
-  const errors: string[] = [];
+  const errors: Array<string> = [];
   for (const key of requiredValues) {
     const value = process.env[key];
     if (value === undefined || value === '') {
@@ -334,7 +334,7 @@ const handleGetTopTenProposals = async () => {
 
 const handleUpdateSlate = async () => {
   const dp = await ajna.grants.getActiveDistributionPeriod();
-  const proposals: string[] = [];
+  const proposals: Array<string> = [];
   if (dp) {
     // eslint-disable-next-line no-constant-condition
     while (true) {

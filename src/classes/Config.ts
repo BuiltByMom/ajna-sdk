@@ -1,7 +1,7 @@
 import { Address } from '../types';
 
 /**
- * manages static protocol configuration, particularly contract addresses for a single chain
+ * Manages static protocol configuration, particularly contract addresses for a single chain.
  */
 class Config {
   static erc20PoolFactory: Address;
@@ -13,7 +13,7 @@ class Config {
   static burnWrapper: Address;
 
   /**
-   * allows consumer to configure with their own addresses
+   * Allows consumer to configure with their own addresses.
    * @param erc20PoolFactory address of the factory contract which creates fungible pools
    * @param erc721PoolFactory address of the factory contract which creates NFT pools
    * @param poolUtils address of the readonly utility contract
@@ -40,7 +40,7 @@ class Config {
   }
 
   /**
-   * configures addresses from known environment variables
+   * Configures addresses from known environment variables.
    */
   static fromEnvironment() {
     return new Config(

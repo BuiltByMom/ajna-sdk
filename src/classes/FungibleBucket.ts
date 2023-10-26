@@ -6,7 +6,7 @@ import { CallData, SdkError, SignerOrProvider } from '../types';
 import { wmul } from '../utils/numeric';
 
 /**
- * models a price bucket in a pool with ERC-20 collateral
+ * Models a price bucket in a pool with ERC-20 collateral.
  */
 export class FungibleBucket extends Bucket {
   /**
@@ -19,7 +19,7 @@ export class FungibleBucket extends Bucket {
   }
 
   /**
-   * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
+   * Withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left).
    * @param signer address to redeem LP
    * @returns promise to transaction
    */

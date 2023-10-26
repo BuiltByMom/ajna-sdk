@@ -50,7 +50,7 @@ export function getSubsetHash(tokensIds: Array<BigNumber>): string {
   const ERC721_NON_SUBSET_HASH =
     '0x93e3b87db48beb11f82ff978661ba6e96f72f582300e9724191ab4b5d7964364';
 
-  if (tokensIds.length == 0) return ERC721_NON_SUBSET_HASH;
+  if (tokensIds.length === 0) return ERC721_NON_SUBSET_HASH;
   else {
     // check the array of token ids is sorted in ascending order
     // revert if not sorted

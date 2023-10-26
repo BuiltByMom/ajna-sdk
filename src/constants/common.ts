@@ -1,6 +1,8 @@
 import { BigNumber, utils } from 'ethers';
 import { DistributionPeriodStage } from '../types/classes';
 
+export const HOUR_TO_SECONDS = 3600;
+
 // transaction management
 export const GAS_MULTIPLIER = 2;
 export const GAS_LIMIT_MAX = 1500000;

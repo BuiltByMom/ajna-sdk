@@ -1,16 +1,17 @@
-import { constants, providers } from 'ethers';
 import { expect } from '@jest/globals';
+import { constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { FungiblePool } from '../classes/FungiblePool';
+import { HOUR_TO_SECONDS } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
-import { TEST_CONFIG as config } from './test-constants';
-import { submitAndVerifyTransaction } from './test-utils';
 import { AuctionStatus } from '../types';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
 import { toWad, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getBlockTime } from '../utils/time';
+import { TEST_CONFIG as config } from './test-constants';
+import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
@@ -273,7 +274,7 @@ describe('Liquidations', () => {
     const liquidation = pool.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
-    const jumpTimeSeconds = 12 * 3600; // 12 hours
+    const jumpTimeSeconds = 12 * HOUR_TO_SECONDS; // 12 hours
     await timeJump(provider, jumpTimeSeconds);
 
     // take
@@ -308,7 +309,7 @@ describe('Liquidations', () => {
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait just over 72 hours
-    const three_days = 72 * 3600; // 72 hours
+    const three_days = 72 * HOUR_TO_SECONDS; // 72 hours
     await timeJump(provider, three_days + 12);
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isSettleable).toBe(true);
@@ -366,7 +367,7 @@ describe('Liquidations', () => {
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait 200 hours
-    const jumpTimeSeconds = 200 * 3600; // 200 hours
+    const jumpTimeSeconds = 200 * HOUR_TO_SECONDS; // 200 hours
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 

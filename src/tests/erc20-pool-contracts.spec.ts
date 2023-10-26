@@ -1,18 +1,18 @@
+import { expect } from '@jest/globals';
 import { BigNumber, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
+import { FungibleBucket } from '../classes/FungibleBucket';
 import { FungiblePool } from '../classes/FungiblePool';
+import { Stats } from '../classes/Pool';
+import { Config, HOUR_TO_SECONDS } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import { addAccountFromKey } from '../utils/add-account';
 import { mine, timeJump } from '../utils/ganache';
 import { fromWad, toWad, wdiv, wmul } from '../utils/numeric';
-import { TEST_CONFIG as config } from './test-constants';
-import { getBlockTime, getExpiry } from '../utils/time';
-import { submitAndVerifyTransaction } from './test-utils';
-import { expect } from '@jest/globals';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
-import { Config } from '../constants';
-import { Stats } from '../classes/Pool';
-import { FungibleBucket } from '../classes/FungibleBucket';
+import { getBlockTime, getExpiry } from '../utils/time';
+import { TEST_CONFIG as config } from './test-constants';
+import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(80000);
 
@@ -152,7 +152,7 @@ describe('ERC20 Pool', () => {
 
   it('should update interest rate successfully', async () => {
     const statsBefore = await pool.getStats();
-    await timeJump(provider, 3600 * 12);
+    await timeJump(provider, HOUR_TO_SECONDS * 12);
 
     const tx = await pool.updateInterest(signerLender);
     await tx.verifyAndSubmit();
@@ -637,7 +637,7 @@ describe('ERC20 Pool', () => {
     await submitAndVerifyTransaction(tx);
 
     // wait a year (8760 hours)
-    let jumpTimeSeconds = 8760 * 3600;
+    let jumpTimeSeconds = 8760 * HOUR_TO_SECONDS;
     await timeJump(provider, jumpTimeSeconds);
 
     // check and repay debt, expected debt value around 1053
@@ -669,7 +669,7 @@ describe('ERC20 Pool', () => {
     expect(takeable).toBe(true);
 
     // wait 32 hours
-    jumpTimeSeconds = 32 * 3600;
+    jumpTimeSeconds = 32 * HOUR_TO_SECONDS;
     await timeJump(provider, jumpTimeSeconds);
     status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);

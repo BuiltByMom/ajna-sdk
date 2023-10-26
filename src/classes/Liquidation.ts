@@ -1,12 +1,12 @@
-import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { HOUR_TO_SECONDS, MAX_SETTLE_BUCKETS } from '../constants';
+import { bucketTake, settle, take } from '../contracts/pool';
+import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { getBlockTime } from '../utils/time';
-import { MAX_SETTLE_BUCKETS } from '../constants';
-import { bucketTake, settle, take } from '../contracts/pool';
 
 /**
- * Models an auction used to liquidate an undercollateralized borrower
+ * Models an auction used to liquidate an undercollateralized borrower.
  */
 export class Liquidation {
   provider: SignerOrProvider;
@@ -58,10 +58,11 @@ export class Liquidation {
     const kickTime = new Date(kickTimestampNumber * 1000);
     const elapsedTime = currentTimestamp - kickTimestampNumber;
 
-    const isGracePeriod = elapsedTime < 3600;
+    const isGracePeriod = elapsedTime < HOUR_TO_SECONDS;
     const zero = constants.Zero;
     const isTakeable = !isGracePeriod && collateral.gt(zero);
-    const isSettleable = kickTimestampNumber > 0 && (elapsedTime >= 3600 * 72 || collateral.eq(0));
+    const isSettleable =
+      kickTimestampNumber > 0 && (elapsedTime >= HOUR_TO_SECONDS * 72 || collateral.eq(0));
 
     return {
       kickTime,
@@ -76,7 +77,7 @@ export class Liquidation {
   }
 
   /**
-   * performs arb take operation during debt liquidation auction
+   * Performs arb take operation during debt liquidation auction.
    * @param signer taker
    * @param bucketIndex identifies the price bucket
    * @returns promise to transaction
@@ -88,7 +89,7 @@ export class Liquidation {
   }
 
   /**
-   * performs deposit take operation during debt liquidation auction
+   * Performs deposit take operation during debt liquidation auction.
    * @param signer taker
    * @param bucketIndex identifies the price bucket
    * @returns promise to transaction
@@ -114,7 +115,7 @@ export class Liquidation {
   }
 
   /**
-   * called by actors to purchase collateral from the auction in exchange for quote token with otption to invoke callback function
+   * Called by actors to purchase collateral from the auction in exchange for quote token with otption to invoke callback function.
    * @param signer taker
    * @param maxAmount max amount of collateral that will be taken from the auction
    * @param callee identifies where collateral should be sent and where quote token should be obtained
@@ -131,7 +132,7 @@ export class Liquidation {
   }
 
   /**
-   *  called by actors to settle an amount of debt in a completed liquidation
+   *  Called by actors to settle an amount of debt in a completed liquidation.
    *  @param  signer settler
    *  @param  maxDepth  measured from HPB, maximum number of buckets deep to settle debt,
    *                    used to prevent unbounded iteration clearing large liquidations

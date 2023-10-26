@@ -191,7 +191,7 @@ describe('ERC721 Pool', () => {
   });
 
   it('calculated subsetHash for empty array should match the contract', async () => {
-    const subset: BigNumber[] = [];
+    const subset: Array<BigNumber> = [];
     const poolFactoryContract = getErc721PoolFactoryContract(provider);
 
     const subsetHash = await poolFactoryContract.getNFTSubsetHash(subset);

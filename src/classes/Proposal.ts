@@ -3,7 +3,7 @@ import { getProposalInfo, getProposalState } from '../contracts/grant-fund';
 import { IProposal, proposalStates, SignerOrProvider } from '../types';
 
 /**
- * models a grants fund proposal
+ * Models a grants fund proposal.
  */
 export class Proposal implements IProposal {
   provider: SignerOrProvider;

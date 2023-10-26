@@ -20,7 +20,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   }
 
   /**
-   * creates a new collection pool allowing all tokenIds
+   * Creates a new collection pool allowing all tokenIds.
    * @param signer pool creator
    * @param nftAddress address of the ERC721 collateral token
    * @param quoteAddress address of the ERC20 quote token
@@ -37,7 +37,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   }
 
   /**
-   * creates a new subset pool whitelisting specific tokenIds
+   * Creates a new subset pool whitelisting specific tokenIds.
    * @param signer pool creator
    * @param nftAddress address of the ERC721 collateral token
    * @param subset array of tokenIds to whitelist
@@ -56,7 +56,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   }
 
   /**
-   * returns existing pool for two tokens
+   * Returns existing pool for two tokens.
    * @param collateralAddress token address
    * @param subset array of tokenIds for subset pool, empty array for collection pool
    * @param quoteAddress token address
@@ -76,7 +76,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   }
 
   /**
-   * returns existing pool
+   * Returns existing pool.
    * @param poolAddress address of pool
    * @returns {@link NonfungiblePool} modeling desired pool
    */
@@ -87,7 +87,7 @@ export class NonfungiblePoolFactory extends ContractBase implements IERC721PoolF
   }
 
   /**
-   * finds address of an existing pool
+   * Finds address of an existing pool.
    * @param collateralAddress token address
    * @param subset specifies tokenIds whitelisted in pool
    * @param quoteAddress token address

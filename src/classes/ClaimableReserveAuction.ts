@@ -1,6 +1,6 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { kickReserveAuction, takeReserves } from '../contracts/pool';
+import { Address, PoolInfoUtils, SignerOrProvider } from '../types';
 import { wmul } from '../utils/numeric';
 
 export interface CRAStatus {
@@ -19,7 +19,7 @@ export interface CRAStatus {
 }
 
 /**
- * Models a pool's claimable reserve auction (CRA)
+ * Models a pool's claimable reserve auction (CRA).
  */
 export class ClaimableReserveAuction {
   provider: SignerOrProvider;
@@ -46,7 +46,7 @@ export class ClaimableReserveAuction {
   }
 
   /**
-   *  purchases claimable reserves during a `CRA` using `Ajna` token
+   *  Purchases claimable reserves during a `CRA` using `Ajna` token.
    *  @param maxAmount maximum amount of quote token to purchase at the current auction price
    *  @return promise to transaction
    */
@@ -57,7 +57,7 @@ export class ClaimableReserveAuction {
   }
 
   /**
-   *  called by actor to start a `Claimable Reserve Auction` (`CRA`)
+   *  Called by actor to start a `Claimable Reserve Auction` (`CRA`).
    *  @param signer auction initiator
    *  @return promise to transaction
    */
@@ -68,7 +68,7 @@ export class ClaimableReserveAuction {
   }
 
   /**
-   * retrieves claimable reserve auction statistics
+   * Retrieves claimable reserve auction statistics.
    * @returns {@link CRAStatus}
    */
   async getStatus(): Promise<CRAStatus> {
@@ -94,7 +94,7 @@ export class ClaimableReserveAuction {
   }
 
   /**
-   * defines if auction is ongoing
+   * Defines if auction is ongoing.
    * @returns boolean that defines if auction is ongoing
    */
   async isTakeable() {
