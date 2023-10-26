@@ -234,7 +234,7 @@ export class Bucket {
   }
 
   /**
-   * Checks a lender's LP balance in a bucket.
+   * Retrieves a lender's LP balance in a bucket.
    * @param lenderAddress lender
    * @param index fenwick index of the desired bucket
    * @returns LP balance
@@ -273,7 +273,7 @@ export class Bucket {
   };
 
   /**
-   * Allows lender to kick a loan based on a LUP calculated as if they withdraw liquidity.
+   * Kick a loan with a lender's liquidity based on a LUP calculated as if they withdraw liquidity.
    * @param signer lender
    * @param limitIndex bucket in which lender has an LP balance
    * @returns promise to transaction
