@@ -1,5 +1,5 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { MAX_SETTLE_BUCKETS } from '../constants';
+import { HOUR_TO_SECONDS, MAX_SETTLE_BUCKETS } from '../constants';
 import { bucketTake, settle, take } from '../contracts/pool';
 import { auctionStatus, getPoolInfoUtilsContract } from '../contracts/pool-info-utils';
 import { Address, AuctionStatus, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
@@ -58,10 +58,11 @@ export class Liquidation {
     const kickTime = new Date(kickTimestampNumber * 1000);
     const elapsedTime = currentTimestamp - kickTimestampNumber;
 
-    const isGracePeriod = elapsedTime < 3600;
+    const isGracePeriod = elapsedTime < HOUR_TO_SECONDS;
     const zero = constants.Zero;
     const isTakeable = !isGracePeriod && collateral.gt(zero);
-    const isSettleable = kickTimestampNumber > 0 && (elapsedTime >= 3600 * 72 || collateral.eq(0));
+    const isSettleable =
+      kickTimestampNumber > 0 && (elapsedTime >= HOUR_TO_SECONDS * 72 || collateral.eq(0));
 
     return {
       kickTime,
