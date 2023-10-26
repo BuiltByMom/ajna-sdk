@@ -1,26 +1,26 @@
 import { BigNumber, Signer, constants } from 'ethers';
-import { getExpiry } from '../utils/time';
 import { MAX_FENWICK_INDEX } from '../constants';
 import { getErc20Contract } from '../contracts/erc20';
 import {
   addCollateral,
-  removeCollateral,
   approve,
-  drawDebt,
-  getErc20PoolContractMulti,
-  repayDebt,
-  getErc20PoolContract,
   collateralScale,
+  drawDebt,
+  getErc20PoolContract,
+  getErc20PoolContractMulti,
+  removeCollateral,
+  repayDebt,
 } from '../contracts/erc20-pool';
 import { lenderInfo } from '../contracts/pool';
 import { Address, CallData, SdkError, SignerOrProvider } from '../types';
-import { Pool } from './Pool';
 import { wmul } from '../utils/numeric';
 import { priceToIndex } from '../utils/pricing';
+import { getExpiry } from '../utils/time';
 import { FungibleBucket } from './FungibleBucket';
+import { Pool } from './Pool';
 
 /**
- * models a pool with ERC-20 collateral
+ * Models a pool with ERC-20 collateral.
  */
 export class FungiblePool extends Pool {
   constructor(provider: SignerOrProvider, poolAddress: Address, ajnaAddress: Address) {
@@ -45,7 +45,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * approve this pool to manage collateral token
+   * Approve this pool to manage collateral token.
    * @param signer pool user
    * @param allowance normalized approval amount (or MaxUint256)
    * @returns promise to transaction
@@ -58,7 +58,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * pledges collateral and draws debt
+   * Pledges collateral and draws debt.
    * @param signer borrower
    * @param amountToBorrow new debt to draw
    * @param collateralToPledge new collateral to deposit
@@ -84,7 +84,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * repays debt and pulls collateral
+   * Repays debt and pulls collateral.
    * @param signer borrower
    * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
    * @param collateralAmountToPull amount of collateral to withdraw after repayment
@@ -111,7 +111,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * deposit collateral token into a bucket (not for borrowers)
+   * Deposit collateral token into a bucket (not for borrowers).
    * @param signer address to be awarded LP
    * @param collateralAmountToAdd deposit amount
    * @param bucketIndex identifies the price bucket
@@ -135,7 +135,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * withdraw collateral from a bucket (not for borrowers)
+   * Withdraw collateral from a bucket (not for borrowers).
    * @param signer address to redeem LP
    * @param bucketIndex identifies the price bucket
    * @param maxAmount optionally limits amount to remove
@@ -188,7 +188,7 @@ export class FungiblePool extends Pool {
   }
 
   /**
-   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
+   * Withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left).
    * @param signer address to redeem LP
    * @param bucketIndices array of bucket indices to withdraw liquidity from
    * @returns promise to transaction

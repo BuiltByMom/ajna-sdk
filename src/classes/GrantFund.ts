@@ -25,10 +25,10 @@ import {
   SignerOrProvider,
   WrappedTransaction,
 } from '../types';
+import { Config } from './Config';
 import { ContractBase } from './ContractBase';
 import { DistributionPeriod } from './DistributionPeriod';
 import { Proposal } from './Proposal';
-import { Config } from './Config';
 
 /**
  * Class used to iteract with grants fund contract.
@@ -39,7 +39,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * Get total token supply
+   * Get total token supply.
    * @returns BigNumber
    */
   async getTotalSupply() {
@@ -47,7 +47,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * Delegates vote to the given delegatee
+   * Delegates vote to the given delegatee.
    * @param signer vote delegator
    * @param delegatee address of the delegateee
    * @returns promise to transaction
@@ -57,7 +57,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * Get the address account is currently delegating to
+   * Get the address account is currently delegating to.
    * @param address delegator
    * @returns address
    */
@@ -66,7 +66,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * starts a new distribution period, ensuring the treasury is funded
+   * Starts a new distribution period, ensuring the treasury is funded.
    * @param signer transaction signer
    * @returns promise to transaction
    */
@@ -78,7 +78,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets the current treasury balance
+   * Gets the current treasury balance.
    * @returns BigNumber
    */
   async getTreasury() {
@@ -86,7 +86,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets details of the distribution period
+   * Gets details of the distribution period.
    * @param signer caller
    * @param distributionId id of the distrituion period
    * @returns DistributionPeriod
@@ -122,7 +122,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets details of the currently active distribution period
+   * Gets details of the currently active distribution period.
    * @param signer caller
    * @returns DistributionPeriod
    */
@@ -140,7 +140,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * creates a proposal in the current distribution period
+   * Creates a proposal in the current distribution period.
    * @param signer caller
    * @param params ProposalParams object
    * @returns promise to transaction
@@ -150,7 +150,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * gets a proposal object with the given proposalId
+   * Gets a proposal object with the given proposalId.
    * @param proposalId BigNumber
    * @returns Proposal object
    */
@@ -159,7 +159,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * distributes delegate reward based on delegatee Vote share.
+   * Distributes delegate reward based on delegatee Vote share.
    * @param distributionId_ Id of distribution from which delegatee wants to claim their reward.
    * @return rewardClaimed_  amount of reward claimed by delegatee.
    */
@@ -168,7 +168,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * retrieve the delegate reward accrued to a voter in a given distribution period.
+   * Retrieve the delegate reward accrued to a voter in a given distribution period.
    * @param  distributionId_ The distributionId to calculate rewards for.
    * @param  voter_ the address of the voter to calculate rewards for.
    * @return rewards_ the rewards earned by the voter for voting in that distribution period.
@@ -178,7 +178,7 @@ export class GrantFund extends ContractBase implements IGrantFund {
   }
 
   /**
-   * get the reward claim status of an account in a given distribution period.
+   * Get the reward claim status of an account in a given distribution period.
    * @param  distributionId_ The distributionId of the distribution period to check.
    * @param  voter_ the address of the voter to check.
    * @return rewards_ the reward claim status of the account in the distribution period.

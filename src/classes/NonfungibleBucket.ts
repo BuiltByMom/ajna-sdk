@@ -21,7 +21,7 @@ export class NonfungibleBucket extends Bucket {
   }
 
   /**
-   * withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left)
+   * Withdraw all available liquidity from the given bucket using multicall transaction (first quote token, then - collateral if LP is left).
    * @param signer address to redeem LP
    * @returns promise to transaction
    */

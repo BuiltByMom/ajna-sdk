@@ -178,7 +178,7 @@ export abstract class Pool {
   }
 
   /**
-   * approve this pool to manage Ajna token
+   * Approve this pool to manage Ajna token.
    * @param signer pool user
    * @param allowance approval amount (or MaxUint256)
    * @returns promise to transaction
@@ -188,7 +188,7 @@ export abstract class Pool {
   }
 
   /**
-   * approve this pool to manage quote token
+   * Approve this pool to manage quote token.
    * @param signer pool user
    * @param allowance normalized approval amount (or MaxUint256)
    * @returns promise to transaction
@@ -201,7 +201,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieves pool reference prices
+   * Retrieves pool reference prices.
    * @returns {@link PriceInfo}
    */
   async getPrices(): Promise<PriceInfo> {
@@ -226,7 +226,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieves pool statistics
+   * Retrieves pool statistics.
    * @returns {@link Stats}
    */
   async getStats(): Promise<Stats> {
@@ -271,8 +271,8 @@ export abstract class Pool {
   }
 
   /**
-   * measuring from highest price bucket with liquidity, determines index at which all liquidity in
-   * the book has been utilized by specified debt; useful for estimating LUP
+   * Measuring from highest price bucket with liquidity, determines index at which all liquidity in
+   * the book has been utilized by specified debt; useful for estimating LUP.
    * @param debtAmount pool debt to be applied to liquidity
    * @returns fenwick index
    */
@@ -281,7 +281,7 @@ export abstract class Pool {
   }
 
   /**
-   * enables signer to bundle transactions together atomically in a single request
+   * Enables signer to bundle transactions together atomically in a single request.
    * @param signer consumer initiating transactions
    * @param callData array of transactions to sign and submit
    * @returns promise to transaction
@@ -352,7 +352,7 @@ export abstract class Pool {
   }
 
   /**
-    retrieves origination fee rate for this pool; multiply by new debt to get fee
+    Retrieves origination fee rate for this pool; multiply by new debt to get fee.
     @returns origination fee rate, in WAD precision
    */
   async getOriginationFeeRate() {
@@ -360,7 +360,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieve information for a specific loan
+   * Retrieve information for a specific loan.
    * @param borrowerAddress identifies the loan
    * @returns {@link Loan}
    */
@@ -406,7 +406,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieve information for a list of loans
+   * Retrieve information for a list of loans.
    * @param borrowerAddresses identifies the loans
    * @returns map of Loans, indexed by borrowerAddress
    */
@@ -463,7 +463,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieve statuses for multiple liquidations from the PoolInfoUtils contract
+   * Retrieve statuses for multiple liquidations from the PoolInfoUtils contract.
    * @param borrowerAddresses identifies loans under liquidation
    * @returns map of AuctionStatuses, indexed by borrower address
    */
@@ -502,7 +502,7 @@ export abstract class Pool {
   }
 
   /**
-   * calculates bond required to liquidate a borrower
+   * Calculates bond required to liquidate a borrower.
    * @param momp most optimistic matching price of the pool
    * @param tp threshold price of the loan
    * @param borrowerDebt loan debt
@@ -519,7 +519,7 @@ export abstract class Pool {
   }
 
   /**
-   * initiates a liquidation of a loan
+   * Initiates a liquidation of a loan.
    * @param signer kicker
    * @param borrowerAddress identifies the loan to liquidate
    * @param limitIndex reverts if neutral price of loan drops below this bucket before TX processed
@@ -532,8 +532,8 @@ export abstract class Pool {
   }
 
   /**
-   * checks whether threshold price of a loan is currently above the LUP;
-   * does NOT estimate whether it would be profitable to liquidate the loan
+   * Checks whether threshold price of a loan is currently above the LUP;
+   * does NOT estimate whether it would be profitable to liquidate the loan.
    * @param borrowerAddress identifies the loan to check
    * @returns true if loan may be liquidated, otherwise false
    */
@@ -557,7 +557,7 @@ export abstract class Pool {
   }
 
   /**
-   * retrieves status of an auction kicker's liquidation bond
+   * Retrieves status of an auction kicker's liquidation bond.
    * @param kickerAddress identifies the actor who kicked liquidations
    */
   async kickerInfo(kickerAddress: Address): Promise<KickerInfo> {
@@ -570,7 +570,7 @@ export abstract class Pool {
   }
 
   /**
-   * called by kickers to withdraw liquidation bond from one or more auctions kicked
+   * Called by kickers to withdraw liquidation bond from one or more auctions kicked.
    * @param signer kicker
    * @param maxAmount optional amount of bond to withdraw; defaults to all
    * @returns promise to transaction
@@ -582,7 +582,7 @@ export abstract class Pool {
   }
 
   /**
-   * estimates how drawing more debt and/or pledging more collateral would impact loan
+   * Estimates how drawing more debt and/or pledging more collateral would impact loan.
    * @param borrowerAddress identifies the loan
    * @param debtAmount additional amount of debt to draw (or 0)
    * @param collateralAmount additional amount of collateral to pledge (or 0)
@@ -658,7 +658,7 @@ export abstract class Pool {
   }
 
   /**
-   * estimates how repaying debt and/or pulling collateral would impact loan
+   * Estimates how repaying debt and/or pulling collateral would impact loan.
    * @param borrowerAddress identifies the loan
    * @param debtAmount amount of debt to repay (or 0)
    * @param collateralAmount amount of collateral to pull (or 0)
@@ -732,8 +732,8 @@ export abstract class Pool {
   }
 
   /**
-   * determines whether interest rate will increase, decrease, or remain the same as a result of
-   * updating the interest rate, without regard to the 12-hour rate update interval
+   * Determines whether interest rate will increase, decrease, or remain the same as a result of
+   * updating the interest rate, without regard to the 12-hour rate update interval.
    * @param poolStats pool statistics obtained from @link{Pool.getStats}
    */
   estimateUpdateInterest(poolStats: Stats) {
@@ -755,8 +755,8 @@ export abstract class Pool {
   }
 
   /**
-   * may be called periodically by actors to adjust interest rate if no other TXes have occurred
-   * in the past 12 hours
+   * May be called periodically by actors to adjust interest rate if no other TXes have occurred
+   * in the past 12 hours.
    * @param signer actor who wants to update the interest rate
    * @returns transaction
    */
@@ -766,7 +766,7 @@ export abstract class Pool {
   }
 
   /**
-   * updates the neutral price of a borrower's own loan, often useful after partial repayment
+   * Updates the neutral price of a borrower's own loan, often useful after partial repayment.
    * @param borrower borrower who wishes to stamp their own loan
    */
   async stampLoan(signer: Signer) {
@@ -775,7 +775,7 @@ export abstract class Pool {
   }
 
   /**
-   * returns `Claimable Reserve Auction` (`CRA`) wrapper object
+   * Returns `Claimable Reserve Auction` (`CRA`) wrapper object.
    * @returns CRA wrapper object
    */
   getClaimableReserveAuction() {
@@ -788,7 +788,7 @@ export abstract class Pool {
   }
 
   /**
-   * create a new empty LP token for the purpose of memorializing lender position(s)
+   * Create a new empty LP token for the purpose of memorializing lender position(s).
    * @param signer lender
    * @param subset optional subset of NFT ids in pool
    * @returns promise to transaction
@@ -801,7 +801,7 @@ export abstract class Pool {
   }
 
   /**
-   * burn an empty LP token which has already been redeemed for LP in all buckets
+   * Burn an empty LP token which has already been redeemed for LP in all buckets.
    * @param signer LP token holder
    * @param tokenId identifies the empty token to burn
    * @returns promise to transaction

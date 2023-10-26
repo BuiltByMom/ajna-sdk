@@ -90,7 +90,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * Get current distribution period stage
+   * Get current distribution period stage.
    * @returns string, distribution period stage
    */
   async distributionPeriodStage(): Promise<DistributionPeriodStage> {
@@ -108,7 +108,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * Get the voter's voting power in the screening stage of a distribution period
+   * Get the voter's voting power in the screening stage of a distribution period.
    * @param distributionId the distributionId of the distribution period to check
    * @param address the address of the voter to check
    * @returns the voter's voting power
@@ -118,7 +118,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * Get the remaining quadratic voting power available to the voter in the funding stage of a distribution period
+   * Get the remaining quadratic voting power available to the voter in the funding stage of a distribution period.
    * @param distributionId the distributionId of the distribution period to check
    * @param address the address of the voter to check
    * @returns the voter's remaining quadratic voting power
@@ -128,7 +128,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * Get the voter's voting power based on current distribution period stage
+   * Get the voter's voting power based on current distribution period stage.
    * @param address the address of the voter to check
    * @returns the voter's voting power
    */
@@ -212,7 +212,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
     const isDistributionPeriodOnScreeningStage =
       distributionPeriodStage === DistributionPeriodStage.SCREENING;
 
-    // Format to what's expected by the contract
+    // Format to what's expected by the contract.
     const formattedVotes = await Promise.all(
       votes.map<FormattedVoteParams>(([proposalId, vote]) => {
         if (isDistributionPeriodOnScreeningStage) {
@@ -233,7 +233,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * Get top ten proposals on funding stage
+   * Get top ten proposals on funding stage.
    * @param distributionId the distributionId of the distribution period to check
    * @returns top ten proposals on funding stage
    */
@@ -244,7 +244,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals.
+   * Check if a slate of proposals meets requirements, and maximizes votes. If so, set the provided proposal slate as the new top slate of proposals.
    * @param proposals Array of proposals to check.
    * @returns promise to transaction
    */
@@ -254,7 +254,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * get the funded proposal slate for a given distributionId, and slate hash.
+   * Get the funded proposal slate for a given distributionId, and slate hash.
    * @returns The array of proposalIds that are in the funded slate hash.
    */
   async getFundedProposalSlate(): Promise<Array<string>> {
@@ -266,7 +266,7 @@ funded slate hash: ${fromWad(this.fundedSlateHash)}
   }
 
   /**
-   * get best proposals based on the combination of votes received and tokens requested over tokens available.
+   * Get best proposals based on the combination of votes received and tokens requested over tokens available.
    * @param tokensAvailable treasury.
    * @returns proposals[] a new slate of proposals
    */
