@@ -133,9 +133,9 @@ export abstract class Pool {
   contractUtilsMulti: ContractMulti;
   poolAddress: Address;
   collateralAddress: Address;
-  collateralSymbol: string | undefined;
+  collateralSymbol?: string;
   quoteAddress: Address;
-  quoteSymbol: string | undefined;
+  quoteSymbol?: string;
   ajnaAddress: Address;
   name: string;
   utils: PoolUtils;
