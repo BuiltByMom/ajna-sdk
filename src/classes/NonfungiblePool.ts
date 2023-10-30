@@ -12,13 +12,13 @@ import {
   removeCollateral,
   repayDebt,
 } from '../contracts/erc721-pool';
-import { Pool } from './Pool';
-import { Address, CallData, SdkError, Signer, SignerOrProvider } from '../types';
-import { getExpiry } from '../utils/time';
-import { priceToIndex } from '../utils/pricing';
-import { NonfungibleBucket } from './NonfungibleBucket';
 import { lenderInfo } from '../contracts/pool';
+import { Address, CallData, SdkError, Signer, SignerOrProvider } from '../types';
 import { toWad, wadToIntRoundingDown, wmul } from '../utils/numeric';
+import { priceToIndex } from '../utils/pricing';
+import { getExpiry } from '../utils/time';
+import { NonfungibleBucket } from './NonfungibleBucket';
+import { Pool } from './Pool';
 
 class NonfungiblePool extends Pool {
   isSubset: boolean;
@@ -47,7 +47,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * approve this pool to transfer an NFT
+   * Approve this pool to transfer an NFT.
    * @param signer pool user
    * @param tokenId NFT token id
    * @returns promise to transaction
@@ -57,7 +57,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * approve this pool to transfer multiple NFTs
+   * Approve this pool to transfer multiple NFTs.
    * @param signer pool user
    * @returns promise to transaction
    */
@@ -66,7 +66,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * deposit one or more NFTs into a bucket (not for borrowers)
+   * Deposit one or more NFTs into a bucket (not for borrowers).
    * @param signer address to be awarded LP
    * @param bucketIndex identifies the price bucket
    * @param tokenIdsToAdd identifies NFTs to deposit
@@ -114,7 +114,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * withdraw collateral from a bucket (not for borrowers)
+   * Withdraw collateral from a bucket (not for borrowers).
    * @param signer address to redeem LP
    * @param bucketIndex identifies the price bucket
    * @param maxAmount optionally limits amount to remove
@@ -127,7 +127,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * pledges collateral and draws debt
+   * Pledges collateral and draws debt.
    * @param signer borrower
    * @param amountToBorrow new debt to draw
    * @param tokenIdsToPledge identifies NFTs to deposit as collateral
@@ -153,7 +153,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * repays debt and pulls collateral
+   * Repays debt and pulls collateral.
    * @param signer borrower
    * @param maxQuoteTokenAmountToRepay amount for partial repayment, MaxUint256 for full repayment, 0 for no repayment
    * @param noOfNFTsToPull number of NFTs to withdraw after repayment
@@ -226,7 +226,7 @@ class NonfungiblePool extends Pool {
   }
 
   /**
-   * withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left)
+   * Withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left).
    * @param signer address to redeem LP
    * @param bucketIndices array of bucket indices to withdraw liquidity from
    * @returns promise to transaction

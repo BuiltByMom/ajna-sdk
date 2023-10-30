@@ -1,16 +1,17 @@
-import { constants, Wallet, providers, BigNumber } from 'ethers';
 import { expect } from '@jest/globals';
+import { BigNumber, Wallet, constants, providers } from 'ethers';
 import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
+import { HOUR_TO_SECONDS } from '../constants';
 import { balanceOf, getNftContract } from '../contracts/erc721';
-import { TEST_CONFIG as config } from './test-constants';
-import { submitAndVerifyTransaction } from './test-utils';
 import { AuctionStatus } from '../types';
 import { addAccountFromKey } from '../utils/add-account';
 import { revertToSnapshot, takeSnapshot, timeJump } from '../utils/ganache';
 import { toWad, wmul } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getBlockTime } from '../utils/time';
+import { TEST_CONFIG as config } from './test-constants';
+import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
@@ -334,7 +335,7 @@ describe('ERC721 Liquidations', () => {
     const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
 
     // wait 8 hours
-    const jumpTimeSeconds = 12 * 3600; // 12 hours
+    const jumpTimeSeconds = 12 * HOUR_TO_SECONDS; // 12 hours
     await timeJump(provider, jumpTimeSeconds);
 
     // take some of the collateral
@@ -405,7 +406,7 @@ describe('ERC721 Liquidations', () => {
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait just over 72 hours
-    const three_days = 72 * 3600; // 72 hours
+    const three_days = 72 * HOUR_TO_SECONDS; // 72 hours
     await timeJump(provider, three_days + 12);
     auctionStatus = await liquidation.getStatus();
     expect(auctionStatus.isSettleable).toBe(true);
@@ -463,7 +464,7 @@ describe('ERC721 Liquidations', () => {
     }).rejects.toThrow('AuctionNotClearable()');
 
     // wait 71 hours
-    const jumpTimeSeconds = 71 * 3600;
+    const jumpTimeSeconds = 71 * HOUR_TO_SECONDS;
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 

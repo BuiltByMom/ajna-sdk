@@ -1,4 +1,6 @@
 import { BigNumber, Contract, Signer } from 'ethers';
+import { multicall } from '../contracts/common';
+import { lenderInfo, lpAllowance } from '../contracts/pool';
 import {
   getPositionIndexes,
   getPositionIndexesFiltered,
@@ -18,9 +20,7 @@ import {
   TransactionOverrides,
   WrappedTransaction,
 } from '../types';
-import { lenderInfo, lpAllowance } from '../contracts/pool';
 import { getExpiry } from '../utils/time';
-import { multicall } from '../contracts/common';
 
 export class LPToken {
   provider: SignerOrProvider;
@@ -58,7 +58,7 @@ export class LPToken {
   }
 
   /**
-   * moves LP balance from one or more buckets into this position NFT
+   * Moves LP balance from one or more buckets into this position NFT.
    * @param signer lender
    * @param pool pool in which lender added liquidity
    * @param indexes identifies the buckets which lender wants their LP moved into this position NFT
@@ -67,7 +67,7 @@ export class LPToken {
   async memorializePositions(
     signer: Signer,
     pool: Contract,
-    indexes: number[],
+    indexes: Array<number>,
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     const poolContract = pool.connect(signer);
@@ -99,7 +99,7 @@ export class LPToken {
   }
 
   /**
-   * removes LP balance from position NFT, placing back into pool
+   * Removes LP balance from position NFT, placing back into pool.
    * @param signer lender
    * @param pool pool for which this position NFT is holding LP balance for the lender
    * @param indexes identifies the buckets in which lender wants LP balance moved out of this position NFT
@@ -108,7 +108,7 @@ export class LPToken {
   async redeemPositions(
     signer: Signer,
     pool: Contract,
-    indexes: number[],
+    indexes: Array<number>,
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     if (indexes.length === 0) {
@@ -125,7 +125,7 @@ export class LPToken {
   }
 
   /**
-   * moves memorialized liquidity to a different bucket, allowing LP token holder to adjust position for market price change
+   * Moves memorialized liquidity to a different bucket, allowing LP token holder to adjust position for market price change.
    * @param signer lender
    * @param pool pool in which memorialized liquidity should be moved
    * @param fromIndex existing bucket in which lender's position is memorialized
@@ -156,7 +156,7 @@ export class LPToken {
   }
 
   /**
-   * returns an instance to an existing LP token
+   * Returns an instance to an existing LP token.
    * @param tokenId identifies the token
    * @returns LPToken instance
    */
@@ -165,7 +165,7 @@ export class LPToken {
   }
 
   /**
-   * Enables signer to bundle transactions together atomically in a single request
+   * Enables signer to bundle transactions together atomically in a single request.
    * @param signer consumer initiating transactions
    * @param callData array of transactions to sign and submit
    * @returns transaction

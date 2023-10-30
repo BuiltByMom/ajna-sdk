@@ -9,10 +9,10 @@ import {
   removeQuoteToken,
 } from '../contracts/pool';
 import {
-  getPoolInfoUtilsContract,
-  lpToQuoteTokens,
-  lpToCollateral,
   bucketInfo,
+  getPoolInfoUtilsContract,
+  lpToCollateral,
+  lpToQuoteTokens,
 } from '../contracts/pool-info-utils';
 import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { fromWad, toWad } from '../utils/numeric';
@@ -43,7 +43,7 @@ export interface Position {
 }
 
 /**
- * models a price bucket in a pool
+ * Models a price bucket in a pool.
  */
 export class Bucket {
   provider: SignerOrProvider;
@@ -75,7 +75,7 @@ export class Bucket {
   }
 
   /**
-   * enables signer to bundle transactions together atomically in a single request
+   * Enables signer to bundle transactions together atomically in a single request.
    * @param signer consumer initiating transactions
    * @param callData array of transactions to sign and submit
    * @returns promise to transaction
@@ -86,7 +86,7 @@ export class Bucket {
   }
 
   /**
-   * retrieve current state of the bucket.
+   * Retrieve current state of the bucket.
    * @returns {@link BucketStatus}
    */
   async getStatus(): Promise<BucketStatus> {
@@ -105,7 +105,7 @@ export class Bucket {
   }
 
   /**
-   * deposits quote token into the bucket
+   * Deposits quote token into the bucket.
    * @param signer lender
    * @param amount amount to deposit
    * @param ttlSeconds revert if not processed in this amount of block time
@@ -130,7 +130,7 @@ export class Bucket {
   }
 
   /**
-   * moves quote token from current bucket to another bucket
+   * Moves quote token from current bucket to another bucket.
    * @param signer lender
    * @param toIndex price bucket to which quote token should be deposited
    * @param maxAmountToMove optionally limits amount to move
@@ -158,7 +158,7 @@ export class Bucket {
   }
 
   /**
-   * removes quote token from the bucket
+   * Removes quote token from the bucket.
    * @param signer lender
    * @param maxAmount optionally limits amount to remove
    * @returns promise to transaction
@@ -170,12 +170,12 @@ export class Bucket {
   }
 
   /**
-   * shows a lender's position in a single bucket
+   * Shows a lender's position in a single bucket.
    * @returns {@link Position}
    */
   async getPosition(lenderAddress: Address): Promise<Position> {
     // pool contract multicall to find pending debt and LPB
-    let data: string[] = await this.pool.ethcallProvider.all([
+    let data: Array<string> = await this.pool.ethcallProvider.all([
       this.pool.contractMulti.debtInfo(),
       this.pool.contractMulti.lenderInfo(this.index, lenderAddress),
     ]);
@@ -234,7 +234,7 @@ export class Bucket {
   }
 
   /**
-   * checks a lender's LP balance in a bucket
+   * Retrieves a lender's LP balance in a bucket.
    * @param lenderAddress lender
    * @param index fenwick index of the desired bucket
    * @returns LP balance
@@ -259,7 +259,7 @@ export class Bucket {
   };
 
   /**
-   *  calculate how much collateral could be exchanged for LP.
+   *  Calculate how much collateral could be exchanged for LP.
    *  @param lpBalance amount of LP to redeem for collateral
    *  @returns The exact amount of collateral that can be exchanged for the given LP, WAD units.
    */
@@ -273,7 +273,7 @@ export class Bucket {
   };
 
   /**
-   * allows lender to kick a loan based on a LUP calculated as if they withdraw liquidity
+   * Kick a loan with a lender's liquidity based on a LUP calculated as if they withdraw liquidity.
    * @param signer lender
    * @param limitIndex bucket in which lender has an LP balance
    * @returns promise to transaction

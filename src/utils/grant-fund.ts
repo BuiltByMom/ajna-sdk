@@ -8,13 +8,13 @@ type FormattedVotes = [proposalId: string, votesUsed: BigNumber];
 /**
  * Scale the votes to use the full voting power based on a set of votes provided
  * @param {BigNumber} votingPower Voting power
- * @param {Votes[]} votes Array of proposalIds and vote used
- * @returns {Votes[]} Array of proposalIds and new votes calculated
+ * @param {Array<Votes>} votes Array of proposalIds and vote used
+ * @returns {Array<Votes>} Array of proposalIds and new votes calculated
  */
-export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
+export const optimize = (votingPower: BigNumber, votes: Array<Votes>): Array<Votes> => {
   let currentVotes = toWad('0');
   // Format votes to WADs representations
-  const formattedVotes: FormattedVotes[] = votes.map(([id, vote]) => {
+  const formattedVotes: Array<FormattedVotes> = votes.map(([id, vote]) => {
     return [id, toWad(vote)];
   });
 
@@ -31,7 +31,7 @@ export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
   const scaleFactor = wdiv(votingPower, currentVotes);
 
   // Calculates new votes and format votes again to a string for UI usage
-  const result: Votes[] = formattedVotes.map(([id, vote]) => {
+  const result: Array<Votes> = formattedVotes.map(([id, vote]) => {
     const scaledVote = wmul(vote, scaleFactor);
     return [id, fromWad(scaledVote)];
   });
@@ -40,19 +40,19 @@ export const optimize = (votingPower: BigNumber, votes: Votes[]): Votes[] => {
 };
 
 export function findBestProposals(
-  proposals: ProposalInfo[],
+  proposals: Array<ProposalInfo>,
   tokensAvailable: number
-): ProposalInfo[] {
+): Array<ProposalInfo> {
   if (!proposals || proposals.length === 0) return [];
   // 90% of tokens available should be considered for this calculation
   const tokensAvailableToTake = (tokensAvailable * 9) / 10;
 
   // Function to generate all combinations of proposals
   function* generateCombinations(
-    arr: ProposalInfo[],
+    arr: Array<ProposalInfo>,
     start: number,
     len: number
-  ): IterableIterator<ProposalInfo[]> {
+  ): IterableIterator<Array<ProposalInfo>> {
     if (len === 0) {
       yield [];
       return;
@@ -67,7 +67,7 @@ export function findBestProposals(
     }
   }
 
-  let bestCombo: ProposalInfo[] = [];
+  let bestCombo: Array<ProposalInfo> = [];
   let bestVotes = 0;
 
   // Check combinations of 1 proposal, 2 proposals...

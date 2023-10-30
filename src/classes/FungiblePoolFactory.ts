@@ -1,8 +1,8 @@
 import { BigNumber, constants, Signer } from 'ethers';
-import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
-import { ERC20_NON_SUBSET_HASH } from '../constants';
-import { Address, IERC20PoolFactory, SdkError, SignerOrProvider } from '../types';
 import { Config } from '../classes/Config';
+import { ERC20_NON_SUBSET_HASH } from '../constants';
+import { deployedPools, deployPool } from '../contracts/erc20-pool-factory';
+import { Address, IERC20PoolFactory, SdkError, SignerOrProvider } from '../types';
 import { ContractBase } from './ContractBase';
 import { FungiblePool } from './FungiblePool';
 
@@ -15,7 +15,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
   }
 
   /**
-   * creates a new pool
+   * Creates a new pool.
    * @param signer pool creator
    * @param collateralAddress address of the ERC20 collateral token
    * @param quoteAddress address of the ERC20 quote token
@@ -32,7 +32,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
   }
 
   /**
-   * returns existing pool for two tokens
+   * Returns existing pool for two tokens.
    * @param collateralAddress token address
    * @param quoteAddress token address
    * @returns {@link FungiblePool} modeling desired pool
@@ -47,7 +47,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
   }
 
   /**
-   * returns existing pool
+   * Returns existing pool.
    * @param poolAddress address of pool
    * @returns {@link FungiblePool} modeling desired pool
    */
@@ -58,7 +58,7 @@ export class FungiblePoolFactory extends ContractBase implements IERC20PoolFacto
   }
 
   /**
-   * finds address of an existing pool for two tokens
+   * Finds address of an existing pool for two tokens.
    * @param collateralAddress token address
    * @param quoteAddress token address
    * @returns address of the existing pool

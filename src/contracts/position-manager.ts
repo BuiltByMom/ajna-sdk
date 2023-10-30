@@ -79,7 +79,7 @@ export async function memorializePositions(
   signer: Signer,
   poolAddress: Address,
   tokenId: BigNumberish,
-  indexes: number[],
+  indexes: Array<number>,
   overrides?: TransactionOverrides
 ) {
   const contractInstance = getPositionManagerContract(signer);
@@ -94,7 +94,7 @@ export async function redeemPositions(
   signer: Signer,
   poolAddress: Address,
   tokenId: BigNumberish,
-  indexes: number[],
+  indexes: Array<number>,
   overrides?: TransactionOverrides
 ) {
   const contractInstance = getPositionManagerContract(signer);
