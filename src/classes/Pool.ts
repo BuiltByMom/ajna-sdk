@@ -1,6 +1,6 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX, ONE_PERCENT_WAD } from '../constants';
+import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX, MAX_INFLATED_PRICE_WAD } from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
@@ -20,6 +20,7 @@ import {
   updateInterest,
   lenderInfo,
   stampLoan,
+  interestRateInfo,
 } from '../contracts/pool';
 import {
   borrowerInfo,
@@ -38,7 +39,7 @@ import {
   SdkError,
   SignerOrProvider,
 } from '../types';
-import { fromWad, max, min, toWad, wdiv, wmul } from '../utils/numeric';
+import { fromWad, min, toWad, wdiv, wmul, wsqrt } from '../utils/numeric';
 import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { ClaimableReserveAuction } from './ClaimableReserveAuction';
 import { PoolUtils } from './PoolUtils';
@@ -366,7 +367,6 @@ export abstract class Pool {
    */
   async getLoan(borrowerAddress: Address): Promise<Loan> {
     const poolPricesInfoCall = this.contractUtilsMulti.poolPricesInfo(this.poolAddress);
-    const poolMompCall = this.contractUtilsMulti.momp(this.poolAddress);
     const poolLoansInfoCall = this.contractUtilsMulti.poolLoansInfo(this.poolAddress);
     const borrowerInfoCall = this.contractUtilsMulti.borrowerInfo(
       this.poolAddress,
@@ -379,20 +379,21 @@ export abstract class Pool {
 
     const response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
       poolPricesInfoCall,
-      poolMompCall,
       poolLoansInfoCall,
       borrowerInfoCall,
       auctionStatusCall,
     ]);
 
     const [, , , , lup] = response[0];
-    const momp = BigNumber.from(response[1]);
-    const [, , , pendingInflator] = response[2];
-    const [debt, collateral, t0np] = response[3];
-    const [kickTimestamp] = response[4];
+    const [, , , pendingInflator] = response[1];
+    const [debt, collateral, t0np] = response[2];
+    const [kickTimestamp] = response[3];
     const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
     const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
+
+    const [rate] = await interestRateInfo(this.contract);
+    const npTpRatio = this.calculateNpTpRatio(rate);
 
     return {
       collateralization,
@@ -400,7 +401,7 @@ export abstract class Pool {
       collateral,
       thresholdPrice: tp,
       neutralPrice: np,
-      liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
+      liquidationBond: this.calculateLiquidationBond(npTpRatio, debt),
       isKicked: !kickTimestamp.eq(BigNumber.from(0)),
     };
   }
@@ -412,9 +413,8 @@ export abstract class Pool {
    */
   async getLoans(borrowerAddresses: Array<Address>): Promise<Map<Address, Loan>> {
     const calls = [];
-    // push 3 pool-level requests followed by request for each loan
+    // push pool-level requests followed by request for each loan
     calls.push(this.contractUtilsMulti.poolPricesInfo(this.poolAddress));
-    calls.push(this.contractUtilsMulti.momp(this.poolAddress));
     calls.push(this.contractUtilsMulti.poolLoansInfo(this.poolAddress));
     for (const loan of borrowerAddresses) {
       calls.push(this.contractUtilsMulti.borrowerInfo(this.poolAddress, loan));
@@ -428,8 +428,11 @@ export abstract class Pool {
     const retval = new Map<Address, Loan>();
     let i = 0;
     const [, , , , lup] = response[i];
-    const momp = BigNumber.from(response[++i]);
     const [, , , pendingInflator] = response[++i];
+
+    // calculate npTpRatio, needed for calculating liquidation bonds
+    const [rate] = await interestRateInfo(this.contract);
+    const npTpRatio = this.calculateNpTpRatio(rate);
 
     // iterate through borrower info, offset by the 3 pool-level requests
     let borrowerIndex = 0;
@@ -446,7 +449,7 @@ export abstract class Pool {
         collateral,
         thresholdPrice: tp,
         neutralPrice: np,
-        liquidationBond: this.calculateLiquidationBond(momp, tp, debt),
+        liquidationBond: this.calculateLiquidationBond(npTpRatio, debt),
         isKicked: !kickTimestamp.eq(BigNumber.from(0)),
       });
     }
@@ -503,19 +506,34 @@ export abstract class Pool {
 
   /**
    * Calculates bond required to liquidate a borrower.
-   * @param momp most optimistic matching price of the pool
-   * @param tp threshold price of the loan
+   * @param npTpRatio relationship between neutral price and threshold price
    * @param borrowerDebt loan debt
    * @returns required liquidation bond, in WAD precision
    */
-  calculateLiquidationBond(momp: BigNumber, tp: BigNumber, borrowerDebt: BigNumber) {
-    // if threshold price > momp, bond factor is 1%
-    // otherwise, bond factor is 1-(tp/momp), bounded between 1% and 30%
-    const bondFactor = tp.gte(momp)
-      ? ONE_PERCENT_WAD
-      : min(toWad('0.3'), max(ONE_PERCENT_WAD, toWad(1).sub(wdiv(tp, momp))));
-    // bond = bondFactor * debt
+  calculateLiquidationBond(npTpRatio: BigNumber, borrowerDebt: BigNumber) {
+    // bondFactor = min((NP-to-TP-ratio - 1)/10, 0.03)
+    const bondFactor = min(wdiv(npTpRatio.sub(toWad(1)), toWad(10)), toWad(0.03));
+    // bondSize = bondFactor * borrowerDebt
     return wmul(bondFactor, borrowerDebt);
+  }
+
+  /**
+   * Calculate a loan's neutral price.
+   * @param thresholdPrice loan debt / pledged collateral
+   * @param npTpRatio relationship between neutral price and threshold price
+   * @returns neutral price, in WAD precision
+   */
+  calculateNeutralPrice(thresholdPrice: BigNumber, npTpRatio: BigNumber) {
+    return min(wmul(thresholdPrice, npTpRatio), MAX_INFLATED_PRICE_WAD);
+  }
+
+  /**
+   * Calculate neutral price to threshold price "ratio".
+   * @param rate current pool "borrower" interest rate
+   * @returns relationship between the neutral price and threshold price
+   */
+  calculateNpTpRatio(rate: BigNumber) {
+    return toWad(1.04).add(wsqrt(rate).div(2));
   }
 
   /**
@@ -637,12 +655,9 @@ export abstract class Pool {
     const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
-    // calculate the hypothetical MOMP and neutral price
-    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
-    const mompIndex = await depositIndex(this.contract, mompDebt);
-    const momp = indexToPrice(mompIndex);
-    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
-    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
+    // calculate the hypothetical neutral price
+    const npTpRatio = this.calculateNpTpRatio(rate);
+    const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {
       collateralization,
@@ -651,7 +666,7 @@ export abstract class Pool {
       thresholdPrice,
       neutralPrice,
       isKicked: collateralization.lt(constants.One),
-      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
+      liquidationBond: this.calculateLiquidationBond(npTpRatio, newDebt),
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex,
     };
@@ -693,8 +708,8 @@ export abstract class Pool {
     ]);
     const lupIndex: number = +response[0];
     const rate = BigNumber.from(response[1][0]);
-    let noOfLoans = +response[2][2];
-    const noOfAuctions = +response[3];
+    let noOfLoans = +response[1][2];
+    const noOfAuctions = +response[2];
     noOfLoans += noOfAuctions;
     const lup = indexToPrice(lupIndex);
 
@@ -711,12 +726,9 @@ export abstract class Pool {
     const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
-    // calculate the hypothetical MOMP and neutral price
-    const mompDebt = noOfLoans === 0 ? constants.One : poolDebt.div(noOfLoans);
-    const mompIndex = await depositIndex(this.contract, mompDebt);
-    const momp = indexToPrice(mompIndex);
-    // neutralPrice = (1 + rate) * momp * thresholdPrice/lup
-    const neutralPrice = wmul(toWad(1).add(rate), wmul(momp, wdiv(thresholdPrice, lup)));
+    // calculate the hypothetical neutral price
+    const npTpRatio = this.calculateNpTpRatio(rate);
+    const neutralPrice = this.calculateNeutralPrice(thresholdPrice, npTpRatio);
 
     return {
       collateralization,
@@ -725,7 +737,7 @@ export abstract class Pool {
       thresholdPrice,
       neutralPrice,
       isKicked: collateralization.lt(constants.One),
-      liquidationBond: this.calculateLiquidationBond(momp, thresholdPrice, newDebt),
+      liquidationBond: this.calculateLiquidationBond(npTpRatio, newDebt),
       lup: indexToPrice(lupIndex),
       lupIndex: lupIndex,
     };

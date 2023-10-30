@@ -4,8 +4,7 @@ import { DistributionPeriodStage } from '../types/classes';
 export const HOUR_TO_SECONDS = 3600;
 
 // transaction management
-export const GAS_MULTIPLIER = 2;
-export const GAS_LIMIT_MAX = 1500000;
+export const GAS_MULTIPLIER = 3;
 
 // fractions and percentages
 export const ONE_PERCENT_WAD: BigNumber = BigNumber.from('10000000000000000');
@@ -16,6 +15,7 @@ export const ONE_WAD: BigNumber = BigNumber.from('1000000000000000000');
 export const ERC20_NON_SUBSET_HASH = utils.keccak256(utils.toUtf8Bytes('ERC20_NON_SUBSET_HASH'));
 export const MIN_FENWICK_INDEX = 1;
 export const MAX_FENWICK_INDEX = 7388;
+export const MAX_INFLATED_PRICE_WAD = BigNumber.from('50248449380325617709105488550'); // 50 * bucket 0 price (50bbn-ish)
 export const DEFAULT_TTL = 600;
 export const MAX_SETTLE_BUCKETS = 10;
 

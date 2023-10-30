@@ -16,14 +16,14 @@ import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(80000);
 
-const TWETH_ADDRESS = '0x844f3C269f301f89D81f29B91b8d8ED2C69Fa7Bc';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
-const TESTA_ADDRESS = '0xf6C45B3B42b910110B1c750C959D0a396470c520';
+const TWETH_ADDRESS = '0x770E225E95Bf56553970FBd44b10B2B0A1285145';
+const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
+const TESTA_ADDRESS = '0xdb475551A4E81Dd837ff29a1fEc6b20E62270749';
+const TESTB_TDAI_POOL_ADDRESS = '0xFbaeC3F232c5CEba17C1a5911020528D6D50CDd8';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const LENDER_2_KEY = '0x6b7f753700a3fa90224871877bfb3d6bbd23bd7cc25d49430ce7020f5e39d463';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
-const TESTB_DAI_POOL_ADDRESS = '0x46f65d2c707ea9c15D398889cEF64C0C373bFdA7';
 
 describe('ERC20 Pool', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
@@ -72,14 +72,14 @@ describe('ERC20 Pool', () => {
   });
 
   it('should load pool by address', async () => {
-    const poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_DAI_POOL_ADDRESS);
+    const poolB = await ajna.fungiblePoolFactory.getPoolByAddress(TESTB_TDAI_POOL_ADDRESS);
     expect(poolB.quoteAddress).toBe(TDAI_ADDRESS);
     expect(poolB.toString()).toContain('TESTB-TDAI');
   });
 
   it('should use addQuoteToken successfully', async () => {
     const quoteAmount = toWad(10_000);
-    const bucket = await pool.getBucketByIndex(2000);
+    const bucket = await pool.getBucketByIndex(2000); // price 46776.6533691354
 
     let tx = await pool.quoteApprove(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
@@ -111,7 +111,7 @@ describe('ERC20 Pool', () => {
 
     const loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+    expect(loan.neutralPrice).toBeBetween(toWad(1915), toWad(1930));
   });
 
   it('should estimate interest rate change successfully', async () => {
@@ -193,22 +193,17 @@ describe('ERC20 Pool', () => {
 
     let loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(5000), toWad(5050));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
+    expect(loan.neutralPrice).toBeBetween(toWad(1915), toWad(1930));
 
     // repay half of debt without impacting t0 neutral price
     tx = await pool.repayDebt(signerBorrower, loan.debt.div(2), constants.Zero);
     await submitAndVerifyTransaction(tx);
     loan = await pool.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(2500), toWad(2525));
-    expect(loan.neutralPrice).toBeBetween(toWad(1750), toWad(1755));
-
-    // restamp loan, confirming neutral price has changed
-    tx = await pool.stampLoan(signerBorrower);
-    await submitAndVerifyTransaction(tx);
-    loan = await pool.getLoan(signerBorrower.address);
-    expect(loan.neutralPrice).toBeBetween(toWad(875), toWad(900));
+    expect(loan.neutralPrice).toBeBetween(toWad(950), toWad(975));
 
     // repay remaining debt
+    loan = await pool.getLoan(signerBorrower.address);
     tx = await pool.repayDebt(signerBorrower, constants.MaxUint256, loan.collateral);
     await submitAndVerifyTransaction(tx);
     loan = await pool.getLoan(signerBorrower.address);
@@ -354,7 +349,7 @@ describe('ERC20 Pool', () => {
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(1000), toWad(1000).mul(2));
+    expect(loan.liquidationBond).toBeBetween(toWad(150), toWad(150).mul(2));
     expect(loan.isKicked).toBe(false);
   });
 
@@ -367,7 +362,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(1500), toWad(6000));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(227), toWad(231).mul(2));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
 
@@ -401,7 +396,7 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateral).toEqual(toWad(20));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(150), toWad(305));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(15), toWad(17));
     expect(loanEstimate.lup).toEqual(prices.lup);
     expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
@@ -478,13 +473,13 @@ describe('ERC20 Pool', () => {
   });
 
   it('should use multicall successfully', async () => {
-    const quoteAmount = 10;
+    const quoteAmount = toWad(10);
     const bucketIndex1 = 3330;
     const bucketIndex2 = 3331;
     const allowance = 100000000;
 
-    const bucket1 = await pool.getBucketByIndex(bucketIndex1);
-    const bucket2 = await pool.getBucketByIndex(bucketIndex2);
+    const bucket1 = pool.getBucketByIndex(bucketIndex1);
+    const bucket2 = pool.getBucketByIndex(bucketIndex2);
     let bucketStatus1 = await bucket1.getStatus();
     let bucketStatus2 = await bucket2.getStatus();
 
@@ -501,11 +496,11 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex1, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex1, await getExpiry(provider), false],
       },
       {
         methodName: 'addQuoteToken',
-        args: [toWad(quoteAmount), bucketIndex2, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex2, await getExpiry(provider), false],
       },
     ]);
     response = await tx.verifyAndSubmitResponse();

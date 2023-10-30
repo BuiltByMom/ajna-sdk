@@ -11,6 +11,7 @@ import { findBestProposals, optimize } from '../utils/grant-fund';
 import { fromWad, toWad } from '../utils/numeric';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
+import { Config } from '../constants';
 
 jest.setTimeout(1200000);
 
@@ -43,7 +44,7 @@ describe('Grants fund', () => {
       expect(delegate).toBeDefined();
       const transaction = await delegate.verifyAndSubmit();
       expect(transaction.from).toBe(VOTER_ADDRESS);
-      expect(transaction.to).toBe('0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d');
+      expect(transaction.to).toBe(Config.ajnaToken);
       expect(transaction.status).toBe(1);
     });
 

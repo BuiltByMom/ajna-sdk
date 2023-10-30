@@ -15,14 +15,14 @@ import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
-const TDUCK_ADDRESS = '0xaf36Ce3FD234ba81A9d4676CD09fC6700f087146';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const TDUCK_ADDRESS = '0x5814A7382Aa7a3c56D4A2E02FD66557c65cD90c0';
+const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
 const BORROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('ERC721 pool liquidations', () => {
+describe('ERC721 Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
@@ -230,8 +230,8 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // take
@@ -265,8 +265,8 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10000));
+    expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity
@@ -358,10 +358,10 @@ describe('ERC721 pool liquidations', () => {
     expect(auctionStatus.collateral.gt(toWad(0)) && auctionStatus.collateral.lt(toWad(2))).toBe(
       true
     );
-    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(16700), toWad(16800));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(7200), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(9000), toWad(11000));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // wait 50 hours
@@ -378,7 +378,7 @@ describe('ERC721 pool liquidations', () => {
     blockTime = await getBlockTime(signerBorrower2);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThan(blockTime);
     expect(auctionStatus.collateral).toEqual(toWad(0));
-    expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
+    expect(auctionStatus.debtToCover).toBeBetween(toWad(16000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(true);
@@ -463,8 +463,8 @@ describe('ERC721 pool liquidations', () => {
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
-    // wait 200 hours
-    const jumpTimeSeconds = 200 * HOUR_TO_SECONDS; // 200 hours
+    // wait 71 hours
+    const jumpTimeSeconds = 71 * HOUR_TO_SECONDS;
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 

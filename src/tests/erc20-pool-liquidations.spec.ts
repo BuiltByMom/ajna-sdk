@@ -15,14 +15,14 @@ import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
+const TESTB_ADDRESS = '0x93710870af60C4962C20E3A93a817DEa1C072288';
+const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
 const BORROWER2_KEY = '0xf456f1fa8e9e7ec4d24f47c0470b7bb6d8807ac5a3a7a1c5e04ef89a25aa4f51';
 
-describe('Liquidations', () => {
+describe('ERC20 Liquidations', () => {
   const provider = new providers.JsonRpcProvider(config.ETH_RPC_URL);
   const ajna = new AjnaSDK(provider);
   const signerLender = addAccountFromKey(LENDER_KEY, provider);
@@ -225,8 +225,8 @@ describe('Liquidations', () => {
     expect(auctionStatus.debtToCover.lt(toWad('3.5'))).toBeTruthy();
     expect(auctionStatus.isTakeable).toBe(false);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(true);
   });
 
@@ -252,8 +252,8 @@ describe('Liquidations', () => {
     expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
     expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
-    expect(auctionStatus.price).toBeBetween(toWad(10000), toWad(12000));
-    expect(auctionStatus.neutralPrice).toBeBetween(toWad(17400), toWad(17600));
+    expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
+    expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(false);
 
     // lender adds liquidity
@@ -366,8 +366,8 @@ describe('Liquidations', () => {
       await tx.verify();
     }).rejects.toThrow('AuctionNotClearable()');
 
-    // wait 200 hours
-    const jumpTimeSeconds = 200 * HOUR_TO_SECONDS; // 200 hours
+    // wait 71 hours
+    const jumpTimeSeconds = 71 * HOUR_TO_SECONDS;
     await timeJump(provider, jumpTimeSeconds);
     expect(auctionStatus.isSettleable).toBe(false);
 

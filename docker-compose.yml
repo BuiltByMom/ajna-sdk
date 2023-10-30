@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   ajna-testnet:
-    image: ghcr.io/ajna-finance/ajna-testnet:rc7
+    image: ghcr.io/ajna-finance/ajna-testnet:rc8b
     ports:
       - 8555:8555
     container_name: ajna-testnet-sdk

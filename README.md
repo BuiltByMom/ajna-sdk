@@ -65,5 +65,12 @@ This facility was tested against `brownie` compilation output.
 
 After updating ABIs, run `yarn typechain-abis` to generate typescript wrappers around contracts. Be sure to prettify generated code before committing.
 
+
+### Publishing
+
+- Authenticate with your npm account using either `npm login` or an [npm token](https://docs.npmjs.com/creating-and-viewing-access-tokens).
+- Run `yarn publish` to release a new version adhering to [SemVer 2.0](https://semver.org/).
+- Commit the updated package.json.
+
 ## Contributing
 If you have suggestions for how SDK library boilerplate could be improved, or want to report a bug, open an issue! We'd love all and any contributions.

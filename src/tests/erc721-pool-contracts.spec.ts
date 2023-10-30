@@ -4,7 +4,7 @@ import { AjnaSDK } from '../classes/AjnaSDK';
 import { NonfungiblePool } from '../classes/NonfungiblePool';
 import { getNftContract } from '../contracts/erc721';
 import { Address } from '../types';
-import { priceToIndex, toWad } from '../utils';
+import { priceToIndex, timeJump, toWad } from '../utils';
 import { addAccountFromKey } from '../utils/add-account';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
@@ -12,12 +12,12 @@ import { getErc721PoolFactoryContract, getSubsetHash } from '../contracts/erc721
 
 jest.setTimeout(60000);
 
-const TDUCK_ADDRESS = '0xaf36Ce3FD234ba81A9d4676CD09fC6700f087146';
-const TGOOSE_ADDRESS = '0x5D94D2fa949Ac3127C27CB344882fAafE70665Df';
-const TESTA_ADDRESS = '0xf6C45B3B42b910110B1c750C959D0a396470c520';
-const TUSDC_ADDRESS = '0x606A640CB77AeCBfefe918AebDCB34845FF18546';
-const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
-const TWETH_ADDRESS = '0x844f3C269f301f89D81f29B91b8d8ED2C69Fa7Bc';
+const TDUCK_ADDRESS = '0x5814A7382Aa7a3c56D4A2E02FD66557c65cD90c0';
+const TGOOSE_ADDRESS = '0xB4520Df94096eb9169d14Caa6A35a5C5A672bF8c';
+const TESTA_ADDRESS = '0xdb475551A4E81Dd837ff29a1fEc6b20E62270749';
+const TUSDC_ADDRESS = '0xC25177C3FEa4C578a13Aa6eBB57B4c6b2F0c575a';
+const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
+const TWETH_ADDRESS = '0x770E225E95Bf56553970FBd44b10B2B0A1285145';
 const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
 const BOROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
 
@@ -259,6 +259,14 @@ describe('ERC721 Pool', () => {
     loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toBeBetween(toWad(400), toWad(450));
     expect(await tduck.ownerOf(tokenId)).toEqual(poolDuckDai.contract.address);
+
+    // restamp loan to update neutral price
+    await timeJump(provider, 24 * 3600);
+    const npBefore = loan.neutralPrice;
+    tx = await poolDuckDai.stampLoan(signerBorrower);
+    await submitAndVerifyTransaction(tx);
+    loan = await poolDuckDai.getLoan(signerBorrower.address);
+    expect(loan.neutralPrice).not.toEqual(npBefore);
 
     // partially repay debt
     tx = await poolDuckDai.quoteApprove(signerBorrower, constants.MaxUint256);

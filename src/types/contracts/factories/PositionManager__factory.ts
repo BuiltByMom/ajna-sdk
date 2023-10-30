@@ -687,24 +687,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'multicall',
-    constant: false,
-    payable: false,
-    inputs: [
-      {
-        type: 'bytes[]',
-        name: 'data',
-      },
-    ],
-    outputs: [
-      {
-        type: 'bytes[]',
-        name: 'results',
-      },
-    ],
-  },
-  {
-    type: 'function',
     name: 'name',
     constant: true,
     stateMutability: 'view',

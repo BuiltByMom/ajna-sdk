@@ -31,7 +31,6 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
     'lpToQuoteTokens(address,uint256,uint256)': FunctionFragment;
     'lup(address)': FunctionFragment;
     'lupIndex(address)': FunctionFragment;
-    'momp(address)': FunctionFragment;
     'poolLoansInfo(address)': FunctionFragment;
     'poolPricesInfo(address)': FunctionFragment;
     'poolReservesInfo(address)': FunctionFragment;
@@ -56,7 +55,6 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
       | 'lpToQuoteTokens'
       | 'lup'
       | 'lupIndex'
-      | 'momp'
       | 'poolLoansInfo'
       | 'poolPricesInfo'
       | 'poolReservesInfo'
@@ -85,7 +83,6 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: 'lup', values: [string]): string;
   encodeFunctionData(functionFragment: 'lupIndex', values: [string]): string;
-  encodeFunctionData(functionFragment: 'momp', values: [string]): string;
   encodeFunctionData(functionFragment: 'poolLoansInfo', values: [string]): string;
   encodeFunctionData(functionFragment: 'poolPricesInfo', values: [string]): string;
   encodeFunctionData(functionFragment: 'poolReservesInfo', values: [string]): string;
@@ -107,7 +104,6 @@ export interface PoolInfoUtilsInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'lpToQuoteTokens', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lup', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'lupIndex', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'momp', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'poolLoansInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'poolPricesInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'poolReservesInfo', data: BytesLike): Result;
@@ -224,8 +220,6 @@ export interface PoolInfoUtils extends BaseContract {
     lup(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     poolLoansInfo(
       ajnaPool_: string,
@@ -358,8 +352,6 @@ export interface PoolInfoUtils extends BaseContract {
 
   lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
   poolLoansInfo(
     ajnaPool_: string,
     overrides?: CallOverrides
@@ -491,8 +483,6 @@ export interface PoolInfoUtils extends BaseContract {
 
     lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
     poolLoansInfo(
       ajnaPool_: string,
       overrides?: CallOverrides
@@ -603,8 +593,6 @@ export interface PoolInfoUtils extends BaseContract {
 
     lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
     poolLoansInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     poolPricesInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<BigNumber>;
@@ -674,8 +662,6 @@ export interface PoolInfoUtils extends BaseContract {
     lup(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lupIndex(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    momp(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     poolLoansInfo(ajnaPool_: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

@@ -39,6 +39,11 @@ const _abi = [
   },
   {
     type: 'error',
+    name: 'AuctionNotTakeable',
+    inputs: [],
+  },
+  {
+    type: 'error',
     name: 'AuctionPriceGtBucketPrice',
     inputs: [],
   },
@@ -304,11 +309,6 @@ const _abi = [
   {
     type: 'error',
     name: 'ReserveAuctionTooSoon',
-    inputs: [],
-  },
-  {
-    type: 'error',
-    name: 'TakeNotPastCooldown',
     inputs: [],
   },
   {
@@ -1137,7 +1137,7 @@ const _abi = [
       },
       {
         type: 'uint256',
-        name: 'kickMomp_',
+        name: 'referencePrice_',
       },
       {
         type: 'uint256',
@@ -1154,10 +1154,6 @@ const _abi = [
       {
         type: 'address',
         name: 'prev_',
-      },
-      {
-        type: 'bool',
-        name: 'alreadyTaken_',
       },
     ],
   },
@@ -1990,7 +1986,12 @@ const _abi = [
         name: 'limitIndex_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'amountRepaid_',
+      },
+    ],
   },
   {
     type: 'function',
@@ -2092,7 +2093,12 @@ const _abi = [
         name: 'data_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'collateralTaken_',
+      },
+    ],
   },
   {
     type: 'function',

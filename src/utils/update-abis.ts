@@ -52,5 +52,4 @@ const abisWeCareAbout = new Set([
   'GrantFund.json',
   'PoolInfoUtils.json',
   'PositionManager.json',
-  'RewardsManager.json',
 ]);

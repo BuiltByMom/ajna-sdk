@@ -755,28 +755,16 @@ export interface ERC20Pool extends BaseContract {
       borrower_: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        string,
-        boolean
-      ] & {
+      [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
         kicker_: string;
         bondFactor_: BigNumber;
         bondSize_: BigNumber;
         kickTime_: BigNumber;
-        kickMomp_: BigNumber;
+        referencePrice_: BigNumber;
         neutralPrice_: BigNumber;
         head_: string;
         next_: string;
         prev_: string;
-        alreadyTaken_: boolean;
       }
     >;
 
@@ -1041,28 +1029,16 @@ export interface ERC20Pool extends BaseContract {
     borrower_: string,
     overrides?: CallOverrides
   ): Promise<
-    [
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      string,
-      string,
-      string,
-      boolean
-    ] & {
+    [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
       kicker_: string;
       bondFactor_: BigNumber;
       bondSize_: BigNumber;
       kickTime_: BigNumber;
-      kickMomp_: BigNumber;
+      referencePrice_: BigNumber;
       neutralPrice_: BigNumber;
       head_: string;
       next_: string;
       prev_: string;
-      alreadyTaken_: boolean;
     }
   >;
 
@@ -1310,28 +1286,16 @@ export interface ERC20Pool extends BaseContract {
       borrower_: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        string,
-        boolean
-      ] & {
+      [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
         kicker_: string;
         bondFactor_: BigNumber;
         bondSize_: BigNumber;
         kickTime_: BigNumber;
-        kickMomp_: BigNumber;
+        referencePrice_: BigNumber;
         neutralPrice_: BigNumber;
         head_: string;
         next_: string;
         prev_: string;
-        alreadyTaken_: boolean;
       }
     >;
 
@@ -1509,7 +1473,7 @@ export interface ERC20Pool extends BaseContract {
       collateralReceiver_: string,
       limitIndex_: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
 
@@ -1535,7 +1499,7 @@ export interface ERC20Pool extends BaseContract {
       callee_: string,
       data_: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     takeReserves(maxAmount_: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
