@@ -20,7 +20,7 @@ import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './com
 export interface ERC721PoolInterface extends utils.Interface {
   functions: {
     'addCollateral(uint256[],uint256,uint256)': FunctionFragment;
-    'addQuoteToken(uint256,uint256,uint256,bool)': FunctionFragment;
+    'addQuoteToken(uint256,uint256,uint256)': FunctionFragment;
     'approveLPTransferors(address[])': FunctionFragment;
     'approvedTransferors(address,address)': FunctionFragment;
     'auctionInfo(address)': FunctionFragment;
@@ -44,6 +44,8 @@ export interface ERC721PoolInterface extends utils.Interface {
     'emasInfo()': FunctionFragment;
     'flashFee(address,uint256)': FunctionFragment;
     'flashLoan(address,address,uint256,bytes)': FunctionFragment;
+    'getBorrowerTokenIds(address)': FunctionFragment;
+    'getBucketTokenIds()': FunctionFragment;
     'increaseLPAllowance(address,uint256[],uint256[])': FunctionFragment;
     'inflatorInfo()': FunctionFragment;
     'initialize(uint256[],uint256)': FunctionFragment;
@@ -59,7 +61,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     'lpAllowance(uint256,address,address)': FunctionFragment;
     'maxFlashLoan(address)': FunctionFragment;
     'mergeOrRemoveCollateral(uint256[],uint256,uint256)': FunctionFragment;
-    'moveQuoteToken(uint256,uint256,uint256,uint256,bool)': FunctionFragment;
+    'moveQuoteToken(uint256,uint256,uint256,uint256)': FunctionFragment;
     'multicall(bytes[])': FunctionFragment;
     'pledgedCollateral()': FunctionFragment;
     'poolType()': FunctionFragment;
@@ -77,8 +79,6 @@ export interface ERC721PoolInterface extends utils.Interface {
     'takeReserves(uint256)': FunctionFragment;
     'tokenIdsAllowed(uint256)': FunctionFragment;
     'totalAuctionsInPool()': FunctionFragment;
-    'totalBorrowerTokens(address)': FunctionFragment;
-    'totalBucketTokens()': FunctionFragment;
     'totalT0Debt()': FunctionFragment;
     'totalT0DebtInAuction()': FunctionFragment;
     'transferLP(address,address,uint256[])': FunctionFragment;
@@ -113,6 +113,8 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'emasInfo'
       | 'flashFee'
       | 'flashLoan'
+      | 'getBorrowerTokenIds'
+      | 'getBucketTokenIds'
       | 'increaseLPAllowance'
       | 'inflatorInfo'
       | 'initialize'
@@ -146,8 +148,6 @@ export interface ERC721PoolInterface extends utils.Interface {
       | 'takeReserves'
       | 'tokenIdsAllowed'
       | 'totalAuctionsInPool'
-      | 'totalBorrowerTokens'
-      | 'totalBucketTokens'
       | 'totalT0Debt'
       | 'totalT0DebtInAuction'
       | 'transferLP'
@@ -161,7 +161,7 @@ export interface ERC721PoolInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: 'addQuoteToken',
-    values: [BigNumberish, BigNumberish, BigNumberish, boolean]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'approveLPTransferors', values: [string[]]): string;
   encodeFunctionData(functionFragment: 'approvedTransferors', values: [string, string]): string;
@@ -198,6 +198,8 @@ export interface ERC721PoolInterface extends utils.Interface {
     functionFragment: 'flashLoan',
     values: [string, string, BigNumberish, BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: 'getBorrowerTokenIds', values: [string]): string;
+  encodeFunctionData(functionFragment: 'getBucketTokenIds', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'increaseLPAllowance',
     values: [string, BigNumberish[], BigNumberish[]]
@@ -227,7 +229,7 @@ export interface ERC721PoolInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: 'moveQuoteToken',
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish, boolean]
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: 'multicall', values: [BytesLike[]]): string;
   encodeFunctionData(functionFragment: 'pledgedCollateral', values?: undefined): string;
@@ -261,8 +263,6 @@ export interface ERC721PoolInterface extends utils.Interface {
   encodeFunctionData(functionFragment: 'takeReserves', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'tokenIdsAllowed', values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: 'totalAuctionsInPool', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'totalBorrowerTokens', values: [string]): string;
-  encodeFunctionData(functionFragment: 'totalBucketTokens', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0Debt', values?: undefined): string;
   encodeFunctionData(functionFragment: 'totalT0DebtInAuction', values?: undefined): string;
   encodeFunctionData(
@@ -297,6 +297,8 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'emasInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'flashFee', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'flashLoan', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'getBorrowerTokenIds', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'getBucketTokenIds', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'increaseLPAllowance', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'inflatorInfo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
@@ -330,8 +332,6 @@ export interface ERC721PoolInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'takeReserves', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'tokenIdsAllowed', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalAuctionsInPool', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'totalBorrowerTokens', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'totalBucketTokens', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalT0Debt', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'totalT0DebtInAuction', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'transferLP', data: BytesLike): Result;
@@ -352,6 +352,7 @@ export interface ERC721PoolInterface extends utils.Interface {
     'DrawDebtNFT(address,uint256,uint256[],uint256)': EventFragment;
     'Flashloan(address,address,uint256)': EventFragment;
     'IncreaseLPAllowance(address,address,uint256[],uint256[])': EventFragment;
+    'InterestUpdateFailure()': EventFragment;
     'Kick(address,uint256,uint256,uint256)': EventFragment;
     'KickReserveAuction(uint256,uint256,uint256)': EventFragment;
     'LoanStamped(address)': EventFragment;
@@ -383,6 +384,7 @@ export interface ERC721PoolInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: 'DrawDebtNFT'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Flashloan'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'IncreaseLPAllowance'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'InterestUpdateFailure'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Kick'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'KickReserveAuction'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'LoanStamped'): EventFragment;
@@ -552,6 +554,11 @@ export type IncreaseLPAllowanceEvent = TypedEvent<
 >;
 
 export type IncreaseLPAllowanceEventFilter = TypedEventFilter<IncreaseLPAllowanceEvent>;
+
+export interface InterestUpdateFailureEventObject {}
+export type InterestUpdateFailureEvent = TypedEvent<[], InterestUpdateFailureEventObject>;
+
+export type InterestUpdateFailureEventFilter = TypedEventFilter<InterestUpdateFailureEvent>;
 
 export interface KickEventObject {
   borrower: string;
@@ -781,7 +788,6 @@ export interface ERC721Pool extends BaseContract {
       amount_: BigNumberish,
       index_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -796,13 +802,25 @@ export interface ERC721Pool extends BaseContract {
       borrower_: string,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        string,
+        string
+      ] & {
         kicker_: string;
         bondFactor_: BigNumber;
         bondSize_: BigNumber;
         kickTime_: BigNumber;
         referencePrice_: BigNumber;
         neutralPrice_: BigNumber;
+        debtToCollateral_: BigNumber;
         head_: string;
         next_: string;
         prev_: string;
@@ -887,6 +905,10 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    getBorrowerTokenIds(borrower_: string, overrides?: CallOverrides): Promise<[BigNumber[]]>;
+
+    getBucketTokenIds(overrides?: CallOverrides): Promise<[BigNumber[]]>;
+
     increaseLPAllowance(
       spender_: string,
       indexes_: BigNumberish[],
@@ -961,7 +983,6 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: BigNumberish,
       toIndex_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -999,7 +1020,9 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+    reservesInfo(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     revokeLPAllowance(
       spender_: string,
@@ -1037,10 +1060,6 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    totalBorrowerTokens(borrower_: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    totalBucketTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     totalT0Debt(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -1072,7 +1091,6 @@ export interface ERC721Pool extends BaseContract {
     amount_: BigNumberish,
     index_: BigNumberish,
     expiry_: BigNumberish,
-    revertIfBelowLup_: boolean,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -1087,13 +1105,25 @@ export interface ERC721Pool extends BaseContract {
     borrower_: string,
     overrides?: CallOverrides
   ): Promise<
-    [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
+    [
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      string,
+      string,
+      string
+    ] & {
       kicker_: string;
       bondFactor_: BigNumber;
       bondSize_: BigNumber;
       kickTime_: BigNumber;
       referencePrice_: BigNumber;
       neutralPrice_: BigNumber;
+      debtToCollateral_: BigNumber;
       head_: string;
       next_: string;
       prev_: string;
@@ -1171,6 +1201,10 @@ export interface ERC721Pool extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  getBorrowerTokenIds(borrower_: string, overrides?: CallOverrides): Promise<BigNumber[]>;
+
+  getBucketTokenIds(overrides?: CallOverrides): Promise<BigNumber[]>;
+
   increaseLPAllowance(
     spender_: string,
     indexes_: BigNumberish[],
@@ -1237,7 +1271,6 @@ export interface ERC721Pool extends BaseContract {
     fromIndex_: BigNumberish,
     toIndex_: BigNumberish,
     expiry_: BigNumberish,
-    revertIfBelowLup_: boolean,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -1275,7 +1308,9 @@ export interface ERC721Pool extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+  reservesInfo(
+    overrides?: CallOverrides
+  ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
   revokeLPAllowance(
     spender_: string,
@@ -1313,10 +1348,6 @@ export interface ERC721Pool extends BaseContract {
 
   totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
-  totalBorrowerTokens(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
-
   totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1348,9 +1379,8 @@ export interface ERC721Pool extends BaseContract {
       amount_: BigNumberish,
       index_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<[BigNumber, BigNumber] & { bucketLP_: BigNumber; addedAmount_: BigNumber }>;
 
     approveLPTransferors(transferors_: string[], overrides?: CallOverrides): Promise<void>;
 
@@ -1360,13 +1390,25 @@ export interface ERC721Pool extends BaseContract {
       borrower_: string,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        string,
+        string
+      ] & {
         kicker_: string;
         bondFactor_: BigNumber;
         bondSize_: BigNumber;
         kickTime_: BigNumber;
         referencePrice_: BigNumber;
         neutralPrice_: BigNumber;
+        debtToCollateral_: BigNumber;
         head_: string;
         next_: string;
         prev_: string;
@@ -1448,6 +1490,10 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    getBorrowerTokenIds(borrower_: string, overrides?: CallOverrides): Promise<BigNumber[]>;
+
+    getBucketTokenIds(overrides?: CallOverrides): Promise<BigNumber[]>;
+
     increaseLPAllowance(
       spender_: string,
       indexes_: BigNumberish[],
@@ -1520,7 +1566,6 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: BigNumberish,
       toIndex_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -1571,7 +1616,9 @@ export interface ERC721Pool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    reservesInfo(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+    reservesInfo(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     revokeLPAllowance(
       spender_: string,
@@ -1585,7 +1632,12 @@ export interface ERC721Pool extends BaseContract {
       borrowerAddress_: string,
       maxDepth_: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<
+      [BigNumber, boolean] & {
+        collateralSettled_: BigNumber;
+        isBorrowerSettled_: boolean;
+      }
+    >;
 
     stampLoan(overrides?: CallOverrides): Promise<void>;
 
@@ -1602,10 +1654,6 @@ export interface ERC721Pool extends BaseContract {
     tokenIdsAllowed(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalBorrowerTokens(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1624,7 +1672,7 @@ export interface ERC721Pool extends BaseContract {
       recipient_: string,
       maxAmount_: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
   };
 
   filters: {
@@ -1776,6 +1824,9 @@ export interface ERC721Pool extends BaseContract {
       indexes?: null,
       amounts?: null
     ): IncreaseLPAllowanceEventFilter;
+
+    'InterestUpdateFailure()'(): InterestUpdateFailureEventFilter;
+    InterestUpdateFailure(): InterestUpdateFailureEventFilter;
 
     'Kick(address,uint256,uint256,uint256)'(
       borrower?: string | null,
@@ -1949,7 +2000,6 @@ export interface ERC721Pool extends BaseContract {
       amount_: BigNumberish,
       index_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
@@ -2028,6 +2078,10 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
+    getBorrowerTokenIds(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getBucketTokenIds(overrides?: CallOverrides): Promise<BigNumber>;
+
     increaseLPAllowance(
       spender_: string,
       indexes_: BigNumberish[],
@@ -2094,7 +2148,6 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: BigNumberish,
       toIndex_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
@@ -2167,10 +2220,6 @@ export interface ERC721Pool extends BaseContract {
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<BigNumber>;
 
-    totalBorrowerTokens(borrower_: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalBucketTokens(overrides?: CallOverrides): Promise<BigNumber>;
-
     totalT0Debt(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalT0DebtInAuction(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2203,7 +2252,6 @@ export interface ERC721Pool extends BaseContract {
       amount_: BigNumberish,
       index_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
@@ -2299,6 +2347,13 @@ export interface ERC721Pool extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    getBorrowerTokenIds(
+      borrower_: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getBucketTokenIds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     increaseLPAllowance(
       spender_: string,
       indexes_: BigNumberish[],
@@ -2365,7 +2420,6 @@ export interface ERC721Pool extends BaseContract {
       fromIndex_: BigNumberish,
       toIndex_: BigNumberish,
       expiry_: BigNumberish,
-      revertIfBelowLup_: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
@@ -2443,13 +2497,6 @@ export interface ERC721Pool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     totalAuctionsInPool(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    totalBorrowerTokens(
-      borrower_: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    totalBucketTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalT0Debt(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

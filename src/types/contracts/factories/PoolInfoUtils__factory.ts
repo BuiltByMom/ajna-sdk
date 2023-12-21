@@ -123,6 +123,65 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'auctionInfo',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'ajnaPool_',
+      },
+      {
+        type: 'address',
+        name: 'borrower_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'address',
+        name: 'kicker_',
+      },
+      {
+        type: 'uint256',
+        name: 'bondFactor_',
+      },
+      {
+        type: 'uint256',
+        name: 'bondSize_',
+      },
+      {
+        type: 'uint256',
+        name: 'kickTime_',
+      },
+      {
+        type: 'uint256',
+        name: 'referencePrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'neutralPrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'debtToCollateral_',
+      },
+      {
+        type: 'address',
+        name: 'head_',
+      },
+      {
+        type: 'address',
+        name: 'next_',
+      },
+      {
+        type: 'address',
+        name: 'prev_',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'auctionStatus',
     constant: true,
     stateMutability: 'view',
@@ -161,6 +220,18 @@ const _abi = [
       {
         type: 'uint256',
         name: 'neutralPrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'referencePrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'debtToCollateral_',
+      },
+      {
+        type: 'uint256',
+        name: 'bondFactor_',
       },
     ],
   },
@@ -230,6 +301,10 @@ const _abi = [
         type: 'uint256',
         name: 't0Np_',
       },
+      {
+        type: 'uint256',
+        name: 'thresholdPrice_',
+      },
     ],
   },
   {
@@ -272,6 +347,24 @@ const _abi = [
       {
         type: 'uint256',
         name: 'exchangeRate_',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'depositFeeRate',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'ajnaPool_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256',
       },
     ],
   },
@@ -459,6 +552,24 @@ const _abi = [
   },
   {
     type: 'function',
+    name: 'multicall',
+    constant: false,
+    payable: false,
+    inputs: [
+      {
+        type: 'bytes[]',
+        name: 'data',
+      },
+    ],
+    outputs: [
+      {
+        type: 'bytes[]',
+        name: 'results',
+      },
+    ],
+  },
+  {
+    type: 'function',
     name: 'poolLoansInfo',
     constant: true,
     stateMutability: 'view',
@@ -607,24 +718,6 @@ const _abi = [
       {
         type: 'uint256',
         name: 'price_',
-      },
-    ],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
-    name: 'unutilizedDepositFeeRate',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [
-      {
-        type: 'address',
-        name: 'ajnaPool_',
       },
     ],
     outputs: [
