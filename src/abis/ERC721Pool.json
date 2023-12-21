@@ -1,5 +1,5 @@
 [
-  { "type": "error", "name": "AllowanceAlreadySet", "inputs": [] },
+  { "type": "error", "name": "AddAboveAuctionPrice", "inputs": [] },
   { "type": "error", "name": "AlreadyInitialized", "inputs": [] },
   { "type": "error", "name": "AmountLTMinDebt", "inputs": [] },
   { "type": "error", "name": "AuctionActive", "inputs": [] },
@@ -24,7 +24,6 @@
   { "type": "error", "name": "InvalidAmount", "inputs": [] },
   { "type": "error", "name": "InvalidIndex", "inputs": [] },
   { "type": "error", "name": "LUPBelowHTP", "inputs": [] },
-  { "type": "error", "name": "LUPGreaterThanTP", "inputs": [] },
   { "type": "error", "name": "LimitIndexExceeded", "inputs": [] },
   { "type": "error", "name": "MoveToSameIndex", "inputs": [] },
   { "type": "error", "name": "NoAllowance", "inputs": [] },
@@ -65,14 +64,13 @@
     "name": "PRBMath__MulDivFixedPointOverflow",
     "inputs": [{ "type": "uint256", "name": "prod1" }]
   },
-  { "type": "error", "name": "PoolUnderCollateralized", "inputs": [] },
   { "type": "error", "name": "PriceBelowLUP", "inputs": [] },
   { "type": "error", "name": "RemoveDepositLockedByAuctionDebt", "inputs": [] },
   { "type": "error", "name": "ReserveAuctionTooSoon", "inputs": [] },
   { "type": "error", "name": "TransactionExpired", "inputs": [] },
   { "type": "error", "name": "TransferToSameOwner", "inputs": [] },
   { "type": "error", "name": "TransferorNotApproved", "inputs": [] },
-  { "type": "error", "name": "ZeroThresholdPrice", "inputs": [] },
+  { "type": "error", "name": "ZeroDebtToCollateral", "inputs": [] },
   {
     "type": "event",
     "anonymous": false,
@@ -211,6 +209,7 @@
       { "type": "uint256[]", "name": "amounts", "indexed": false }
     ]
   },
+  { "type": "event", "anonymous": false, "name": "InterestUpdateFailure", "inputs": [] },
   {
     "type": "event",
     "anonymous": false,
@@ -395,10 +394,12 @@
     "inputs": [
       { "type": "uint256", "name": "amount_" },
       { "type": "uint256", "name": "index_" },
-      { "type": "uint256", "name": "expiry_" },
-      { "type": "bool", "name": "revertIfBelowLup_" }
+      { "type": "uint256", "name": "expiry_" }
     ],
-    "outputs": [{ "type": "uint256", "name": "bucketLP_" }]
+    "outputs": [
+      { "type": "uint256", "name": "bucketLP_" },
+      { "type": "uint256", "name": "addedAmount_" }
+    ]
   },
   {
     "type": "function",
@@ -431,6 +432,7 @@
       { "type": "uint256", "name": "kickTime_" },
       { "type": "uint256", "name": "referencePrice_" },
       { "type": "uint256", "name": "neutralPrice_" },
+      { "type": "uint256", "name": "debtToCollateral_" },
       { "type": "address", "name": "head_" },
       { "type": "address", "name": "next_" },
       { "type": "address", "name": "prev_" }
@@ -644,7 +646,25 @@
       { "type": "uint256", "name": "amount_" },
       { "type": "bytes", "name": "data_" }
     ],
-    "outputs": [{ "type": "bool", "name": "success_" }]
+    "outputs": [{ "type": "bool" }]
+  },
+  {
+    "type": "function",
+    "name": "getBorrowerTokenIds",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "borrower_" }],
+    "outputs": [{ "type": "uint256[]" }]
+  },
+  {
+    "type": "function",
+    "name": "getBucketTokenIds",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [{ "type": "uint256[]" }]
   },
   {
     "type": "function",
@@ -814,8 +834,7 @@
       { "type": "uint256", "name": "maxAmount_" },
       { "type": "uint256", "name": "fromIndex_" },
       { "type": "uint256", "name": "toIndex_" },
-      { "type": "uint256", "name": "expiry_" },
-      { "type": "bool", "name": "revertIfBelowLup_" }
+      { "type": "uint256", "name": "expiry_" }
     ],
     "outputs": [
       { "type": "uint256", "name": "fromBucketLP_" },
@@ -920,6 +939,7 @@
       { "type": "uint256" },
       { "type": "uint256" },
       { "type": "uint256" },
+      { "type": "uint256" },
       { "type": "uint256" }
     ]
   },
@@ -951,7 +971,10 @@
       { "type": "address", "name": "borrowerAddress_" },
       { "type": "uint256", "name": "maxDepth_" }
     ],
-    "outputs": []
+    "outputs": [
+      { "type": "uint256", "name": "collateralSettled_" },
+      { "type": "bool", "name": "isBorrowerSettled_" }
+    ]
   },
   {
     "type": "function",
@@ -994,24 +1017,6 @@
   {
     "type": "function",
     "name": "totalAuctionsInPool",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "uint256" }]
-  },
-  {
-    "type": "function",
-    "name": "totalBorrowerTokens",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "borrower_" }],
-    "outputs": [{ "type": "uint256" }]
-  },
-  {
-    "type": "function",
-    "name": "totalBucketTokens",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
@@ -1065,6 +1070,6 @@
       { "type": "address", "name": "recipient_" },
       { "type": "uint256", "name": "maxAmount_" }
     ],
-    "outputs": []
+    "outputs": [{ "type": "uint256", "name": "withdrawnAmount_" }]
   }
 ]

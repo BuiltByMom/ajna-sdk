@@ -53,6 +53,29 @@
   },
   {
     "type": "function",
+    "name": "auctionInfo",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "ajnaPool_" },
+      { "type": "address", "name": "borrower_" }
+    ],
+    "outputs": [
+      { "type": "address", "name": "kicker_" },
+      { "type": "uint256", "name": "bondFactor_" },
+      { "type": "uint256", "name": "bondSize_" },
+      { "type": "uint256", "name": "kickTime_" },
+      { "type": "uint256", "name": "referencePrice_" },
+      { "type": "uint256", "name": "neutralPrice_" },
+      { "type": "uint256", "name": "debtToCollateral_" },
+      { "type": "address", "name": "head_" },
+      { "type": "address", "name": "next_" },
+      { "type": "address", "name": "prev_" }
+    ]
+  },
+  {
+    "type": "function",
     "name": "auctionStatus",
     "constant": true,
     "stateMutability": "view",
@@ -67,7 +90,10 @@
       { "type": "uint256", "name": "debtToCover_" },
       { "type": "bool", "name": "isCollateralized_" },
       { "type": "uint256", "name": "price_" },
-      { "type": "uint256", "name": "neutralPrice_" }
+      { "type": "uint256", "name": "neutralPrice_" },
+      { "type": "uint256", "name": "referencePrice_" },
+      { "type": "uint256", "name": "debtToCollateral_" },
+      { "type": "uint256", "name": "bondFactor_" }
     ]
   },
   {
@@ -101,7 +127,8 @@
     "outputs": [
       { "type": "uint256", "name": "debt_" },
       { "type": "uint256", "name": "collateral_" },
-      { "type": "uint256", "name": "t0Np_" }
+      { "type": "uint256", "name": "t0Np_" },
+      { "type": "uint256", "name": "thresholdPrice_" }
     ]
   },
   {
@@ -122,6 +149,15 @@
       { "type": "uint256", "name": "scale_" },
       { "type": "uint256", "name": "exchangeRate_" }
     ]
+  },
+  {
+    "type": "function",
+    "name": "depositFeeRate",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "ajnaPool_" }],
+    "outputs": [{ "type": "uint256" }]
   },
   {
     "type": "function",
@@ -214,6 +250,14 @@
   },
   {
     "type": "function",
+    "name": "multicall",
+    "constant": false,
+    "payable": false,
+    "inputs": [{ "type": "bytes[]", "name": "data" }],
+    "outputs": [{ "type": "bytes[]", "name": "results" }]
+  },
+  {
+    "type": "function",
     "name": "poolLoansInfo",
     "constant": true,
     "stateMutability": "view",
@@ -279,15 +323,6 @@
     "stateMutability": "pure",
     "payable": false,
     "inputs": [{ "type": "uint256", "name": "price_" }],
-    "outputs": [{ "type": "uint256" }]
-  },
-  {
-    "type": "function",
-    "name": "unutilizedDepositFeeRate",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "ajnaPool_" }],
     "outputs": [{ "type": "uint256" }]
   }
 ]
