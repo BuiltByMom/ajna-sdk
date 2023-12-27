@@ -109,23 +109,16 @@ export class Bucket {
    * @param signer lender
    * @param amount amount to deposit
    * @param ttlSeconds revert if not processed in this amount of block time
-   * @param revertBelowLUP revert if lowest utilized price is above this bucket when processed
    * @returns promise to transaction
    */
-  async addQuoteToken(
-    signer: Signer,
-    amount: BigNumber,
-    ttlSeconds?: number,
-    revertBelowLUP = false
-  ) {
+  async addQuoteToken(signer: Signer, amount: BigNumber, ttlSeconds?: number) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
     return addQuoteToken(
       contractPoolWithSigner,
       amount,
       this.index,
-      await getExpiry(this.provider, ttlSeconds),
-      revertBelowLUP
+      await getExpiry(this.provider, ttlSeconds)
     );
   }
 
@@ -135,15 +128,13 @@ export class Bucket {
    * @param toIndex price bucket to which quote token should be deposited
    * @param maxAmountToMove optionally limits amount to move
    * @param ttlSeconds revert if not processed in this amount of time
-   * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
    * @returns promise to transaction
    */
   async moveQuoteToken(
     signer: Signer,
     toIndex: number,
     maxAmountToMove = constants.MaxUint256,
-    ttlSeconds?: number,
-    revertBelowLUP = false
+    ttlSeconds?: number
   ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
 
@@ -152,8 +143,7 @@ export class Bucket {
       maxAmountToMove,
       this.index,
       toIndex,
-      await getExpiry(this.provider, ttlSeconds),
-      revertBelowLUP
+      await getExpiry(this.provider, ttlSeconds)
     );
   }
 
@@ -227,10 +217,8 @@ export class Bucket {
   }
 
   async estimateDepositFeeRate(): Promise<BigNumber> {
-    // current annualized rate divided by 365 (24 hours of interest), capped at 10%
-    // return Maths.min(Maths.wdiv(interestRate_, 365 * 1e18), 0.1 * 1e18);
-    // return min(wdiv(interestRate, toWad(365)), toWad(0.1))
-    return await this.pool.utils.contract.unutilizedDepositFeeRate(this.pool.poolAddress);
+    // current annualized rate divided by 365*3 (8 hours of interest)
+    return await this.pool.utils.contract.depositFeeRate(this.pool.poolAddress);
   }
 
   /**

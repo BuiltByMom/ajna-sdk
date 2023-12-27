@@ -1,6 +1,11 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { ERC20_NON_SUBSET_HASH, MAX_FENWICK_INDEX, MAX_INFLATED_PRICE_WAD } from '../constants';
+import {
+  COLLATERALIZATION_FACTOR,
+  ERC20_NON_SUBSET_HASH,
+  MAX_FENWICK_INDEX,
+  MAX_INFLATED_PRICE_WAD,
+} from '../constants';
 import { multicall } from '../contracts/common';
 import { getErc20Contract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
@@ -386,10 +391,12 @@ export abstract class Pool {
 
     const [, , , , lup] = response[0];
     const [, , , pendingInflator] = response[1];
-    const [debt, collateral, t0np] = response[2];
+    const [debt, collateral, t0np, tp] = response[2];
     const [kickTimestamp] = response[3];
-    const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
-    const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
+    const collateralization = debt.gt(0)
+      ? collateral.mul(lup).div(wmul(debt, COLLATERALIZATION_FACTOR))
+      : toWad(1);
+    // const tp = collateral.gt(0) ? wdiv(wmul(debt, COLLATERALIZATION_FACTOR), collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
 
     const [rate] = await interestRateInfo(this.contract);
@@ -519,7 +526,7 @@ export abstract class Pool {
 
   /**
    * Calculate a loan's neutral price.
-   * @param thresholdPrice loan debt / pledged collateral
+   * @param thresholdPrice loan debt * 1.04 / pledged collateral
    * @param npTpRatio relationship between neutral price and threshold price
    * @returns neutral price, in WAD precision
    */
@@ -533,7 +540,7 @@ export abstract class Pool {
    * @returns relationship between the neutral price and threshold price
    */
   calculateNpTpRatio(rate: BigNumber) {
-    return toWad(1.04).add(wsqrt(rate).div(2));
+    return toWad(1).add(wdiv(wsqrt(rate), toWad(2)));
   }
 
   /**
@@ -651,8 +658,10 @@ export abstract class Pool {
     const newDebt = borrowerDebt.add(debtAmount);
     const newCollateral = collateral.add(collateralAmount);
     const zero = constants.Zero;
-    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
-    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const thresholdPrice = newCollateral.eq(zero)
+      ? zero
+      : wmul(wdiv(newDebt, newCollateral), COLLATERALIZATION_FACTOR);
+    const encumbered = lup.eq(zero) ? zero : wmul(wdiv(newDebt, lup), COLLATERALIZATION_FACTOR);
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical neutral price
@@ -722,8 +731,10 @@ export abstract class Pool {
       ? zero
       : collateral.sub(collateralAmount);
 
-    const thresholdPrice = newCollateral.eq(zero) ? zero : wdiv(newDebt, newCollateral);
-    const encumbered = lup.eq(zero) ? zero : wdiv(newDebt, lup);
+    const thresholdPrice = newCollateral.eq(zero)
+      ? zero
+      : wdiv(wmul(newDebt, COLLATERALIZATION_FACTOR), newCollateral);
+    const encumbered = lup.eq(zero) ? zero : wdiv(wmul(newDebt, COLLATERALIZATION_FACTOR), lup);
     const collateralization = encumbered.eq(zero) ? toWad(1) : wdiv(newCollateral, encumbered);
 
     // calculate the hypothetical neutral price

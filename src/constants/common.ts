@@ -18,6 +18,7 @@ export const MAX_FENWICK_INDEX = 7388;
 export const MAX_INFLATED_PRICE_WAD = BigNumber.from('50248449380325617709105488550'); // 50 * bucket 0 price (50bbn-ish)
 export const DEFAULT_TTL = 600;
 export const MAX_SETTLE_BUCKETS = 10;
+export const COLLATERALIZATION_FACTOR = BigNumber.from('1040000000000000000'); // 1.04
 
 // grants distribution period
 export const ONE_DAY_MS = 3600 * 24 * 1000;

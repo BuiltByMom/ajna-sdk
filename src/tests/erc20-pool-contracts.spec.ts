@@ -91,7 +91,7 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance).toEqual(quoteAmount);
+    expect(fromWad(lpBalance)).toEqual('9999.54337899543379');
   });
 
   it('should get origination fee rate', async () => {
@@ -164,7 +164,7 @@ describe('ERC20 Pool', () => {
   it('should use poolStats successfully', async () => {
     const stats = await poolA.getStats();
 
-    expect(stats.poolSize?.gte(toWad('25000'))).toBe(true);
+    expect(fromWad(stats.poolSize!)).toEqual('24998.858447488584475');
     expect(stats.loansCount).toEqual(1);
     expect(stats.minDebtAmount.gte(toWad('0'))).toBe(true);
     expect(stats.collateralization.gte(toWad('1'))).toBe(true);
@@ -179,7 +179,7 @@ describe('ERC20 Pool', () => {
 
     expect(prices.hpb).toEqual(indexToPrice(3236));
     expect(prices.hpbIndex).toEqual(3236);
-    expect(prices.htp).toEqual(toWad('76.997041420118343231'));
+    expect(prices.htp).toBeBetween(toWad(80), toWad(80.2));
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
     expect(prices.lup).toEqual(indexToPrice(3242));
     expect(prices.lupIndex).toEqual(3242);
@@ -295,7 +295,7 @@ describe('ERC20 Pool', () => {
     const lpBalance = await bucket.lpBalance(signerLender.address);
     expect(lpBalance.gt(constants.Zero)).toBe(true);
     const deposit = await bucket.lpToQuoteTokens(lpBalance);
-    expect(deposit.gte(toWad('5000'))).toBe(true);
+    expect(fromWad(deposit)).toEqual('4999.771689497716895');
   });
 
   it('should use lpToCollateral successfully', async () => {
@@ -328,28 +328,28 @@ describe('ERC20 Pool', () => {
     // getPosition on bucket below LUP
     bucket = await poolA.getBucketByIndex(3261);
     position = await bucket.getPosition(signerLender.address);
-    expect(position.lpBalance).toEqual(toWad(5000));
-    expect(position.depositRedeemable).toEqual(toWad(5000));
+    expect(position.lpBalance).toBeBetween(toWad(4998), toWad(5000));
+    expect(position.depositRedeemable).toEqual(toWad('4999.771689497716895000'));
     expect(position.collateralRedeemable).toEqual(toWad(0));
     expect(position.depositWithdrawable).toEqual(position.depositRedeemable);
 
     // getPosition on bucket above LUP
     bucket = await poolA.getBucketByIndex(3242);
     position = await bucket.getPosition(signerLender.address);
-    expect(position.lpBalance).toEqual(toWad(12000));
-    expect(position.depositRedeemable).toEqual(toWad(12000));
+    expect(position.lpBalance).toEqual(toWad('11999.452054794520548000'));
+    expect(position.depositRedeemable).toEqual(toWad('11999.452054794520548000'));
     expect(position.collateralRedeemable).toEqual(toWad(0));
-    expect(position.depositWithdrawable).toEqual(toWad(5000));
+    expect(position.depositWithdrawable).toEqual(toWad('4999.771689497716895000'));
   });
 
   it('should use getLoan successfully', async () => {
     const loan = await poolA.getLoan(await signerBorrower.getAddress());
-    expect(loan.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
+    expect(loan.collateralization).toBeBetween(toWad(1.1), toWad(1.3));
     expect(loan.debt).toBeBetween(toWad(10000), toWad(10000).mul(2));
     expect(loan.collateral).toEqual(toWad(130));
     expect(loan.thresholdPrice).toBeBetween(toWad(76), toWad(76).mul(2));
     expect(loan.neutralPrice).toBeBetween(toWad(80), toWad(81).mul(2));
-    expect(loan.liquidationBond).toBeBetween(toWad(150), toWad(150).mul(2));
+    expect(loan.liquidationBond).toBeBetween(toWad(110), toWad(110).mul(2));
     expect(loan.isKicked).toBe(false);
   });
 
@@ -360,9 +360,9 @@ describe('ERC20 Pool', () => {
     expect(loanEstimate.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
-    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(75), toWad(75).mul(2));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(78), toWad(78).mul(2));
     expect(loanEstimate.neutralPrice).toBeBetween(toWad(79), toWad(79).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(227), toWad(231).mul(2));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(165), toWad(165).mul(2));
     expect(loanEstimate.lup.lte(prices.lup));
     expect(loanEstimate.lupIndex).toBeGreaterThanOrEqual(prices.lupIndex);
 
@@ -391,12 +391,12 @@ describe('ERC20 Pool', () => {
 
     // estimate new loan
     loanEstimate = await poolA.estimateLoan(signerLender2.address, toWad(1000), toWad(20));
-    expect(loanEstimate.collateralization).toBeBetween(toWad(1.9), toWad(2));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.8), toWad(1.9));
     expect(loanEstimate.debt).toBeBetween(toWad(1000), toWad(1010));
     expect(loanEstimate.collateral).toEqual(toWad(20));
-    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(50).mul(2));
-    expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(50).mul(2));
-    expect(loanEstimate.liquidationBond).toBeBetween(toWad(15), toWad(17));
+    expect(loanEstimate.thresholdPrice).toBeBetween(toWad(50), toWad(60));
+    expect(loanEstimate.neutralPrice).toBeBetween(toWad(50), toWad(60));
+    expect(loanEstimate.liquidationBond).toBeBetween(toWad(10), toWad(12));
     expect(loanEstimate.lup).toEqual(prices.lup);
     expect(loanEstimate.lupIndex).toEqual(prices.lupIndex);
   });
@@ -496,11 +496,11 @@ describe('ERC20 Pool', () => {
     tx = await pool.multicall(signerLender, [
       {
         methodName: 'addQuoteToken',
-        args: [quoteAmount, bucketIndex1, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex1, await getExpiry(provider)],
       },
       {
         methodName: 'addQuoteToken',
-        args: [quoteAmount, bucketIndex2, await getExpiry(provider), false],
+        args: [quoteAmount, bucketIndex2, await getExpiry(provider)],
       },
     ]);
     response = await tx.verifyAndSubmitResponse();
@@ -668,7 +668,7 @@ describe('ERC20 Pool', () => {
     await timeJump(provider, jumpTimeSeconds);
     status = await auction.getStatus();
     expect(status.lastKickTime.getTime()).toBeGreaterThan(repaymentTime);
-    expect(status.price).toBeBetween(toWad('0.20'), toWad('0.25'));
+    expect(status.price).toBeBetween(toWad('0.01'), toWad('0.03'));
 
     // approve ajna tokens
     stats = await pool.getStats();
