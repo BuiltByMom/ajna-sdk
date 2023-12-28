@@ -235,8 +235,14 @@ describe('ERC20 Liquidations', () => {
     const allowance = 100000000;
     const quoteAmount = 10;
 
-    // kick first
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    // lender adds liquidity
+    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    // kick
+    tx = await bucket.lenderKick(signerLender);
     await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
@@ -251,16 +257,10 @@ describe('ERC20 Liquidations', () => {
     expect(auctionStatus.collateral).toEqual(toWad(0.0003));
     expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
     expect(auctionStatus.isTakeable).toBe(true);
-    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(true);
     expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(false);
-
-    // lender adds liquidity
-    tx = await pool.quoteApprove(signerLender, toWad(allowance));
-    await submitAndVerifyTransaction(tx);
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    await submitAndVerifyTransaction(tx);
 
     // take
     tx = await liquidation.depositTake(signerLender, bucket.index);

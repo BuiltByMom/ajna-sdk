@@ -396,7 +396,6 @@ export abstract class Pool {
     const collateralization = debt.gt(0)
       ? collateral.mul(lup).div(wmul(debt, COLLATERALIZATION_FACTOR))
       : toWad(1);
-    // const tp = collateral.gt(0) ? wdiv(wmul(debt, COLLATERALIZATION_FACTOR), collateral) : BigNumber.from(0);
     const np = wmul(t0np, pendingInflator);
 
     const [rate] = await interestRateInfo(this.contract);
@@ -444,11 +443,12 @@ export abstract class Pool {
     // iterate through borrower info, offset by the 3 pool-level requests
     let borrowerIndex = 0;
     while (borrowerIndex < borrowerAddresses.length) {
-      const [debt, collateral, t0np] = response[++i];
+      const [debt, collateral, t0np, tp] = response[++i];
       const kickTimestamp = response[++i][0];
 
-      const collateralization = debt.gt(0) ? collateral.mul(lup).div(debt) : toWad(1);
-      const tp = collateral.gt(0) ? wdiv(debt, collateral) : BigNumber.from(0);
+      const collateralization = debt.gt(0)
+        ? collateral.mul(lup).div(wmul(debt, COLLATERALIZATION_FACTOR))
+        : toWad(1);
       const np = wmul(t0np, pendingInflator);
       retval.set(borrowerAddresses[borrowerIndex++], {
         collateralization,
