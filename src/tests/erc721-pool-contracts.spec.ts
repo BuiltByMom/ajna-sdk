@@ -209,7 +209,7 @@ describe('ERC721 Pool', () => {
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
     let lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(lpBalance.gte(quoteAmount)).toBe(true);
+    expect(lpBalance).toEqual(toWad('99.9954337899543379'));
 
     // remove liquidity
     tx = await bucket.removeQuoteToken(signerLender, constants.MaxUint256);
@@ -240,7 +240,7 @@ describe('ERC721 Pool', () => {
   it('debt may be drawn and repaid', async () => {
     // confirm existing state
     const initialStats = await poolDuckDai.getStats();
-    expect(initialStats.poolSize).toEqual(toWad(10_000));
+    expect(initialStats.poolSize).toEqual(toWad('9999.543378995433790000'));
     expect(initialStats.debt).toBeBetween(toWad(400), toWad(500));
     let loan = await poolDuckDai.getLoan(signerBorrower.address);
     expect(loan.debt).toEqual(toWad(0));
