@@ -98,7 +98,7 @@ describe('LP Token and PositionManager', () => {
     await submitAndVerifyTransaction(response);
 
     lp = await getLP(signerLender, tokenId, bucketIndex);
-    expect(lp.toString()).toBe(amount.toString());
+    expect(lp).toEqual(toWad('199.990867579908675800'));
 
     // check in position (should be true)
     inPosition = await lpToken.isIndexInPosition(bucketIndex, tokenId);
@@ -122,7 +122,7 @@ describe('LP Token and PositionManager', () => {
 
     // add, mint, and memorialize liquidity
     await addQuoteTokensByIndexes(signerLender, pool, [fromIndex], [amount]);
-    expect(await fromBucket.lpBalance(signerLender.address)).toEqual(toWad(100));
+    expect(await fromBucket.lpBalance(signerLender.address)).toEqual(toWad('99.9958904109589041'));
     expect(await toBucket.lpBalance(signerLender.address)).toEqual(toWad(0));
     let tx = await pool.mintLPToken(signerLender);
     const receipt = await submitAndVerifyTransaction(tx);
@@ -139,7 +139,7 @@ describe('LP Token and PositionManager', () => {
     // move liquidity to another bucket
     expect(await lpToken.isIndexInPosition(fromIndex, tokenId)).toBe(true);
     expect(await lpToken.isIndexInPosition(toIndex, tokenId)).toBe(false);
-    tx = await lpToken.moveLiquidity(signerLender, pool.contract, fromIndex, toIndex, 33, true);
+    tx = await lpToken.moveLiquidity(signerLender, pool.contract, fromIndex, toIndex, 33);
     await submitAndVerifyTransaction(tx);
     expect(await lpToken.isIndexInPosition(fromIndex, tokenId)).toBe(false);
     expect(await lpToken.isIndexInPosition(toIndex, tokenId)).toBe(true);
@@ -148,7 +148,7 @@ describe('LP Token and PositionManager', () => {
     tx = await lpToken.redeemPositions(signerLender, pool.contract, [toIndex]);
     await submitAndVerifyTransaction(tx);
     expect(await fromBucket.lpBalance(signerLender.address)).toEqual(toWad(0));
-    expect(await toBucket.lpBalance(signerLender.address)).toEqual(toWad(100));
+    expect(await toBucket.lpBalance(signerLender.address)).toEqual(toWad('99.991780990805029067'));
   });
 
   it('increaseLPAllowance should throw exception if indexes and amounts not the same length', async () => {
