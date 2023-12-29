@@ -254,6 +254,12 @@ describe('ERC721 Liquidations', () => {
     // check auction status after kicking and before bucketTake
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
 
+    // lender adds liquidity
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
     // wait 8 hours and check auction status
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
     await timeJump(provider, jumpTimeSeconds);
@@ -264,16 +270,10 @@ describe('ERC721 Liquidations', () => {
     expect(auctionStatus.collateral).toEqual(toWad(2));
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
-    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(true);
     expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
-
-    // lender adds liquidity
-    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
-    await submitAndVerifyTransaction(tx);
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    await submitAndVerifyTransaction(tx);
 
     // deposit take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -299,16 +299,16 @@ describe('ERC721 Liquidations', () => {
     // check auction status after kicking and before bucketTake
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
 
-    // wait 8 hours and check auction status
-    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
-    await timeJump(provider, jumpTimeSeconds);
-    auctionStatus = await liquidation.getStatus();
-
     // lender adds liquidity
     tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
+
+    // wait 8 hours and check auction status
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
 
     // deposit take
     tx = await liquidation.depositTake(signerLender, bucket.index);
