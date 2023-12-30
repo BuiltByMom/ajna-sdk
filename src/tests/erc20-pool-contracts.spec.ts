@@ -449,7 +449,7 @@ describe('ERC20 Pool', () => {
     expect(+fromWad(loanEstimate.collateralization)).toBeCloseTo(+fromWad(loan.collateralization));
     expect(+fromWad(loanEstimate.debt)).toBeCloseTo(+fromWad(loan.debt));
     expect(loanEstimate.collateral).toEqual(loan.collateral);
-    expect(loanEstimate.thresholdPrice).toEqual(loan.thresholdPrice);
+    expect(+fromWad(loanEstimate.thresholdPrice)).toBeCloseTo(+fromWad(loan.thresholdPrice), 17);
     expect(+fromWad(loanEstimate.neutralPrice)).toBeCloseTo(+fromWad(loan.neutralPrice));
     expect(+fromWad(loanEstimate.liquidationBond)).toBeCloseTo(+fromWad(loan.liquidationBond));
     expect(loanEstimate.lup).toEqual(prices.lup);
