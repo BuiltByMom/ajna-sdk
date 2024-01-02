@@ -447,7 +447,7 @@ export abstract class Pool {
       const kickTimestamp = response[++i][0];
 
       const collateralization = debt.gt(0)
-        ? collateral.mul(lup).div(wmul(debt, COLLATERALIZATION_FACTOR))
+        ? wdiv(wmul(collateral, lup), wmul(debt, COLLATERALIZATION_FACTOR))
         : toWad(1);
       const np = wmul(t0np, pendingInflator);
       retval.set(borrowerAddresses[borrowerIndex++], {
