@@ -91,7 +91,8 @@ describe('ERC20 Pool', () => {
     expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
-    expect(fromWad(lpBalance)).toEqual('9999.54337899543379');
+    const depositLessFee = '9999.54337899543379';
+    expect(fromWad(lpBalance)).toEqual(depositLessFee);
   });
 
   it('should get origination fee rate', async () => {
@@ -164,7 +165,8 @@ describe('ERC20 Pool', () => {
   it('should use poolStats successfully', async () => {
     const stats = await poolA.getStats();
 
-    expect(fromWad(stats.poolSize!)).toEqual('24998.858447488584475');
+    const depositLessFee = '24998.858447488584475';
+    expect(fromWad(stats.poolSize!)).toEqual(depositLessFee);
     expect(stats.loansCount).toEqual(1);
     expect(stats.minDebtAmount.gte(toWad('0'))).toBe(true);
     expect(stats.collateralization.gte(toWad('1'))).toBe(true);
@@ -295,7 +297,8 @@ describe('ERC20 Pool', () => {
     const lpBalance = await bucket.lpBalance(signerLender.address);
     expect(lpBalance.gt(constants.Zero)).toBe(true);
     const deposit = await bucket.lpToQuoteTokens(lpBalance);
-    expect(fromWad(deposit)).toEqual('4999.771689497716895');
+    const depositLessFee = '4999.771689497716895';
+    expect(fromWad(deposit)).toEqual(depositLessFee);
   });
 
   it('should use lpToCollateral successfully', async () => {
@@ -329,17 +332,19 @@ describe('ERC20 Pool', () => {
     bucket = await poolA.getBucketByIndex(3261);
     position = await bucket.getPosition(signerLender.address);
     expect(position.lpBalance).toBeBetween(toWad(4998), toWad(5000));
-    expect(position.depositRedeemable).toEqual(toWad('4999.771689497716895000'));
+    const depositLessFee = toWad('4999.771689497716895000');
+    expect(position.depositRedeemable).toEqual(depositLessFee);
     expect(position.collateralRedeemable).toEqual(toWad(0));
     expect(position.depositWithdrawable).toEqual(position.depositRedeemable);
 
     // getPosition on bucket above LUP
     bucket = await poolA.getBucketByIndex(3242);
     position = await bucket.getPosition(signerLender.address);
-    expect(position.lpBalance).toEqual(toWad('11999.452054794520548000'));
-    expect(position.depositRedeemable).toEqual(toWad('11999.452054794520548000'));
+    const lpBalance = toWad('11999.452054794520548000');
+    expect(position.lpBalance).toEqual(lpBalance);
+    expect(position.depositRedeemable).toEqual(lpBalance);
     expect(position.collateralRedeemable).toEqual(toWad(0));
-    expect(position.depositWithdrawable).toEqual(toWad('4999.771689497716895000'));
+    expect(position.depositWithdrawable).toEqual(depositLessFee);
   });
 
   it('should use getLoan successfully', async () => {
