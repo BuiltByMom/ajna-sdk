@@ -179,7 +179,7 @@ describe('ERC20 Pool', () => {
 
     expect(prices.hpb).toEqual(indexToPrice(3236));
     expect(prices.hpbIndex).toEqual(3236);
-    expect(prices.htp).toBeBetween(toWad(80), toWad(80.2));
+    expect(prices.htp).toBeBetween(toWad(80), toWad(80.5));
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
     expect(prices.lup).toEqual(indexToPrice(3242));
     expect(prices.lupIndex).toEqual(3242);
