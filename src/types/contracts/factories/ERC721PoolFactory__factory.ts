@@ -72,6 +72,11 @@ const _abi = [
         name: 'pool_',
         indexed: false,
       },
+      {
+        type: 'bytes32',
+        name: 'subsetHash_',
+        indexed: false,
+      },
     ],
   },
   {

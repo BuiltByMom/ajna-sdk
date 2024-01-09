@@ -9,7 +9,7 @@ import type { ERC721Pool, ERC721PoolInterface } from '../ERC721Pool';
 const _abi = [
   {
     type: 'error',
-    name: 'AllowanceAlreadySet',
+    name: 'AddAboveAuctionPrice',
     inputs: [],
   },
   {
@@ -134,11 +134,6 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'LUPGreaterThanTP',
-    inputs: [],
-  },
-  {
-    type: 'error',
     name: 'LimitIndexExceeded',
     inputs: [],
   },
@@ -249,11 +244,6 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'PoolUnderCollateralized',
-    inputs: [],
-  },
-  {
-    type: 'error',
     name: 'PriceBelowLUP',
     inputs: [],
   },
@@ -284,7 +274,7 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'ZeroThresholdPrice',
+    name: 'ZeroDebtToCollateral',
     inputs: [],
   },
   {
@@ -612,6 +602,12 @@ const _abi = [
         indexed: false,
       },
     ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    name: 'InterestUpdateFailure',
+    inputs: [],
   },
   {
     type: 'event',
@@ -1039,15 +1035,15 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
-      {
-        type: 'bool',
-        name: 'revertIfBelowLup_',
-      },
     ],
     outputs: [
       {
         type: 'uint256',
         name: 'bucketLP_',
+      },
+      {
+        type: 'uint256',
+        name: 'addedAmount_',
       },
     ],
   },
@@ -1120,6 +1116,10 @@ const _abi = [
       {
         type: 'uint256',
         name: 'neutralPrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'debtToCollateral_',
       },
       {
         type: 'address',
@@ -1533,7 +1533,37 @@ const _abi = [
     outputs: [
       {
         type: 'bool',
-        name: 'success_',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'getBorrowerTokenIds',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [
+      {
+        type: 'address',
+        name: 'borrower_',
+      },
+    ],
+    outputs: [
+      {
+        type: 'uint256[]',
+      },
+    ],
+  },
+  {
+    type: 'function',
+    name: 'getBucketTokenIds',
+    constant: true,
+    stateMutability: 'view',
+    payable: false,
+    inputs: [],
+    outputs: [
+      {
+        type: 'uint256[]',
       },
     ],
   },
@@ -1848,10 +1878,6 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
-      {
-        type: 'bool',
-        name: 'revertIfBelowLup_',
-      },
     ],
     outputs: [
       {
@@ -2044,6 +2070,9 @@ const _abi = [
       {
         type: 'uint256',
       },
+      {
+        type: 'uint256',
+      },
     ],
   },
   {
@@ -2091,7 +2120,16 @@ const _abi = [
         name: 'maxDepth_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'collateralSettled_',
+      },
+      {
+        type: 'bool',
+        name: 'isBorrowerSettled_',
+      },
+    ],
   },
   {
     type: 'function',
@@ -2182,37 +2220,6 @@ const _abi = [
   },
   {
     type: 'function',
-    name: 'totalBorrowerTokens',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [
-      {
-        type: 'address',
-        name: 'borrower_',
-      },
-    ],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
-    name: 'totalBucketTokens',
-    constant: true,
-    stateMutability: 'view',
-    payable: false,
-    inputs: [],
-    outputs: [
-      {
-        type: 'uint256',
-      },
-    ],
-  },
-  {
-    type: 'function',
     name: 'totalT0Debt',
     constant: true,
     stateMutability: 'view',
@@ -2281,7 +2288,12 @@ const _abi = [
         name: 'maxAmount_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'withdrawnAmount_',
+      },
+    ],
   },
 ] as const;
 

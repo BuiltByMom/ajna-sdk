@@ -15,8 +15,8 @@ import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
-const TDUCK_ADDRESS = '0x5814A7382Aa7a3c56D4A2E02FD66557c65cD90c0';
-const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
+const TDUCK_ADDRESS = '0xaf36Ce3FD234ba81A9d4676CD09fC6700f087146';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const LENDER_KEY = '0xaf12577dbd6c3f4837fe2ad515009f9f71b03ce8ba4a59c78c24fb5f445b6d01';
 const BORROWER_KEY = '0x8b4c4ea4246dd9c3404eda8ec30145dbe9c23744876e50b31dc8e9a0d26f0c25';
@@ -249,10 +249,15 @@ describe('ERC721 Liquidations', () => {
     await submitAndVerifyTransaction(tx);
     const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
-    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
 
     // check auction status after kicking and before bucketTake
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
+
+    // lender adds liquidity
+    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
 
     // wait 8 hours and check auction status
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
@@ -264,16 +269,10 @@ describe('ERC721 Liquidations', () => {
     expect(auctionStatus.collateral).toEqual(toWad(2));
     expect(auctionStatus.debtToCover).toBeBetween(toWad(18000), toWad(19000));
     expect(auctionStatus.isTakeable).toBe(true);
-    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(true);
     expect(auctionStatus.price).toBeBetween(toWad(5100), toWad(5200));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(9400), toWad(10400));
     expect(auctionStatus.isSettleable).toBe(false);
-
-    // lender adds liquidity
-    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
-    await submitAndVerifyTransaction(tx);
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    await submitAndVerifyTransaction(tx);
 
     // deposit take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -294,21 +293,20 @@ describe('ERC721 Liquidations', () => {
     await submitAndVerifyTransaction(tx);
     const liquidation = poolDuckDai.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
-    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
 
     // check auction status after kicking and before bucketTake
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
-
-    // wait 8 hours and check auction status
-    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
-    await timeJump(provider, jumpTimeSeconds);
-    auctionStatus = await liquidation.getStatus();
 
     // lender adds liquidity
     tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
+
+    // wait 8 hours and check auction status
+    const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
+    await timeJump(provider, jumpTimeSeconds);
+    auctionStatus = await liquidation.getStatus();
 
     // deposit take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -395,7 +393,7 @@ describe('ERC721 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     let blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 
@@ -453,7 +451,7 @@ describe('ERC721 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 

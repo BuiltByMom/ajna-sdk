@@ -1,7 +1,7 @@
 {
   "name": "@ajna-finance/sdk",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/ajna-finance/sdk.git"
@@ -25,6 +25,7 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "build-lib:watch": "tsc-watch --onSuccess \"yalc push --sig\"",
+    "decode-errors": "npx ts-node -e 'require(\"./src/utils/decode-errors\").decodeErrors();'",
     "prepublishOnly": "yarn build && find dist -type f -name '*.map' -exec rimraf {} +",
     "document": "typedoc src/index.ts",
     "test": "jest --silent --runInBand",

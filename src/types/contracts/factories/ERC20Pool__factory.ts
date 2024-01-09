@@ -9,7 +9,7 @@ import type { ERC20Pool, ERC20PoolInterface } from '../ERC20Pool';
 const _abi = [
   {
     type: 'error',
-    name: 'AllowanceAlreadySet',
+    name: 'AddAboveAuctionPrice',
     inputs: [],
   },
   {
@@ -130,11 +130,6 @@ const _abi = [
   {
     type: 'error',
     name: 'LUPBelowHTP',
-    inputs: [],
-  },
-  {
-    type: 'error',
-    name: 'LUPGreaterThanTP',
     inputs: [],
   },
   {
@@ -293,11 +288,6 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'PoolUnderCollateralized',
-    inputs: [],
-  },
-  {
-    type: 'error',
     name: 'PriceBelowLUP',
     inputs: [],
   },
@@ -328,7 +318,7 @@ const _abi = [
   },
   {
     type: 'error',
-    name: 'ZeroThresholdPrice',
+    name: 'ZeroDebtToCollateral',
     inputs: [],
   },
   {
@@ -656,6 +646,12 @@ const _abi = [
         indexed: false,
       },
     ],
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    name: 'InterestUpdateFailure',
+    inputs: [],
   },
   {
     type: 'event',
@@ -1061,15 +1057,15 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
-      {
-        type: 'bool',
-        name: 'revertIfBelowLup_',
-      },
     ],
     outputs: [
       {
         type: 'uint256',
         name: 'bucketLP_',
+      },
+      {
+        type: 'uint256',
+        name: 'addedAmount_',
       },
     ],
   },
@@ -1142,6 +1138,10 @@ const _abi = [
       {
         type: 'uint256',
         name: 'neutralPrice_',
+      },
+      {
+        type: 'uint256',
+        name: 'debtToCollateral_',
       },
       {
         type: 'address',
@@ -1549,7 +1549,6 @@ const _abi = [
     outputs: [
       {
         type: 'bool',
-        name: 'success_',
       },
     ],
   },
@@ -1817,10 +1816,6 @@ const _abi = [
         type: 'uint256',
         name: 'expiry_',
       },
-      {
-        type: 'bool',
-        name: 'revertIfBelowLup_',
-      },
     ],
     outputs: [
       {
@@ -2013,6 +2008,9 @@ const _abi = [
       {
         type: 'uint256',
       },
+      {
+        type: 'uint256',
+      },
     ],
   },
   {
@@ -2060,7 +2058,16 @@ const _abi = [
         name: 'maxDepth_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'collateralSettled_',
+      },
+      {
+        type: 'bool',
+        name: 'isBorrowerSettled_',
+      },
+    ],
   },
   {
     type: 'function',
@@ -2201,7 +2208,12 @@ const _abi = [
         name: 'maxAmount_',
       },
     ],
-    outputs: [],
+    outputs: [
+      {
+        type: 'uint256',
+        name: 'withdrawnAmount_',
+      },
+    ],
   },
 ] as const;
 

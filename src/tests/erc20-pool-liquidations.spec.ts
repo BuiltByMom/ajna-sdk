@@ -15,8 +15,8 @@ import { submitAndVerifyTransaction } from './test-utils';
 
 jest.setTimeout(1200000);
 
-const TESTB_ADDRESS = '0x93710870af60C4962C20E3A93a817DEa1C072288';
-const TDAI_ADDRESS = '0x28B1d8a6b621ae7e28F4Ec148Dd6140387f86dBa';
+const TESTB_ADDRESS = '0x3f2D7987bffe953f071273F3ABc99154ba3BAE99';
+const TDAI_ADDRESS = '0x4cEDCBb309d1646F3E91FB00c073bB28225262E6';
 const LENDER_KEY = '0x2bbf23876aee0b3acd1502986da13a0f714c143fcc8ede8e2821782d75033ad1';
 const DEPLOYER_KEY = '0xd332a346e8211513373b7ddcf94b2b513b934b901258a9465c76d0d9a2b676d8';
 const BORROWER_KEY = '0x997f91a295440dc31eca817270e5de1817cf32fa99adc0890dc71f8667574391';
@@ -235,12 +235,17 @@ describe('ERC20 Liquidations', () => {
     const allowance = 100000000;
     const quoteAmount = 10;
 
-    // kick first
-    let tx = await pool.kick(signerLender, signerBorrower2.address);
+    // lender adds liquidity
+    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    await submitAndVerifyTransaction(tx);
+    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    // kick
+    tx = await bucket.lenderKick(signerLender);
     await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
-    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
 
     // wait 8 hours
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
@@ -251,16 +256,10 @@ describe('ERC20 Liquidations', () => {
     expect(auctionStatus.collateral).toEqual(toWad(0.0003));
     expect(auctionStatus.debtToCover).toBeBetween(toWad(5), toWad(6));
     expect(auctionStatus.isTakeable).toBe(true);
-    expect(auctionStatus.isCollateralized).toBe(false);
+    expect(auctionStatus.isCollateralized).toBe(true);
     expect(auctionStatus.price).toBeBetween(toWad(9500), toWad(10000));
     expect(auctionStatus.neutralPrice).toBeBetween(toWad(19000), toWad(20000));
     expect(auctionStatus.isSettleable).toBe(false);
-
-    // lender adds liquidity
-    tx = await pool.quoteApprove(signerLender, toWad(allowance));
-    await submitAndVerifyTransaction(tx);
-    tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
-    await submitAndVerifyTransaction(tx);
 
     // take
     tx = await liquidation.depositTake(signerLender, bucket.index);
@@ -298,7 +297,7 @@ describe('ERC20 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     let blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 
@@ -356,7 +355,7 @@ describe('ERC20 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 

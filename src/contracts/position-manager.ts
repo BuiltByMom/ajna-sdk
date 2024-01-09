@@ -112,7 +112,6 @@ export async function moveLiquidity(
   fromIndex: number,
   toIndex: number,
   expiry: number,
-  revertBelowLUP: boolean,
   overrides?: TransactionOverrides
 ) {
   const contractInstance = getPositionManagerContract(signer);
@@ -120,7 +119,7 @@ export async function moveLiquidity(
     contractInstance,
     {
       methodName: 'moveLiquidity',
-      args: [poolAddress, tokenId, fromIndex, toIndex, expiry, revertBelowLUP],
+      args: [poolAddress, tokenId, fromIndex, toIndex, expiry],
     },
     overrides
   );

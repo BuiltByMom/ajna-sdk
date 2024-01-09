@@ -58,9 +58,8 @@ export class Liquidation {
     const kickTime = new Date(kickTimestampNumber * 1000);
     const elapsedTime = currentTimestamp - kickTimestampNumber;
 
-    const isGracePeriod = elapsedTime < HOUR_TO_SECONDS;
     const zero = constants.Zero;
-    const isTakeable = !isGracePeriod && collateral.gt(zero);
+    const isTakeable = collateral.gt(zero);
     const isSettleable =
       kickTimestampNumber > 0 && (elapsedTime >= HOUR_TO_SECONDS * 72 || collateral.eq(0));
 

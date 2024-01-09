@@ -131,7 +131,6 @@ export class LPToken {
    * @param fromIndex existing bucket in which lender's position is memorialized
    * @param toIndex target bucket into which lender wants their liquidity moved
    * @param ttlSeconds revert if not processed in this amount of time
-   * @param revertBelowLUP revert if lowest utilized price is above toIndex when processed
    * @returns promise to transaction
    */
   async moveLiquidity(
@@ -140,7 +139,6 @@ export class LPToken {
     fromIndex: number,
     toIndex: number,
     ttlSeconds?: number,
-    revertBelowLUP = false,
     overrides?: TransactionOverrides
   ): Promise<WrappedTransaction> {
     return moveLiquidity(
@@ -150,7 +148,6 @@ export class LPToken {
       fromIndex,
       toIndex,
       await getExpiry(this.provider, ttlSeconds),
-      revertBelowLUP,
       overrides
     );
   }

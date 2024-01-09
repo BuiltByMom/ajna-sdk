@@ -91,7 +91,7 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: 'implementation', data: BytesLike): Result;
 
   events: {
-    'PoolCreated(address)': EventFragment;
+    'PoolCreated(address,bytes32)': EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: 'PoolCreated'): EventFragment;
@@ -99,8 +99,9 @@ export interface ERC721PoolFactoryInterface extends utils.Interface {
 
 export interface PoolCreatedEventObject {
   pool_: string;
+  subsetHash_: string;
 }
-export type PoolCreatedEvent = TypedEvent<[string], PoolCreatedEventObject>;
+export type PoolCreatedEvent = TypedEvent<[string, string], PoolCreatedEventObject>;
 
 export type PoolCreatedEventFilter = TypedEventFilter<PoolCreatedEvent>;
 
@@ -255,8 +256,8 @@ export interface ERC721PoolFactory extends BaseContract {
   };
 
   filters: {
-    'PoolCreated(address)'(pool_?: null): PoolCreatedEventFilter;
-    PoolCreated(pool_?: null): PoolCreatedEventFilter;
+    'PoolCreated(address,bytes32)'(pool_?: null, subsetHash_?: null): PoolCreatedEventFilter;
+    PoolCreated(pool_?: null, subsetHash_?: null): PoolCreatedEventFilter;
   };
 
   estimateGas: {

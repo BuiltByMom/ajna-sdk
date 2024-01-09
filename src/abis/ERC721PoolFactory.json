@@ -16,7 +16,10 @@
     "type": "event",
     "anonymous": false,
     "name": "PoolCreated",
-    "inputs": [{ "type": "address", "name": "pool_", "indexed": false }]
+    "inputs": [
+      { "type": "address", "name": "pool_", "indexed": false },
+      { "type": "bytes32", "name": "subsetHash_", "indexed": false }
+    ]
   },
   {
     "type": "function",

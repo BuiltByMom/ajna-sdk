@@ -7,12 +7,11 @@ export async function addQuoteToken(
   amount: BigNumber,
   bucketIndex: number,
   expiry: number,
-  revertBelowLUP: boolean,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(
     contract,
-    { methodName: 'addQuoteToken', args: [amount, bucketIndex, expiry, revertBelowLUP] },
+    { methodName: 'addQuoteToken', args: [amount, bucketIndex, expiry] },
     overrides
   );
 }
@@ -23,14 +22,13 @@ export async function moveQuoteToken(
   fromIndex: number,
   toIndex: number,
   expiry: number,
-  revertBelowLUP: boolean,
   overrides?: TransactionOverrides
 ) {
   return await createTransaction(
     contract,
     {
       methodName: 'moveQuoteToken',
-      args: [maxAmountToMove, fromIndex, toIndex, expiry, revertBelowLUP],
+      args: [maxAmountToMove, fromIndex, toIndex, expiry],
     },
     overrides
   );

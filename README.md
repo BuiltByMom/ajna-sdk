@@ -65,6 +65,10 @@ This facility was tested against `brownie` compilation output.
 
 After updating ABIs, run `yarn typechain-abis` to generate typescript wrappers around contracts. Be sure to prettify generated code before committing.
 
+After updating `docker-compose.yml` to point to a new testchain:
+- Update Ajna deployment addresses in `tests/test-constants.ts`
+- Update token and pool addresses in each test (`tests/*.spec.ts`).
+
 
 ### Publishing
 
