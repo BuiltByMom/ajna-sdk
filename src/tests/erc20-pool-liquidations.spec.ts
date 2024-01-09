@@ -246,7 +246,6 @@ describe('ERC20 Liquidations', () => {
     await submitAndVerifyTransaction(tx);
     const liquidation = pool.getLiquidation(signerBorrower2.address);
     let auctionStatus = await liquidation.getStatus();
-    expect(auctionStatus.isTakeable).toBeFalsy(); // in grace period
 
     // wait 8 hours
     const jumpTimeSeconds = 8 * 60 * 60; // 8 hours
@@ -298,7 +297,7 @@ describe('ERC20 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     let blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 
@@ -356,7 +355,7 @@ describe('ERC20 Liquidations', () => {
     let auctionStatus = await liquidation.getStatus();
     const blockTime = await getBlockTime(signerLender);
     expect(auctionStatus.kickTime.valueOf() / 1000).toBeLessThanOrEqual(blockTime);
-    expect(auctionStatus.isTakeable).toBe(false);
+    expect(auctionStatus.isTakeable).toBe(true);
     expect(auctionStatus.isCollateralized).toBe(false);
     expect(auctionStatus.isSettleable).toBe(false);
 

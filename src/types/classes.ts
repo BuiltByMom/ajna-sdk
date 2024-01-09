@@ -75,7 +75,7 @@ export interface AuctionStatus {
   collateral: BigNumber;
   /** remaining borrower debt to be covered */
   debtToCover: BigNumber;
-  /** true if the grace period has elapsed and the auction has not expired */
+  /** true if collateral is available to be taken */
   isTakeable: boolean;
   /** helps determine if the liquidation may be settled */
   isCollateralized: boolean;
