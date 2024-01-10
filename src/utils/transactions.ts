@@ -181,6 +181,9 @@ class WrappedTransactionClass implements WrappedTransaction {
       };
     }, {});
 
+    if (!errorData) {
+      return undefined;
+    }
     errorData = errorData.substring(0, 10);
     if (errorData in errorsByHash) {
       return errorsByHash[errorData];
