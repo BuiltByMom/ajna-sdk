@@ -136,6 +136,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns string
    */
   parseNodeError(contract: Contract, error: any) {
+    console.error(error);
     if (error?.error?.error) {
       const innerError = error.error.error;
       // works on mainnet-forked Ganache local testnet
