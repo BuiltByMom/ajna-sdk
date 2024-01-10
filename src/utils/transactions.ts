@@ -137,6 +137,16 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   parseNodeError(contract: Contract, error: any) {
     console.error(error);
+
+    // mainnet
+    if (error?.error?.data?.originalError) {
+      const errorHash = error.error.data.originalError.data;
+
+      return (
+        this.getCustomErrorFromHash(contract, errorHash) ?? error.error.data.originalError.message
+      );
+    }
+
     if (error?.error?.error) {
       const innerError = error.error.error;
       // works on mainnet-forked Ganache local testnet
@@ -152,6 +162,7 @@ class WrappedTransactionClass implements WrappedTransaction {
         return this.getCustomErrorFromHash(contract, errorHash) ?? error.error.error;
       }
     }
+
     // metamask provider
     if (error?.data?.data) {
       const errorHash = error.data.data.result;
@@ -161,6 +172,17 @@ class WrappedTransactionClass implements WrappedTransaction {
         error.data.data?.message
       );
     }
+
+    // works with some L2 chains (Base, Polygon, Optimism)
+    if (error?.error?.data) {
+      const errorHash = error.error.data.data;
+      return (
+        this.getCustomErrorFromHash(contract, errorHash) ??
+        error.data.data?.cause ??
+        error.data.data?.message
+      );
+    }
+
     return 'Revert reason unknown';
   }
 
