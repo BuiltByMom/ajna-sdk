@@ -136,6 +136,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @returns string
    */
   parseNodeError(contract: Contract, error: any) {
+    console.error(error);
     // mainnet
     if (error?.error?.data?.originalError) {
       const errorHash = error.error.data.originalError.data;
