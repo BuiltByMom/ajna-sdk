@@ -193,7 +193,7 @@ export class FungiblePool extends Pool {
    * @param bucketIndices array of bucket indices to withdraw liquidity from
    * @returns promise to transaction
    */
-  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
+  async prepareWithdrawLiquidity(signer: Signer, bucketIndices: Array<number>): Promise<Array<CallData>> {
     const signerAddress = await signer.getAddress();
     const callData: Array<CallData> = [];
 
@@ -240,6 +240,16 @@ export class FungiblePool extends Pool {
       }
     }
 
-    return this.multicall(signer, callData);
+    return callData;
+  }
+
+  /**
+   * Withdraw all available liquidity from the given buckets using multicall transaction (first quote token, then - collateral if LP is left).
+   * @param signer address to redeem LP
+   * @param bucketIndices array of bucket indices to withdraw liquidity from
+   * @returns promise to transaction
+   */
+  async withdrawLiquidity(signer: Signer, bucketIndices: Array<number>) {
+    return this.multicall(signer, await this.prepareWithdrawLiquidity(signer, bucketIndices));
   }
 }
