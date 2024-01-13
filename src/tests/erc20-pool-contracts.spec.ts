@@ -96,32 +96,58 @@ describe('ERC20 Pool', () => {
     expect(fromWad(lpBalance)).toEqual(depositLessFee);
   });
 
-  it('should fail addQuoteToken and moveQuoteToken with dust', async () => {
-    const quoteAmount1 = BigNumber.from(100);
-    const quoteAmount2 = toWad(10_000);
-    const bucketIndexTo = 998;
+  it('should fail addQuoteToken with dust', async () => {
+    const quoteDustAmount = BigNumber.from(100);
+    const quoteAmount = toWad(10_000);
     const bucket = await pool.getBucketByIndex(999);
 
-    let tx = await pool.quoteApprove(signerLender, quoteAmount1.add(quoteAmount2));
+    let tx = await pool.quoteApprove(signerLender, quoteDustAmount.add(quoteAmount));
     await submitAndVerifyTransaction(tx);
 
-    tx = await bucket.addQuoteToken(signerLender, quoteAmount1);
+    tx = await bucket.addQuoteToken(signerLender, quoteDustAmount);
     await submitAndVerifyTransaction(tx);
 
     const bucketStatus = await bucket.getStatus();
 
-    expect(async () => await bucket.addQuoteToken(signerLender, quoteAmount2)).rejects.toThrow(
+    expect(async () => await bucket.addQuoteToken(signerLender, quoteAmount)).rejects.toThrow(
       SdkError
     );
-
-    expect(
-      async () => await bucket.moveQuoteToken(signerLender, bucketIndexTo, quoteAmount2)
-    ).rejects.toThrow(SdkError);
 
     expect(bucketStatus.bucketLP.gt(0)).toBe(true);
     expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
+    const depositLessFee = '0.0000000000000001';
+    expect(fromWad(lpBalance)).toEqual(depositLessFee);
+  });
+
+  it('should fail moveQuoteToken with dust', async () => {
+    const quoteDustAmount = BigNumber.from(100);
+    const quoteAmount = toWad(10_000);
+    const bucketIndexFrom = 997;
+    const bucketIndexTo = 998;
+    const bucketFrom = await pool.getBucketByIndex(bucketIndexFrom);
+    const bucketTo = await pool.getBucketByIndex(bucketIndexTo);
+
+    let tx = await pool.quoteApprove(signerLender, quoteDustAmount.add(quoteAmount));
+    await submitAndVerifyTransaction(tx);
+
+    tx = await bucketTo.addQuoteToken(signerLender, quoteDustAmount);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await bucketFrom.addQuoteToken(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    expect(
+      async () => await bucketFrom.moveQuoteToken(signerLender, bucketIndexTo, quoteAmount)
+    ).rejects.toThrow(SdkError);
+
+    const bucketToStatus = await bucketTo.getStatus();
+
+    expect(bucketToStatus.bucketLP.gt(0)).toBe(true);
+    expect(bucketToStatus.exchangeRate.eq(toWad(1))).toBe(true);
+
+    const lpBalance = await bucketTo.lpBalance(signerLender.address);
     const depositLessFee = '0.0000000000000001';
     expect(fromWad(lpBalance)).toEqual(depositLessFee);
   });
