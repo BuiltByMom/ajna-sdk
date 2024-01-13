@@ -86,14 +86,14 @@ export class Bucket {
   }
 
   /**
-   * Retrieve current state of the bucket.
+   * Retrieve current state of the bucket or by index if provided.
    * @returns {@link BucketStatus}
    */
-  async getStatus(): Promise<BucketStatus> {
+  async getStatus(index?: number): Promise<BucketStatus> {
     const [, deposit, collateral, bucketLP, , exchangeRate] = await bucketInfo(
       this.contractUtils,
       this.poolContract.address,
-      this.index
+      index || this.index
     );
 
     return {
@@ -108,8 +108,8 @@ export class Bucket {
    * Validates bucket LP balance to be greater than MIN_BUCKET_LP constant
    * @returns true or throws SdkError
    */
-  validateLPBalance = async () => {
-    const bucketStatus = await this.getStatus();
+  validateLPBalance = async (index?: number) => {
+    const bucketStatus = await this.getStatus(index);
 
     if (!bucketStatus.bucketLP.isZero() && bucketStatus.bucketLP.lt(MIN_BUCKET_LP)) {
       throw new SdkError(
@@ -155,8 +155,7 @@ export class Bucket {
     ttlSeconds?: number
   ) {
     const contractPoolWithSigner = this.poolContract.connect(signer);
-
-    await this.validateLPBalance();
+    await this.validateLPBalance(toIndex);
 
     return moveQuoteToken(
       contractPoolWithSigner,
