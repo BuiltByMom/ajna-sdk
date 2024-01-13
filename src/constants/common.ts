@@ -30,3 +30,6 @@ export const FUNDING_STAGE = utils.keccak256(utils.toUtf8Bytes(DistributionPerio
 export const CHALLENGE_STAGE = utils.keccak256(
   utils.toUtf8Bytes(DistributionPeriodStage.CHALLENGE)
 );
+
+// upper limit for bucket's LP balance
+export const MIN_BUCKET_LP = BigNumber.from(1_000_000);
