@@ -25,7 +25,6 @@ import {
   updateInterest,
   lenderInfo,
   stampLoan,
-  interestRateInfo,
 } from '../contracts/pool';
 import {
   borrowerInfo,
@@ -381,25 +380,26 @@ export abstract class Pool {
       this.poolAddress,
       borrowerAddress
     );
+    const poolBorrowerInfoCall = this.contractMulti.borrowerInfo(borrowerAddress);
 
     const response: Array<Array<BigNumber>> = await this.ethcallProvider.all([
       poolPricesInfoCall,
       poolLoansInfoCall,
       borrowerInfoCall,
       auctionStatusCall,
+      poolBorrowerInfoCall,
     ]);
 
     const [, , , , lup] = response[0];
     const [, , , pendingInflator] = response[1];
     const [debt, collateral, t0np, tp] = response[2];
     const [kickTimestamp] = response[3];
+    const [, , npTpRatio] = response[4];
+
     const collateralization = debt.gt(0)
       ? wdiv(wmul(collateral, lup), wmul(debt, COLLATERALIZATION_FACTOR))
       : toWad(1);
     const np = wmul(t0np, pendingInflator);
-
-    const [rate] = await interestRateInfo(this.contract);
-    const npTpRatio = this.calculateNpTpRatio(rate);
 
     return {
       collateralization,
@@ -425,6 +425,7 @@ export abstract class Pool {
     for (const loan of borrowerAddresses) {
       calls.push(this.contractUtilsMulti.borrowerInfo(this.poolAddress, loan));
       calls.push(this.contractUtilsMulti.auctionStatus(this.poolAddress, loan));
+      calls.push(this.contractMulti.borrowerInfo(loan));
     }
 
     // perform the multicall
@@ -437,14 +438,13 @@ export abstract class Pool {
     const [, , , pendingInflator] = response[++i];
 
     // calculate npTpRatio, needed for calculating liquidation bonds
-    const [rate] = await interestRateInfo(this.contract);
-    const npTpRatio = this.calculateNpTpRatio(rate);
 
     // iterate through borrower info, offset by the 3 pool-level requests
     let borrowerIndex = 0;
     while (borrowerIndex < borrowerAddresses.length) {
       const [debt, collateral, t0np, tp] = response[++i];
       const kickTimestamp = response[++i][0];
+      const [, , npTpRatio] = response[++i];
 
       const collateralization = debt.gt(0)
         ? wdiv(wmul(collateral, lup), wmul(debt, COLLATERALIZATION_FACTOR))
@@ -517,6 +517,7 @@ export abstract class Pool {
    * @param borrowerDebt loan debt
    * @returns required liquidation bond, in WAD precision
    */
+
   calculateLiquidationBond(npTpRatio: BigNumber, borrowerDebt: BigNumber) {
     // bondFactor = min((NP-to-TP-ratio - 1)/10, 0.03)
     const bondFactor = min(wdiv(npTpRatio.sub(toWad(1)), toWad(10)), toWad(0.03));
@@ -535,7 +536,7 @@ export abstract class Pool {
   }
 
   /**
-   * Calculate neutral price to threshold price "ratio".
+   * Calculate neutral price to threshold price approx. "ratio".
    * @param rate current pool "borrower" interest rate
    * @returns relationship between the neutral price and threshold price
    */

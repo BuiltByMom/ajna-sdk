@@ -174,10 +174,11 @@ class WrappedTransactionClass implements WrappedTransaction {
     // works with some L2 chains (Base, Polygon, Optimism)
     if (error?.error?.data) {
       const errorHash = error.error.data.data;
+
       return (
         this.getCustomErrorFromHash(contract, errorHash) ??
-        error.data.data?.cause ??
-        error.data.data?.message
+        error.error.data?.cause ??
+        error.error.data?.message
       );
     }
 
