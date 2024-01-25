@@ -20,15 +20,19 @@ async function addQuoteTokensByIndexes(
   indexes: Array<number>,
   amounts: Array<BigNumber>
 ) {
-  const totalAmounts = amounts.reduce((a, b) => a.add(b));
-  const res = await pool.quoteApprove(signer, totalAmounts);
-  await submitAndVerifyTransaction(res);
+  const totalAmount = amounts.reduce((a, b) => a.add(b));
+
+  let tx = await pool.quoteApproveHelper(signer, totalAmount);
+  await submitAndVerifyTransaction(tx);
+
+  tx = await pool.approveLenderHelperLPTransferor(signer);
+  await submitAndVerifyTransaction(tx);
 
   let i = 0;
   for (const index of indexes) {
     const bucket = await pool.getBucketByIndex(index);
-    const res = await bucket.addQuoteToken(signer, amounts[i]);
-    await submitAndVerifyTransaction(res);
+    const tx = await bucket.addQuoteToken(signer, amounts[i]);
+    await submitAndVerifyTransaction(tx);
     i++;
   }
 }

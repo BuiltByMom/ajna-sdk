@@ -54,8 +54,13 @@ async function addLiquidity(amount: BigNumber, price: BigNumber) {
     throw new SdkError('Please provide a valid price');
 
   const bucket = await pool.getBucketByPrice(price);
-  let tx = await pool.quoteApprove(signerLender, amount);
+
+  let tx = await pool.quoteApproveHelper(signerLender, amount);
   await tx.verifyAndSubmit();
+
+  tx = await pool.approveLenderHelperLPTransferor(signerLender);
+  await tx.verifyAndSubmit();
+
   tx = await bucket.addQuoteToken(signerLender, amount);
   await tx.verifyAndSubmit();
   console.log('Added', fromWad(amount), 'liquidity to bucket', bucket.index);

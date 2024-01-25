@@ -203,8 +203,12 @@ describe('ERC721 Pool', () => {
   it('liquidity may be added to and removed from a NFT pool', async () => {
     // add liquidity
     const quoteAmount = toWad(100);
-    let tx = await poolDuckDaiSubset.quoteApprove(signerLender, quoteAmount);
+    let tx = await poolDuckDaiSubset.quoteApproveHelper(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
+
+    tx = await poolDuckDaiSubset.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     const bucket = await poolDuckDaiSubset.getBucketByPrice(toWad(200));
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
