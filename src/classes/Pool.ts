@@ -51,6 +51,7 @@ import { Liquidation } from './Liquidation';
 import { getBlockTime } from '../utils/time';
 import { Bucket } from './Bucket';
 import { getSubsetHash } from '../contracts/erc721-pool-factory';
+import { getLenderHelperContract } from '../contracts/lender-helper';
 
 export interface LoanEstimate extends Loan {
   /** hypothetical lowest utilized price (LUP) assuming additional debt was drawn */
@@ -145,6 +146,7 @@ export abstract class Pool {
   name: string;
   utils: PoolUtils;
   ethcallProvider: ProviderMulti;
+  lenderHelper: Contract;
 
   constructor(
     provider: SignerOrProvider,
@@ -165,6 +167,7 @@ export abstract class Pool {
     this.contractMulti = contractMulti;
     this.quoteAddress = constants.AddressZero;
     this.collateralAddress = constants.AddressZero;
+    this.lenderHelper = getLenderHelperContract(this.provider);
   }
 
   async initialize() {
@@ -837,6 +840,43 @@ export abstract class Pool {
   async approvePositionManagerLPTransferor(signer: Signer) {
     const addr = getPositionManagerContract(signer).address;
     return approveLPTransferors(signer, this.contract, [addr]);
+  }
+
+  /**
+   * Approve lend helper to manage quote token.
+   * @param signer pool user
+   * @param allowance normalized approval amount (or MaxUint256)
+   * @returns promise to transaction
+   */
+  async quoteApproveHelper(signer: Signer, allowance: BigNumber) {
+    const denormalizedAllowance = allowance.eq(constants.MaxUint256)
+      ? allowance
+      : allowance.div(await quoteTokenScale(this.contract));
+
+    return approve(signer, this.lenderHelper.address, this.quoteAddress, denormalizedAllowance);
+  }
+
+  async approveLenderHelperLPTransferor(signer: Signer) {
+    return approveLPTransferors(signer, this.contract, [this.lenderHelper.address]);
+  }
+
+  async isLenderHelperLPTransferorApproved(signer: Signer): Promise<boolean> {
+    const signerAddress = await signer.getAddress();
+
+    return await this.contract.approvedTransferors(signerAddress, this.lenderHelper.address);
+  }
+
+  async increaseLenderHelperLPAllowance(
+    signer: Signer,
+    indexes: Array<number>,
+    amounts: Array<BigNumber>
+  ) {
+    if (indexes.length !== amounts.length) {
+      throw new SdkError('indexes and amounts must be same length');
+    }
+
+    const poolWithSigner = this.contract.connect(signer);
+    return increaseLPAllowance(poolWithSigner, this.lenderHelper.address, indexes, amounts);
   }
 
   async isLPTransferorApproved(signer: Signer): Promise<boolean> {

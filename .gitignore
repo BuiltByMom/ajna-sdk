@@ -27,3 +27,5 @@ yarn-error.log*
 _archivepackage-lock.json
 
 examples/*.json
+
+.env

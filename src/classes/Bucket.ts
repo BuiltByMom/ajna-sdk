@@ -1,24 +1,19 @@
 import { BigNumber, Contract, Signer, constants } from 'ethers';
-import { MIN_BUCKET_LP, MAX_FENWICK_INDEX } from '../constants';
+import { MAX_FENWICK_INDEX } from '../constants';
 import { multicall } from '../contracts/common';
-import {
-  addQuoteToken,
-  lenderInfo,
-  lenderKick,
-  moveQuoteToken,
-  removeQuoteToken,
-} from '../contracts/pool';
+import { lenderInfo, lenderKick, removeQuoteToken } from '../contracts/pool';
 import {
   bucketInfo,
   getPoolInfoUtilsContract,
   lpToCollateral,
   lpToQuoteTokens,
 } from '../contracts/pool-info-utils';
-import { Address, CallData, PoolInfoUtils, SdkError, SignerOrProvider } from '../types';
+import { Address, CallData, PoolInfoUtils, SignerOrProvider } from '../types';
 import { fromWad, toWad } from '../utils/numeric';
 import { indexToPrice } from '../utils/pricing';
 import { getExpiry } from '../utils/time';
 import { Pool } from './Pool';
+import { addQuoteToken, moveQuoteToken } from '../contracts/lender-helper';
 
 export interface BucketStatus {
   /* amount of quote token, including accrued interest, owed to the bucket */
@@ -105,22 +100,6 @@ export class Bucket {
   }
 
   /**
-   * Validates bucket LP balance to be greater than MIN_BUCKET_LP constant
-   * @returns true or throws SdkError
-   */
-  validateLPBalance = async (index?: number) => {
-    const bucketStatus = await this.getStatus(index);
-
-    if (!bucketStatus.bucketLP.isZero() && bucketStatus.bucketLP.lt(MIN_BUCKET_LP)) {
-      throw new SdkError(
-        'You can’t deposit in this price bucket right now. Please try another one.'
-      );
-    }
-
-    return true;
-  };
-
-  /**
    * Deposits quote token into the bucket.
    * @param signer lender
    * @param amount amount to deposit
@@ -128,12 +107,9 @@ export class Bucket {
    * @returns promise to transaction
    */
   async addQuoteToken(signer: Signer, amount: BigNumber, ttlSeconds?: number) {
-    const contractPoolWithSigner = this.poolContract.connect(signer);
-
-    await this.validateLPBalance();
-
     return addQuoteToken(
-      contractPoolWithSigner,
+      signer,
+      this.pool.poolAddress,
       amount,
       this.index,
       await getExpiry(this.provider, ttlSeconds)
@@ -154,11 +130,9 @@ export class Bucket {
     maxAmountToMove = constants.MaxUint256,
     ttlSeconds?: number
   ) {
-    const contractPoolWithSigner = this.poolContract.connect(signer);
-    await this.validateLPBalance(toIndex);
-
     return moveQuoteToken(
-      contractPoolWithSigner,
+      signer,
+      this.pool.poolAddress,
       maxAmountToMove,
       this.index,
       toIndex,

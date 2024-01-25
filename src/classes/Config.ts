@@ -11,6 +11,7 @@ class Config {
   static ajnaToken: Address;
   static grantFund: Address;
   static burnWrapper: Address;
+  static lenderHelper: Address;
 
   /**
    * Allows consumer to configure with their own addresses.
@@ -20,6 +21,7 @@ class Config {
    * @param ajnaToken address of the AJNA token contract
    * @param grantFund address of the ecosystem coordination contract
    * @param burnWrapper address of the contract used to wrap AJNA for transferring across an L2 bridge
+   * @param lenderHelper address of the contract used as a helper to add and move liquidity across buckets
    */
   constructor(
     erc20PoolFactory: Address,
@@ -28,7 +30,8 @@ class Config {
     positionManager: Address,
     ajnaToken: Address,
     grantFund: Address,
-    burnWrapper: Address
+    burnWrapper: Address,
+    lenderHelper: Address
   ) {
     Config.erc20PoolFactory = erc20PoolFactory;
     Config.erc721PoolFactory = erc721PoolFactory;
@@ -37,6 +40,7 @@ class Config {
     Config.ajnaToken = ajnaToken;
     Config.grantFund = grantFund;
     Config.burnWrapper = burnWrapper;
+    Config.lenderHelper = lenderHelper;
   }
 
   /**
@@ -50,7 +54,8 @@ class Config {
       process.env.AJNA_POSITION_MANAGER || '',
       process.env.AJNA_TOKEN_ADDRESS || '',
       process.env.AJNA_GRANT_FUND || '',
-      process.env.AJNA_BURN_WRAPPER || ''
+      process.env.AJNA_BURN_WRAPPER || '',
+      process.env.AJNA_LENDER_HELPER || ''
     );
   }
 }

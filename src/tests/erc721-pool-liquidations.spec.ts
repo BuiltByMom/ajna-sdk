@@ -67,15 +67,23 @@ describe('ERC721 Liquidations', () => {
     let tx = await poolDuckDai.quoteApprove(signerLender, toWad(60000));
     await submitAndVerifyTransaction(tx);
 
+    tx = await poolDuckDai.quoteApproveHelper(signerLender, toWad(60000));
+    await submitAndVerifyTransaction(tx);
+
+    tx = await poolDuckDai.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     // add 21,000 quote tokens to 2001 bucket
     const higherBucket = await poolDuckDai.getBucketByIndex(2001);
     let quoteAmount = toWad(21000);
+
     tx = await higherBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
     // add 5000 quote tokens to 2500 bucket
     const lowerBucket = await poolDuckDai.getBucketByIndex(2500);
     quoteAmount = toWad(5000);
+
     tx = await lowerBucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
 
@@ -254,8 +262,12 @@ describe('ERC721 Liquidations', () => {
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
 
     // lender adds liquidity
-    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    tx = await poolDuckDai.quoteApproveHelper(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
+
+    tx = await poolDuckDai.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
 
@@ -298,8 +310,12 @@ describe('ERC721 Liquidations', () => {
     expect(auctionStatus.debtToCover.gt(toWad('3.5'))).toBeTruthy();
 
     // lender adds liquidity
-    tx = await poolDuckDai.quoteApprove(signerLender, toWad(allowance));
+    tx = await poolDuckDai.quoteApproveHelper(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
+
+    tx = await poolDuckDai.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
 

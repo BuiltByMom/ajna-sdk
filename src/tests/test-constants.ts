@@ -14,6 +14,7 @@ const positionManagerAddress = '0xdF7403003a16c49ebA5883bB5890d474794cea5a';
 const ajnaTokenAddress = '0x25Af17eF4E2E6A4A2CE586C9D25dF87FD84D4a7d';
 const burnWrapperAddress = '0xE340B87CEd1af1AbE1CE8D617c84B7f168e3b18b';
 const grantFundAddress = '0x0b3A0ea1Fc7207d3e3ed9973025dA9d0e8fb0F3f';
+const lenderHelper = '0x73c8605EDE83C7CfB148e7190375350019043Ff7';
 
 export const testnetAddresses = new Config(
   erc20PoolFactoryAddress,
@@ -22,5 +23,6 @@ export const testnetAddresses = new Config(
   positionManagerAddress,
   ajnaTokenAddress,
   grantFundAddress,
-  burnWrapperAddress
+  burnWrapperAddress,
+  lenderHelper
 );

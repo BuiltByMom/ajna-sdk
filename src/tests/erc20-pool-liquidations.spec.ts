@@ -45,6 +45,12 @@ describe('ERC20 Liquidations', () => {
     let tx = await pool.quoteApprove(signerLender, toWad(40));
     await submitAndVerifyTransaction(tx);
 
+    tx = await pool.quoteApproveHelper(signerLender, toWad(40));
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     // add 9 quote tokens to 2001 bucket
     const higherBucket = await pool.getBucketByIndex(2001);
     let quoteAmount = toWad(9);
@@ -235,9 +241,12 @@ describe('ERC20 Liquidations', () => {
     const allowance = 100000000;
     const quoteAmount = 10;
 
-    // lender adds liquidity
-    let tx = await pool.quoteApprove(signerLender, toWad(allowance));
+    let tx = await pool.quoteApproveHelper(signerLender, toWad(allowance));
     await submitAndVerifyTransaction(tx);
+
+    tx = await pool.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     tx = await bucket.addQuoteToken(signerLender, toWad(quoteAmount));
     await submitAndVerifyTransaction(tx);
 

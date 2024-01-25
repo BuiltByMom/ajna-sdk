@@ -13,7 +13,6 @@ import { indexToPrice, priceToIndex } from '../utils/pricing';
 import { getBlockTime, getExpiry } from '../utils/time';
 import { TEST_CONFIG as config } from './test-constants';
 import { submitAndVerifyTransaction } from './test-utils';
-import { SdkError } from '../types';
 
 jest.setTimeout(80000);
 
@@ -82,73 +81,21 @@ describe('ERC20 Pool', () => {
     const quoteAmount = toWad(10_000);
     const bucket = await pool.getBucketByIndex(2000); // price 46776.6533691354
 
-    let tx = await pool.quoteApprove(signerLender, quoteAmount);
+    let tx = await pool.quoteApproveHelper(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.approveLenderHelperLPTransferor(signerLender);
     await submitAndVerifyTransaction(tx);
 
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
     await submitAndVerifyTransaction(tx);
+
     const bucketStatus = await bucket.getStatus();
     expect(bucketStatus.bucketLP.gt(0)).toBe(true);
     expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
 
     const lpBalance = await bucket.lpBalance(signerLender.address);
     const depositLessFee = '9999.54337899543379';
-    expect(fromWad(lpBalance)).toEqual(depositLessFee);
-  });
-
-  it('should fail addQuoteToken with dust', async () => {
-    const quoteDustAmount = BigNumber.from(100);
-    const quoteAmount = toWad(10_000);
-    const bucket = await pool.getBucketByIndex(999);
-
-    let tx = await pool.quoteApprove(signerLender, quoteDustAmount.add(quoteAmount));
-    await submitAndVerifyTransaction(tx);
-
-    tx = await bucket.addQuoteToken(signerLender, quoteDustAmount);
-    await submitAndVerifyTransaction(tx);
-
-    const bucketStatus = await bucket.getStatus();
-
-    expect(async () => await bucket.addQuoteToken(signerLender, quoteAmount)).rejects.toThrow(
-      SdkError
-    );
-
-    expect(bucketStatus.bucketLP.gt(0)).toBe(true);
-    expect(bucketStatus.exchangeRate.eq(toWad(1))).toBe(true);
-
-    const lpBalance = await bucket.lpBalance(signerLender.address);
-    const depositLessFee = '0.0000000000000001';
-    expect(fromWad(lpBalance)).toEqual(depositLessFee);
-  });
-
-  it('should fail moveQuoteToken with dust', async () => {
-    const quoteDustAmount = BigNumber.from(100);
-    const quoteAmount = toWad(10_000);
-    const bucketIndexFrom = 997;
-    const bucketIndexTo = 998;
-    const bucketFrom = await pool.getBucketByIndex(bucketIndexFrom);
-    const bucketTo = await pool.getBucketByIndex(bucketIndexTo);
-
-    let tx = await pool.quoteApprove(signerLender, quoteDustAmount.add(quoteAmount));
-    await submitAndVerifyTransaction(tx);
-
-    tx = await bucketTo.addQuoteToken(signerLender, quoteDustAmount);
-    await submitAndVerifyTransaction(tx);
-
-    tx = await bucketFrom.addQuoteToken(signerLender, quoteAmount);
-    await submitAndVerifyTransaction(tx);
-
-    expect(
-      async () => await bucketFrom.moveQuoteToken(signerLender, bucketIndexTo, quoteAmount)
-    ).rejects.toThrow(SdkError);
-
-    const bucketToStatus = await bucketTo.getStatus();
-
-    expect(bucketToStatus.bucketLP.gt(0)).toBe(true);
-    expect(bucketToStatus.exchangeRate.eq(toWad(1))).toBe(true);
-
-    const lpBalance = await bucketTo.lpBalance(signerLender.address);
-    const depositLessFee = '0.0000000000000001';
     expect(fromWad(lpBalance)).toEqual(depositLessFee);
   });
 
@@ -301,7 +248,17 @@ describe('ERC20 Pool', () => {
     const fromLpBefore = await bucketFrom.lpBalance(signerLender.address);
     const toLpBefore = await bucketTo.lpBalance(signerLender.address);
 
-    const tx = await bucketFrom.moveQuoteToken(signerLender, bucketIndexTo, maxAmountToMove);
+    let tx = await pool.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.increaseLenderHelperLPAllowance(
+      signerLender,
+      [bucketIndexFrom],
+      [maxAmountToMove]
+    );
+    await submitAndVerifyTransaction(tx);
+
+    tx = await bucketFrom.moveQuoteToken(signerLender, bucketIndexTo, maxAmountToMove);
     await submitAndVerifyTransaction(tx);
 
     const fromLpAfter = await bucketFrom.lpBalance(signerLender.address);
@@ -678,6 +635,12 @@ describe('ERC20 Pool', () => {
     // ETH/DAI (collateral / quote)
     const bucket = await pool.getBucketByIndex(2632);
 
+    tx = await pool.quoteApproveHelper(signerLender, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await pool.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     tx = await pool.quoteApprove(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
     tx = await bucket.addQuoteToken(signerLender, quoteAmount);
@@ -760,9 +723,12 @@ describe('ERC20 Pool', () => {
     tx = await poolA.addCollateral(signerLender, bucketIndex, collateralAmount);
     await tx.verifyAndSubmit();
 
-    // lender2 deposits quote token
-    tx = await poolA.quoteApprove(signerLender2, quoteAmount);
-    await tx.verifyAndSubmit();
+    tx = await poolA.quoteApproveHelper(signerLender2, quoteAmount);
+    await submitAndVerifyTransaction(tx);
+
+    tx = await poolA.approveLenderHelperLPTransferor(signerLender2);
+    await submitAndVerifyTransaction(tx);
+
     tx = await bucket.addQuoteToken(signerLender2, quoteAmount);
     await tx.verifyAndSubmit();
 
@@ -818,9 +784,12 @@ describe('ERC20 Pool', () => {
     tx = await poolA.addCollateral(signerLender, bucketIndex1, collateralAmount);
     await tx.verifyAndSubmit();
 
-    // lender deposits quote token to bucket1 and bucket2
-    tx = await poolA.quoteApprove(signerLender, quoteAmount.mul(2));
-    await tx.verifyAndSubmit();
+    tx = await poolA.quoteApproveHelper(signerLender, quoteAmount.mul(2));
+    await submitAndVerifyTransaction(tx);
+
+    tx = await poolA.approveLenderHelperLPTransferor(signerLender);
+    await submitAndVerifyTransaction(tx);
+
     tx = await bucket1.addQuoteToken(signerLender, quoteAmount);
     await tx.verifyAndSubmit();
     tx = await bucket2.addQuoteToken(signerLender, quoteAmount);
