@@ -860,6 +860,12 @@ export abstract class Pool {
     return approveLPTransferors(signer, this.contract, [this.lenderHelper.address]);
   }
 
+  async isLenderHelperLPTransferorApproved(signer: Signer): Promise<boolean> {
+    const signerAddress = await signer.getAddress();
+
+    return await this.contract.approvedTransferors(signerAddress, this.lenderHelper.address);
+  }
+
   async increaseLenderHelperLPAllowance(
     signer: Signer,
     indexes: Array<number>,
