@@ -1,6 +1,6 @@
-import { BigNumber, Signer, constants } from 'ethers';
+import { BigNumber, Signer, constants, utils } from 'ethers';
 import { MAX_FENWICK_INDEX } from '../constants';
-import { getErc20Contract } from '../contracts/erc20';
+import { getErc20Contract, getDSTokenContract } from '../contracts/erc20';
 import {
   addCollateral,
   approve,
@@ -35,8 +35,15 @@ export class FungiblePool extends Pool {
 
   async initialize() {
     await super.initialize();
-    const collateralToken = getErc20Contract(this.collateralAddress, this.provider);
-    this.collateralSymbol = (await collateralToken.symbol()).replace(/"+/g, '');
+    try {
+      const collateralToken = getErc20Contract(this.collateralAddress, this.provider);
+      this.collateralSymbol = (await collateralToken.symbol()).replace(/"+/g, '');
+    } catch (e) {
+      const collateralToken = getDSTokenContract(this.collateralAddress, this.provider);
+      this.collateralSymbol = utils
+        .parseBytes32String(await collateralToken.symbol())
+        .replace(/"+/g, '');
+    }
     this.name = this.collateralSymbol + '-' + this.quoteSymbol;
   }
 
