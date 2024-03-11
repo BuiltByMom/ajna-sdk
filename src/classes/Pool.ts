@@ -1,5 +1,5 @@
 import { Contract as ContractMulti, Provider as ProviderMulti } from 'ethcall';
-import { BigNumber, Contract, Signer, constants } from 'ethers';
+import { BigNumber, Contract, Signer, constants, utils } from 'ethers';
 import {
   COLLATERALIZATION_FACTOR,
   ERC20_NON_SUBSET_HASH,
@@ -7,7 +7,7 @@ import {
   MAX_INFLATED_PRICE_WAD,
 } from '../constants';
 import { multicall } from '../contracts/common';
-import { getErc20Contract } from '../contracts/erc20';
+import { getErc20Contract, getDSTokenContract } from '../contracts/erc20';
 import { approve } from '../contracts/erc20-pool';
 import {
   collateralAddress,
@@ -181,8 +181,13 @@ export abstract class Pool {
     this.quoteAddress = quoteAddressResponse;
     this.collateralAddress = collateralAddressResponse;
 
-    const quoteToken = getErc20Contract(this.quoteAddress, this.provider);
-    this.quoteSymbol = (await quoteToken.symbol()).replace(/"+/g, '');
+    try {
+      const quoteToken = getErc20Contract(this.quoteAddress, this.provider);
+      this.quoteSymbol = (await quoteToken.symbol()).replace(/"+/g, '');
+    } catch (e) {
+      const quoteToken = getDSTokenContract(this.quoteAddress, this.provider);
+      this.quoteSymbol = utils.parseBytes32String(await quoteToken.symbol()).replace(/"+/g, '');
+    }
   }
 
   /**

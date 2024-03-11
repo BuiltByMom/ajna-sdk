@@ -1,4 +1,5 @@
 import erc20Abi from '../abis/ERC20.json';
+import DSTokenAbi from '../abis/DSToken.json';
 import { Address, SignerOrProvider, WrappedTransaction } from '../types';
 import { BigNumber, Contract, Signer, ethers } from 'ethers';
 import ajnaTokenAbi from '../abis/AjnaToken.json';
@@ -8,6 +9,10 @@ import { createTransaction } from '../utils';
 
 export const getErc20Contract = (contractAddress: Address, provider: SignerOrProvider) => {
   return new ethers.Contract(contractAddress, erc20Abi, provider);
+};
+
+export const getDSTokenContract = (contractAddress: Address, provider: SignerOrProvider) => {
+  return new ethers.Contract(contractAddress, DSTokenAbi, provider);
 };
 
 export const getAjnaTokenContract = (provider: SignerOrProvider) => {
