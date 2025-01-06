@@ -88,6 +88,7 @@ class WrappedTransactionClass implements WrappedTransaction {
    */
   async verifyAndSubmitResponse() {
     const estimatedGas = await this.verify();
+
     const txWithAdjustedGas = {
       ...this._transaction,
       gasLimit: +estimatedGas.mul(GAS_MULTIPLIER),
@@ -184,7 +185,15 @@ class WrappedTransactionClass implements WrappedTransaction {
 
     // works with some L2 chains (Base, Polygon, Optimism)
     if (error?.error?.data) {
-      const errorHash = error.error.data.data;
+      const errorHash = error.error.data;
+
+      if (errorHash?.data) {
+        return (
+          this.getCustomErrorFromHash(contract, errorHash.data) ??
+          error.error.data?.cause ??
+          error.error.data?.message
+        );
+      }
 
       return (
         this.getCustomErrorFromHash(contract, errorHash) ??
@@ -202,7 +211,11 @@ class WrappedTransactionClass implements WrappedTransaction {
    * @param errorData Error hash string parsed from exception raised by node.
    * @returns Human-readable reason explaining why transaction would revert.
    */
-  getCustomErrorFromHash(contract: Contract, errorData: string) {
+  getCustomErrorFromHash(contract: Contract, errorData: string | undefined) {
+    if (!errorData) {
+      return undefined;
+    }
+
     // retrieve the list of custom errors available to the contract
     const customErrorNames = Object.keys(contract.interface.errors);
 
@@ -214,11 +227,10 @@ class WrappedTransactionClass implements WrappedTransaction {
       };
     }, {});
 
-    errorData = errorData.substring(0, 10);
-    if (errorData in errorsByHash) {
-      return errorsByHash[errorData];
-    } else {
-      return undefined;
+    const errorPrefix = errorData.substring(0, 10);
+    if (errorPrefix in errorsByHash) {
+      return errorsByHash[errorPrefix];
     }
+    return undefined;
   }
 }
