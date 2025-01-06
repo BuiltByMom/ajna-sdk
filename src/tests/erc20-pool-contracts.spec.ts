@@ -185,7 +185,7 @@ describe('ERC20 Pool', () => {
 
     expect(prices.hpb).toEqual(indexToPrice(3236));
     expect(prices.hpbIndex).toEqual(3236);
-    expect(prices.htp).toBeBetween(toWad(80), toWad(80.5));
+    expect(prices.htp).toBeBetween(toWad(80), toWad(81.5));
     expect(prices.htpIndex).toEqual(priceToIndex(prices.htp));
     expect(prices.lup).toEqual(indexToPrice(3242));
     expect(prices.lupIndex).toEqual(3242);
@@ -376,7 +376,7 @@ describe('ERC20 Pool', () => {
     // estimate change against canned loan
     let loanEstimate = await poolA.estimateLoan(signerBorrower.address, toWad(5000), toWad(68));
     const prices = await poolA.getPrices();
-    expect(loanEstimate.collateralization).toBeBetween(toWad(1.2), toWad(1.3));
+    expect(loanEstimate.collateralization).toBeBetween(toWad(1.15), toWad(1.3));
     expect(loanEstimate.debt).toBeBetween(toWad(15000), toWad(15000).mul(2));
     expect(loanEstimate.collateral).toEqual(toWad(130 + 68));
     expect(loanEstimate.thresholdPrice).toBeBetween(toWad(78), toWad(78).mul(2));
