@@ -1,7 +1,7 @@
 {
   "name": "@ajna-finance/sdk",
   "description": "A typescript SDK that can be used to create Dapps in Ajna ecosystem.",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/ajna-finance/sdk.git"
@@ -41,7 +41,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
-    "ethcall": "git+https://github.com/imbaniac/ethcall.git#filecoin-multicall",
+    "ethcall": "git+https://github.com/imbaniac/ethcall.git#base",
     "ethers": "^5.7.2",
     "expect": "^29.6.1",
     "mathjs": "^11.8.2",

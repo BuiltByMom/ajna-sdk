@@ -2164,9 +2164,9 @@ esutils@^2.0.2:
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
-"ethcall@git+https://github.com/imbaniac/ethcall.git#filecoin-multicall":
+"ethcall@git+https://github.com/imbaniac/ethcall.git#base":
   version "4.8.13"
-  resolved "git+https://github.com/imbaniac/ethcall.git#a5d86156c497358e594c746e3e6e361a82b3fbe4"
+  resolved "git+https://github.com/imbaniac/ethcall.git#f4974527094e01dcd47ecef78fd8daac75e890c6"
   dependencies:
     "@ethersproject/abi" "^5.0.0"
     "@ethersproject/bytes" "^5.0.0"
