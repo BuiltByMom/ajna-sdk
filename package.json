@@ -35,8 +35,7 @@
     "update-abis": "npx ts-node -e 'require(\"./src/utils/update-abis\").updateAbis();'",
     "lint": "eslint --resolve-plugins-relative-to . --ext .ts,.tsx --fix",
     "prettier": "prettier --config .prettierrc --check **/*.{json,js,ts}",
-    "prettier-format": "prettier --config .prettierrc **/*.{json,js,ts} --write",
-    "prepare": "husky install"
+    "prettier-format": "prettier --config .prettierrc **/*.{json,js,ts} --write"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
@@ -61,7 +60,6 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jest": "^27.2.2",
     "eslint-plugin-prettier": "^4.2.1",
-    "husky": "^8.0.3",
     "jest": "^29.6.1",
     "lint-staged": "^13.2.3",
     "nodemon": "^2.0.22",
@@ -73,6 +71,9 @@
     "tslib": "^2.6.0",
     "typechain": "8.2.0",
     "typescript": "^5.1.6"
+  },
+  "resolutions": {
+    "elliptic": "6.6.1"
   },
   "bugs": {
     "url": "https://github.com/ajna-finance/sdk/issues"
